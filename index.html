@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your Name — Portfolio</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="#top">Your Name</a>
+    <nav>
+      <a href="#about">About</a>
+      <a href="#resume">Resume</a>
+      <a href="#projects">Projects</a>
+      <a href="#tutorials">Tutorials</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section id="top" class="hero">
+    <div class="wrap">
+      <h1>Your Name</h1>
+      <p class="tagline">Your Title / Tagline — e.g. "Engineer · Builder · Lifelong Learner"</p>
+      <p class="hero-sub">Placeholder intro sentence. Tell me who you are and what you do, and I'll swap this in.</p>
+    </div>
+  </section>
+
+  <section id="about" class="section">
+    <div class="wrap">
+      <h2>About</h2>
+      <p>
+        Placeholder bio text. A couple of sentences about your background, what you're
+        currently focused on, and what makes you, you. Send me the real version whenever
+        you're ready and I'll drop it in.
+      </p>
+    </div>
+  </section>
+
+  <section id="resume" class="section alt">
+    <div class="wrap">
+      <h2>Resume / Experience</h2>
+      <ul class="timeline" id="resume-list">
+        <!-- populated by data.js -->
+      </ul>
+    </div>
+  </section>
+
+  <section id="projects" class="section">
+    <div class="wrap">
+      <h2>Projects</h2>
+      <div class="card-grid" id="project-grid">
+        <!-- populated by data.js -->
+      </div>
+    </div>
+  </section>
+
+  <section id="tutorials" class="section alt">
+    <div class="wrap">
+      <h2>Tutorials &amp; Learning</h2>
+      <p class="section-sub">Notes, write-ups, and things I've learned along the way.</p>
+      <div class="card-grid" id="tutorial-grid">
+        <!-- populated by data.js -->
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" class="section">
+    <div class="wrap">
+      <h2>Contact</h2>
+      <ul class="contact-list" id="contact-list">
+        <!-- populated by data.js -->
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>&copy; <span id="year"></span> Your Name. Built with plain HTML/CSS/JS.</p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
