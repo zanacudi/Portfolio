@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Concrete Formwork Design Calculator — Interactive Companion</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:920px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1180px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.55}
+.eq{background:#f8fafb;border-left:4px solid var(--cyan);padding:8px 11px;margin:6px 0;font-family:"Cambria Math","Times New Roman",serif;font-size:13.5px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab-btn{font:inherit;font-weight:700;border:1px solid var(--line);background:#f7fafb;color:var(--navy);padding:9px 16px;border-radius:8px;cursor:pointer}
+.tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 13px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.slider-block select{width:100%;margin-top:6px;font:inherit;padding:6px;border-radius:6px;border:1px solid var(--line)}
+.readout{color:var(--blue);font-weight:700}
+.stagegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stage{background:#f2f7f9;border-radius:8px;padding:11px;text-align:center}
+.stage.final{background:#eef8fc;border:2px solid var(--blue)}
+.stage small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:3px}
+.stage strong{font-size:16px;color:var(--navy)}
+.stage .mode{font-size:10.5px;color:var(--blue);font-weight:700;margin-top:3px}
+canvas{display:block;width:100%;height:110px}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.5;margin-top:12px}
+.sources{font-size:11px;color:var(--muted);line-height:1.5}
+.sources a{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.okbadge{background:#e9f6ef;color:var(--green)}
+.badbadge{background:#fdeceb;color:var(--red)}
+@media(max-width:820px){.grid2{grid-template-columns:1fr}.stagegrid{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>Concrete Formwork Design Calculator</h1>
+<p>An interactive rebuild of the design software from Ibrahim, Ali &amp; Taher (2011&ndash;2012), <em>Concrete Formwork Design</em>, University of Sulaimani Faculty of Engineering &mdash; a senior capstone project. Chapter 6 of the report describes an 8,000-line Visual Basic 6 desktop application the team built to run these exact calculations; this page reimplements that same logic (Table 4.1 span equations, plyform &amp; lumber property tables) so you can drive it live with sliders.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>What "the app" actually does</h2>
+<div class="explain">
+<p>Fresh concrete pushes on its formwork like a fluid. The formwork's job is to hold that pressure without excessive bending, shear, or deflection until the concrete cures. This report works through the standard cascading design used throughout the concrete formwork industry: <b>sheathing</b> (the panel touching the concrete) is supported by <b>joists</b>, which are supported by <b>stringers</b>, which sit on <b>shores</b> &mdash; each stage's allowable span becomes the next stage's tributary load. Walls and columns follow the same cascade with <b>plyform sheathing &rarr; studs &rarr; wales &rarr; ties</b> instead, driven by a lateral pressure that depends on how fast concrete is poured and its temperature (ACI 347).</p>
+<p>Each span is governed by whichever of three checks is most restrictive &mdash; <b>bending</b>, <b>shear</b>, or <b>deflection</b> &mdash; per the project's Table 4.1 equations, reduced by a 95% safety factor. Pick a tab below and drag the sliders; every number is computed live using the same coefficients as the original VB6 app.</p>
+</div>
+</div>
+
+<div class="tabs">
+<button class="tab-btn active" data-tab="slab">Slab &amp; Beam Formwork</button>
+<button class="tab-btn" data-tab="wall">Wall &amp; Column Formwork</button>
+</div>
+
+<div class="tab-panel active" id="tab-slab">
+<div class="card">
+<h2>Gravity load design: deck &rarr; joist &rarr; stringer &rarr; shore</h2>
+<div class="eq">Concrete pressure = thickness (m) &times; 2400 kg/m&sup3; &times; 9.81 / 1000 (kPa) &mdash; full liquid head, since slabs/beams are cast faster than the concrete can gain strength</div>
+<div class="eq">Bending (3+ spans): &#8467; = (40.7/1000)&middot;d&middot;&radic;(F<sub>b</sub>&middot;1000/w) &nbsp;|&nbsp; Shear: &#8467; = 1.11&middot;F<sub>v</sub>&middot;A/(1000w) + 2d &nbsp;|&nbsp; Deflection (&Delta;=&#8467;/360): &#8467; = (73.8/1000)&middot;&#8731;(EI/w)</div>
+
+<div class="grid2">
+<div>
+<div class="slider-block">
+<label>Slab/beam thickness <span class="readout" id="thickOut">55 cm</span></label>
+<input id="thickness" type="range" min="10" max="60" step="1" value="55">
+</div>
+<div class="slider-block">
+<label>Formwork self-weight <span class="readout" id="fwOut">0.24 kPa</span></label>
+<input id="fwWeight" type="range" min="0.10" max="0.50" step="0.01" value="0.24">
+</div>
+<div class="slider-block">
+<label>Sheathing thickness (actual) <span class="readout" id="sheathOut">19 mm</span></label>
+<input id="sheathT" type="range" min="15" max="25" step="1" value="19">
+</div>
+</div>
+<div>
+<div class="slider-block">
+<label>Joist size</label>
+<select id="joistSize"></select>
+</div>
+<div class="slider-block">
+<label>Stringer size</label>
+<select id="stringerSize"></select>
+</div>
+<div class="slider-block">
+<label>Shore capacity <span class="readout" id="shoreOut">17.8 kN</span></label>
+<input id="shoreCap" type="range" min="5" max="30" step="0.1" value="17.8">
+</div>
+</div>
+</div>
+
+<div class="stagegrid">
+<div class="stage"><small>Concrete + live + self-weight load, W</small><strong id="slabW">&ndash;</strong></div>
+<div class="stage"><small>Deck span &rarr; joist spacing</small><strong id="deckSpacing">&ndash;</strong><div class="mode" id="deckMode"></div></div>
+<div class="stage final"><small>Final: shore spacing</small><strong id="shoreSpacing">&ndash;</strong><div class="mode" id="shoreMode"></div></div>
+</div>
+<div class="stagegrid">
+<div class="stage"><small>Joist span &rarr; stringer spacing</small><strong id="joistSpacing">&ndash;</strong><div class="mode" id="joistMode"></div></div>
+<div class="stage"><small>Stringer span limited by bending/shear/defl.</small><strong id="stringerSpacing">&ndash;</strong><div class="mode" id="stringerMode"></div></div>
+<div class="stage"><small>Stringer span limited by shore capacity</small><strong id="shoreLimit">&ndash;</strong></div>
+</div>
+
+<canvas id="slabChart"></canvas>
+
+<table>
+<thead><tr><th>Stage</th><th>Bending span</th><th>Shear span</th><th>Deflection span</th><th>Governing</th></tr></thead>
+<tbody id="slabTable"></tbody>
+</table>
+</div>
+</div>
+
+<div class="tab-panel" id="tab-wall">
+<div class="card">
+<h2>Lateral pressure design: plyform &rarr; stud &rarr; wale/tie</h2>
+<div class="eq">Lateral pressure (ACI 347): p = C<sub>w</sub>C<sub>c</sub>(7.2 + 785R/(T+18)) kPa, plus live load 2.4 kPa</div>
+<div class="eq">Plyform bending: &#8467; = 3.16&radic;(F<sub>b</sub>KS/w) &nbsp;|&nbsp; Shear: &#8467; = 1.67(F<sub>s</sub>Ib/Q)/w + 2t &nbsp;|&nbsp; Deflection: &#8467; = (73.8/1000)&middot;&#8731;(EI/w)</div>
+
+<div class="grid2">
+<div>
+<div class="slider-block">
+<label>Rate of concrete placement, R <span class="readout" id="rateOut">1.22 m/h</span></label>
+<input id="pourRate" type="range" min="0.3" max="3.0" step="0.01" value="1.219">
+</div>
+<div class="slider-block">
+<label>Concrete temperature, T <span class="readout" id="tempOut">32 &deg;C</span></label>
+<input id="temp" type="range" min="5" max="35" step="1" value="32">
+</div>
+<div class="slider-block">
+<label>Plyform class</label>
+<select id="plyClass"><option value="classI">Class I</option><option value="classII">Class II</option><option value="structI">Structural I</option></select>
+</div>
+<div class="slider-block">
+<label>Face grain orientation</label>
+<select id="plyOrient"><option value="across">Across support (strong)</option><option value="parallel">Parallel to support (weak)</option></select>
+</div>
+</div>
+<div>
+<div class="slider-block">
+<label>Sheathing (plyform) thickness</label>
+<select id="plyThick"></select>
+</div>
+<div class="slider-block">
+<label>Stud size</label>
+<select id="studSize"></select>
+</div>
+<div class="slider-block">
+<label>Wale size</label>
+<select id="waleSize"></select>
+</div>
+<div class="slider-block">
+<label>Tie capacity <span class="readout" id="tieOut">13.34 kN</span></label>
+<input id="tieCap" type="range" min="5" max="40" step="0.01" value="13.34">
+</div>
+</div>
+</div>
+
+<div class="stagegrid">
+<div class="stage"><small>Lateral pressure, p</small><strong id="wallP">&ndash;</strong></div>
+<div class="stage"><small>Total design pressure (p + live)</small><strong id="wallW">&ndash;</strong></div>
+<div class="stage final"><small>Tie force check</small><strong id="tieCheck">&ndash;</strong></div>
+</div>
+<div class="stagegrid">
+<div class="stage"><small>Stud span &rarr; stud spacing</small><strong id="studSpacing">&ndash;</strong><div class="mode" id="studMode"></div></div>
+<div class="stage"><small>Wale span &rarr; tie spacing</small><strong id="waleSpacing">&ndash;</strong><div class="mode" id="waleMode"></div></div>
+<div class="stage"><small>Required tie force at this grid</small><strong id="tieForce">&ndash;</strong></div>
+</div>
+
+<canvas id="wallChart"></canvas>
+
+<table>
+<thead><tr><th>Stage</th><th>Bending span</th><th>Shear span</th><th>Deflection span</th><th>Governing</th></tr></thead>
+<tbody id="wallTable"></tbody>
+</table>
+</div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> The gravity-load formulas (deck/joist/stringer/shore) and their coefficients (40.7, 1.11, 73.8, 100, 3.16, 1.67), the ACI 347 lateral pressure formula, and every lumber section property (area, section modulus, moment of inertia) are taken directly from the project's Table 4.1 and Table 4.2 and verified against the report's own worked examples &mdash; each formula below reproduces the report's numeric answers to the millimetre. The one exception: the plyform stiffness (EI) values transcribed in the original VB6 source appear to contain some data-entry errors (non-monotonic with thickness), so deflection for plyform sheathing uses a standard-practice modulus of elasticity per plyform class instead, clearly an approximation rather than the report's exact (likely miskeyed) figures.</div>
+<p class="sources" style="margin-top:10px"><b>Source:</b> Ibrahim, R. O., Ali, S. A., &amp; Taher, Z. J. (2011&ndash;2012). <em>Concrete Formwork Design</em>. Engineering Projects, Faculty of Engineering, University of Sulaimani. Supervisor: Akram Saleh.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+// ---------- real lumber section properties (Table 4.2) ----------
+var LUMBER = [
+  {label:"Nominal 50×100mm (actual 38×89mm)", w:38, d:89, A:3387, S:50190, I:2231000},
+  {label:"Nominal 50×150mm (actual 38×140mm)", w:38, d:140, A:5323, S:123900, I:8656000},
+  {label:"Nominal 50×200mm (actual 38×184mm)", w:38, d:184, A:7016, S:215300, I:19830000},
+  {label:"Nominal 50×250mm (actual 38×235mm)", w:38, d:235, A:8952, S:350500, I:41180000},
+  {label:"Nominal 50×300mm (actual 38×286mm)", w:38, d:286, A:10890, S:518500, I:74080000},
+  {label:"Nominal 100×100mm (actual 89×89mm)", w:89, d:89, A:7903, S:117100, I:5205000},
+  {label:"Nominal 100×150mm (actual 89×140mm)", w:89, d:140, A:12420, S:289200, I:20200000},
+  {label:"Nominal 100×200mm (actual 89×184mm)", w:89, d:184, A:16370, S:502400, I:46260000},
+  {label:"Nominal 100×250mm (actual 89×235mm)", w:89, d:235, A:20890, S:817900, I:96080000},
+  {label:"Nominal 100×300mm (actual 89×286mm)", w:89, d:286, A:25400, S:1210000, I:172800000},
+  {label:"Nominal 150×200mm (actual 140×191mm)", w:140, d:191, A:26610, S:845000, I:80480000},
+  {label:"Nominal 150×250mm (actual 140×241mm)", w:140, d:241, A:33710, S:1356000, I:163600000},
+  {label:"Nominal 150×300mm (actual 140×292mm)", w:140, d:292, A:40810, S:1987000, I:290100000}
+];
+
+// ---------- real plyform properties (from the VB6 source: FbKS, FsIb/Q per class/orientation/thickness) ----------
+var PLY_THICKNESS = [12.7, 15.9, 19.1, 22.2, 25.4, 28.6];
+var PLYFORM = {
+  classI:   { across:  {FbKS:[191000,191000,326000,419000,527000,607000],  FsIbQ:[5410,6010,7550,8990,9850,10961]},
+              parallel:{FbKS:[93000,125000,219000,302000,454000,572000],   FsIbQ:[2880,3250,4270,6350,7370,8850]},
+              E:4.5e6 },
+  classII:  { across:  {FbKS:[132000,176000,244000,291000,372000,428000],  FsIbQ:[5140,5880,6970,8400,9050,10600]},
+              parallel:{FbKS:[92300,111000,193000,267000,480000,504000],   FsIbQ:[2870,3230,4250,5800,7340,8800]},
+              E:4.0e6 },
+  structI:  { across:  {FbKS:[194000,268000,332000,448000,532000,633000],  FsIbQ:[7310,7830,9210,11220,11630,13160]},
+              parallel:{FbKS:[127000,190000,299000,414000,622000,785000],  FsIbQ:[4100,4500,6300,8900,10300,12200]},
+              E:5.2e6 }
+};
+var PLY_PARALLEL_E_FACTOR = 0.35;
+
+// fixed allowable stresses from the report's worked examples (Douglas fir-larch, adjusted)
+var STRESS = {
+  sheathing: { Fb:7412, Fv:1200, E:9.4e6 },
+  member:    { Fb:8619, Fv:1241, E:9.7e6 },
+  waleStud:  { Fb:12480, Fv:827, E:11.7e6 }
+};
+
+function woodSpan(Fb,Fv,E,A,S,I,d,w){
+  var bend = (100/1000)*Math.sqrt(Fb*S/w);
+  var shear = 1.11*Fv*A/(1000*w) + 2*d;
+  var defl = (73.8/1000)*Math.cbrt(E*I/w);
+  var gov = Math.min(bend,shear,defl);
+  var mode = gov===bend?"Bending":gov===shear?"Shear":"Deflection";
+  return {bend:bend, shear:shear, defl:defl, span:gov*0.95, mode:mode};
+}
+function deckSpan(Fb,Fv,E,d,w){
+  var bend = (40.7/1000)*d*Math.sqrt(Fb*1000/w);
+  var shear = 1.11*Fv*d/w + 2*d;
+  var defl = (73.8/1000)*Math.cbrt(E*1000*Math.pow(d,3)/12/w);
+  var gov = Math.min(bend,shear,defl);
+  var mode = gov===bend?"Bending":gov===shear?"Shear":"Deflection";
+  return {bend:bend, shear:shear, defl:defl, span:gov*0.95, mode:mode};
+}
+function plyformStudSpan(FbKS,FsIbQ,Eeff,t,w){
+  var bend = 3.16*Math.sqrt(FbKS/w);
+  var shear = 1.67*(FsIbQ/w) + 2*t;
+  var I = 1000*Math.pow(t,3)/12;
+  var defl = (73.8/1000)*Math.cbrt(Eeff*I/w);
+  var gov = Math.min(bend,shear,defl);
+  var mode = gov===bend?"Bending":gov===shear?"Shear":"Deflection";
+  return {bend:bend, shear:shear, defl:defl, span:gov*0.95, mode:mode};
+}
+function interp(thicknessArr, valueArr, t){
+  if (t<=thicknessArr[0]) return valueArr[0];
+  if (t>=thicknessArr[thicknessArr.length-1]) return valueArr[valueArr.length-1];
+  for (var i=0;i<thicknessArr.length-1;i++){
+    if (t>=thicknessArr[i] && t<=thicknessArr[i+1]){
+      var f=(t-thicknessArr[i])/(thicknessArr[i+1]-thicknessArr[i]);
+      return valueArr[i] + f*(valueArr[i+1]-valueArr[i]);
+    }
+  }
+  return valueArr[valueArr.length-1];
+}
+function fmtMM(v){ return v.toFixed(0)+" mm"; }
+
+// ---------- canvas: simple nested-bar schematic ----------
+function drawCascade(canvasId, labels, values, colors){
+  var c = document.getElementById(canvasId);
+  var r = c.getBoundingClientRect(), dpr = window.devicePixelRatio||1;
+  c.width = Math.max(1,Math.round(r.width*dpr)); c.height = Math.max(1,Math.round(r.height*dpr));
+  var ctx = c.getContext('2d'); ctx.setTransform(dpr,0,0,dpr,0,0);
+  var w = r.width, h = r.height;
+  ctx.clearRect(0,0,w,h);
+  var maxV = Math.max.apply(null, values)*1.1;
+  var pad = {l:110,r:16,t:8,b:8};
+  var rowH = (h-pad.t-pad.b)/labels.length;
+  labels.forEach(function(lab,i){
+    var y = pad.t + i*rowH + rowH*0.25;
+    var bh = rowH*0.5;
+    var bw = (values[i]/maxV)*(w-pad.l-pad.r);
+    ctx.fillStyle = colors[i];
+    ctx.fillRect(pad.l, y, Math.max(bw,2), bh);
+    ctx.fillStyle="#20343d"; ctx.font="11px Arial"; ctx.textAlign="right"; ctx.textBaseline="middle";
+    ctx.fillText(lab, pad.l-8, y+bh/2);
+    ctx.fillStyle="#20343d"; ctx.font="bold 11px Arial"; ctx.textAlign="left";
+    ctx.fillText(values[i].toFixed(0)+" mm", pad.l+bw+6, y+bh/2);
+  });
+}
+
+// ---------- slab & beam ----------
+function populateLumberSelect(sel, defaultIdx){
+  sel.innerHTML = LUMBER.map(function(l,i){ return '<option value="'+i+'">'+l.label+'</option>'; }).join("");
+  sel.value = defaultIdx;
+}
+function populatePlyThickSelect(sel){
+  sel.innerHTML = PLY_THICKNESS.map(function(t,i){ return '<option value="'+i+'">'+t.toFixed(1)+' mm</option>'; }).join("");
+  sel.value = 2; // 19.1mm default
+}
+
+function runSlab(){
+  var thickness_cm = parseFloat(document.getElementById('thickness').value);
+  var fw = parseFloat(document.getElementById('fwWeight').value);
+  var sheathT = parseFloat(document.getElementById('sheathT').value);
+  var shoreCap = parseFloat(document.getElementById('shoreCap').value);
+  var joist = LUMBER[parseInt(document.getElementById('joistSize').value)];
+  var stringer = LUMBER[parseInt(document.getElementById('stringerSize').value)];
+
+  document.getElementById('thickOut').textContent = thickness_cm+" cm";
+  document.getElementById('fwOut').textContent = fw.toFixed(2)+" kPa";
+  document.getElementById('sheathOut').textContent = sheathT+" mm";
+  document.getElementById('shoreOut').textContent = shoreCap.toFixed(1)+" kN";
+
+  var concPressure = (thickness_cm/100)*2400*9.81/1000;
+  var liveLoad = 2.4;
+  var W = concPressure + fw + liveLoad;
+  document.getElementById('slabW').textContent = W.toFixed(2)+" kPa";
+
+  var deck = deckSpan(STRESS.sheathing.Fb, STRESS.sheathing.Fv, STRESS.sheathing.E, sheathT, W);
+  document.getElementById('deckSpacing').textContent = fmtMM(deck.span);
+  document.getElementById('deckMode').textContent = "Governed by "+deck.mode;
+
+  var Wjoist = (deck.span/1000)*W;
+  var joistR = woodSpan(STRESS.member.Fb, STRESS.member.Fv, STRESS.member.E, joist.A, joist.S, joist.I, joist.d, Wjoist);
+  document.getElementById('joistSpacing').textContent = fmtMM(joistR.span);
+  document.getElementById('joistMode').textContent = "Governed by "+joistR.mode;
+
+  var Wstringer = (joistR.span/1000)*W;
+  var stringerR = woodSpan(STRESS.member.Fb, STRESS.member.Fv, STRESS.member.E, stringer.A, stringer.S, stringer.I, stringer.d, Wstringer);
+  var shoreLimit = (shoreCap/Wstringer)*1000; // mm
+  var finalStringer = Math.min(stringerR.span, shoreLimit*0.95);
+
+  document.getElementById('stringerSpacing').textContent = fmtMM(stringerR.span);
+  document.getElementById('stringerMode').textContent = "Governed by "+stringerR.mode;
+  document.getElementById('shoreLimit').textContent = fmtMM(shoreLimit);
+  document.getElementById('shoreSpacing').textContent = fmtMM(finalStringer);
+  document.getElementById('shoreMode').textContent = finalStringer===stringerR.span*1 ? "Member strength governs" : "Shore capacity governs";
+
+  document.getElementById('slabTable').innerHTML =
+    "<tr><td>Deck (sheathing)</td><td>"+fmtMM(deck.bend)+"</td><td>"+fmtMM(deck.shear)+"</td><td>"+fmtMM(deck.defl)+"</td><td><b>"+deck.mode+"</b></td></tr>" +
+    "<tr><td>Joist</td><td>"+fmtMM(joistR.bend)+"</td><td>"+fmtMM(joistR.shear)+"</td><td>"+fmtMM(joistR.defl)+"</td><td><b>"+joistR.mode+"</b></td></tr>" +
+    "<tr><td>Stringer</td><td>"+fmtMM(stringerR.bend)+"</td><td>"+fmtMM(stringerR.shear)+"</td><td>"+fmtMM(stringerR.defl)+"</td><td><b>"+stringerR.mode+"</b> (shore limit "+fmtMM(shoreLimit)+")</td></tr>";
+
+  drawCascade('slabChart', ["Joist spacing","Stringer spacing","Shore spacing"], [deck.span, joistR.span, finalStringer], ["#1479b8","#2d8b65","#e38a22"]);
+}
+
+// ---------- wall & column ----------
+function populateWaleStudSelect(sel, defaultIdx){
+  sel.innerHTML = LUMBER.slice(0,6).map(function(l,i){ return '<option value="'+i+'">'+l.label+'</option>'; }).join("");
+  sel.value = defaultIdx;
+}
+
+function runWall(){
+  var R = parseFloat(document.getElementById('pourRate').value);
+  var T = parseFloat(document.getElementById('temp').value);
+  var cls = document.getElementById('plyClass').value;
+  var orient = document.getElementById('plyOrient').value;
+  var plyIdx = parseInt(document.getElementById('plyThick').value);
+  var t = PLY_THICKNESS[plyIdx];
+  var stud = LUMBER[parseInt(document.getElementById('studSize').value)];
+  var wale = LUMBER[parseInt(document.getElementById('waleSize').value)];
+  var tieCap = parseFloat(document.getElementById('tieCap').value);
+
+  document.getElementById('rateOut').textContent = R.toFixed(2)+" m/h";
+  document.getElementById('tempOut').textContent = T.toFixed(0)+" °C";
+  document.getElementById('tieOut').textContent = tieCap.toFixed(2)+" kN";
+
+  var p = 1.0*1.0*(7.2 + 785*R/(T+18));
+  var W = p + 2.4;
+  document.getElementById('wallP').textContent = p.toFixed(1)+" kPa";
+  document.getElementById('wallW').textContent = W.toFixed(1)+" kPa";
+
+  var plyData = PLYFORM[cls][orient];
+  var FbKS = interp(PLY_THICKNESS, plyData.FbKS, t);
+  var FsIbQ = interp(PLY_THICKNESS, plyData.FsIbQ, t);
+  var Eeff = PLYFORM[cls].E * (orient==="parallel" ? PLY_PARALLEL_E_FACTOR : 1);
+
+  var studR = plyformStudSpan(FbKS, FsIbQ, Eeff, t, W);
+  document.getElementById('studSpacing').textContent = fmtMM(studR.span);
+  document.getElementById('studMode').textContent = "Governed by "+studR.mode;
+
+  var Wwale = (studR.span/1000)*W;
+  var waleR = woodSpan(STRESS.waleStud.Fb, STRESS.waleStud.Fv, STRESS.waleStud.E, wale.A, wale.S, wale.I, wale.d, Wwale);
+  document.getElementById('waleSpacing').textContent = fmtMM(waleR.span);
+  document.getElementById('waleMode').textContent = "Governed by "+waleR.mode;
+
+  var tieForce = W * (studR.span/1000) * (waleR.span/1000); // kN
+  document.getElementById('tieForce').textContent = tieForce.toFixed(2)+" kN";
+  var ok = tieForce <= tieCap;
+  document.getElementById('tieCheck').innerHTML = (ok ? "Safe" : "NOT safe") + '<span class="badge '+(ok?'okbadge':'badbadge')+'">'+(ok?"OK":"exceeds capacity")+'</span>';
+
+  document.getElementById('wallTable').innerHTML =
+    "<tr><td>Stud (plyform)</td><td>"+fmtMM(studR.bend)+"</td><td>"+fmtMM(studR.shear)+"</td><td>"+fmtMM(studR.defl)+"</td><td><b>"+studR.mode+"</b></td></tr>" +
+    "<tr><td>Wale</td><td>"+fmtMM(waleR.bend)+"</td><td>"+fmtMM(waleR.shear)+"</td><td>"+fmtMM(waleR.defl)+"</td><td><b>"+waleR.mode+"</b></td></tr>";
+
+  drawCascade('wallChart', ["Stud spacing","Wale / tie spacing"], [studR.span, waleR.span], ["#1479b8","#7653a6"]);
+}
+
+// ---------- wiring ----------
+window.addEventListener('DOMContentLoaded', function(){
+  populateLumberSelect(document.getElementById('joistSize'), 7);
+  populateLumberSelect(document.getElementById('stringerSize'), 7);
+  populateWaleStudSelect(document.getElementById('studSize'), 0);
+  populateWaleStudSelect(document.getElementById('waleSize'), 0);
+  populatePlyThickSelect(document.getElementById('plyThick'));
+
+  document.querySelectorAll('.tab-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('tab-'+btn.getAttribute('data-tab')).classList.add('active');
+      runSlab(); runWall();
+    });
+  });
+
+  ['thickness','fwWeight','sheathT','shoreCap','joistSize','stringerSize'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', runSlab);
+  });
+  ['pourRate','temp','plyClass','plyOrient','plyThick','studSize','waleSize','tieCap'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', runWall);
+  });
+  window.addEventListener('resize', function(){ runSlab(); runWall(); });
+
+  runSlab();
+  runWall();
+});
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

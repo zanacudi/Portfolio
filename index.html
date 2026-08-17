@@ -3,18 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Name — Portfolio</title>
+<title>Zana Taher, P.E. — Geotechnical Engineer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="site-header">
   <div class="wrap">
-    <a class="brand" href="#top">Your Name</a>
+    <a class="brand" href="#top">Zana Taher</a>
     <nav>
       <a href="#about">About</a>
-      <a href="#resume">Resume</a>
-      <a href="#projects">Projects</a>
+      <a href="#education">Education</a>
+      <a href="#resume">Experience</a>
+      <a href="#projects">Research</a>
+      <a href="#litreview">Lit Review</a>
       <a href="#tutorials">Tutorials</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -25,9 +27,10 @@
 
   <section id="top" class="hero">
     <div class="wrap">
-      <h1>Your Name</h1>
-      <p class="tagline">Your Title / Tagline — e.g. "Engineer · Builder · Lifelong Learner"</p>
-      <p class="hero-sub">Placeholder intro sentence. Tell me who you are and what you do, and I'll swap this in.</p>
+      <img class="avatar" src="headshot.png" alt="Zana Taher">
+      <h1>Zana Taher</h1>
+      <p class="tagline">P.E. · PhD Candidate · Geotechnical Engineer at AECOM</p>
+      <p class="hero-sub">Denver, CO &amp; Cincinnati, OH — Geotechnical engineering, earthquake engineering analysis, and applied research on tailings and expansive soils.</p>
     </div>
   </section>
 
@@ -35,35 +38,62 @@
     <div class="wrap">
       <h2>About</h2>
       <p>
-        Placeholder bio text. A couple of sentences about your background, what you're
-        currently focused on, and what makes you, you. Send me the real version whenever
-        you're ready and I'll drop it in.
+        I'm a Professional Engineer (licensed in Colorado and Nevada) and PhD candidate in
+        Geotechnical Engineering at Colorado State University, currently working as a
+        Geotechnical Engineer at AECOM. My background spans field investigation (CPT
+        soundings, piezometer installation, drilling, borehole logging), numerical
+        modeling for tailings and hydraulic dams, and earthquake geotechnical engineering
+        analysis. I'm comfortable across a wide range of geotechnical and civil software —
+        GeoStudio, PLAXIS, FLAC, UTEXAS, RocScience, AutoCAD Civil 3D, ArcGIS — and use
+        programming tools like MATLAB, Python, C++, and R for analysis and automation.
+        Alongside my engineering work, I teach and mentor: I've been a teaching and
+        research assistant at CSU since 2017, tutored engineering students internationally,
+        and run a geotechnical engineering education page with 12,000+ followers.
       </p>
     </div>
   </section>
 
-  <section id="resume" class="section alt">
+  <section id="education" class="section alt">
     <div class="wrap">
-      <h2>Resume / Experience</h2>
+      <h2>Education</h2>
+      <ul class="timeline" id="education-list">
+        <!-- populated by data.js -->
+      </ul>
+    </div>
+  </section>
+
+  <section id="resume" class="section">
+    <div class="wrap">
+      <h2>Experience</h2>
       <ul class="timeline" id="resume-list">
         <!-- populated by data.js -->
       </ul>
     </div>
   </section>
 
-  <section id="projects" class="section">
+  <section id="projects" class="section alt">
     <div class="wrap">
-      <h2>Projects</h2>
+      <h2>Research &amp; Projects</h2>
       <div class="card-grid" id="project-grid">
         <!-- populated by data.js -->
       </div>
     </div>
   </section>
 
-  <section id="tutorials" class="section alt">
+  <section id="litreview" class="section alt">
     <div class="wrap">
-      <h2>Tutorials &amp; Learning</h2>
-      <p class="section-sub">Notes, write-ups, and things I've learned along the way.</p>
+      <h2>Interactive Literature Review</h2>
+      <p class="section-sub">Textbooks and major references, rebuilt as interactive companions — real data and equations, made explorable.</p>
+      <div class="card-grid" id="litreview-grid">
+        <!-- populated by data.js -->
+      </div>
+    </div>
+  </section>
+
+  <section id="tutorials" class="section">
+    <div class="wrap">
+      <h2>Tutorials &amp; Teaching</h2>
+      <p class="section-sub">Courses I've taught, tutored, and educational outreach.</p>
       <div class="card-grid" id="tutorial-grid">
         <!-- populated by data.js -->
       </div>
@@ -83,7 +113,7 @@
 
 <footer class="site-footer">
   <div class="wrap">
-    <p>&copy; <span id="year"></span> Your Name. Built with plain HTML/CSS/JS.</p>
+    <p>&copy; <span id="year"></span> Zana Taher. Built with plain HTML/CSS/JS.</p>
   </div>
 </footer>
 

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 3)</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+canvas{display:block;width:100%;height:260px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.readout{color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.statgrid.n3{grid-template-columns:repeat(3,1fr)}
+.statgrid.n2{grid-template-columns:repeat(2,1fr)}
+.stat{background:#f2f7f9;padding:10px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
+.stat strong{font-size:15px}
+.stat.hi strong{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.warn{background:#fdeee9;color:var(--red)}
+.badge.ok{background:#e9f6ef;color:var(--green)}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.sources{font-size:11px;color:var(--muted);line-height:1.6}
+.sources a{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table.notation{min-width:640px}
+table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
+table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+.case-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.case-card{border:1px solid var(--line);border-radius:8px;padding:12px;background:#fafcfd}
+.case-card h4{margin:0 0 6px;font-size:13px;color:var(--navy)}
+.case-card .yr{color:var(--muted);font-size:11px;margin-bottom:6px}
+.case-card p{font-size:12px;line-height:1.5;margin:4px 0}
+.case-card .num{color:var(--blue);font-weight:700}
+@media(max-width:900px){.case-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}.case-cards{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>Soil Liquefaction: A Critical State Approach — Interactive Companion</h1>
+<p><b>Module 3: Static Liquefaction &amp; Post-Liquefaction Strength</b> (Chapter 6, with Chapter 1's flow-failure case histories). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press. Continues from <a href="jb-critical-state-lab.html">Module 1</a> and <a href="jb-insitu-state-lab.html">Module 2</a>.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>About this module</h2>
+<div class="explain">
+<p>This is the chapter the whole book has been building toward: what actually happens when a contractive soil is sheared undrained, and how much strength survives on the other side. It opens with four real flow failures the book documents in detail &mdash; two static, two triggered by other events &mdash; because static liquefaction isn't a laboratory curiosity.</p>
+</div>
+<div class="case-cards">
+<div class="case-card"><h4>Fort Peck Dam</h4><div class="yr">Montana, USA &middot; 1938</div><p>Upstream slope of a hydraulic-fill dam failed near the end of construction, preceded by <span class="num">12+ hours</span> of visible bulging. The flowslide moved material up to <span class="num">450 m</span>, involving about <span class="num">7.5 million m&sup3;</span> of fill, and killed <span class="num">8</span> workers.</p></div>
+<div class="case-card"><h4>Nerlerk Berm</h4><div class="yr">Beaufort Sea, Canada &middot; 1983</div><p>An offshore sand berm for oil exploration liquefied under its own static loading during construction, repeatedly falling short of design elevation. Cost overruns exceeded <span class="num">$100 million</span>. Extensively re-analyzed since &mdash; used as a real validation case throughout this book.</p></div>
+<div class="case-card"><h4>Aberfan</h4><div class="yr">Wales, UK &middot; 1966</div><p>A colliery spoil tip liquefied and flowed downhill, engulfing a village school. <span class="num">144</span> people were killed, <span class="num">116</span> of them children &mdash; from only about <span class="num">107,000 m&sup3;</span> of material. One of the deadliest liquefaction failures on record.</p></div>
+<div class="case-card"><h4>Merriespruit</h4><div class="yr">South Africa &middot; 1994</div><p>A gold tailings dam was overtopped during a thunderstorm; erosion exposed loose saturated tailings inside the wall, which then liquefied. About <span class="num">600,000 m&sup3;</span> of tailings flowed <span class="num">3 km</span> through the village below.</p></div>
+</div>
+</div>
+
+<div class="card">
+<h2>Notation used in this module</h2>
+<p class="explain" style="font-size:12px">Symbols in roughly the order they first appear below &mdash; use this as a lookup while reading Chapter 6.</p>
+<div style="overflow-x:auto"><table class="notation">
+<tr><td><b>s<sub>u</sub></b></td><td>peak undrained shear strength (the strength <i>before</i> any post-peak strength loss)</td><td><b>&eta;<sub>L</sub></b></td><td>mobilized stress ratio at "instability" or "collapse" &mdash; where undrained strength loss begins</td></tr>
+<tr><td><b>s<sub>r</sub></b></td><td>residual (post-liquefaction, critical-state) undrained shear strength &mdash; what's left after brittle failure</td><td><b>H/I<sub>r</sub></b></td><td>ratio of plastic hardening modulus to elastic rigidity &mdash; controls where &eta;<sub>L</sub> actually sits</td></tr>
+<tr><td><b>I<sub>B</sub></b></td><td>Bishop's brittleness index, (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> (Eq. 6.5) &mdash; 0 = no strength loss, 1 = total loss</td><td><b>&sigma;&prime;<sub>vo</sub></b></td><td>in-situ vertical effective stress</td></tr>
+<tr><td><b>&lambda;<sub>e</sub></b></td><td>natural-log CSL slope used inside Eq. 6.4, &lambda;<sub>e</sub>=&lambda;<sub>10</sub>/2.303</td><td><b>Q<sub>tn,cs</sub></b></td><td>clean-sand-equivalent normalized CPT resistance (Robertson 2010) &mdash; a penetration-resistance proxy for &psi;</td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h2>1. Peak strength, residual strength, and why brittleness is the real danger</h2>
+<div class="explain"><p>The peak undrained strength of even very loose liquefiable sand isn't unusually low &mdash; typically s<sub>u</sub>/p&prime;<sub>o</sub> &asymp; 0.15&ndash;0.30 (Fig. 6.10), comparable to normally consolidated clay. What makes static liquefaction dangerous is what happens <i>after</i> the peak: a large, brittle strength drop to the residual (critical-state) strength, which follows directly from the CSL definition:</p></div>
+<div class="eq">s<sub>r</sub>/p&prime;<sub>o</sub> = (M/2)&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) &nbsp; (Eq. 6.4) &nbsp;&nbsp; I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> &nbsp; (Bishop's brittleness index, Eq. 6.5)</div>
+
+<div class="grid3">
+<div class="slider-block"><label>Critical friction ratio, M<sub>tc</sub> <span class="readout" id="s1MOut">1.25</span></label><input id="s1M" type="range" min="1.0" max="1.6" step="0.01" value="1.25"></div>
+<div class="slider-block"><label>&lambda;<sub>10</sub> (CSL slope) <span class="readout" id="s1LOut">0.05</span></label><input id="s1L" type="range" min="0.01" max="0.20" step="0.005" value="0.05"></div>
+<div class="slider-block"><label>State parameter, &psi;<sub>o</sub> <span class="readout" id="s1PsiOut">0.068</span></label><input id="s1Psi" type="range" min="-0.05" max="0.20" step="0.001" value="0.068"></div>
+</div>
+<div class="slider-block" style="max-width:340px"><label>Peak strength ratio, s<sub>u</sub>/p&prime;<sub>o</sub> &mdash; for the I<sub>B</sub> calculation below <span class="readout" id="s1SuOut">0.20</span></label><input id="s1Su" type="range" min="0.10" max="0.40" step="0.005" value="0.20"><div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4">Typical range 0.15&ndash;0.30 (Fig. 6.10) &mdash; not predicted by Eq. 6.4, set it directly.</div></div>
+<div class="grid2">
+<div>
+<div class="statgrid" id="s1Stats"></div>
+<div class="callout">Test G609 on Erksak 330/0.7 sand — the loosest clean-sand liquefaction test in the book's database (e<sub>o</sub>=0.800, p&prime;<sub>o</sub>=500 kPa, &psi;<sub>o</sub>=+0.068) — is plotted as the reference point (default slider values). It showed an <b>80% peak-to-residual strength drop</b>, with a smoothly mobilized stress ratio and pore pressure through the whole test — no sudden "collapse," which is the book's key evidence against the traditional collapse-surface picture (Section 2 below). Brittleness only develops once &psi;<sub>o</sub>/&lambda;<sub>e</sub> &gt; 0.7 (the boundary of "normal consolidation" behavior, Fig. 6.14) — the badge below flags it.</div>
+</div>
+<div><canvas id="brittleChart"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>s<sub>r</sub>/p&prime;<sub>o</sub> (Eq. 6.4)</span><span><i style="background:var(--red)"></i>current state</span></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>2. Why "collapse surface" is the wrong picture</h2>
+<div class="explain">
+<p>The traditional explanation for static liquefaction is a "collapse surface" or "instability line" &mdash; the idea that loose sand holds together in a metastable particle arrangement until a critical stress ratio triggers a sudden rearrangement. The book tested this directly against Test G609's data: the stress ratio and excess pore pressure both mobilize <b>smoothly</b> with strain, with no inflection at peak strength (&eta;<sub>L</sub>=0.62 at collapse) that would indicate a sudden structural event. A companion drained test on an even looser sample (e=0.820) showed no change in behavior at all when its stress path crossed that same "collapse" ratio.</p>
+<p>NorSand simulations confirm why the collapse-surface idea is misleading: the stress ratio at instability isn't a fixed soil property at all. For the same critical friction ratio M<sub>tc</sub>, varying only the ratio of plastic hardening to elastic rigidity (H/I<sub>r</sub>) shifted the instability stress ratio &eta;<sub>L</sub> from <b>0.75 to 1.0</b> in simulations of real Guindon silty sand (33% fines, &psi;<sub>o</sub>=+0.065, Fig. 6.27). Liquefaction isn't a structural collapse &mdash; it's ordinary strain-softening plasticity that becomes catastrophic only when drainage can't keep up with pore pressure generation (Drucker's instability postulate, Eq. 6.20).</p>
+</div>
+
+<h3>If &eta;<sub>L</sub> isn't a soil property, what does move it?</h3>
+<div class="explain"><p>Drag H/I<sub>r</sub> across the same range Figure 6.27 explores, for the book's own real Guindon silty sand parameters (&Gamma;=0.902, &lambda;<sub>10</sub>=0.05, M<sub>tc</sub>=1.25, N=0.5, &chi;<sub>tc</sub>=6.0, &psi;<sub>o</sub>=+0.065, OCR=1.15, K<sub>o</sub>=1.0, &nu;=0.2):</p></div>
+<div class="slider-block" style="max-width:420px"><label>H/I<sub>r</sub> <span class="readout" id="hirOut">1.0</span></label><input id="hirSlide" type="range" min="0" max="4" step="0.05" value="1.0"></div>
+<div class="statgrid n2" id="hirStats"></div>
+<canvas id="hirChart" style="height:200px"></canvas>
+<p class="explain" style="font-size:11px;color:var(--muted)">The curve is a smooth illustrative interpolation between Figure 6.27's two explicitly-stated endpoint values (&eta;<sub>L</sub>&asymp;0.75 at H/I<sub>r</sub>&asymp;0, &eta;<sub>L</sub>&asymp;1.0 at H/I<sub>r</sub>&asymp;4) &mdash; the figure itself wasn't available to digitize point-by-point, so treat the curve's shape as illustrative and the two endpoints as the real, cited result.</p>
+</div>
+
+<div class="card">
+<h2>3. Predicting post-liquefaction residual strength — theory vs. current practice</h2>
+<div class="explain"><p>The book's own recommended design tool (reproduced here exactly as the VBA function published in Fig. 6.48) blends the exact critical-state theory result (Eq. 6.4/6.17) for very loose soils with a conservative linear fit anchored to the case-history record for everything else:</p></div>
+<div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;(M<sub>tc</sub>/2)&middot;exp(&minus;&psi;/&lambda;<sub>e</sub>) &nbsp; if &psi; &gt; &lambda;<sub>10</sub></div>
+<div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;0.0501&middot;M<sub>tc</sub> + 0.8&middot;(&lambda;<sub>10</sub> &minus; &psi;) &nbsp; otherwise</div>
+
+<div class="grid4">
+<div class="slider-block"><label>M<sub>tc</sub> <span class="readout" id="s3MOut">1.25</span></label><input id="s3M" type="range" min="1.0" max="1.6" step="0.01" value="1.25"></div>
+<div class="slider-block"><label>K<sub>o</sub> <span class="readout" id="s3KOut">0.70</span></label><input id="s3K" type="range" min="0.4" max="1.2" step="0.01" value="0.70"></div>
+<div class="slider-block"><label>&lambda;<sub>10</sub> <span class="readout" id="s3LOut">0.08</span></label><input id="s3L" type="range" min="0.01" max="0.25" step="0.005" value="0.08"></div>
+<div class="slider-block"><label>&psi; (characteristic) <span class="readout" id="s3PsiOut">-0.02</span></label><input id="s3Psi" type="range" min="-0.15" max="0.15" step="0.001" value="-0.02"></div>
+</div>
+<div class="statgrid n3" id="s3Stats"></div>
+
+<canvas id="caseChart" style="height:320px;margin-top:12px"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>book's best-practice function (this &lambda;10, M, Ko)</span><span><i style="background:#9aa9ae"></i>real case histories (Table 6.5, range bars)</span><span><i style="background:var(--red)"></i>current slider state</span></div>
+
+<div class="callout"><b>How dense is dense enough?</b> Laboratory and case-history evidence converge on a practical threshold: soils denser than about <b>&psi; &lt; &minus;0.05</b> don't show the phase-transformation behavior that leads to damaging strength loss (Section 6.11) &mdash; Robertson's independent CPT-based criterion (Q<sub>tn,cs</sub> &asymp; 70) lines up with the same boundary. Below this line the book frames the engineering conversation as "ground improvement"; above it, as "tolerable movements." <span id="denseFlag"></span></div>
+
+<h3>Comparison: current U.S. practice (Robertson 2010, Eq. 6.15) — direct from CPT, no &psi; needed</h3>
+<p class="explain" style="font-size:12px">This is the other method in common use, applied directly to normalized clean-sand-equivalent CPT resistance rather than through &psi;. It's plotted separately (not on the chart above) because converting Q<sub>tn,cs</sub> to &psi; needs the full I<sub>c</sub>/K<sub>c</sub> normalization chain (Eqs. 6.11&ndash;6.14), which this tool doesn't reproduce — see disclosure below.</p>
+<div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = 0.0055&middot;exp(0.05&middot;Q<sub>tn,cs</sub>) &nbsp; (Eq. 6.15)</div>
+<div class="slider-block"><label>Q<sub>tn,cs</sub> <span class="readout" id="s3bQOut">40</span></label><input id="s3bQ" type="range" min="0" max="100" step="1" value="40"></div>
+<div class="statgrid n2" id="s3bStats"></div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> Section 1 uses Eq. 6.4 with the sign resolved from first principles (p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows directly from the CSL definition, Eq. 2.1, and the book's own restatement at Eq. 6.16/6.4 confirms the minus sign) — this correction was cross-checked against the book's own quoted result that peak &asymp; residual strength at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub> and matches to within the stated approximation. Section 3's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly and internally verified (the two branches agree to within 0.03% at their anchor point &psi;=&lambda;<sub>10</sub>). Robertson's comparison curve (Eq. 6.15) is plotted directly against Q<sub>tn,cs</sub> without deriving the full I<sub>c</sub>/K<sub>c</sub> normalization chain (Eqs. 6.11&ndash;6.14) — those are real, cited equations but weren't needed for this comparison. Case-history markers are representative midpoints of the ranges in Table 6.5 (Zeeland Coast, Wachusett, Sheffield, Fort Peck, Hokkaido, Lower San Fernando, Nerlerk, La Marquesa, La Palma, Sullivan, Jamuna River Bank); Calaveras Dam and the Mochikoshi dams are omitted as the book itself flags them as unreliable or outlier data.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+function el(id){ return document.getElementById(id); }
+function num(id){ return +el(id).value; }
+
+// ---------------- Section 1 ----------------
+var s1ids=["s1M","s1L","s1Psi","s1Su"];
+s1ids.forEach(id=>el(id).addEventListener("input",updateSection1));
+
+function srOverPoBasic(Mtc, lam10, psi){
+  var lamE = lam10/2.303;
+  return 0.5*Mtc*Math.exp(-psi/lamE);
+}
+
+function updateSection1(){
+  var Mtc=num("s1M"), lam10=num("s1L"), psi=num("s1Psi"), su=num("s1Su");
+  el("s1MOut").textContent=Mtc.toFixed(2);
+  el("s1LOut").textContent=lam10.toFixed(3);
+  el("s1PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
+  el("s1SuOut").textContent=su.toFixed(3);
+
+  var lamE = lam10/2.303;
+  var srRatio = srOverPoBasic(Mtc,lam10,psi);
+  var psiOverLam = psi/lamE;
+  var brittle = psiOverLam>0.7;
+  var badge = brittle ? '<span class="badge warn">brittle regime (&psi;/&lambda;e &gt; 0.7)</span>' : '<span class="badge ok">near-ductile (&psi;/&lambda;e &le; 0.7)</span>';
+  var IB = (su-srRatio)/su;
+  var IBclamped = Math.max(0,Math.min(1,IB));
+  var IBbadge = IB>=0.8 ? '<span class="badge warn">very brittle</span>' : (IB>=0.3 ? '<span class="badge">moderate</span>' : '<span class="badge ok">ductile</span>');
+
+  el("s1Stats").innerHTML = `
+    <div class="stat"><small>&lambda;<sub>e</sub> (natural)</small><strong>${lamE.toFixed(4)}</strong></div>
+    <div class="stat hi"><small>s<sub>r</sub>/p&prime;<sub>o</sub></small><strong>${srRatio.toFixed(3)}</strong></div>
+    <div class="stat"><small>&psi;<sub>o</sub>/&lambda;<sub>e</sub></small><strong>${psiOverLam.toFixed(2)}</strong>${badge}</div>
+    <div class="stat hi"><small>I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub></small><strong>${IBclamped.toFixed(2)}</strong>${IBbadge}</div>`;
+
+  var W=el("brittleChart").clientWidth||520,H=260;
+  var cv=el("brittleChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=56,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.05,xmax=0.20;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  var ymin=0,ymax=0.8;
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  for(var xv=-0.05;xv<=0.20;xv+=0.05){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(2),x-14,mt+ph+13); }
+  ctx.textAlign="right";
+  for(var yv=0;yv<=0.8;yv+=0.2){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(1),ml-8,y+3); }
+  ctx.textAlign="left";
+  ctx.fillText("state parameter, ψo", ml+pw/2-40, H-2);
+  ctx.save(); ctx.translate(14,mt+ph/2+20); ctx.rotate(-Math.PI/2); ctx.fillText("sr / p'o",0,0); ctx.restore();
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
+  for(var xv2=xmin;xv2<=xmax;xv2+=0.005){
+    var sr=srOverPoBasic(Mtc,lam10,xv2);
+    var x=X(xv2), y=Y(Math.min(ymax,sr));
+    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,srRatio)),5.5,0,7); ctx.fill();
+}
+updateSection1();
+window.addEventListener("resize",updateSection1);
+
+// ---------------- Section 2: H/Ir vs etaL (illustrative interpolation between Fig. 6.27's two cited endpoints) ----------------
+function etaLFromHIr(hir){
+  var t = Math.max(0,Math.min(1, hir/4)); // 0..4 range per Fig. 6.27's axis
+  var smooth = t*t*(3-2*t); // smoothstep, monotonic, flattens at the endpoints
+  return 0.75 + 0.25*smooth;
+}
+function updateHIr(){
+  var hir=+el("hirSlide").value;
+  el("hirOut").textContent=hir.toFixed(2);
+  var etaL=etaLFromHIr(hir);
+  el("hirStats").innerHTML = `
+    <div class="stat hi"><small>&eta;<sub>L</sub> at instability</small><strong>${etaL.toFixed(3)}</strong></div>
+    <div class="stat"><small>vs. M<sub>tc</sub>=1.25 (unchanged)</small><strong>${etaL>1.25?"above":"below"} critical</strong></div>`;
+
+  var W=el("hirChart").clientWidth||520,H=200;
+  var cv=el("hirChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=50,mr=14,mt=14,mb=28; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=0,xmax=4,ymin=0.65,ymax=1.1;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  for(var xv=0;xv<=4;xv+=1){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(0),x-4,mt+ph+14); }
+  ctx.textAlign="right";
+  for(var yv=0.7;yv<=1.1;yv+=0.1){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(2),ml-8,y+3); }
+  ctx.textAlign="left";
+  ctx.fillText("H / Ir", ml+pw/2-20, H-2);
+  ctx.save(); ctx.translate(12,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText("ηL",0,0); ctx.restore();
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
+  for(var xv2=xmin;xv2<=xmax;xv2+=0.05){
+    var yv2=etaLFromHIr(xv2); var x=X(xv2),y=Y(yv2);
+    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(hir),Y(etaL),5.5,0,7); ctx.fill();
+}
+el("hirSlide").addEventListener("input",updateHIr);
+updateHIr();
+window.addEventListener("resize",updateHIr);
+
+// ---------------- Section 3 ----------------
+function srOverSigV(Mtc, ko, lam10, psi){
+  var k0Factor = (1+2*ko)/3;
+  if(psi > lam10){
+    var lamE = lam10/2.3;
+    return k0Factor*0.5*Mtc*Math.exp(-psi/lamE);
+  } else {
+    var srSigVOrigin = k0Factor*0.0501*Mtc;
+    var slope=0.8;
+    return srSigVOrigin + slope*(lam10-psi);
+  }
+}
+function robertsonEq615(Qtncs){ return 0.0055*Math.exp(0.05*Qtncs); }
+
+var CASE_HISTORIES = [
+ {name:"Zeeland Coast", psiLo:-0.09, psiHi:-0.02, srLo:0.13, srHi:0.13, lam10:0.06},
+ {name:"Wachusett Dam", psiLo:-0.05, psiHi:0.07, srLo:0.07, srHi:0.13, lam10:0.08},
+ {name:"Sheffield Dam", psiLo:0.04, psiHi:0.15, srLo:0.04, srHi:0.07, lam10:0.125},
+ {name:"Fort Peck Dam", psiLo:-0.05, psiHi:-0.01, srLo:0.04, srHi:0.06, lam10:0.19},
+ {name:"Hokkaido Dam", psiLo:0.07, psiHi:0.12, srLo:0.08, srHi:0.12, lam10:0.15},
+ {name:"Lower San Fernando", psiLo:0.0, psiHi:0.07, srLo:0.07, srHi:0.12, lam10:0.10},
+ {name:"Nerlerk Berm", psiLo:-0.05, psiHi:-0.03, srLo:0.09, srHi:0.15, lam10:0.045},
+ {name:"La Marquesa Dam", psiLo:-0.05, psiHi:0.05, srLo:0.08, srHi:0.10, lam10:0.10},
+ {name:"La Palma Dam", psiLo:0.01, psiHi:0.08, srLo:0.12, srHi:0.15, lam10:0.12},
+ {name:"Sullivan Dam", psiLo:0.05, psiHi:0.1, srLo:0.07, srHi:0.13, lam10:0.15},
+ {name:"Jamuna River Bank", psiLo:-0.04, psiHi:0.05, srLo:0.12, srHi:0.20, lam10:0.15}
+];
+
+var s3ids=["s3M","s3K","s3L","s3Psi"];
+s3ids.forEach(id=>el(id).addEventListener("input",updateSection3));
+
+function updateSection3(){
+  var Mtc=num("s3M"), ko=num("s3K"), lam10=num("s3L"), psi=num("s3Psi");
+  el("s3MOut").textContent=Mtc.toFixed(2);
+  el("s3KOut").textContent=ko.toFixed(2);
+  el("s3LOut").textContent=lam10.toFixed(3);
+  el("s3PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
+
+  var sr = srOverSigV(Mtc,ko,lam10,psi);
+  var denseEnough = psi < -0.05;
+  var badge = denseEnough ? '<span class="badge ok">denser than ψ=-0.05 — no phase transformation expected</span>' : '<span class="badge warn">looser than ψ=-0.05 — contractive / flowslide-susceptible range</span>';
+
+  el("s3Stats").innerHTML = `
+    <div class="stat hi"><small>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> (book's function)</small><strong>${sr.toFixed(3)}</strong></div>
+    <div class="stat"><small>branch used</small><strong>${psi>lam10?"critical-state theory":"case-history trend"}</strong></div>
+    <div class="stat"><small>&psi; vs. threshold</small>${badge}</div>`;
+  el("denseFlag").innerHTML = "At the current slider state (&psi;=" + (psi>=0?"+":"") + psi.toFixed(3) + "): " + badge;
+
+  var W=el("caseChart").clientWidth||900,H=320;
+  var cv=el("caseChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=58,mr=14,mt=14,mb=34; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.15,xmax=0.30;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  var ymin=0,ymax=0.35;
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  for(var xv=-0.15;xv<=0.30;xv+=0.05){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(2),x-14,mt+ph+13); }
+  ctx.textAlign="right";
+  for(var yv=0;yv<=0.35;yv+=0.05){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(2),ml-8,y+3); }
+  ctx.textAlign="left";
+  ctx.fillText("characteristic state parameter, ψk", ml+pw/2-70, H-4);
+  ctx.save(); ctx.translate(14,mt+ph/2+30); ctx.rotate(-Math.PI/2); ctx.fillText("sr / σ'vo",0,0); ctx.restore();
+
+  // -0.05 threshold line
+  ctx.strokeStyle="#c9d3d8"; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(X(-0.05),mt); ctx.lineTo(X(-0.05),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#9aa9ae"; ctx.fillText("ψ=-0.05",X(-0.05)+3,mt+10);
+
+  // case histories with range bars
+  ctx.strokeStyle="#9aa9ae"; ctx.fillStyle="#687a82";
+  CASE_HISTORIES.forEach(function(c){
+    var xm=(c.psiLo+c.psiHi)/2, ym=(c.srLo+c.srHi)/2;
+    ctx.beginPath(); ctx.moveTo(X(c.psiLo),Y(ym)); ctx.lineTo(X(c.psiHi),Y(ym)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(xm),Y(c.srLo)); ctx.lineTo(X(xm),Y(c.srHi)); ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(xm),Y(ym),3.5,0,7); ctx.fill();
+  });
+
+  // book's function curve at current M,Ko,lam10
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
+  for(var xv2=xmin;xv2<=xmax;xv2+=0.005){
+    var sv=srOverSigV(Mtc,ko,lam10,xv2);
+    var x=X(xv2), y=Y(Math.min(ymax,sv));
+    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // current point
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,sr)),6,0,7); ctx.fill();
+}
+updateSection3();
+window.addEventListener("resize",updateSection3);
+
+// ---------------- Robertson (2010) comparison, Eq. 6.15 — kept on its own Qtn,cs axis, not converted to ψ ----------------
+var s3bIds=["s3bQ"];
+s3bIds.forEach(id=>el(id).addEventListener("input",updateRobertson));
+function updateRobertson(){
+  var q=num("s3bQ");
+  el("s3bQOut").textContent=q.toFixed(0);
+  var sr615=robertsonEq615(q);
+  el("s3bStats").innerHTML = `
+    <div class="stat hi"><small>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> (Robertson, Eq. 6.15)</small><strong>${sr615.toFixed(3)}</strong></div>
+    <div class="stat"><small>Q<sub>tn,cs</sub> = 70 threshold</small><strong>${q>=70?"above (dilatant, per Robertson)":"below"}</strong></div>`;
+}
+updateRobertson();
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

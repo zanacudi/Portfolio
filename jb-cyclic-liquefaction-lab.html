@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 4)</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+canvas{display:block;width:100%;height:270px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.readout{color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.statgrid.n3{grid-template-columns:repeat(3,1fr)}
+.statgrid.n2{grid-template-columns:repeat(2,1fr)}
+.stat{background:#f2f7f9;padding:10px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
+.stat strong{font-size:15px}
+.stat.hi strong{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.warn{background:#fdeee9;color:var(--red)}
+.badge.ok{background:#e9f6ef;color:var(--green)}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.sources{font-size:11px;color:var(--muted);line-height:1.6}
+.sources a{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table.notation{min-width:640px}
+table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
+table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>Soil Liquefaction: A Critical State Approach — Interactive Companion</h1>
+<p><b>Module 4: Cyclic Liquefaction, and From Theory to Design Practice</b> (Chapters 7 &amp; 9). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press. Completes the Jefferies &amp; Been series that began with <a href="jb-critical-state-lab.html">Module 1</a>, <a href="jb-insitu-state-lab.html">Module 2</a> and <a href="jb-static-liquefaction-lab.html">Module 3</a> — see also the companion <a href="cpt-guide-lab.html">Guide to Cone Penetration Testing module</a>.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>About this module</h2>
+<div class="explain">
+<p>Module 3 covered static liquefaction — a soil failing under its own sustained load. This module covers <b>cyclic</b> liquefaction: repeated earthquake loading progressively building pore pressure until strength is lost, then asks the practical question every project eventually reaches — how do you actually turn triaxial and CPT data into a defensible design number?</p>
+</div>
+</div>
+
+<div class="card">
+<h2>Notation used in this module</h2>
+<p class="explain" style="font-size:12px">Symbols in roughly the order they first appear below — use this as a lookup while reading Chapters 7 &amp; 9.</p>
+<div style="overflow-x:auto"><table class="notation">
+<tr><td><b>CSR</b></td><td>cyclic stress ratio, &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub> — the earthquake's demand on the soil</td><td><b>K<sub>&sigma;</sub></b></td><td>stress-level correction factor (turns out to be redundant once working in &psi; directly — Section 2)</td></tr>
+<tr><td><b>CRR</b></td><td>cyclic resistance ratio — the CSR at which liquefaction is triggered (the soil's capacity)</td><td><b>K<sub>&alpha;</sub></b></td><td>sloping-ground/static-bias correction factor</td></tr>
+<tr><td><b>&tau;<sub>cyc</sub></b></td><td>equivalent uniform cyclic shear stress from an earthquake</td><td><b>N<sub>L</sub></b></td><td>number of uniform stress cycles to cause liquefaction in a lab test</td></tr>
+<tr><td><b>M</b></td><td>earthquake moment magnitude</td><td><b>(N<sub>1</sub>)<sub>60</sub></b></td><td>SPT blow count, corrected for hammer energy (60%) and overburden stress</td></tr>
+<tr><td><b>K<sub>M</sub></b></td><td>magnitude scaling factor — adjusts CRR<sub>7.5</sub> to earthquakes other than M=7.5</td><td><b>&psi;<sub>k</sub></b></td><td>characteristic (design) state parameter, from Module 2</td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h2>1. The classical framework: CRR, magnitude scaling, and two "fudge factors"</h2>
+<div class="explain"><p>The dominant liquefaction-assessment method in practice — what the book calls the <b>Berkeley School</b> approach (Seed and co-workers) — is built entirely from case histories: plot earthquake-induced cyclic stress ratio (CSR = &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub>) against penetration resistance for sites that did and didn't liquefy, and draw a boundary (the CRR). That boundary is calibrated for M=7.5 earthquakes and near-level ground, so it needs correction factors to use elsewhere:</p></div>
+<div class="eq">CRR = CRR<sub>7.5</sub>&middot;K<sub>M</sub>&middot;K<sub>&sigma;</sub>&middot;K<sub>&alpha;</sub> &nbsp; (Eq. 7.4)</div>
+
+<div class="grid2">
+<div>
+<label style="font-size:12.5px;font-weight:700">Earthquake magnitude, M <span class="readout" id="s1MwOut">7.5</span></label><br>
+<input id="s1Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5" style="width:100%;accent-color:var(--blue)">
+<div class="statgrid n2" id="s1Stats"></div>
+<p class="explain" style="font-size:12px;margin-top:8px">K<sub>M</sub> values are the book's tabulated magnitude scaling factors (Fig. 7.32, Seed &amp; Idriss 1982), interpolated between the five published points.</p>
+</div>
+<div><canvas id="kmChart"></canvas></div>
+</div>
+
+<div class="callout"><b>K<sub>&sigma;</sub> and K<sub>&alpha;</sub> are where the classical method gets murky.</b> K<sub>&sigma;</sub> (the stress-level correction) has had wildly different recommendations from different workers (Figs. 7.36&ndash;7.37) because it's treated as a geological curve-fit rather than mechanics. K<sub>&alpha;</sub> (the sloping-ground/static-bias correction) is worse: the book shows it depends on principal stress rotation in a way that "cannot give simple trends" — project-specific NorSand simulation is recommended instead of a formula. Section 2 shows why K<sub>&sigma;</sub> in particular turns out to be unnecessary.</div>
+</div>
+
+<div class="card">
+<h2>2. The state parameter view — and why K<sub>&sigma;</sub> disappears</h2>
+<div class="explain"><p>The book's real contribution here: reprocessing the same case-history database (Moss 2003's Class A records) directly in terms of &psi;<sub>k</sub> instead of penetration resistance produces a strikingly clean boundary — and the reason K<sub>&sigma;</sub> exists at all turns out to be that <b>a soil at constant density has a different &psi; at different depths</b> (deeper = higher stress = smaller &psi;, Eq. 2.1). Once you use &psi; directly, that stress-level dependence is already built in and K<sub>&sigma;</sub> becomes unnecessary — the book shows computed K<sub>&sigma;</sub>-from-&psi; curves overlay published empirical K<sub>&sigma;</sub> curves almost exactly (Fig. 7.44).</p></div>
+<div class="eq">CRR<sub>7.5</sub> = 0.06&middot;exp(&minus;9&middot;&psi;<sub>k</sub>) &nbsp; (Eq. 7.5)</div>
+
+<div class="grid2">
+<div>
+<div class="slider-block"><label>Characteristic state parameter, &psi;<sub>k</sub> <span class="readout" id="s2PsiOut">-0.10</span></label><input id="s2Psi" type="range" min="-0.25" max="0.05" step="0.001" value="-0.10"></div>
+<div class="slider-block"><label>Site CSR<sub>7.5</sub> (design earthquake) <span class="readout" id="s2CsrOut">0.15</span></label><input id="s2Csr" type="range" min="0" max="0.45" step="0.005" value="0.15"></div>
+<div class="statgrid n2" id="s2Stats"></div>
+</div>
+<div><canvas id="crrPsiChart"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>CRR7.5=0.06exp(-9ψk), Eq. 7.5</span><span><i style="background:var(--green)"></i>real case: no liquefaction</span><span><i style="background:var(--red)"></i>real case: liquefaction</span><span><i style="background:#123b4a;border-radius:50%"></i>current site</span></div>
+</div>
+</div>
+
+<h3>Watch K<sub>&sigma;</sub> disappear</h3>
+<div class="explain"><p>Same D<sub>R</sub>, same soil, two depths. In the classical framework you'd read CRR off a penetration-resistance chart at each depth, then divide to get an empirical K<sub>&sigma;</sub> factor. Here, compute &psi; at each depth directly from the CSL (same real Table 2.1 database as Module 1) and feed both straight into Eq. 7.5 &mdash; no separate correction factor needed:</p></div>
+<div class="grid3">
+<div><label style="font-size:12.5px;font-weight:700">Sand (Table 2.1)</label><br><select id="ksSand"></select></div>
+<div class="slider-block"><label>Relative density, D<sub>R</sub> (%) &mdash; held fixed at both depths <span class="readout" id="ksDrOut">50</span></label><input id="ksDr" type="range" min="10" max="90" step="1" value="50"></div>
+</div>
+<div class="statgrid n3" id="ksStats"></div>
+<div class="callout" id="ksNote"></div>
+</div>
+
+<div class="card">
+<h2>3. From lab data to a design CRR curve</h2>
+<div class="explain"><p>For a project-specific soil, Chapter 9 recommends fitting your own cyclic simple shear (CSS) test results (CSR vs. cycles-to-liquefaction N<sub>L</sub>, at several &psi;) to a simple linear trend rather than an automated regression, then combining it with the magnitude scaling from Section 1:</p></div>
+<div class="eq">CRR = (a &minus; b&middot;&psi;<sub>o</sub>)&middot;K<sub>M</sub> &nbsp; (Eq. 9.9, combined with the K<sub>M</sub> lookup from Section 1)</div>
+<p class="explain" style="font-size:12px">Defaults (a=0.04, b=0.8) are the book's own illustrative fit to real cyclic simple shear data at N<sub>L</sub>=15 (Fig. 9.14) — for an actual project these come from your own CSS testing, not these numbers. N<sub>L</sub>=15 &harr; M=7.5, N<sub>L</sub>=10 &harr; M=7.0, N<sub>L</sub>=6 &harr; M=6.0 (the book's guideline mapping used to select which CSS cycle-count to test at).</p>
+
+<div class="grid4">
+<div class="slider-block"><label>a (CRR at &psi;=0) <span class="readout" id="s3aOut">0.040</span></label><input id="s3a" type="range" min="0.02" max="0.15" step="0.002" value="0.04"></div>
+<div class="slider-block"><label>b (slope) <span class="readout" id="s3bOut">0.80</span></label><input id="s3b" type="range" min="0.2" max="1.5" step="0.02" value="0.80"></div>
+<div class="slider-block"><label>&psi;<sub>o</sub> <span class="readout" id="s3PsiOut">-0.12</span></label><input id="s3Psi" type="range" min="-0.25" max="0.05" step="0.001" value="-0.12"></div>
+<div class="slider-block"><label>Design magnitude, M <span class="readout" id="s3MwOut">7.5</span></label><input id="s3Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5"></div>
+</div>
+<div class="statgrid n3" id="s3Stats"></div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> Section 1's K<sub>M</sub> values are the five points tabulated in Fig. 7.32 (Seed &amp; Idriss 1982), linearly interpolated between them — the book doesn't give a closed-form K<sub>M</sub>(M) equation, only these tabulated points, so no functional form is invented. Section 2 uses Eq. 7.5 exactly as published; the 20 real case-history points plotted are Class A records transcribed from Table 7.3 (&psi;<sub>k</sub>, CSR<sub>7.5</sub>, and the observed liquefaction outcome), and every point's classification was checked against Eq. 7.5's predicted CRR before plotting. Section 3's combination of Eq. 9.9 with the Section 1 K<sub>M</sub> lookup is this tool's own synthesis of two separately-presented pieces of the book (design CRR-&psi; trend, and magnitude scaling) — the book doesn't state this combined formula explicitly, though both halves are exactly as published and the combination follows directly from Eq. 7.4's structure. K<sub>&sigma;</sub> and K<sub>&alpha;</sub> are deliberately not implemented as calculators: the book shows K<sub>&sigma;</sub> is redundant once working in &psi; (Section 2), and states outright that K<sub>&alpha;</sub> "cannot give simple trends" without project-specific NorSand modelling.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+function el(id){ return document.getElementById(id); }
+function num(id){ return +el(id).value; }
+
+// ---------------- Section 1: KM lookup ----------------
+var KM_PTS = [[5.25,1.5],[6.0,1.32],[6.75,1.13],[7.5,1.0],[8.5,0.89]];
+function KM(mw){
+  if(mw<=KM_PTS[0][0]) return KM_PTS[0][1];
+  if(mw>=KM_PTS[KM_PTS.length-1][0]) return KM_PTS[KM_PTS.length-1][1];
+  for(var i=0;i<KM_PTS.length-1;i++){
+    var p0=KM_PTS[i], p1=KM_PTS[i+1];
+    if(mw>=p0[0] && mw<=p1[0]){
+      var f=(mw-p0[0])/(p1[0]-p0[0]);
+      return p0[1]+f*(p1[1]-p0[1]);
+    }
+  }
+}
+function drawAxes(ctx,ml,mt,pw,ph,xmin,xmax,xstep,ymin,ymax,ystep,xlab,ylab,xfix,yfix){
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  for(var xv=xmin;xv<=xmax+1e-9;xv+=xstep){
+    var x=ml+pw*(xv-xmin)/(xmax-xmin);
+    ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke();
+    ctx.fillText(xv.toFixed(xfix),x-12,mt+ph+13);
+  }
+  ctx.textAlign="right";
+  for(var yv=ymin;yv<=ymax+1e-9;yv+=ystep){
+    var y=mt+ph*(1-(yv-ymin)/(ymax-ymin));
+    ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();
+    ctx.fillText(yv.toFixed(yfix),ml-8,y+3);
+  }
+  ctx.textAlign="left";
+  ctx.fillText(xlab, ml+pw/2-40, mt+ph+28);
+  if(ylab){ ctx.save(); ctx.translate(14,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText(ylab,0,0); ctx.restore(); }
+}
+
+function updateSection1(){
+  var mw=num("s1Mw");
+  el("s1MwOut").textContent=mw.toFixed(2);
+  var km=KM(mw);
+  el("s1Stats").innerHTML = `
+    <div class="stat hi"><small>K<sub>M</sub></small><strong>${km.toFixed(3)}</strong></div>
+    <div class="stat"><small>CRR = CRR<sub>7.5</sub>&times;K<sub>M</sub></small><strong>&times;${km.toFixed(2)}</strong></div>`;
+
+  var W=el("kmChart").clientWidth||520,H=270;
+  var cv=el("kmChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=56,mr=14,mt=14,mb=34; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=5,xmax=8.75,ymin=0.7,ymax=1.6;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  drawAxes(ctx,ml,mt,pw,ph,5.25,8.5,0.5,0.8,1.6,0.2,"magnitude, M","KM",1,1);
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
+  for(var i=0;i<KM_PTS.length;i++){ var x=X(KM_PTS[i][0]),y=Y(KM_PTS[i][1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  ctx.fillStyle="#1479b8";
+  KM_PTS.forEach(function(p){ ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),4,0,7); ctx.fill(); });
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(mw),Y(km),6,0,7); ctx.fill();
+}
+el("s1Mw").addEventListener("input",updateSection1);
+updateSection1();
+window.addEventListener("resize",function(){updateSection1();updateSection2();updateSection3();});
+
+// ---------------- Section 2 ----------------
+var CASE_PTS = [
+ {psi:-0.140,csr:0.16,liq:false},{psi:-0.155,csr:0.15,liq:false},{psi:-0.156,csr:0.17,liq:false},
+ {psi:-0.142,csr:0.16,liq:false},{psi:-0.164,csr:0.17,liq:false},{psi:-0.118,csr:0.14,liq:false},
+ {psi:-0.154,csr:0.17,liq:false},{psi:-0.164,csr:0.08,liq:false},{psi:-0.094,csr:0.10,liq:false},
+ {psi:-0.182,csr:0.15,liq:false},{psi:-0.012,csr:0.07,liq:false},
+ {psi:0.013,csr:0.23,liq:true},{psi:0.067,csr:0.21,liq:true},{psi:-0.069,csr:0.26,liq:true},
+ {psi:-0.006,csr:0.18,liq:true},{psi:-0.006,csr:0.18,liq:true},{psi:-0.128,csr:0.19,liq:true},
+ {psi:-0.098,csr:0.16,liq:true},{psi:-0.094,csr:0.16,liq:true},{psi:-0.082,csr:0.25,liq:true}
+];
+function crrEq75(psi){ return 0.06*Math.exp(-9*psi); }
+
+function updateSection2(){
+  var psi=num("s2Psi"), csr=num("s2Csr");
+  el("s2PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
+  el("s2CsrOut").textContent=csr.toFixed(3);
+  var crr=crrEq75(psi);
+  var willLiq = csr>crr;
+  var badge = willLiq ? '<span class="badge warn">CSR &gt; CRR — predicted liquefaction</span>' : '<span class="badge ok">CSR &lt; CRR — predicted no liquefaction</span>';
+  el("s2Stats").innerHTML = `
+    <div class="stat hi"><small>CRR<sub>7.5</sub> (Eq. 7.5)</small><strong>${crr.toFixed(3)}</strong></div>
+    <div class="stat">${badge}</div>`;
+
+  var W=el("crrPsiChart").clientWidth||520,H=270;
+  var cv=el("crrPsiChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=56,mr=14,mt=14,mb=34; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.25,xmax=0.10,ymin=0,ymax=0.45;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  drawAxes(ctx,ml,mt,pw,ph,-0.25,0.10,0.05,0,0.45,0.1,"state parameter, ψk","CRR / CSR",2,1);
+
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
+  for(var xv=xmin;xv<=xmax;xv+=0.003){
+    var c=crrEq75(xv); var x=X(xv),y=Y(Math.min(ymax,c));
+    if(xv===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  CASE_PTS.forEach(function(p){
+    ctx.fillStyle = p.liq ? "#c64852" : "#2d8b65";
+    ctx.beginPath(); ctx.arc(X(p.psi),Y(p.csr),4,0,7); ctx.fill();
+  });
+
+  ctx.fillStyle="#123b4a"; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,csr)),6.5,0,7); ctx.fill();
+  ctx.strokeStyle="#fff"; ctx.lineWidth=1.5; ctx.stroke();
+}
+el("s2Psi").addEventListener("input",updateSection2);
+el("s2Csr").addEventListener("input",updateSection2);
+updateSection2();
+
+// ---------------- Section 2b: Kσ emerges from ψ at two depths (Table 2.1 database, shared with Module 1) ----------------
+var KS_SANDS = [
+ {name:"Brasted sand",emax:0.792,emin:0.475,Gamma:0.912,lambda10:0.050},
+ {name:"Ottawa sand",emax:0.79,emin:0.49,Gamma:0.754,lambda10:0.028},
+ {name:"Ticino sand",emax:0.89,emin:0.60,Gamma:0.986,lambda10:0.056},
+ {name:"Toyoura sand",emax:0.873,emin:0.656,Gamma:1.000,lambda10:0.039},
+ {name:"Erksak 330/0.7 sand",emax:0.747,emin:0.521,Gamma:0.816,lambda10:0.031},
+ {name:"Kogyuk 350/2 sand",emax:0.83,emin:0.47,Gamma:0.844,lambda10:0.064},
+ {name:"Chek Lap Kok sand",emax:0.682,emin:0.411,Gamma:0.905,lambda10:0.130},
+ {name:"Northwest Brook Pit sand",emax:0.682,emin:0.392,Gamma:0.665,lambda10:0.036}
+];
+var ksSandSel=el("ksSand");
+ksSandSel.innerHTML = KS_SANDS.map((s,i)=>`<option value="${i}"${i===4?" selected":""}>${s.name}</option>`).join("");
+function ksEcAt(sand,p){ return sand.Gamma - sand.lambda10*Math.log10(p); }
+function updateKs(){
+  var sand=KS_SANDS[+ksSandSel.value];
+  var dr=+el("ksDr").value;
+  el("ksDrOut").textContent=dr.toFixed(0);
+  var e = sand.emax - (dr/100)*(sand.emax-sand.emin);
+  var pShallow=100, pDeep=400;
+  var psiShallow = e - ksEcAt(sand,pShallow);
+  var psiDeep = e - ksEcAt(sand,pDeep);
+  var crrShallow = crrEq75(psiShallow);
+  var crrDeep = crrEq75(psiDeep);
+  var impliedKsigma = crrDeep/crrShallow;
+  el("ksStats").innerHTML = `
+    <div class="stat"><small>&psi; at &sigma;&prime;<sub>v</sub>=${pShallow} / ${pDeep} kPa</small><strong>${psiShallow>=0?"+":""}${psiShallow.toFixed(3)} / ${psiDeep>=0?"+":""}${psiDeep.toFixed(3)}</strong></div>
+    <div class="stat"><small>CRR<sub>7.5</sub> at each (Eq. 7.5)</small><strong>${crrShallow.toFixed(3)} / ${crrDeep.toFixed(3)}</strong></div>
+    <div class="stat hi"><small>implied K<sub>&sigma;</sub> = CRR<sub>deep</sub>/CRR<sub>shallow</sub></small><strong>${impliedKsigma.toFixed(2)}</strong></div>`;
+  el("ksNote").innerHTML = "Same D<sub>R</sub>=" + dr.toFixed(0) + "% at both depths, yet the strength ratio at " + pDeep + " kPa comes out to " + impliedKsigma.toFixed(2) + "&times; the strength at " + pShallow + " kPa &mdash; a K<sub>&sigma;</sub>-like effect (typically &lt;1, decreasing with depth) that fell straight out of using &psi; directly. No separate K<sub>&sigma;</sub> curve was consulted.";
+}
+["ksDr"].forEach(id=>el(id).addEventListener("input",updateKs));
+ksSandSel.addEventListener("change",updateKs);
+updateKs();
+
+// ---------------- Section 3 ----------------
+function updateSection3(){
+  var a=num("s3a"), b=num("s3b"), psi=num("s3Psi"), mw=num("s3Mw");
+  el("s3aOut").textContent=a.toFixed(3);
+  el("s3bOut").textContent=b.toFixed(2);
+  el("s3PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
+  el("s3MwOut").textContent=mw.toFixed(2);
+
+  var crr15 = a - b*psi;
+  var km = KM(mw);
+  var crrDesign = crr15*km;
+
+  el("s3Stats").innerHTML = `
+    <div class="stat"><small>CRR (N<sub>L</sub>=15, M=7.5)</small><strong>${crr15.toFixed(3)}</strong></div>
+    <div class="stat"><small>K<sub>M</sub> at M=${mw.toFixed(2)}</small><strong>${km.toFixed(3)}</strong></div>
+    <div class="stat hi"><small>design CRR</small><strong>${crrDesign.toFixed(3)}</strong></div>`;
+}
+["s3a","s3b","s3Psi","s3Mw"].forEach(id=>el(id).addEventListener("input",updateSection3));
+updateSection3();
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

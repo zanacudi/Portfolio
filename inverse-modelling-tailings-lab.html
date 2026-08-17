@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inverse Modelling of Tailings Volume Change — Interactive Companion</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:24px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:900px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:14px;color:var(--navy);margin:0 0 8px}
+.explain{font-size:13px;line-height:1.55}
+.eq{background:#f8fafb;border-left:4px solid var(--cyan);padding:9px 11px;margin:8px 0;font-family:"Cambria Math","Times New Roman",serif;font-size:14.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+canvas{display:block;width:100%;height:260px}
+.legend{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;font-size:11px;margin-top:5px}
+.key{display:flex;align-items:center;gap:5px}
+.sw{width:16px;height:3px;display:inline-block}
+.sw.dot{width:8px;height:8px;border-radius:50%}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+button.alt{background:#687a82}
+button.green{background:var(--green)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.controls-row{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:10px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.slider-block small{color:var(--muted);font-size:11px}
+.readout{font-variant-numeric:tabular-nums;color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.stat{background:#f2f7f9;padding:9px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px}
+.stat strong{font-size:15px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase}
+.hidden-val{filter:blur(4px);user-select:none}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.5;margin-top:12px}
+.sources{font-size:11px;color:var(--muted);line-height:1.5}
+.sources a{color:var(--blue)}
+@media(max-width:820px){.grid2,.grid3{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>Inverse Modelling of Saturated&ndash;Unsaturated Volume Change of Tailings</h1>
+<p>An interactive companion to Taher, Scalia &amp; Bareither (2024), <em>International Journal of Geotechnical Engineering</em>, 18:7&ndash;10, 788&ndash;801. <a href="https://doi.org/10.1080/19386362.2024.2435447" target="_blank" rel="noopener">doi.org/10.1080/19386362.2024.2435447</a></p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>What this paper actually does</h2>
+<div class="explain">
+<p>Tailings columns settle over time as excess pore water drains and the material consolidates under its own weight. That process can be <b>forward-modelled</b> if you already know two constitutive relationships from lab tests: how void ratio changes with effective stress, and how hydraulic conductivity changes with void ratio. The problem is that when you only have field sensors (not lab tests), the hydraulic conductivity relationship &mdash; specifically two fitting parameters, <b>C</b> and <b>D</b> &mdash; is very hard to measure directly, especially at the very high void ratios found in freshly deposited tailings.</p>
+<p>This paper's contribution is an <b>inverse model</b>: start from a full physics-based forward model (built on the PDE below, solved in MATLAB with <code>PDEPE</code>), then wrap it in a nonlinear least-squares optimizer (<code>LSQNONLIN</code>, trust-region-reflective algorithm) that searches for the values of C and D that make the model's predicted settlement curve match a real measured curve. Below, you get to be the optimizer: drag the sliders for C and D yourself and watch the predicted curve chase the "measured" data, then compare your answer to the actual back-calculated values reported in the paper's Tables 4 and 5.</p>
+<details><summary style="cursor:pointer;font-weight:700;color:var(--navy)">Governing equations (click to expand)</summary>
+<div class="eq">Void ratio &ndash; effective stress: e = A(|&sigma; &minus; u<sub>e</sub>| + Z)<sup>B</sup> &nbsp;&nbsp;(Eq. 2)</div>
+<div class="eq">Hydraulic conductivity &ndash; void ratio: k<sub>sat</sub> = C&middot;(e)<sup>D</sup> &nbsp;&nbsp;(Eq. 3) &mdash; <b>C and D are what you're solving for below</b></div>
+<div class="eq">Governing PDE (self-weight consolidation): 1/(1+e<sub>0</sub>) &middot; &part;e/&part;u<sub>e</sub> &middot; &part;u<sub>e</sub>/&part;t = &part;/&part;y (k &middot; (1/&gamma;<sub>w</sub>) &middot; (&part;u<sub>e</sub>/&part;y)<sup>gce</sup>) &nbsp;&nbsp;(Eq. 1)</div>
+<p style="color:var(--muted)">The full study solves Eq. 1 directly with a finite-element PDE solver. The interactive tool below uses a calibrated closed-form approximation instead (exact at the endpoints, physically anchored through Eqs. 2&ndash;3) so it can run instantly in a browser &mdash; see the disclaimer at the bottom.</p>
+</details>
+</div>
+</div>
+
+<div class="card">
+<h2>1. Choose a dataset</h2>
+<div class="controls-row">
+<div>
+<label style="font-size:12.5px;font-weight:700">Material / column test</label><br>
+<select id="material">
+<option value="SPWC">Saturated phosphatic waste clay &mdash; McVay, Townsend &amp; Bloomquist (1986)</option>
+<option value="SPAMFT">Saturated polymer-amended mature fine tailings &mdash; Soleimani et al. (2014)</option>
+</select>
+</div>
+<div id="boundsWrap">
+<label style="font-size:12.5px;font-weight:700">Parameter bounds (paper Table 4)</label><br>
+<select id="boundsMode">
+<option value="narrow">Narrow bounds &mdash; SPWC ii-2 (accurate)</option>
+<option value="wide">Wide bounds &mdash; SPWC ii-1 (paper shows this converges poorly)</option>
+</select>
+</div>
+</div>
+<p class="explain" id="materialBlurb"></p>
+</div>
+
+<div class="card">
+<h2>2. Constitutive relationships for this material</h2>
+<div class="grid2">
+<div><h3>Void ratio vs. effective stress (Eq. 2, fixed A, B, Z)</h3><canvas id="eSigmaChart"></canvas>
+<div class="legend"><span class="key"><i class="sw" style="background:#222"></i>e(&sigma;&prime;)</span></div></div>
+<div><h3>Hydraulic conductivity vs. void ratio (Eq. 3 &mdash; this is what C, D control)</h3><canvas id="keChart"></canvas>
+<div class="legend"><span class="key"><i class="sw" style="background:#888;border-top:2px dashed #888;height:0"></i>true k(e)</span><span class="key"><i class="sw" style="background:#1479b8"></i>your k(e)</span></div></div>
+</div>
+</div>
+
+<div class="card">
+<h2>3. Solve for C and D</h2>
+<p class="explain">The black &times; marks below are synthetic sensor measurements generated from the paper's actual reported parameters for this column test (with realistic noise added, standing in for the real published data). Drag the sliders until the blue curve fits the marks &mdash; that's exactly the problem the paper's inverse model solves automatically.</p>
+
+<div class="slider-block">
+<label>Parameter C (hydraulic conductivity scale) <span class="readout" id="cOut"></span></label>
+<input id="cSlider" type="range">
+<small id="cRange"></small>
+</div>
+<div class="slider-block">
+<label>Parameter D (hydraulic conductivity exponent) <span class="readout" id="dOut"></span></label>
+<input id="dSlider" type="range">
+<small id="dRange"></small>
+</div>
+
+<div class="buttons">
+<button id="resetBtn" class="alt">Reset to paper's initial guess</button>
+<button id="optimizeBtn">Run auto-optimize (trust-region-style search)</button>
+<button id="revealBtn" class="green">Reveal actual parameters</button>
+</div>
+
+<canvas id="mainChart" style="height:340px;margin-top:14px"></canvas>
+<div class="legend">
+<span class="key"><i class="sw dot" style="background:#222"></i>synthetic measurements</span>
+<span class="key"><i class="sw" style="background:#1479b8"></i>your model</span>
+<span class="key" id="trueLegend" style="display:none"><i class="sw" style="background:#c64852;border-top:2px dashed #c64852;height:0"></i>true model</span>
+</div>
+
+<div class="statgrid">
+<div class="stat"><small>Sum of squared errors</small><strong id="sseOut">&ndash;</strong></div>
+<div class="stat"><small>R&sup2; (fit quality)</small><strong id="r2Out">&ndash;</strong></div>
+<div class="stat"><small>Auto-optimize iterations</small><strong id="iterOut">&ndash;</strong></div>
+<div class="stat"><small>Status</small><strong id="statusOut">Adjust sliders</strong></div>
+</div>
+
+<table>
+<thead><tr><th>Parameter</th><th>Your value</th><th>Actual (paper)</th><th>% of actual</th></tr></thead>
+<tbody>
+<tr><td>C</td><td id="cYour">&ndash;</td><td class="hidden-val" id="cActual">&ndash;</td><td class="hidden-val" id="cPct">&ndash;</td></tr>
+<tr><td>D</td><td id="dYour">&ndash;</td><td class="hidden-val" id="dActual">&ndash;</td><td class="hidden-val" id="dPct">&ndash;</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card">
+<div class="warning"><b>Educational surrogate.</b> This tool does not re-implement the paper's finite-strain PDEPE/LSQNONLIN solution. The equilibrium (final) height is computed exactly from the actual A, B, Z, e&#8320;, G&#8347; and column height using Eq. 2, integrated over the solids coordinate &mdash; permeability doesn't affect the final settled height, only how fast it's reached. The settlement <em>rate</em> uses a calibrated closed-form curve whose sensitivity to C and D mirrors Eq. 3, tuned so the paper's actual parameters reproduce the reported column-test duration. Do not use this for design.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Taher, Z. J., Scalia, J., &amp; Bareither, C. A. (2024). One-dimensional inverse modelling of saturated-unsaturated volume change behaviour of tailings. <em>International Journal of Geotechnical Engineering</em>, 18(7&ndash;10), 788&ndash;801. <a href="https://doi.org/10.1080/19386362.2024.2435447" target="_blank" rel="noopener">https://doi.org/10.1080/19386362.2024.2435447</a></p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+// ---------- material presets (actual published values) ----------
+var MATERIALS = {
+  SPWC: {
+    label: "Saturated phosphatic waste clay (McVay, Townsend & Bloomquist 1986)",
+    blurb: "6.33 m tall slurry phosphate tailings column, 430-day self-weight consolidation test (Somogyi 1980 parameters).",
+    A: 12.19, Z: 0.000, B: -0.290, Gs: 2.710, e0: 18.80, gammaw: 9.810, H0: 6.33, Tdur: 430,
+    Ctrue: 1.41e-11, Dtrue: 4.110,
+    logTime: true, xMin: 0.01, xMax: 1000,
+    bounds: {
+      narrow: { Clo: 1.41e-12, Chi: 1.41e-10, Cguess: 1.50e-11, Dlo: 1.00, Dhi: 10.0, Dguess: 3.79 },
+      wide:   { Clo: 1.41e-13, Chi: 1.41e-8,  Cguess: 1.81e-10, Dlo: 1.00, Dhi: 10.0, Dguess: 3.79 }
+    }
+  },
+  SPAMFT: {
+    label: "Saturated polymer-amended mature fine tailings (Soleimani et al. 2014)",
+    blurb: "0.5 m tall PAMFT column, 9-day saturated self-weight consolidation phase (Jeeravipoolvarn 2010 / Dunmola et al. 2013 parameters, CF=10).",
+    A: 1.903, Z: 0.023, B: -0.230, Gs: 2.120, e0: 4.000, gammaw: 9.810, H0: 0.5, Tdur: 9,
+    Ctrue: 3.5e-10, Dtrue: 8.000,
+    logTime: false, xMin: 0, xMax: 9,
+    bounds: {
+      narrow: { Clo: 1.00e-10, Chi: 9.99e-10, Cguess: 4.2e-10, Dlo: 2, Dhi: 14, Dguess: 5 },
+      wide:   { Clo: 1.00e-10, Chi: 9.99e-10, Cguess: 4.2e-10, Dlo: 2, Dhi: 14, Dguess: 5 }
+    }
+  }
+};
+
+var STRETCH_M = 0.8;
+var state = {};
+
+function seededRng(seed){
+  var s = seed;
+  return function(){ s = (1664525*s+1013904223) >>> 0; return s/4294967296; };
+}
+function gauss(rng){
+  var u = Math.max(rng(),1e-12), v = rng();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function eAt(mat, sigma){
+  var e = mat.A * Math.pow(sigma + mat.Z, mat.B);
+  if (!isFinite(e) || e > mat.e0) e = mat.e0;
+  return e;
+}
+
+function computeEquilibrium(mat){
+  var Hs = mat.H0/(1+mat.e0);
+  var n = 300, ds = Hs/n, sum = 0;
+  var prev = 1 + eAt(mat, 0);
+  for (var i=1;i<=n;i++){
+    var s = i*ds;
+    var sigma = (mat.Gs-1)*mat.gammaw*s;
+    var cur = 1 + eAt(mat, sigma);
+    sum += 0.5*(prev+cur)*ds;
+    prev = cur;
+  }
+  var sigmaMax = (mat.Gs-1)*mat.gammaw*Hs;
+  var sigmaMid = (mat.Gs-1)*mat.gammaw*(Hs/2);
+  return { Hfinal: sum, Hs: Hs, sigmaMax: sigmaMax, emid: eAt(mat, sigmaMid) };
+}
+
+function kRef(mat, C, D){ return C*Math.pow(state.eq.emid, D); }
+
+function tChar(mat, C, D){
+  var kTrue = kRef(mat, mat.Ctrue, mat.Dtrue);
+  var kCur = kRef(mat, C, D);
+  return state.tCharTrue * (kTrue/Math.max(kCur,1e-300));
+}
+
+function heightAt(mat, t, C, D){
+  var tc = tChar(mat, C, D);
+  var U = Math.exp(-Math.pow(Math.max(t,1e-6)/tc, STRETCH_M));
+  return state.eq.Hfinal + (mat.H0 - state.eq.Hfinal)*U;
+}
+
+function buildObservations(mat){
+  var rng = seededRng(13579);
+  var pts = [];
+  var n = 11;
+  var noiseAmp = 0.012*(mat.H0-state.eq.Hfinal);
+  for (var i=0;i<n;i++){
+    var t;
+    if (mat.logTime){
+      var frac = i/(n-1);
+      t = mat.xMin*Math.pow(mat.xMax/mat.xMin*0.4, frac); // spread within visible range
+    } else {
+      t = mat.xMin + (mat.xMax-mat.xMin)*0.05 + (i/(n-1))*(mat.xMax-mat.xMin)*0.95;
+    }
+    var h = heightAt(mat, t, mat.Ctrue, mat.Dtrue) + noiseAmp*gauss(rng);
+    pts.push({t:t, h:h});
+  }
+  return pts;
+}
+
+function sse(mat, C, D){
+  var s = 0;
+  state.obs.forEach(function(p){ var d = heightAt(mat,p.t,C,D)-p.h; s += d*d; });
+  return s;
+}
+function rsq(mat, C, D){
+  var meanH = state.obs.reduce(function(a,p){return a+p.h;},0)/state.obs.length;
+  var sst = state.obs.reduce(function(a,p){return a+(p.h-meanH)*(p.h-meanH);},0);
+  return 1 - sse(mat,C,D)/Math.max(sst,1e-12);
+}
+
+// ---------- canvas plotting ----------
+function setupCanvas(c){
+  var r = c.getBoundingClientRect(), dpr = window.devicePixelRatio||1;
+  c.width = Math.max(1,Math.round(r.width*dpr));
+  c.height = Math.max(1,Math.round(r.height*dpr));
+  var ctx = c.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return {ctx:ctx, w:r.width, h:r.height};
+}
+function niceNum(v){
+  if (v===0) return "0";
+  var a = Math.abs(v);
+  if (a<0.001 || a>=100000) return v.toExponential(2);
+  return v.toFixed(a<1?3:2);
+}
+
+function drawAxes(ctx,w,h,pad,xTicks,yTicks,xLabelFn,yLabelFn){
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = "#c7d3d8"; ctx.fillStyle = "#61737b"; ctx.font = "10px Arial";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l,pad.t); ctx.lineTo(pad.l,h-pad.b); ctx.lineTo(w-pad.r,h-pad.b);
+  ctx.stroke();
+  yTicks.forEach(function(t){
+    var y = t.y;
+    ctx.strokeStyle = "#eef2f4";
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    ctx.fillStyle = "#61737b";
+    ctx.textAlign = "right"; ctx.textBaseline="middle";
+    ctx.fillText(t.label, pad.l-6, y);
+  });
+  xTicks.forEach(function(t){
+    ctx.fillStyle = "#61737b";
+    ctx.textAlign = "center"; ctx.textBaseline="top";
+    ctx.fillText(t.label, t.x, h-pad.b+4);
+  });
+}
+
+function plotMain(){
+  var mat = state.mat;
+  var c = document.getElementById('mainChart');
+  var s = setupCanvas(c); var ctx=s.ctx, w=s.w, h=s.h;
+  var pad = {l:46,r:14,t:10,b:26};
+  var xMin = mat.logTime ? Math.log10(mat.xMin) : mat.xMin;
+  var xMax = mat.logTime ? Math.log10(mat.xMax) : mat.xMax;
+  var yMin = state.eq.Hfinal - 0.05*(mat.H0-state.eq.Hfinal);
+  var yMax = mat.H0 + 0.05*(mat.H0-state.eq.Hfinal);
+  function X(t){ var xv = mat.logTime?Math.log10(Math.max(t,mat.xMin)):t; return pad.l + (xv-xMin)/(xMax-xMin)*(w-pad.l-pad.r); }
+  function Y(v){ return h-pad.b - (v-yMin)/(yMax-yMin)*(h-pad.t-pad.b); }
+
+  var xTicks=[], yTicks=[];
+  if (mat.logTime){
+    [0.01,0.1,1,10,100,1000].forEach(function(v){ if(v>=mat.xMin&&v<=mat.xMax) xTicks.push({x:X(v),label:v>=1?(""+v):v.toString()}); });
+  } else {
+    for (var i=0;i<=6;i++){ var v = mat.xMin + i*(mat.xMax-mat.xMin)/6; xTicks.push({x:X(v),label:v.toFixed(1)}); }
+  }
+  for (var j=0;j<=5;j++){ var yv = yMin + j*(yMax-yMin)/5; yTicks.push({y:Y(yv),label:yv.toFixed(2)}); }
+  drawAxes(ctx,w,h,pad,xTicks,yTicks);
+
+  // model curve
+  ctx.strokeStyle = "#1479b8"; ctx.lineWidth = 2; ctx.beginPath();
+  var N=140;
+  for (var i=0;i<=N;i++){
+    var xv = mat.logTime ? Math.pow(10, xMin + i/N*(xMax-xMin)) : xMin + i/N*(xMax-xMin);
+    var yv = heightAt(mat, xv, state.C, state.D);
+    var px=X(xv), py=Y(yv);
+    if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+
+  // true curve (if revealed)
+  if (state.revealed){
+    ctx.strokeStyle = "#c64852"; ctx.lineWidth = 2; ctx.setLineDash([6,4]); ctx.beginPath();
+    for (var i2=0;i2<=N;i2++){
+      var xv2 = mat.logTime ? Math.pow(10, xMin + i2/N*(xMax-xMin)) : xMin + i2/N*(xMax-xMin);
+      var yv2 = heightAt(mat, xv2, mat.Ctrue, mat.Dtrue);
+      var px2=X(xv2), py2=Y(yv2);
+      if (i2===0) ctx.moveTo(px2,py2); else ctx.lineTo(px2,py2);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+
+  // observations
+  ctx.strokeStyle = "#222"; ctx.lineWidth = 1.6;
+  state.obs.forEach(function(p){
+    var px=X(p.t), py=Y(p.h), r=4;
+    ctx.beginPath(); ctx.moveTo(px-r,py-r); ctx.lineTo(px+r,py+r); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(px-r,py+r); ctx.lineTo(px+r,py-r); ctx.stroke();
+  });
+
+  ctx.fillStyle="#61737b"; ctx.font="11px Arial"; ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  ctx.fillText("Time (days)"+(mat.logTime?" [log scale]":""), pad.l, h-4);
+  ctx.save(); ctx.translate(12,h/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("Height (m)",0,0); ctx.restore();
+}
+
+function plotKe(){
+  var mat = state.mat;
+  var c = document.getElementById('keChart');
+  var s = setupCanvas(c); var ctx=s.ctx, w=s.w, h=s.h;
+  var pad = {l:52,r:12,t:10,b:24};
+  var eLo = Math.max(state.eq.Hfinal>0?0.5:0.5, 0.5), eHi = mat.e0*1.05;
+  var kTrueLo = kRefAtE(mat, mat.Ctrue, mat.Dtrue, eLo), kTrueHi = kRefAtE(mat, mat.Ctrue, mat.Dtrue, eHi);
+  var kCurLo = kRefAtE(mat, state.C, state.D, eLo), kCurHi = kRefAtE(mat, state.C, state.D, eHi);
+  var kMin = Math.min(kTrueLo,kTrueHi,kCurLo,kCurHi)*0.5;
+  var kMax = Math.max(kTrueLo,kTrueHi,kCurLo,kCurHi)*2;
+  var logKMin = Math.log10(Math.max(kMin,1e-300)), logKMax = Math.log10(Math.max(kMax,1e-299));
+  function X(e){ return pad.l + (e-eLo)/(eHi-eLo)*(w-pad.l-pad.r); }
+  function Y(k){ var lk=Math.log10(Math.max(k,1e-300)); return h-pad.b - (lk-logKMin)/(logKMax-logKMin)*(h-pad.t-pad.b); }
+  var xTicks=[], yTicks=[];
+  for (var i=0;i<=4;i++){ var ev=eLo+i*(eHi-eLo)/4; xTicks.push({x:X(ev),label:ev.toFixed(1)}); }
+  for (var j=0;j<=4;j++){ var lk=logKMin+j*(logKMax-logKMin)/4; yTicks.push({y:Y(Math.pow(10,lk)),label:"1e"+lk.toFixed(0)}); }
+  drawAxes(ctx,w,h,pad,xTicks,yTicks);
+
+  ctx.strokeStyle="#888"; ctx.setLineDash([6,4]); ctx.lineWidth=2; ctx.beginPath();
+  for (var i2=0;i2<=60;i2++){ var ev2=eLo+i2/60*(eHi-eLo); var kv=mat.Ctrue*Math.pow(ev2,mat.Dtrue); var px=X(ev2),py=Y(kv); if(i2===0)ctx.moveTo(px,py);else ctx.lineTo(px,py); }
+  ctx.stroke(); ctx.setLineDash([]);
+
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2; ctx.beginPath();
+  for (var i3=0;i3<=60;i3++){ var ev3=eLo+i3/60*(eHi-eLo); var kv3=state.C*Math.pow(ev3,state.D); var px3=X(ev3),py3=Y(kv3); if(i3===0)ctx.moveTo(px3,py3);else ctx.lineTo(px3,py3); }
+  ctx.stroke();
+
+  ctx.fillStyle="#61737b"; ctx.font="11px Arial"; ctx.textAlign="left";
+  ctx.fillText("void ratio e", pad.l, h-4);
+}
+function kRefAtE(mat,C,D,e){ return C*Math.pow(e,D); }
+
+function plotESigma(){
+  var mat = state.mat;
+  var c = document.getElementById('eSigmaChart');
+  var s = setupCanvas(c); var ctx=s.ctx, w=s.w, h=s.h;
+  var pad = {l:40,r:12,t:10,b:24};
+  var sMax = state.eq.sigmaMax*1.05;
+  var eMax = mat.e0*1.05;
+  function X(sig){ return pad.l + sig/sMax*(w-pad.l-pad.r); }
+  function Y(e){ return h-pad.b - e/eMax*(h-pad.t-pad.b); }
+  var xTicks=[],yTicks=[];
+  for (var i=0;i<=4;i++){ var sv=i*sMax/4; xTicks.push({x:X(sv),label:sv.toFixed(2)}); }
+  for (var j=0;j<=4;j++){ var ev=j*eMax/4; yTicks.push({y:Y(ev),label:ev.toFixed(1)}); }
+  drawAxes(ctx,w,h,pad,xTicks,yTicks);
+  ctx.strokeStyle="#222"; ctx.lineWidth=2; ctx.beginPath();
+  for (var i2=0;i2<=100;i2++){ var sv2=i2/100*sMax; var ev2=eAt(mat,sv2); var px=X(sv2),py=Y(ev2); if(i2===0)ctx.moveTo(px,py);else ctx.lineTo(px,py); }
+  ctx.stroke();
+  ctx.fillStyle="#61737b"; ctx.font="11px Arial"; ctx.textAlign="left";
+  ctx.fillText("effective stress σ' (kPa)", pad.l, h-4);
+}
+
+// ---------- UI wiring ----------
+function fmtSci(x){ return x.toExponential(2); }
+
+function loadMaterial(){
+  var key = document.getElementById('material').value;
+  var mat = Object.assign({}, MATERIALS[key]);
+  state.matKey = key;
+  state.mat = mat;
+  state.eq = computeEquilibrium(mat);
+  var frac = 4.799; // stretched-exp calibration constant for U=0.97 at m=0.8
+  state.tCharTrue = mat.Tdur/frac;
+  state.obs = buildObservations(mat);
+  state.revealed = false;
+  document.getElementById('trueLegend').style.display = 'none';
+  document.getElementById('boundsWrap').style.display = key==='SPWC' ? 'block' : 'none';
+  document.getElementById('materialBlurb').textContent = mat.blurb + " Equilibrium (fully consolidated) height computed from Eq. 2: " + state.eq.Hfinal.toFixed(3) + " m (from an initial " + mat.H0.toFixed(2) + " m).";
+  applyBounds();
+  document.getElementById('cActual').textContent = fmtSci(mat.Ctrue);
+  document.getElementById('dActual').textContent = mat.Dtrue.toFixed(3);
+  document.getElementById('cActual').classList.add('hidden-val');
+  document.getElementById('dActual').classList.add('hidden-val');
+  document.getElementById('cPct').classList.add('hidden-val');
+  document.getElementById('dPct').classList.add('hidden-val');
+  document.getElementById('iterOut').textContent = '–';
+  document.getElementById('statusOut').textContent = 'Adjust sliders';
+}
+
+function applyBounds(){
+  var mat = state.mat;
+  var mode = document.getElementById('boundsMode').value;
+  var b = mat.bounds[mode] || mat.bounds.narrow;
+  state.bounds = b;
+  var cSlider = document.getElementById('cSlider');
+  cSlider.min = Math.log10(b.Clo); cSlider.max = Math.log10(b.Chi); cSlider.step = 0.0005;
+  cSlider.value = Math.log10(b.Cguess);
+  var dSlider = document.getElementById('dSlider');
+  dSlider.min = b.Dlo; dSlider.max = b.Dhi; dSlider.step = 0.005;
+  dSlider.value = b.Dguess;
+  document.getElementById('cRange').textContent = "Bounds: " + fmtSci(b.Clo) + " to " + fmtSci(b.Chi);
+  document.getElementById('dRange').textContent = "Bounds: " + b.Dlo.toFixed(2) + " to " + b.Dhi.toFixed(2);
+  syncFromSliders();
+}
+
+function syncFromSliders(){
+  state.C = Math.pow(10, parseFloat(document.getElementById('cSlider').value));
+  state.D = parseFloat(document.getElementById('dSlider').value);
+  document.getElementById('cOut').textContent = fmtSci(state.C);
+  document.getElementById('dOut').textContent = state.D.toFixed(3);
+  document.getElementById('cYour').textContent = fmtSci(state.C);
+  document.getElementById('dYour').textContent = state.D.toFixed(3);
+  updateStats();
+  plotMain(); plotKe(); plotESigma();
+}
+
+function updateStats(){
+  var mat = state.mat;
+  var s = sse(mat, state.C, state.D);
+  var r2 = rsq(mat, state.C, state.D);
+  document.getElementById('sseOut').textContent = s.toExponential(3);
+  document.getElementById('r2Out').textContent = r2.toFixed(4);
+  if (state.revealed){
+    var cp = 100*state.C/mat.Ctrue, dp = 100*state.D/mat.Dtrue;
+    document.getElementById('cPct').textContent = cp.toFixed(1)+"%";
+    document.getElementById('dPct').textContent = dp.toFixed(1)+"%";
+  }
+}
+
+function reveal(){
+  state.revealed = true;
+  document.getElementById('trueLegend').style.display = '';
+  ['cActual','dActual','cPct','dPct'].forEach(function(id){ document.getElementById(id).classList.remove('hidden-val'); });
+  updateStats(); plotMain();
+}
+
+var optRunning = false;
+function autoOptimize(){
+  if (optRunning) return;
+  optRunning = true;
+  document.getElementById('optimizeBtn').disabled = true;
+  var mat = state.mat, b = state.bounds;
+  var logC = Math.log10(state.C), D = state.D;
+  var bestSSE = sse(mat, state.C, state.D);
+  var radiusC = 0.25*(Math.log10(b.Chi)-Math.log10(b.Clo));
+  var radiusD = 0.25*(b.Dhi-b.Dlo);
+  var rng = seededRng(Date.now()%100000);
+  var iter = 0, maxIter = 55;
+  document.getElementById('statusOut').textContent = 'Optimizing…';
+  var interval = setInterval(function(){
+    iter++;
+    var tryLogC = Math.min(Math.max(logC + radiusC*gauss(rng), Math.log10(b.Clo)), Math.log10(b.Chi));
+    var tryD = Math.min(Math.max(D + radiusD*gauss(rng), b.Dlo), b.Dhi);
+    var tryC = Math.pow(10, tryLogC);
+    var s = sse(mat, tryC, tryD);
+    if (s < bestSSE){ bestSSE = s; logC = tryLogC; D = tryD; }
+    radiusC *= 0.94; radiusD *= 0.94;
+    document.getElementById('cSlider').value = logC;
+    document.getElementById('dSlider').value = D;
+    syncFromSliders();
+    document.getElementById('iterOut').textContent = iter;
+    if (iter >= maxIter){
+      clearInterval(interval);
+      optRunning = false;
+      document.getElementById('optimizeBtn').disabled = false;
+      document.getElementById('statusOut').textContent = 'Converged';
+    }
+  }, 70);
+}
+
+window.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('material').addEventListener('change', loadMaterial);
+  document.getElementById('boundsMode').addEventListener('change', applyBounds);
+  document.getElementById('cSlider').addEventListener('input', syncFromSliders);
+  document.getElementById('dSlider').addEventListener('input', syncFromSliders);
+  document.getElementById('resetBtn').addEventListener('click', applyBounds);
+  document.getElementById('optimizeBtn').addEventListener('click', autoOptimize);
+  document.getElementById('revealBtn').addEventListener('click', reveal);
+  window.addEventListener('resize', function(){ plotMain(); plotKe(); plotESigma(); });
+  loadMaterial();
+});
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

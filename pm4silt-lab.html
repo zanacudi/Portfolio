@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PM4Silt — Interactive Companion</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+canvas{display:block;width:100%;height:260px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.slider-block .hint{font-weight:400;color:var(--muted);font-size:10.5px;display:block;margin-top:3px}
+.readout{color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.statgrid.n3{grid-template-columns:repeat(3,1fr)}
+.statgrid.n2{grid-template-columns:repeat(2,1fr)}
+.statgrid.n6{grid-template-columns:repeat(6,1fr)}
+.stat{background:#f2f7f9;padding:10px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
+.stat strong{font-size:15px}
+.stat.hi strong{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.warn{background:#fdeee9;color:var(--red)}
+.badge.ok{background:#e9f6ef;color:var(--green)}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.sources{font-size:11px;color:var(--muted);line-height:1.6}
+.sources a{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+table.notation{min-width:640px}
+table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
+table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid,.statgrid.n6{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>PM4Silt — Interactive Companion</h1>
+<p>Interactive companion to Boulanger, R.W. &amp; Ziotopoulou, K. (2018), <em>PM4Silt (Version 1): A Silt Plasticity Model for Earthquake Engineering Applications</em>, Report No. UCD/CGM-18-01, Center for Geotechnical Modeling, UC Davis. The low-plasticity-silt/clay sibling of <a href="pm4sand-lab.html">PM4Sand</a> &mdash; same bounding-surface framework, but positioned from undrained shear strength rather than relative density, and using the classic Been &amp; Jefferies state parameter &psi; from <a href="jb-critical-state-lab.html">the Jefferies &amp; Been modules</a> directly, rather than PM4Sand's relative-density-based &xi;<sub>R</sub>.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>About this module</h2>
+<div class="explain">
+<p>PM4Silt shares PM4Sand's bounding-surface architecture and much of its equation structure, but is built for fine-grained soils where relative density is meaningless and undrained shear strength is the quantity engineers actually have data for. The critical state line is positioned internally so that the model reproduces a user-specified undrained shear strength at critical state, s<sub>u,cs,eq</sub>, rather than being built up from e<sub>max</sub>/e<sub>min</sub> and D<sub>R</sub>. Because of this, PM4Silt uses the state parameter &psi; (Been &amp; Jefferies 1985) &mdash; the exact same quantity used throughout the Jefferies &amp; Been critical-state modules on this site &mdash; instead of PM4Sand's relative state parameter index &xi;<sub>R</sub>. This module covers how s<sub>u,cs,eq</sub> and &psi; relate, how the bounding/dilatancy surfaces are built from &psi;, and how the model's primary parameters are calibrated in practice.</p>
+</div>
+</div>
+
+<div class="card">
+<h2>Notation used in this module</h2>
+<div style="overflow-x:auto"><table class="notation">
+<tr><td><b>s<sub>u,cs,eq</sub></b></td><td>undrained shear strength at critical state, earthquake loading rate (primary input)</td><td><b>M</b></td><td>critical stress ratio, M = 2&middot;sin&phi;&prime;<sub>cv</sub></td></tr>
+<tr><td><b>s<sub>u,cs,static</sub></b></td><td>post-shaking (slow-rate) critical-state strength, = F<sub>su</sub>&middot;s<sub>u,cs,eq</sub></td><td><b>M<sub>b</sub>, M<sub>d</sub></b></td><td>bounding and dilatancy stress ratios</td></tr>
+<tr><td><b>F<sub>su</sub></b></td><td>post-shaking strength reduction factor (optional input, default 1.0)</td><td><b>n<sub>b,wet</sub>, n<sub>b,dry</sub>, n<sub>d</sub></b></td><td>parameters controlling how M<sub>b</sub>, M<sub>d</sub> move away from M with &psi;, on the loose ("wet") and dense ("dry") sides</td></tr>
+<tr><td><b>&psi;</b></td><td>state parameter (Been &amp; Jefferies 1985), same definition as the Jefferies &amp; Been modules</td><td><b>&phi;&prime;<sub>cv</sub></b></td><td>constant-volume (critical-state) effective friction angle</td></tr>
+<tr><td><b>&sigma;&prime;<sub>vc</sub></b></td><td>vertical effective consolidation stress</td><td><b>&phi;<sub>max</sub></b></td><td>maximum mobilizable friction angle as p&prime;&rarr;0 (dense side)</td></tr>
+<tr><td><b>p&prime;</b></td><td>mean effective stress</td><td><b>G<sub>o</sub>, n<sub>G</sub></b></td><td>shear-modulus coefficient and stress-exponent (primary inputs)</td></tr>
+<tr><td><b>p<sub>A</sub></b></td><td>atmospheric pressure (101.3 kPa)</td><td><b>h<sub>po</sub></b></td><td>contraction-rate parameter (primary input, sets CRR)</td></tr>
+<tr><td><b>z<sub>max</sub>, C<sub>&epsilon;</sub></b></td><td colspan="3">secondary parameters given default values as functions of s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub> (Section 4)</td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h2>1. Undrained shear strength: earthquake-rate input, post-shaking output</h2>
+<div class="explain"><p>Because su is rate-dependent, the model separates the strength used during strong shaking from the (lower) strength used to check post-shaking static stability:</p></div>
+<div class="eq">s<sub>u,cs,static</sub> = F<sub>su</sub> &middot; s<sub>u,cs,eq</sub></div>
+<p class="explain" style="font-size:12px">s<sub>u,cs,eq</sub> can also be entered as a strength ratio s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub>, computed internally from &sigma;&prime;<sub>vc</sub> at model initialization. F<sub>su</sub> defaults to 1.0 and is normally only set (&lt;1.0) at the end of strong shaking, to account for rate effects and cyclic degradation/remolding when checking post-earthquake stability.</p>
+<div class="grid3">
+<div class="slider-block"><label>Strength ratio, s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub> <span class="readout" id="suRatOut">0.30</span></label><input id="suRat" type="range" min="0.10" max="1.00" step="0.01" value="0.30"></div>
+<div class="slider-block"><label>&sigma;&prime;<sub>vc</sub> (kPa) <span class="readout" id="svcOut">100</span></label><input id="svc" type="range" min="20" max="600" step="5" value="100"></div>
+<div class="slider-block"><label>F<sub>su</sub> (post-shaking factor) <span class="readout" id="fsuOut">1.00</span></label><input id="fsu" type="range" min="0.50" max="1.00" step="0.01" value="1.00"></div>
+</div>
+<div class="statgrid n3" id="suStats"></div>
+</div>
+
+<div class="card">
+<h2>2. Elastic shear modulus &mdash; steeper stress-dependence than sand</h2>
+<div class="eq">G = G<sub>o</sub>&middot;p<sub>A</sub>&middot;(p&prime;/p<sub>A</sub>)<sup>n<sub>G</sub></sup></div>
+<p class="explain" style="font-size:12px">Same form as PM4Sand's G(p&prime;), but with an adjustable exponent n<sub>G</sub> &mdash; default <b>0.75</b> for silt, versus PM4Sand's fixed <b>0.50</b>. The higher exponent means silt stiffness rises more steeply with confining stress than sand's.</p>
+<div class="grid3">
+<div class="slider-block"><label>G<sub>o</sub> <span class="readout" id="goOut">500</span></label><input id="go" type="range" min="100" max="1200" step="10" value="500"></div>
+<div class="slider-block"><label>n<sub>G</sub> <span class="readout" id="ngOut">0.75</span></label><input id="ng" type="range" min="0.5" max="1.0" step="0.01" value="0.75"></div>
+</div>
+<canvas id="gChart"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>PM4Silt, n<sub>G</sub> as set above</span><span><i style="background:var(--orange)"></i>PM4Sand default, n<sub>G</sub>=0.50, same G<sub>o</sub></span></div>
+</div>
+
+<div class="card">
+<h2>3. Bounding &amp; dilatancy surfaces vs. state parameter &psi;</h2>
+<div class="eq">M<sub>d</sub> = M&middot;exp(n<sub>d</sub>&middot;&psi;) &nbsp;&nbsp;&nbsp; M<sub>b,wet</sub> = M&middot;exp(&minus;n<sub>b,wet</sub>&middot;&psi;) &nbsp; (loose of critical, &psi;&ge;0)</div>
+<p class="explain" style="font-size:12px">On the dense ("dry") side, &psi;&lt;0, M<sub>b</sub> instead follows a curved interpolation from M at critical state up to a maximum M<sub>b,max</sub>=2&middot;sin&phi;<sub>max</sub> as p&prime;&rarr;0 &mdash; the report states this relationship in words clearly, but the exact interpolation function could not be transcribed from the extracted PDF text with confidence, so only its two verified anchor points (M at &psi;=0, and M<sub>b,max</sub> at the origin) are shown below as a dashed qualitative sketch. Defaults: n<sub>d</sub>=0.30, n<sub>b,wet</sub>=0.80, n<sub>b,dry</sub>=0.50, &phi;&prime;<sub>cv</sub>=32&deg;.</p>
+<div class="grid4">
+<div class="slider-block"><label>State parameter, &psi; <span class="readout" id="psiOut">0.05</span></label><input id="psiSlider" type="range" min="-0.30" max="0.30" step="0.01" value="0.05"></div>
+<div class="slider-block"><label>&phi;&prime;<sub>cv</sub> (&deg;) <span class="readout" id="phicvsOut">32</span></label><input id="phicvs" type="range" min="26" max="38" step="0.5" value="32"></div>
+<div class="slider-block"><label>n<sub>d</sub> <span class="readout" id="nds2Out">0.30</span></label><input id="nds2" type="range" min="0.05" max="0.6" step="0.01" value="0.30"></div>
+<div class="slider-block"><label>n<sub>b,wet</sub> <span class="readout" id="nbwOut">0.80</span></label><input id="nbw" type="range" min="0.1" max="1.0" step="0.01" value="0.80"></div>
+</div>
+<div class="slider-block" style="max-width:320px"><label>&phi;<sub>max</sub> (&deg;, dense-side anchor) <span class="readout" id="phimaxOut">40</span><span class="hint">no published default in extracted text &mdash; explore only</span></label><input id="phimax" type="range" min="34" max="48" step="0.5" value="40"></div>
+<div class="statgrid n3" id="surfStatsSilt"></div>
+<canvas id="surfChartSilt"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>M<sub>b</sub> (solid = wet/verified, dashed = dry/qualitative)</span><span><i style="background:var(--orange)"></i>M<sub>d</sub>(&psi;)</span><span><i style="background:var(--red)"></i>current &psi;</span></div>
+</div>
+
+<div class="card">
+<h2>4. Estimating a target CRR, and calibrating h<sub>po</sub></h2>
+<div class="explain"><p>The report gives an explicit, quotable rule of thumb linking strength ratio to cyclic strength at earthquake loading rates: the cyclic stress ratio to cause 3% peak shear strain in 30 uniform cycles is about 55&ndash;70% of s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub> (equivalently 70&ndash;90% of the slower s<sub>u,cs,static</sub>/&sigma;&prime;<sub>vc</sub>). h<sub>po</sub> is then adjusted by trial simulation &mdash; last, after G<sub>o</sub> and s<sub>u,cs,eq</sub> are fixed &mdash; until the model's cyclic response falls in this target range.</p></div>
+<div class="eq">CRR<sub>30,3%</sub> &asymp; (0.55 to 0.70) &times; s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub></div>
+<div class="statgrid n2" id="crrStats"></div>
+<div class="callout">Uses the strength ratio from Section 1 above. There is no closed-form for h<sub>po</sub> itself &mdash; only for this target range it must be calibrated against.</div>
+</div>
+
+<div class="card">
+<h2>5. Secondary parameter defaults</h2>
+<div class="explain"><p>Two secondary parameters are functions of the strength ratio; the rest are fixed defaults, shown alongside for reference:</p></div>
+<div class="statgrid n2" id="secStatsSilt"></div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Parameter</th><th>Default</th></tr></thead>
+<tbody>
+<tr><td>h<sub>o</sub></td><td>0.50 (fixed)</td></tr>
+<tr><td>e<sub>o</sub> / &lambda;</td><td>0.90 / 0.060 (fixed &mdash; model response largely insensitive to these once s<sub>u,cs,eq</sub> is set)</td></tr>
+<tr><td>&phi;&prime;<sub>cv</sub></td><td>32&deg; (fixed)</td></tr>
+<tr><td>n<sub>b,wet</sub> / n<sub>b,dry</sub> / n<sub>d</sub></td><td>0.80 / 0.50 / 0.30 (fixed)</td></tr>
+<tr><td>A<sub>do</sub></td><td>0.80 (fixed)</td></tr>
+<tr><td>&nu; (Poisson's ratio)</td><td>0.30 &rarr; K<sub>o</sub>=&nu;/(1&minus;&nu;)=0.43 in 1-D consolidation</td></tr>
+<tr><td>z<sub>max</sub></td><td>piecewise in s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub> &mdash; computed live above</td></tr>
+<tr><td>C<sub>&epsilon;</sub></td><td>min[0.5+1.2&middot;(s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub>&minus;0.25), 1.3] &mdash; computed live above</td></tr>
+</tbody>
+</table></div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> The s<sub>u,cs,static</sub>=F<sub>su</sub>&middot;s<sub>u,cs,eq</sub> relationship, the G(p&prime;) form with n<sub>G</sub>, the M<sub>d</sub> and wet-side M<sub>b</sub> exponential forms, the 55&ndash;70% CRR rule-of-thumb, and the z<sub>max</sub>/C<sub>&epsilon;</sub> piecewise default formulas are all transcribed directly from the report's Sections 2.2&ndash;2.3 and 4.1 (verified against the raw extracted text span-by-span, including the non-obvious non-monotonic z<sub>max</sub>=10/40/20 breakpoints). The dense-side (\"dry\") bounding-surface interpolation (Eqs 15&ndash;16 of the report) involves a stacked fraction that the PDF text extraction garbled beyond confident reconstruction, so it is shown only qualitatively (dashed, anchored at its two verified endpoints) rather than as an exact curve &mdash; the same standard applied throughout this site: transcribe exactly, or disclose and approximate, never guess silently. This module does not implement the full incremental plastic stress-strain integration; treat it as a notation and calibration-logic guide, not a substitute for running the model.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Boulanger, R.W. &amp; Ziotopoulou, K. (2018). <em>PM4Silt (Version 1): A Silt Plasticity Model for Earthquake Engineering Applications.</em> Report No. UCD/CGM-18-01, Center for Geotechnical Modeling, Dept. of Civil &amp; Environmental Engineering, University of California, Davis.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+function el(id){ return document.getElementById(id); }
+function num(id){ return +el(id).value; }
+var pA=101.3;
+var stateS = { ratio:0.30 };
+
+function drawAxes(ctx,W,H,ml,mr,mt,mb,xmin,xmax,xlog,ymin,ymax,xlab,ylab,xticks,yticks){
+  var pw=W-ml-mr, ph=H-mt-mb;
+  function X(v){ return xlog ? ml+pw*(Math.log10(v)-Math.log10(xmin))/(Math.log10(xmax)-Math.log10(xmin)) : ml+pw*(v-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  xticks.forEach(function(xv){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.textAlign="center"; ctx.fillText(String(xv),x,mt+ph+14); });
+  ctx.textAlign="right";
+  yticks.forEach(function(yv){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(String(Math.round(yv*100)/100),ml-8,y+3); });
+  ctx.textAlign="left";
+  ctx.fillText(xlab, ml+pw/2-40, H-2);
+  ctx.save(); ctx.translate(14,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText(ylab,0,0); ctx.restore();
+  return {X:X,Y:Y,ml:ml,mt:mt,pw:pw,ph:ph};
+}
+
+function updateSection1(){
+  var ratio=num("suRat"), svc=num("svc"), fsu=num("fsu");
+  el("suRatOut").textContent=ratio.toFixed(2);
+  el("svcOut").textContent=svc.toFixed(0);
+  el("fsuOut").textContent=fsu.toFixed(2);
+  stateS.ratio=ratio;
+  var suEq = ratio*svc;
+  var suStatic = fsu*suEq;
+  el("suStats").innerHTML = `
+    <div class="stat hi"><small>s<sub>u,cs,eq</sub> (kPa)</small><strong>${suEq.toFixed(1)}</strong></div>
+    <div class="stat hi"><small>s<sub>u,cs,static</sub> (kPa)</small><strong>${suStatic.toFixed(1)}</strong></div>
+    <div class="stat"><small>reduction</small><strong>${((1-fsu)*100).toFixed(0)}%</strong></div>`;
+  updateSection4();
+  updateSection5();
+}
+["suRat","svc","fsu"].forEach(id=>el(id).addEventListener("input",updateSection1));
+
+function updateSection2(){
+  var go=num("go"), ng=num("ng");
+  el("goOut").textContent=go.toFixed(0);
+  el("ngOut").textContent=ng.toFixed(2);
+  var W=el("gChart").clientWidth||700,H=260;
+  var cv=el("gChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d");
+  var ax = drawAxes(ctx,W,H,60,14,14,32,10,1000,true,0,go*3,"p′ (kPa, log scale)","G (kPa)",[10,100,1000],[0,go,go*2,go*3]);
+  function curve(exp,color){
+    ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.beginPath();
+    var first=true;
+    for(var pv=10; pv<=1000; pv*=1.02){
+      var g = go*pA*Math.pow(pv/pA,exp);
+      var x=ax.X(pv), y=ax.Y(Math.max(0,Math.min(go*3,g)));
+      if(first){ctx.moveTo(x,y);first=false;} else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  curve(ng,"#123b4a");
+  curve(0.5,"#e38a22");
+}
+["go","ng"].forEach(id=>el(id).addEventListener("input",updateSection2));
+
+function updateSection3(){
+  var phicv=num("phicvs"), nd=num("nds2"), nbw=num("nbw"), phimax=num("phimax");
+  el("phicvsOut").textContent=phicv.toFixed(1);
+  el("nds2Out").textContent=nd.toFixed(2);
+  el("nbwOut").textContent=nbw.toFixed(2);
+  el("phimaxOut").textContent=phimax.toFixed(1);
+
+  var psi = num("psiSlider");
+  el("psiOut").textContent=(psi>=0?"+":"")+psi.toFixed(2);
+  var M = 2*Math.sin(phicv*Math.PI/180);
+  var Mbmax = 2*Math.sin(phimax*Math.PI/180);
+  var Md = M*Math.exp(nd*psi);
+  var Mb = psi>=0 ? M*Math.exp(-nbw*psi) : NaN;
+  function toPhi(Mv){ var s=Mv/2; return (s<=1&&s>=-1) ? (Math.asin(s)*180/Math.PI) : NaN; }
+
+  el("surfStatsSilt").innerHTML = `
+    <div class="stat"><small>M (=2sin&phi;&prime;<sub>cv</sub>)</small><strong>${M.toFixed(3)}</strong></div>
+    <div class="stat hi"><small>M<sub>d</sub> &rarr; &phi;<sub>PT</sub></small><strong>${Md.toFixed(3)} &rarr; ${toPhi(Md).toFixed(1)}°</strong></div>
+    <div class="stat hi"><small>M<sub>b</sub> (wet side only, &psi;&ge;0)</small><strong>${psi>=0 ? Mb.toFixed(3)+" → "+toPhi(Mb).toFixed(1)+"°" : "dry side — see dashed sketch"}</strong></div>`;
+
+  var W=el("surfChartSilt").clientWidth||700,H=260;
+  var cv=el("surfChartSilt"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d");
+  var ax = drawAxes(ctx,W,H,56,14,14,32,-0.3,0.3,false,0,2.2,"ψ","stress ratio",[-0.3,-0.15,0,0.15,0.3],[0,0.5,1.0,1.5,2.0]);
+  ctx.strokeStyle="#e38a22"; ctx.lineWidth=2.2; ctx.beginPath();
+  var first=true;
+  for(var xv=-0.3; xv<=0.3+1e-9; xv+=0.01){
+    var yv=M*Math.exp(nd*xv); var x=ax.X(xv), y=ax.Y(Math.max(0,Math.min(2.2,yv)));
+    if(first){ctx.moveTo(x,y);first=false;} else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  first=true;
+  for(var xv2=0; xv2<=0.3+1e-9; xv2+=0.01){
+    var yv2=M*Math.exp(-nbw*xv2); var x2=ax.X(xv2), y2=ax.Y(Math.max(0,Math.min(2.2,yv2)));
+    if(first){ctx.moveTo(x2,y2);first=false;} else ctx.lineTo(x2,y2);
+  }
+  ctx.stroke();
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.setLineDash([5,4]); ctx.beginPath();
+  ctx.moveTo(ax.X(0),ax.Y(M));
+  ctx.lineTo(ax.X(-0.3),ax.Y(Math.max(0,Math.min(2.2,Mbmax))));
+  ctx.stroke(); ctx.setLineDash([]);
+  var xiClamp=Math.max(-0.3,Math.min(0.3,psi));
+  var curMb = psi>=0 ? Mb : (M + (Mbmax-M)*(xiClamp/-0.3));
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(ax.X(xiClamp),ax.Y(Math.max(0,Math.min(2.2,curMb))),5,0,7); ctx.fill();
+}
+["phicvs","nds2","nbw","phimax","psiSlider"].forEach(id=>el(id).addEventListener("input",updateSection3));
+
+function updateSection4(){
+  var ratio=stateS.ratio;
+  var lo=0.55*ratio, hi=0.70*ratio;
+  el("crrStats").innerHTML = `
+    <div class="stat"><small>s<sub>u,cs,eq</sub>/&sigma;&prime;<sub>vc</sub></small><strong>${ratio.toFixed(2)}</strong></div>
+    <div class="stat hi"><small>Estimated CRR<sub>30,3%</sub> range</small><strong>${lo.toFixed(3)} – ${hi.toFixed(3)}</strong></div>`;
+}
+
+function updateSection5(){
+  var ratio=stateS.ratio;
+  var zmax = ratio<=0.25 ? 10 : (ratio<=0.50 ? 40 : 20);
+  var ce = Math.min(0.5+1.2*(ratio-0.25), 1.3);
+  el("secStatsSilt").innerHTML = `
+    <div class="stat hi"><small>z<sub>max</sub></small><strong>${zmax}</strong></div>
+    <div class="stat hi"><small>C<sub>&epsilon;</sub></small><strong>${Math.max(0.5,ce).toFixed(3)}</strong></div>`;
+}
+</script>
+<script>
+updateSection1();
+updateSection2();
+updateSection3();
+window.addEventListener("resize",function(){updateSection2();updateSection3();});
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

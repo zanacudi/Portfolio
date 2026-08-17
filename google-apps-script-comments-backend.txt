@@ -1,0 +1,358 @@
+/*
+ * COMMENT SYSTEM — GOOGLE APPS SCRIPT BACKEND
+ * ============================================
+ * This file is NOT served by GitHub Pages — it's reference/backup source for
+ * code that lives entirely on Google's infrastructure (Google Sheets + Apps
+ * Script), free, with no server for you to maintain.
+ *
+ * WHERE THIS GOES: paste this whole file into the Apps Script editor bound to
+ * your PRIVATE "Website Comments — Submissions" Google Sheet
+ * (Extensions -> Apps Script from inside that sheet). Full setup steps are
+ * in the chat response that generated this file — the short version:
+ *
+ *   1. Create Sheet A: "Website Comments — Submissions" (stays private,
+ *      default sharing, never shared with anyone). Header row (row 1):
+ *      Timestamp | Page | Name | Email | Type | Message | Status | Reply | ID
+ *
+ *   2. Create Sheet B: "Website Comments — Approved" (a SEPARATE Google
+ *      Sheet file). Header row (row 1):
+ *      Timestamp | Page | Name | Type | Message | Reply | ID
+ *      Share Sheet B -> "Anyone with the link" -> Viewer. Copy its file ID
+ *      from the URL (the long string between /d/ and /edit).
+ *      The ID column (a UUID) is what onReplyEdit uses to match a Submissions
+ *      row to its Approved copy — more robust than matching on timestamp,
+ *      which can collide or shift. Rows created before this column existed
+ *      have a blank ID and are matched by timestamp as a fallback.
+ *
+ *   3. In Sheet A: Extensions -> Apps Script. Delete the placeholder code,
+ *      paste this entire file in. Replace APPROVED_SHEET_ID below with the
+ *      ID you copied in step 2.
+ *
+ *   4. Deploy -> New deployment -> type "Web app" -> Execute as "Me" ->
+ *      Who has access "Anyone". Deploy, authorize when prompted (first time
+ *      only). Copy the Web App URL it gives you.
+ *
+ *   5. Paste that Web App URL, and Sheet B's ID, into the CONFIG section
+ *      near the top of comments.js in your portfolio-site folder.
+ *
+ *   6. Reload Sheet A once so the "Comments" menu appears in its menu bar.
+ *      Use Comments -> Approve/Reject selected row(s) to moderate. Always
+ *      type replies into Sheet A's Reply column (H) — before OR after
+ *      approving. Never edit the Reply cell directly in Sheet B; it's kept
+ *      in sync automatically and any edit made there will just get
+ *      overwritten the next time Sheet A's reply changes.
+ *
+ *   7. To get an email every time someone submits a comment: after pasting
+ *      this in, select "notifyNewComment" in the function dropdown at the
+ *      top of the editor and click Run once, to grant Gmail-send permission
+ *      when prompted. Then redeploy: Deploy -> Manage deployments -> pencil
+ *      icon -> Version: New version -> Deploy. (Menu actions like Approve
+ *      always run the latest saved code with no redeploy needed, but doPost
+ *      — which handles new submissions — runs through the deployed Web App,
+ *      so it only picks up code changes after a fresh deployment version.)
+ *
+ *   8. To email the ORIGINAL COMMENTER when you reply to them: this needs an
+ *      "installable" trigger, not just pasting the code in — a plain onEdit
+ *      function is blocked from sending email or opening the Approved sheet
+ *      for security reasons. Set it up once:
+ *        a. In the Apps Script editor, click the clock icon ("Triggers") in
+ *           the left sidebar.
+ *        b. Click "+ Add Trigger" (bottom right).
+ *        c. Function to run: onReplyEdit. Event source: From spreadsheet.
+ *           Event type: On edit. Click Save.
+ *        d. You'll get an authorization prompt the first time — approve it.
+ *      After that, typing or changing anything in the Reply column (H) on an
+ *      already-approved row automatically re-syncs Sheet B and emails the
+ *      commenter — no redeploy needed for this part, since triggers always
+ *      run the latest saved code.
+ *
+ * PRIVACY DESIGN NOTE: this uses TWO separate Sheet files, not two tabs in
+ * one file, on purpose. Google Sheets sharing is whole-file, not per-tab —
+ * if Submissions and Approved were tabs in the same shared file, a visitor
+ * could query the Submissions tab (with emails) by the same public method
+ * used to read Approved, even though the page's own UI never shows it.
+ * Two separate files means the file with emails in it is never shared at
+ * all — full stop, not just "not displayed."
+ */
+
+// ====================== CONFIG — edit these lines ======================
+var APPROVED_SHEET_ID = "PASTE_YOUR_APPROVED_SHEET_ID_HERE";
+var NOTIFY_EMAIL = "PASTE_YOUR_EMAIL_HERE"; // gets emailed on every new submission
+// ===========================================================================
+
+var SUBMISSIONS_SHEET_NAME = "Submissions"; // rename to match your Sheet A tab name if different
+var APPROVED_SHEET_NAME = "Approved";        // rename to match your Sheet B tab name if different
+var COMMENT_TYPES = ["Question", "Comment", "Correction", "Suggestion", "Other"];
+
+/**
+ * Handles new comment submissions posted from the website's comment form.
+ * Expects JSON body: { page, name, email, type, message, hp }
+ * "hp" is a honeypot field — real visitors never fill it in; if it has a
+ * value, silently pretend to succeed without actually recording anything.
+ */
+function doPost(e) {
+  var result = { ok: true, code: "ok" };
+  var lock = LockService.getScriptLock();
+  var haveLock = false;
+  var pendingNotify = null; // [page, name, email, type, message, rowNum] — sent after the lock is released
+  try {
+    var data = JSON.parse(e.postData.contents);
+
+    // Honeypot: bots fill every field, including ones hidden from humans.
+    if (data.hp) {
+      return jsonOut(result); // fake success, nothing recorded
+    }
+
+    // Minimal server-side validation — belt and suspenders alongside the
+    // browser-side required fields.
+    var name = (data.name || "").toString().trim().slice(0, 120);
+    var email = (data.email || "").toString().trim().slice(0, 200);
+    var type = (data.type || "Comment").toString().trim().slice(0, 40);
+    if (COMMENT_TYPES.indexOf(type) === -1) type = "Comment";
+    var message = (data.message || "").toString().trim().slice(0, 3000);
+    var page = (data.page || "").toString().trim().slice(0, 200);
+
+    if (!name || !message || !page) {
+      result.ok = false;
+      result.code = "missing_field";
+      result.error = "Missing required field.";
+      return jsonOut(result);
+    }
+
+    haveLock = lock.tryLock(10000);
+    if (!haveLock) {
+      result.ok = false;
+      result.code = "locked";
+      result.error = "Server is busy — please try again in a moment.";
+      return jsonOut(result);
+    }
+
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName(SUBMISSIONS_SHEET_NAME);
+    if (!sheet) {
+      result.ok = false;
+      result.code = "sheet_not_found";
+      result.error = "Submissions sheet not found — check SUBMISSIONS_SHEET_NAME.";
+      return jsonOut(result);
+    }
+
+    var id = Utilities.getUuid();
+    sheet.appendRow([new Date(), page, name, email, type, message, "pending", "", id]);
+    pendingNotify = [page, name, email, type, message, sheet.getLastRow()];
+  } catch (err) {
+    result.ok = false;
+    result.code = "error";
+    result.error = String(err);
+  } finally {
+    if (haveLock) lock.releaseLock();
+  }
+  // Notification (a network call) happens after the lock is released so a slow/failed mail
+  // send never holds up other concurrent submissions; notifyNewComment has its own try/catch.
+  if (pendingNotify) {
+    notifyNewComment(pendingNotify[0], pendingNotify[1], pendingNotify[2], pendingNotify[3], pendingNotify[4], pendingNotify[5]);
+  }
+  return jsonOut(result);
+}
+
+function jsonOut(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * Emails the site owner whenever a new comment is submitted, so moderation
+ * doesn't require checking the sheet manually. Wrapped in its own try/catch
+ * so a failed/unauthorized email never breaks the actual submission.
+ */
+function notifyNewComment(page, name, email, type, message, rowNum) {
+  try {
+    if (NOTIFY_EMAIL === "PASTE_YOUR_EMAIL_HERE") return;
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SUBMISSIONS_SHEET_NAME);
+    var link = SpreadsheetApp.getActiveSpreadsheet().getUrl() + "#gid=" + sheet.getSheetId() + "&range=A" + rowNum;
+    var subject = "New " + type.toLowerCase() + " on " + page;
+    var body =
+      "Page: " + page + "\n" +
+      "Name: " + name + "\n" +
+      "Email: " + email + "\n" +
+      "Type: " + type + "\n\n" +
+      "Message:\n" + message + "\n\n" +
+      "Open this row to approve or reject:\n" + link;
+    MailApp.sendEmail(NOTIFY_EMAIL, subject, body);
+  } catch (err) {
+    // Notification failures (e.g. not yet authorized) should never block a real submission.
+  }
+}
+
+/**
+ * Emails the original commenter when they get a reply. Wrapped in its own
+ * try/catch so a failed/unauthorized email never blocks anything else.
+ */
+function notifyParticipantOfReply(email, name, page, type, message, reply) {
+  try {
+    if (!email || !reply) return;
+    var subject = "Reply to your " + type.toLowerCase() + " on " + page;
+    var body =
+      "Hi " + name + ",\n\n" +
+      "You submitted this " + type.toLowerCase() + " on " + page + ":\n" +
+      '"' + message + '"\n\n' +
+      "Reply:\n" + reply + "\n\n" +
+      "You can see it live on the page.";
+    MailApp.sendEmail(email, subject, body);
+  } catch (err) {
+    // Never let a failed notification block anything else.
+  }
+}
+
+/**
+ * Installable "On edit" trigger (see setup step 8) — NOT a simple onEdit,
+ * because simple triggers are blocked from sending email or opening a
+ * different spreadsheet. Fires on every edit to Sheet A; only acts when the
+ * edited cell is the Reply column (H = 8th column) on an already-approved
+ * row. Keeps Sheet B's Reply cell in sync and emails the original commenter.
+ */
+function onReplyEdit(e) {
+  var lock = LockService.getScriptLock();
+  var haveLock = false;
+  try {
+    if (!e || !e.range) return; // defensive: malformed/manual invocation
+    var range = e.range;
+    if (range.getNumRows() !== 1 || range.getNumColumns() !== 1) return; // ignore paste/fill across multiple cells
+    var sheet = range.getSheet();
+    if (sheet.getName() !== SUBMISSIONS_SHEET_NAME) return;
+    if (range.getRow() === 1) return; // header row
+    if (range.getColumn() !== 8) return; // Reply column only
+
+    var vals = sheet.getRange(range.getRow(), 1, 1, 9).getValues()[0];
+    // columns: 0 Timestamp, 1 Page, 2 Name, 3 Email, 4 Type, 5 Message, 6 Status, 7 Reply, 8 ID
+    var timestamp = vals[0], page = vals[1], name = vals[2], email = vals[3], type = vals[4], message = vals[5], status = vals[6], reply = vals[7], id = vals[8];
+    if (status !== "approved") return; // not public yet — approveSelected() handles this case
+
+    if (APPROVED_SHEET_ID === "PASTE_YOUR_APPROVED_SHEET_ID_HERE") return;
+
+    haveLock = lock.tryLock(10000);
+    if (!haveLock) return; // another write is in progress; the next edit event will retry
+
+    var approvedSheet = SpreadsheetApp.openById(APPROVED_SHEET_ID).getSheetByName(APPROVED_SHEET_NAME);
+    if (!approvedSheet) return;
+
+    var data = approvedSheet.getDataRange().getValues();
+    var matches = [];
+    for (var i = 1; i < data.length; i++) {
+      var rowId = data[i][6];
+      if (id && rowId && rowId === id) matches.push(i);
+    }
+    if (matches.length === 0) {
+      // Legacy row with no ID (created before the ID column existed) — fall back to timestamp matching.
+      for (var j = 1; j < data.length; j++) {
+        var rowTs = data[j][0];
+        if (!data[j][6] && rowTs instanceof Date && timestamp instanceof Date && rowTs.getTime() === timestamp.getTime()) {
+          matches.push(j);
+        }
+      }
+    }
+    if (matches.length === 1) {
+      approvedSheet.getRange(matches[0] + 1, 6).setValue(reply); // Reply is column F (6th) in Approved
+    }
+    // matches.length === 0: no corresponding Approved row found (not yet synced) — nothing to update.
+    // matches.length > 1: ambiguous match — skip the write rather than guess wrong, since a bad UUID
+    // collision or duplicate timestamp fallback here would silently overwrite the wrong comment's reply.
+  } catch (err) {
+    // Never let this trigger throw uncaught.
+  } finally {
+    if (haveLock) lock.releaseLock();
+  }
+  // Email notification happens outside the lock (and outside the try above) so a slow/failed
+  // mail send never holds the sheet lock; notifyParticipantOfReply has its own try/catch.
+  if (typeof reply !== "undefined" && typeof email !== "undefined") {
+    notifyParticipantOfReply(email, name, page, type, message, reply);
+  }
+}
+
+/**
+ * Adds a "Comments" menu to the Submissions sheet with Approve/Reject
+ * actions, so moderation never requires leaving the normal Sheets UI.
+ */
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("Comments")
+    .addItem("Approve selected row(s)", "approveSelected")
+    .addItem("Reject / delete selected row(s)", "rejectSelected")
+    .addToUi();
+}
+
+/**
+ * Copies the selected row(s) in Submissions to the public Approved sheet,
+ * carrying over name / type / message / reply (never email), then marks
+ * the original row as "approved". Type a reply into column H (Reply)
+ * before approving if you want it to show up alongside the comment — the
+ * commenter gets emailed immediately if so. To add or edit a reply AFTER
+ * approval, edit column H here in Submissions (never in the Approved sheet
+ * directly) — the onReplyEdit trigger (setup step 8) syncs it across and
+ * emails the commenter automatically.
+ */
+function approveSelected() {
+  var ui = SpreadsheetApp.getUi();
+  var sub = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SUBMISSIONS_SHEET_NAME);
+  var sel = sub.getActiveRange();
+  var startRow = sel.getRow();
+  var numRows = sel.getNumRows();
+
+  if (startRow === 1) {
+    ui.alert("Select one or more data rows (not the header row) before approving.");
+    return;
+  }
+  if (APPROVED_SHEET_ID === "PASTE_YOUR_APPROVED_SHEET_ID_HERE") {
+    ui.alert("Set APPROVED_SHEET_ID at the top of this script first.");
+    return;
+  }
+
+  var approvedSS = SpreadsheetApp.openById(APPROVED_SHEET_ID);
+  var approvedSheet = approvedSS.getSheetByName(APPROVED_SHEET_NAME);
+  if (!approvedSheet) {
+    ui.alert('Could not find a sheet/tab named "' + APPROVED_SHEET_NAME + '" in the Approved spreadsheet.');
+    return;
+  }
+
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) {
+    ui.alert("Another comment operation is in progress — please try again in a moment.");
+    return;
+  }
+  var pendingNotifications = [];
+  try {
+    for (var i = 0; i < numRows; i++) {
+      var row = startRow + i;
+      var vals = sub.getRange(row, 1, 1, 9).getValues()[0];
+      // columns: 0 Timestamp, 1 Page, 2 Name, 3 Email, 4 Type, 5 Message, 6 Status, 7 Reply, 8 ID
+      var timestamp = vals[0], page = vals[1], name = vals[2], email = vals[3], type = vals[4], message = vals[5], reply = vals[7], id = vals[8];
+      approvedSheet.appendRow([timestamp, page, name, type, message, reply, id]);
+      sub.getRange(row, 7).setValue("approved");
+      if (reply) pendingNotifications.push([email, name, page, type, message, reply]);
+    }
+  } finally {
+    lock.releaseLock();
+  }
+  // Notifications happen after the lock is released so a slow mail send never blocks other operations.
+  pendingNotifications.forEach(function (args) {
+    notifyParticipantOfReply(args[0], args[1], args[2], args[3], args[4], args[5]);
+  });
+  ui.alert("Approved " + numRows + " comment(s) and published to the public sheet.");
+}
+
+/**
+ * Deletes the selected row(s) from Submissions outright. Nothing was ever
+ * public, so "reject" and "delete" are the same action here.
+ */
+function rejectSelected() {
+  var ui = SpreadsheetApp.getUi();
+  var sub = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SUBMISSIONS_SHEET_NAME);
+  var sel = sub.getActiveRange();
+  var startRow = sel.getRow();
+  var numRows = sel.getNumRows();
+
+  if (startRow === 1) {
+    ui.alert("Select one or more data rows (not the header row) before rejecting.");
+    return;
+  }
+  sub.deleteRows(startRow, numRows);
+  ui.alert("Deleted " + numRows + " row(s).");
+}

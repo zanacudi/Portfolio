@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guide to Cone Penetration Testing — Interactive Companion</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+canvas{display:block;width:100%;height:260px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.readout{color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.statgrid.n3{grid-template-columns:repeat(3,1fr)}
+.statgrid.n2{grid-template-columns:repeat(2,1fr)}
+.stat{background:#f2f7f9;padding:10px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
+.stat strong{font-size:15px}
+.stat.hi strong{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.warn{background:#fdeee9;color:var(--red)}
+.badge.ok{background:#e9f6ef;color:var(--green)}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.sources{font-size:11px;color:var(--muted);line-height:1.6}
+.sources a{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+table.notation{min-width:640px}
+table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
+table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>Guide to Cone Penetration Testing — Interactive Companion</h1>
+<p>Interactive companion to Robertson, P.K. &amp; Cabal, K. (2022), <em>Guide to Cone Penetration Testing</em>, 7th Edition, Gregg Drilling LLC. Complements the CPT interpretation in <a href="jb-insitu-state-lab.html">the Jefferies &amp; Been series, Module 2</a> with Robertson's own direct correlations &mdash; several of which turn out to agree closely, which is a useful cross-check either way.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>About this module</h2>
+<div class="explain">
+<p>Where the Jefferies &amp; Been modules build a state-parameter-based inversion from first principles (cavity expansion theory, calibrated to laboratory CSL data), this guide is the industry's standard field reference: direct, mostly empirical correlations from a huge base of calibration-chamber and case-history data, built around one central quantity &mdash; the soil behaviour&ndash;type index, I<sub>c</sub>. This module works through the same raw CPT channels (q<sub>t</sub>, f<sub>s</sub>, stresses) into I<sub>c</sub>, state parameter, friction angle, and several everyday design correlations (OCR, relative density, undrained strength) &mdash; all using the guide's own published equations.</p>
+</div>
+</div>
+
+<div class="card">
+<h2>Notation used in this module</h2>
+<p class="explain" style="font-size:12px">This guide defines its own glossary up front (a good habit &mdash; Modules 1&ndash;4 didn't, so we added one to each). Symbols below are listed in roughly the order they first appear.</p>
+<div style="overflow-x:auto"><table class="notation">
+<tr><td><b>q<sub>c</sub>, q<sub>t</sub></b></td><td>raw and pore-pressure-corrected cone resistance, q<sub>t</sub>=q<sub>c</sub>+u<sub>2</sub>(1&minus;a)</td><td><b>OCR</b></td><td>overconsolidation ratio, &sigma;&prime;<sub>p</sub>/&sigma;&prime;<sub>vo</sub></td></tr>
+<tr><td><b>f<sub>s</sub></b></td><td>sleeve friction resistance</td><td><b>&sigma;&prime;<sub>p</sub></b></td><td>maximum past (preconsolidation) effective stress</td></tr>
+<tr><td><b>R<sub>f</sub></b></td><td>friction ratio, (f<sub>s</sub>/q<sub>t</sub>)&times;100%, from raw (non-normalized) data</td><td><b>D<sub>r</sub>, I<sub>D</sub></b></td><td>relative density / density index, (e<sub>max</sub>&minus;e)/(e<sub>max</sub>&minus;e<sub>min</sub>)</td></tr>
+<tr><td><b>Q<sub>t</sub></b></td><td>normalized cone resistance, (q<sub>t</sub>&minus;&sigma;<sub>vo</sub>)/&sigma;&prime;<sub>vo</sub> (stress exponent n=1)</td><td><b>Q<sub>c</sub>, Q<sub>OCR</sub>, Q<sub>A</sub></b></td><td>compressibility, overconsolidation and aging factors in the Kulhawy&ndash;Mayne D<sub>r</sub> correlation</td></tr>
+<tr><td><b>F<sub>r</sub></b></td><td>normalized friction ratio, (f<sub>s</sub>/(q<sub>t</sub>&minus;&sigma;<sub>vo</sub>))&times;100%</td><td><b>N<sub>kt</sub></b></td><td>cone factor relating q<sub>t</sub> to undrained shear strength s<sub>u</sub></td></tr>
+<tr><td><b>Q<sub>tn</sub></b></td><td>normalized cone resistance with a soil-type-dependent stress exponent n</td><td><b>S<sub>t</sub></b></td><td>sensitivity &mdash; ratio of peak to fully remoulded undrained strength</td></tr>
+<tr><td><b>Q<sub>tn,cs</sub></b></td><td>Q<sub>tn</sub> converted to an equivalent clean-sand value</td><td><b>B<sub>q</sub></b></td><td>pore-pressure ratio, &Delta;u/q<sub>n</sub> (excess pore pressure over net cone resistance)</td></tr>
+<tr><td><b>I<sub>c</sub></b></td><td>soil behaviour&ndash;type index (radius of the SBTn zone boundaries, Fig. 23)</td><td><b>&psi;</b></td><td>state parameter (same definition as the Jefferies &amp; Been modules)</td></tr>
+<tr><td><b>I<sub>B</sub></b></td><td>Robertson (2016) alternative behaviour-type index, tracks SBT zone boundaries more closely than I<sub>c</sub></td><td><b>&phi;&prime;, &phi;&prime;<sub>cv</sub></b></td><td>peak and constant-volume (critical-state) effective friction angle</td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h2>1. From q<sub>t</sub>, f<sub>s</sub> to the soil behaviour&ndash;type index, I<sub>c</sub></h2>
+<div class="explain"><p>The guide's central simplification: instead of reading soil type off a two-axis chart, collapse the normalized tip resistance and friction ratio into a single index whose contours are (approximately) circles on the Q<sub>t</sub>&ndash;F<sub>r</sub> chart:</p></div>
+<div class="eq">Q<sub>t</sub> = (q<sub>t</sub> &minus; &sigma;<sub>vo</sub>) / &sigma;&prime;<sub>vo</sub> &nbsp;&nbsp; F<sub>r</sub> = (f<sub>s</sub> / (q<sub>t</sub> &minus; &sigma;<sub>vo</sub>)) &times; 100%</div>
+<div class="eq">I<sub>c</sub> = &radic;[(3.47 &minus; log Q<sub>t</sub>)&sup2; + (log F<sub>r</sub> + 1.22)&sup2;]</div>
+<p class="explain" style="font-size:12px">This is the exact same formula used as "Robertson &amp; Wride (1998)" in Module 2 &mdash; the guide is where that formula actually comes from and continues to be maintained.</p>
+
+<div class="grid2">
+<div>
+<div class="slider-block"><label>Tip resistance, q<sub>t</sub> (MPa) <span class="readout" id="qtOut">10.0</span></label><input id="qt" type="range" min="0.5" max="30" step="0.1" value="10"></div>
+<div class="slider-block"><label>Sleeve friction, f<sub>s</sub> (kPa) <span class="readout" id="fsOut">80</span></label><input id="fs" type="range" min="2" max="300" step="1" value="80"></div>
+<div class="slider-block"><label>Vertical effective stress, &sigma;&prime;<sub>vo</sub> (kPa) <span class="readout" id="svOut">100</span></label><input id="sv" type="range" min="10" max="500" step="1" value="100"></div>
+<div class="slider-block"><label>Hydrostatic pressure, u<sub>0</sub> (kPa) <span class="readout" id="u0Out">50</span></label><input id="u0" type="range" min="0" max="400" step="1" value="50"></div>
+</div>
+<div class="statgrid n2" id="icStats"></div>
+</div>
+
+<h3>SBTn zones (Fig. 23)</h3>
+<table>
+<thead><tr><th>Zone</th><th>Soil behaviour type</th><th>I<sub>c</sub> range</th></tr></thead>
+<tbody id="zoneTable"></tbody>
+</table>
+<div class="callout" id="zoneCallout"></div>
+</div>
+
+<div class="card">
+<h2>2. State parameter and friction angle — a second, independent route</h2>
+<div class="explain"><p>Robertson (2010) fit a direct relationship between &psi; and the clean-sand-equivalent normalized resistance, Q<sub>tn,cs</sub> &mdash; no CSL, no &lambda;, no calibration chamber inversion coefficients, just one curve fit to case-history and calibration-chamber data:</p></div>
+<div class="eq">&psi; = 0.56 &minus; 0.33&middot;log(Q<sub>tn,cs</sub>)</div>
+<p class="explain" style="font-size:12px">Jefferies &amp; Been's own strong &psi;&ndash;friction-angle link then converts this directly to a peak friction angle. Substituting the &psi; formula above into &phi;&prime;=&phi;&prime;<sub>cv</sub>&minus;48&psi; gives a form written entirely in terms of the CPT reading &mdash; and these two forms are algebraically identical (checked directly below), which is exactly the kind of internal-consistency check this whole site has been built around:</p>
+<div class="eq">&phi;&prime; = &phi;&prime;<sub>cv</sub> &minus; 48&psi; &nbsp; &equiv; &nbsp; &phi;&prime; = &phi;&prime;<sub>cv</sub> + 15.84&middot;log(Q<sub>tn,cs</sub>) &minus; 26.88</div>
+<p class="explain" style="font-size:12px">For comparison, Kulhawy &amp; Mayne's (1990) independent, purely empirical fit for clean quartz sands:</p>
+<div class="eq">&phi;&prime; = 17.6 + 11&middot;log(Q<sub>tn</sub>)</div>
+
+<div class="grid3">
+<div class="slider-block"><label>Q<sub>tn,cs</sub> <span class="readout" id="qtncsOut">80</span></label><input id="qtncs" type="range" min="5" max="300" step="1" value="80"></div>
+<div class="slider-block"><label>&phi;&prime;<sub>cv</sub> (&deg;) <span class="readout" id="phicvOut">33</span></label><input id="phicv" type="range" min="28" max="40" step="0.5" value="33"></div>
+</div>
+<div class="statgrid n3" id="psiPhiStats"></div>
+<div class="callout" id="dilateFlag"></div>
+
+<canvas id="phiCompareChart" style="height:220px"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>&phi;&prime; via &psi; (Robertson/J&amp;B form)</span><span><i style="background:var(--orange)"></i>&phi;&prime; via Kulhawy &amp; Mayne (1990)</span></div>
+</div>
+
+<div class="card">
+<h2>3. Everyday CPT correlations: OCR, relative density, undrained strength</h2>
+<div class="explain">Uses the same q<sub>t</sub>, f<sub>s</sub>, &sigma;&prime;<sub>vo</sub> from Section 1's sliders above.</div>
+
+<h3>Overconsolidation ratio</h3>
+<div class="eq">OCR = 0.25&middot;(Q<sub>t</sub>)<sup>1.25</sup> &nbsp; (Robertson, 2009) &nbsp;&nbsp; OCR &asymp; k&middot;Q<sub>t</sub>, k&asymp;0.33 &nbsp; (Kulhawy &amp; Mayne, 1990, valid Q<sub>t</sub>&lt;20)</div>
+<div class="statgrid n2" id="ocrStats"></div>
+
+<h3>Relative density (clean sand, I<sub>c</sub> &lt; 1.6)</h3>
+<div class="eq">D<sub>r</sub>&sup2; = Q<sub>tn</sub> / 350 &nbsp; (simplified for young, uncemented quartz sand; Q<sub>tn</sub> here uses a fixed stress exponent n=0.5)</div>
+<div class="statgrid n2" id="drStats"></div>
+
+<h3>Undrained shear strength &amp; sensitivity (fine-grained soil)</h3>
+<div class="eq">s<sub>u</sub> = (q<sub>t</sub> &minus; &sigma;<sub>vo</sub>) / N<sub>kt</sub> &nbsp;&nbsp; N<sub>kt</sub> = 10.5 + 7&middot;log(F<sub>r</sub>) &nbsp; (Robertson, 2012) &nbsp;&nbsp; S<sub>t</sub> &asymp; 7/F<sub>r</sub></div>
+<div class="statgrid n3" id="suStats"></div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> Section 1's I<sub>c</sub> formula and SBTn zone boundaries are transcribed exactly from the guide (Fig. 23). Section 2's &psi;&ndash;Q<sub>tn,cs</sub> and Kulhawy&ndash;Mayne friction-angle formulas are exact; the algebraic identity shown between the two &phi;&prime; forms was verified independently (substituting one equation into the other reproduces the guide's own stated combined form to within rounding) rather than assumed. Q<sub>tn,cs</sub> is entered directly via slider rather than derived from raw q<sub>t</sub>/f<sub>s</sub>, because the full clean-sand-equivalent conversion requires an iterative stress-exponent procedure (the guide's Fig. 48) that is referenced but not fully reproduced in the extracted text used to build this page. Section 3's D<sub>r</sub> calculator uses a fixed stress exponent n=0.5 rather than the guide's full Ic-dependent iterative n &mdash; a reasonable simplification specifically in the clean-sand regime (I<sub>c</sub>&lt;1.6) the formula itself is stated for, but disclosed here rather than left implicit. The Robertson&ndash;Campanella (1983) cavity-expansion friction-angle formula is mentioned in the guide but was not implemented here, since its extracted text was too garbled to transcribe with confidence.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Robertson, P.K. &amp; Cabal, K.L. (2022). <em>Guide to Cone Penetration Testing</em>, 7th Edition. Gregg Drilling LLC, Signal Hill, CA.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+function el(id){ return document.getElementById(id); }
+function num(id){ return +el(id).value; }
+
+var ZONES = [
+ {zone:1, name:"Sensitive, fine grained", lo:null, hi:null},
+ {zone:2, name:"Organic soils – clay", lo:3.6, hi:Infinity},
+ {zone:3, name:"Clays – silty clay to clay", lo:2.95, hi:3.6},
+ {zone:4, name:"Silt mixtures – clayey silt to silty clay", lo:2.60, hi:2.95},
+ {zone:5, name:"Sand mixtures – silty sand to sandy silt", lo:2.05, hi:2.60},
+ {zone:6, name:"Sands – clean sand to silty sand", lo:1.31, hi:2.05},
+ {zone:7, name:"Gravelly sand to dense sand", lo:-Infinity, hi:1.31},
+ {zone:8, name:"Very stiff sand to clayey sand*", lo:null, hi:null},
+ {zone:9, name:"Very stiff, fine grained*", lo:null, hi:null}
+];
+el("zoneTable").innerHTML = ZONES.map(function(z){
+  var range = z.lo===null ? "N/A" : (z.hi===Infinity ? "&gt; "+z.lo : (z.lo===-Infinity ? "&lt; "+z.hi : z.lo.toFixed(2)+" – "+z.hi.toFixed(2)));
+  return `<tr><td>${z.zone}</td><td>${z.name}</td><td>${range}</td></tr>`;
+}).join("");
+
+function classifyIc(ic){
+  for(var i=0;i<ZONES.length;i++){
+    var z=ZONES[i];
+    if(z.lo===null) continue;
+    if(ic>z.lo && ic<=z.hi) return z;
+  }
+  return null;
+}
+
+function updateSection1(){
+  var qt=num("qt")*1000, fs=num("fs"), svEff=num("sv"), u0=num("u0");
+  el("qtOut").textContent=num("qt").toFixed(1);
+  el("fsOut").textContent=fs.toFixed(0);
+  el("svOut").textContent=svEff.toFixed(0);
+  el("u0Out").textContent=u0.toFixed(0);
+  var svTotal=svEff+u0;
+  var qNet=qt-svTotal;
+  var Qt=qNet/svEff;
+  var Fr=(fs/qNet)*100;
+  var QtSafe=Math.max(0.5,Qt), FrSafe=Math.max(0.05,Fr);
+  var Ic=Math.sqrt(Math.pow(3.47-Math.log10(QtSafe),2)+Math.pow(Math.log10(FrSafe)+1.22,2));
+  var zone=classifyIc(Ic);
+  el("icStats").innerHTML = `
+    <div class="stat"><small>Q<sub>t</sub></small><strong>${Qt.toFixed(1)}</strong></div>
+    <div class="stat"><small>F<sub>r</sub> (%)</small><strong>${Fr.toFixed(2)}</strong></div>
+    <div class="stat hi"><small>I<sub>c</sub></small><strong>${Ic.toFixed(2)}</strong></div>
+    <div class="stat"><small>SBTn zone</small><strong>${zone?zone.zone:"–"}</strong></div>`;
+  el("zoneCallout").innerHTML = zone ? `<b>Zone ${zone.zone}:</b> ${zone.name}` : "Outside the I<sub>c</sub>-based zone ranges (likely zone 1, 8, or 9 — sensitive, very stiff, or cemented soil).";
+
+  updateSection3(Qt,Fr,qt,svTotal,svEff);
+}
+["qt","fs","sv","u0"].forEach(id=>el(id).addEventListener("input",updateSection1));
+
+function updateSection3(Qt,Fr,qt,svTotal,svEff){
+  var ocr1=0.25*Math.pow(Math.max(0.1,Qt),1.25);
+  var ocr2=0.33*Qt;
+  el("ocrStats").innerHTML = `
+    <div class="stat hi"><small>OCR (Robertson 2009)</small><strong>${ocr1.toFixed(2)}</strong></div>
+    <div class="stat"><small>OCR (Kulhawy & Mayne, k=0.33)</small><strong>${ocr2.toFixed(2)}</strong>${Qt>=20?'<span class="badge warn">Qt&ge;20, outside stated range</span>':''}</div>`;
+
+  var Pa=100, n=0.5;
+  var Qtn = ((qt-svTotal)/Pa)*Math.pow(Pa/svEff,n);
+  var dr2 = Qtn/350;
+  var dr = dr2>=0 ? Math.sqrt(dr2)*100 : NaN;
+  el("drStats").innerHTML = `
+    <div class="stat"><small>Q<sub>tn</sub> (n=0.5)</small><strong>${Qtn.toFixed(1)}</strong></div>
+    <div class="stat hi"><small>D<sub>r</sub> (%)</small><strong>${isNaN(dr)?"–":dr.toFixed(0)}</strong></div>`;
+
+  var FrSafe=Math.max(0.05,Fr);
+  var Nkt=10.5+7*Math.log10(FrSafe);
+  var su=(qt-svTotal)/Math.max(1,Nkt);
+  var St=7/FrSafe;
+  el("suStats").innerHTML = `
+    <div class="stat"><small>N<sub>kt</sub></small><strong>${Nkt.toFixed(1)}</strong></div>
+    <div class="stat hi"><small>s<sub>u</sub> (kPa)</small><strong>${su.toFixed(0)}</strong></div>
+    <div class="stat"><small>S<sub>t</sub></small><strong>${St.toFixed(1)}</strong></div>`;
+}
+
+function updateSection2(){
+  var qtncs=num("qtncs"), phicv=num("phicv");
+  el("qtncsOut").textContent=qtncs.toFixed(0);
+  el("phicvOut").textContent=phicv.toFixed(1);
+
+  var psi = 0.56 - 0.33*Math.log10(qtncs);
+  var phiViaPsi = phicv - 48*psi;
+  var phiViaDirect = phicv + 15.84*Math.log10(qtncs) - 26.88;
+  var phiKM = 17.6 + 11*Math.log10(qtncs);
+
+  var dilative = psi < -0.05;
+  var badge = dilative ? '<span class="badge ok">dilative (ψ &lt; -0.05)</span>' : '<span class="badge warn">contractive (ψ &ge; -0.05)</span>';
+
+  el("psiPhiStats").innerHTML = `
+    <div class="stat hi"><small>&psi; = 0.56-0.33log(Qtn,cs)</small><strong>${psi>=0?"+":""}${psi.toFixed(3)}</strong></div>
+    <div class="stat"><small>&phi;&prime; via &psi;-form</small><strong>${phiViaPsi.toFixed(1)}&deg;</strong></div>
+    <div class="stat"><small>&phi;&prime; via direct Qtn,cs form</small><strong>${phiViaDirect.toFixed(1)}&deg; (check: &Delta;=${(phiViaPsi-phiViaDirect).toFixed(3)}&deg;)</strong></div>`;
+  el("dilateFlag").innerHTML = "This matches the same &psi;=-0.05 dilative/contractive threshold used throughout the Jefferies & Been modules: " + badge;
+
+  var W=el("phiCompareChart").clientWidth||700,H=220;
+  var cv=el("phiCompareChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=48,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=5,xmax=300;
+  function X(v){ return ml+pw*(Math.log10(v)-Math.log10(xmin))/(Math.log10(xmax)-Math.log10(xmin)); }
+  var ymin=20,ymax=50;
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  [10,100].forEach(function(xv){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(String(xv),x-8,mt+ph+14); });
+  ctx.textAlign="right";
+  for(var yv=20;yv<=50;yv+=10){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(0),ml-8,y+3); }
+  ctx.textAlign="left";
+  ctx.fillText("Qtn,cs (log scale)", ml+pw/2-40, H-2);
+  ctx.save(); ctx.translate(12,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText("φ' (°)",0,0); ctx.restore();
+  function curve(fn,color){
+    ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.beginPath();
+    for(var xv2=xmin;xv2<=xmax;xv2*=1.03){ var y2=fn(xv2); var x=X(xv2),y=Y(Math.max(ymin,Math.min(ymax,y2))); if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+    ctx.stroke();
+  }
+  curve(function(q){ return phicv + 15.84*Math.log10(q) - 26.88; }, "#123b4a");
+  curve(function(q){ return 17.6 + 11*Math.log10(q); }, "#e38a22");
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(qtncs),Y(Math.max(ymin,Math.min(ymax,phiViaPsi))),5,0,7); ctx.fill();
+}
+["qtncs","phicv"].forEach(id=>el(id).addEventListener("input",updateSection2));
+
+updateSection1();
+updateSection2();
+window.addEventListener("resize",function(){updateSection1();updateSection2();});
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

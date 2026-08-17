@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 2)</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.6}
+select,button,input[type=number]{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+canvas{display:block;width:100%;height:250px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.readout{color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.statgrid.n3{grid-template-columns:repeat(3,1fr)}
+.statgrid.n2{grid-template-columns:repeat(2,1fr)}
+.stat{background:#f2f7f9;padding:10px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
+.stat strong{font-size:15px}
+.stat.hi strong{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.warn{background:#fff4df;color:#a9660c}
+.badge.ok{background:#e9f6ef;color:var(--green)}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.sources{font-size:11px;color:var(--muted);line-height:1.6}
+.sources a{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+table.notation{min-width:640px}
+table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
+table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>Soil Liquefaction: A Critical State Approach — Interactive Companion</h1>
+<p><b>Module 2: In-Situ State from the CPT, and How Variable It Really Is</b> (Chapters 4&ndash;5). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press. Continues from <a href="jb-critical-state-lab.html">Module 1 (Chapters 1&ndash;3)</a> — see also the companion <a href="cpt-guide-lab.html">Guide to Cone Penetration Testing module</a> for Robertson's own direct CPT correlations.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>About this module</h2>
+<div class="explain">
+<p>Module 1 built the mathematical core &mdash; the state parameter &psi; and the NorSand model &mdash; from laboratory triaxial data. But you can't sample sand undisturbed; almost everything in practice comes from a cone penetrometer (CPT) pushed into the ground. Chapter 4 solves the resulting inverse problem: given a measured tip resistance, what &psi; produced it? Chapter 5 then asks the uncomfortable follow-up question every real site raises &mdash; &psi; is never one number, it's a distribution, so what single value should actually go into a design calculation?</p>
+</div>
+</div>
+
+<div class="card">
+<h2>Notation used in this module</h2>
+<p class="explain" style="font-size:12px">Symbols in roughly the order they first appear below &mdash; use this as a lookup while reading Chapters 4&ndash;5.</p>
+<div style="overflow-x:auto"><table class="notation">
+<tr><td><b>q<sub>t</sub></b></td><td>corrected CPT tip (cone) resistance</td><td><b>Q<sub>p</sub></b></td><td>dimensionless tip resistance normalized by mean effective stress, (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub></td></tr>
+<tr><td><b>f<sub>s</sub></b></td><td>sleeve friction resistance</td><td><b>k, m</b></td><td>fitting constants in Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) (Eqs. 4.7/4.8), predictable from &lambda;<sub>10</sub></td></tr>
+<tr><td><b>u<sub>2</sub></b></td><td>pore pressure measured just behind the cone tip during penetration</td><td><b>I<sub>c</sub></b></td><td>soil behaviour&ndash;type index &mdash; higher I<sub>c</sub> means finer/more clay-like (Eq. 4.13)</td></tr>
+<tr><td><b>u<sub>0</sub></b></td><td>hydrostatic (equilibrium) pore pressure at that depth</td><td><b>&psi;<sub>&mu;</sub>, &psi;<sub>&sigma;</sub></b></td><td>mean and standard deviation of the &psi; distribution at a site</td></tr>
+<tr><td><b>&sigma;<sub>vo</sub>, &sigma;&prime;<sub>vo</sub></b></td><td>total and effective vertical stress at test depth</td><td><b>&psi;<sub>k</sub></b></td><td>characteristic (design) state parameter &mdash; a chosen percentile of the &psi; distribution, not the mean</td></tr>
+<tr><td><b>Q, F, B<sub>q</sub></b></td><td>dimensionless CPT groups (Table 4.1): normalized tip resistance, friction ratio, and pore-pressure ratio</td><td><b>z</b></td><td>standard-normal percentile value (from the inverse normal CDF)</td></tr>
+<tr><td><b>K<sub>o</sub></b></td><td>geostatic (at-rest) horizontal-to-vertical effective stress ratio</td><td></td><td></td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h2>1. From raw CPT readings to dimensionless resistance</h2>
+<div class="explain"><p>A raw CPT gives three channels: tip resistance q<sub>t</sub>, sleeve friction f<sub>s</sub>, and pore pressure u<sub>2</sub>. None of these mean anything on their own &mdash; resistance scales almost linearly with stress level, so the book's Table 4.1 strips that out with dimensionless groups:</p></div>
+<div class="eq">Q = (q<sub>t</sub> &minus; &sigma;<sub>vo</sub>) / &sigma;&prime;<sub>vo</sub> &nbsp;&nbsp; F = f<sub>s</sub>/(q<sub>t</sub> &minus; &sigma;<sub>vo</sub>) &nbsp;&nbsp; B<sub>q</sub> = (u<sub>2</sub> &minus; u<sub>0</sub>)/(q<sub>t</sub> &minus; &sigma;<sub>vo</sub>)</div>
+<div class="eq">p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>(1+2K<sub>o</sub>)/3 &nbsp;&nbsp; Q<sub>p</sub> = (q<sub>t</sub> &minus; p&prime;<sub>o</sub>) / p&prime;<sub>o</sub> &nbsp;&nbsp; (&asymp; 3Q/(1+2K<sub>o</sub>), Table 4.1)</div>
+
+<div class="grid2">
+<div>
+<div class="slider-block"><label>Tip resistance, q<sub>t</sub> (MPa) <span class="readout" id="qtOut">15.0</span></label><input id="qt" type="range" min="1" max="40" step="0.1" value="15"></div>
+<div class="slider-block"><label>Sleeve friction, f<sub>s</sub> (kPa) <span class="readout" id="fsOut">90</span></label><input id="fs" type="range" min="5" max="400" step="1" value="90"></div>
+<div class="slider-block"><label>Pore pressure, u<sub>2</sub> (kPa) <span class="readout" id="u2Out">150</span></label><input id="u2" type="range" min="0" max="500" step="1" value="150"></div>
+</div>
+<div>
+<div class="slider-block"><label>Vertical effective stress, &sigma;&prime;<sub>vo</sub> (kPa) <span class="readout" id="svOut">150</span></label><input id="sv" type="range" min="20" max="500" step="1" value="150"></div>
+<div class="slider-block"><label>Hydrostatic pressure, u<sub>0</sub> (kPa) <span class="readout" id="u0Out">150</span></label><input id="u0" type="range" min="0" max="400" step="1" value="150"></div>
+<div class="slider-block"><label>Geostatic stress ratio, K<sub>o</sub> <span class="readout" id="koOut">0.50</span></label><input id="ko" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
+</div>
+</div>
+<div class="statgrid" id="cptStats"></div>
+<p class="explain" style="font-size:11.5px;color:var(--muted);margin-top:6px">B<sub>q</sub> should stay within about &plusmn;0.02 for the drained-penetration relationships used below (Section 4.7.3) &mdash; the badge flags it if not.</p>
+
+<h3>Where does K<sub>o</sub> actually come from? Section 4.9.1's answer: be skeptical</h3>
+<div class="explain"><p>The formula everyone reaches for is Jaky's equation, linking K<sub>o</sub> to the current friction angle:</p></div>
+<div class="eq">K<sub>o</sub> = 1 &minus; sin&phi;&prime; &nbsp; (Eq. 4.19)</div>
+<div class="grid2">
+<div class="slider-block"><label>&phi;&prime; for the Jaky estimate (&deg;) <span class="readout" id="jakyPhiOut">33</span></label><input id="jakyPhi" type="range" min="28" max="42" step="0.5" value="33"></div>
+<div class="stat hi" style="align-self:center"><small>K<sub>o</sub> = 1 &minus; sin&phi;&prime;</small><strong id="jakyKoOut">0.46</strong></div>
+</div>
+<div class="callout">The book is explicitly skeptical of this formula here, not just presenting it: densifying a sand by vibration <i>raises</i> its friction angle, so Eq. 4.19 predicts K<sub>o</sub> should <i>fall</i> &mdash; but real measurements show horizontal stress <i>increases</i> with densification. "Equation 4.19 has the wrong sense." The book's actual conclusion: at best, Jaky's equation just indicates K<sub>o</sub> &asymp; 0.5 under loose, normally consolidated conditions &mdash; treat it as a rough anchor, not a real physical relationship.</div>
+</div>
+
+<div class="card">
+<h2>2. Soil behaviour&ndash;type index, I<sub>c</sub></h2>
+<div class="explain"><p>Before trusting a &psi; estimate, the CPT itself tells you whether you're even in sand. Been &amp; Jefferies' index uses the piezometric channel (Eq. 4.13a); Robertson &amp; Wride's ignores it (Eq. 4.13b, and per the book, "best avoided" when pore pressure data exists):</p></div>
+<div class="eq">I<sub>c</sub> = &radic;[(3&minus;log(Q(1&minus;B<sub>q</sub>)+1))&sup2; + (1.5+1.3&middot;log(F))&sup2;] &nbsp;&nbsp; I<sub>c(R&amp;W)</sub> = &radic;[(3.47&minus;log(Q))&sup2; + (1.22+log(F))&sup2;]</div>
+<div class="statgrid n3" id="icStats"></div>
+</div>
+
+<div class="card">
+<h2>3. Inverting for &psi;: the dimensionless CPT method</h2>
+<div class="explain"><p>The book's core result (Eqs. 4.7/4.8, from Been et al. 1986/87's calibration chamber database) is a simple exponential relationship between Q<sub>p</sub> and &psi;, with the two fitting constants k and m predictable directly from a sand's CSL slope &lambda;<sub>10</sub> (Eqs. 4.11a/b) &mdash; the same &lambda;<sub>10</sub> already in the Table 2.1 database from Module 1:</p></div>
+<div class="eq">Q<sub>p</sub> = k&middot;exp(&minus;m&psi;) &nbsp;&nbsp; &psi; = &minus;ln(Q<sub>p</sub>/k)/m</div>
+<div class="eq">k = 8 + 0.55/(&lambda;<sub>10</sub> &minus; 0.01) &nbsp;&nbsp; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) &nbsp; (Eqs. 4.11a, 4.11b)</div>
+
+<label style="font-size:12.5px;font-weight:700">Sand (same Table 2.1 database as Module 1)</label><br>
+<select id="sandSelect"></select>
+
+<div class="grid2" style="margin-top:10px">
+<div>
+<div class="statgrid n3" id="invStats"></div>
+<div class="callout"><b>This chapter's method recovers &psi; to about &plusmn;0.05</b> against the calibration-chamber database using &lambda;<sub>10</sub> alone &mdash; but Section 4.6.2&ndash;4.6.4 shows it's <i>biased with stress level</i> because it ignores elastic rigidity I<sub>r</sub>=G/p&prime;. The book's own example: for Ticino sand at Q<sub>p</sub>=100, the overall trend gives &psi;=&minus;0.14, but splitting the same data by stress level gives &psi;&asymp;&minus;0.19 at p&prime;=400&nbsp;kPa versus &psi;&asymp;&minus;0.10 at p&prime;=40&nbsp;kPa &mdash; a real &Delta;&psi;&asymp;0.05 hidden inside the "simple" fit. Shuttle &amp; Jefferies (1998) traced this to I<sub>r</sub>, then to NorSand's own H, M, N, &lambda; (in roughly that order of importance, per Fig. 4.25) &mdash; the fully-corrected inversion (Eq. 4.12, Table 4.3) removes the bias but needs those extra properties, so it isn't reproduced here as a calculator (see disclosure below).</div>
+</div>
+<div><canvas id="qpChart"></canvas>
+<div class="legend"><span><i style="background:var(--blue)"></i>Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) for this sand's &lambda;<sub>10</sub></span><span><i style="background:var(--red)"></i>current Q<sub>p</sub></span><span><i style="background:#687a82"></i>real Ticino stress-bias anchors at Q<sub>p</sub>=100 (Fig. 4.20)</span></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2>4. How variable is &psi; really? Choosing a characteristic value &psi;<sub>k</sub></h2>
+<div class="explain">
+<p>Chapter 5's central point: &psi; measured continuously down a real CPT sounding is never one number, it's a distribution &mdash; and Rowe &amp; Craig's centrifuge caisson tests found that as little as <b>4% loose material by volume</b> measurably degraded cyclic performance, with <b>10%</b> triggering outright liquefaction failure during testing. So which percentile of the distribution should a design actually use? The book's real example is the Nerlerk berm (Ch. 1's flow-failure case history): over the 3&ndash;7 m depth interval, the median CPT-derived &psi; &asymp; &minus;0.08 looked comfortably stable, but the 80th percentile was &asymp; &minus;0.03, and Onisiphorou's stochastic re-analysis found liquefiable behavior starting around &psi; &gt; &minus;0.02 &mdash; i.e. the "average" soil looked fine while a real, connected fraction of it did not.</p>
+</div>
+<div class="eq">&psi;<sub>k</sub> = &psi;<sub>&mu;</sub> + z(percentile)&middot;&psi;<sub>&sigma;</sub> &nbsp; (assuming a normal distribution of &psi;; z from the inverse standard normal CDF)</div>
+
+<div class="grid3">
+<div class="slider-block"><label>Mean, &psi;<sub>&mu;</sub> <span class="readout" id="muOut">-0.080</span></label><input id="muSlide" type="range" min="-0.25" max="0.05" step="0.001" value="-0.08"></div>
+<div class="slider-block"><label>Std. deviation, &psi;<sub>&sigma;</sub> <span class="readout" id="sigOut">0.050</span></label><input id="sigSlide" type="range" min="0.01" max="0.12" step="0.001" value="0.05"></div>
+<div class="slider-block"><label>Characteristic percentile <span class="readout" id="pctOut">80%</span></label><input id="pctSlide" type="range" min="50" max="95" step="1" value="80"></div>
+</div>
+<p class="explain" style="font-size:12px">Defaults are the book's own Nerlerk berm stochastic-analysis input (&psi;<sub>&mu;</sub>=&minus;0.08, &psi;<sub>&sigma;</sub>=0.05, Onisiphorou 2000). "80th percentile" here follows the book's convention: the value that 80% of measurements are <i>stronger</i> (denser) than &mdash; i.e. the 80th percentile of the &psi; distribution itself, since higher &psi; is weaker. Practical guidance from Section 5.5.1: <b>80th&ndash;90th percentile</b>, erring toward 90th for cyclic loading and relaxing toward 80th for static problems.</p>
+
+<div class="grid2">
+<div><canvas id="distChart"></canvas></div>
+<div>
+<div class="statgrid n2" id="psikStats"></div>
+<table style="margin-top:10px">
+<caption style="text-align:left;font-size:11px;color:var(--muted);margin-bottom:4px">Table 5.4 &mdash; percentile vs. resistance factor for 99% reliability (offshore structure example, Been &amp; Jefferies 1993)</caption>
+<thead><tr><th>Percentile</th><th>Resistance factor</th></tr></thead>
+<tbody>
+<tr><td>95</td><td>1.17</td></tr><tr><td>90</td><td>1.21</td></tr><tr><td>80</td><td>1.26</td></tr>
+<tr><td>70</td><td>1.29</td></tr><tr><td>60</td><td>1.32</td></tr><tr><td>50</td><td>1.34</td></tr>
+</tbody></table>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> Section 1's dimensionless groups and Section 2's I<sub>c</sub> formulas (Eqs. 4.13a/b, Table 4.4 boundaries) are transcribed exactly. Section 3's Q<sub>p</sub>&ndash;&psi; relationship (Eqs. 4.7, 4.8, 4.11a, 4.11b) is the book's own λ<sub>10</sub>-only calibration and is presented together with its own documented limitation (stress-level/rigidity bias, &plusmn;0.05, Section 4.6.2). The book's fully rigidity-corrected general inversion (Eq. 4.12, Table 4.3) is real and cited, but was <b>not</b> implemented as a calculator here: the source PDF's typesetting of Eq. 4.12 could not be extracted unambiguously (an exponent/constant of 1.45 appears in a position consistent with either k<sup>1.45</sup>=&prod;f<sub>i</sub> or a scaling constant, and this could not be confirmed against the original 1998 paper), so rather than guess, the qualitative finding (H and M matter most, N and &lambda; less, &nu; negligible) is reported without a fabricated formula. Section 4's characteristic-value calculator assumes a normal distribution of &psi; for illustration; the book notes real sand strength distributions often skew log-normal.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+var SANDS = [
+ {name:"Brasted sand",lambda10:0.050,Mtc:1.30},
+ {name:"Castro sand (S&C)",lambda10:0.038,Mtc:1.37},
+ {name:"Hokksund sand",lambda10:0.054,Mtc:1.29},
+ {name:"Leighton Buzzard sand",lambda10:0.054,Mtc:1.24},
+ {name:"Ottawa sand",lambda10:0.028,Mtc:1.13},
+ {name:"Reid Bedford sand",lambda10:0.065,Mtc:1.29},
+ {name:"Ticino sand",lambda10:0.056,Mtc:1.24},
+ {name:"Toyoura sand",lambda10:0.039,Mtc:1.24},
+ {name:"Erksak 330/0.7 sand",lambda10:0.031,Mtc:1.26},
+ {name:"Erksak 355/3 sand",lambda10:0.054,Mtc:1.18},
+ {name:"Isserk 210/2 sand",lambda10:0.043,Mtc:1.22},
+ {name:"Kogyuk 350/2 sand",lambda10:0.064,Mtc:1.31},
+ {name:"Nerlerk 270/1.9 sand",lambda10:0.049,Mtc:1.29},
+ {name:"Alaskan Beaufort 140/5 sand",lambda10:0.037,Mtc:1.22},
+ {name:"Chek Lap Kok sand",lambda10:0.130,Mtc:1.30},
+ {name:"Northwest Brook Pit sand",lambda10:0.036,Mtc:1.53},
+ {name:"Syncrude oil sand tailings",lambda10:0.065,Mtc:1.33}
+];
+
+function el(id){ return document.getElementById(id); }
+function num(id){ return +el(id).value; }
+
+// ---------------- Section 1 & 2 ----------------
+var s1ids=["qt","fs","u2","sv","u0","ko"];
+s1ids.forEach(id=>el(id).addEventListener("input",updateSection12));
+
+function updateSection12(){
+  var qt = num("qt")*1000; // kPa
+  var fs = num("fs");
+  var u2 = num("u2");
+  var svEff = num("sv");
+  var u0 = num("u0");
+  var ko = num("ko");
+  el("qtOut").textContent = num("qt").toFixed(1);
+  el("fsOut").textContent = fs.toFixed(0);
+  el("u2Out").textContent = u2.toFixed(0);
+  el("svOut").textContent = svEff.toFixed(0);
+  el("u0Out").textContent = u0.toFixed(0);
+  el("koOut").textContent = ko.toFixed(2);
+
+  var svTotal = svEff + u0;
+  var qNet = qt - svTotal;
+  var Q = qNet / svEff;
+  var F = (fs/qNet)*100;
+  var Bq = (u2-u0)/qNet;
+  var po = svEff*(1+2*ko)/3;
+  var Qp = (qt-po)/po;
+  var QpCheck = 3*Q/(1+2*ko);
+
+  var bqBadge = Math.abs(Bq)<=0.02 ? '<span class="badge ok">drained, Bq OK</span>' : '<span class="badge warn">Bq outside ±0.02</span>';
+
+  el("cptStats").innerHTML = `
+    <div class="stat"><small>Q</small><strong>${Q.toFixed(1)}</strong></div>
+    <div class="stat"><small>F (%)</small><strong>${F.toFixed(2)}</strong></div>
+    <div class="stat"><small>B<sub>q</sub></small><strong>${Bq.toFixed(3)}</strong>${bqBadge}</div>
+    <div class="stat hi"><small>Q<sub>p</sub> (via p&prime;<sub>o</sub> / via 3Q/(1+2K<sub>o</sub>))</small><strong>${Qp.toFixed(1)} / ${QpCheck.toFixed(1)}</strong></div>`;
+
+  updateIc(Q,F,Bq);
+  updateInversion(Qp);
+}
+
+function updateIc(Q,F,Bq){
+  var QBq = Math.max(0.5,Q*(1-Bq)+1);
+  var Fp = Math.max(0.05,F);
+  var IcBJ = Math.sqrt(Math.pow(3-Math.log10(QBq),2) + Math.pow(1.5+1.3*Math.log10(Fp),2));
+  var Qp2 = Math.max(0.5,Q);
+  var IcRW = Math.sqrt(Math.pow(3.47-Math.log10(Qp2),2) + Math.pow(1.22+Math.log10(Fp),2));
+  function classify(ic,bj){
+    var b = bj ? [1.25,1.80,2.40,2.76,3.22] : [1.31,2.05,2.60,2.95,3.60];
+    var names = ["Gravelly sands","Sands: clean to silty","Silty sand to sandy silt","Clayey silt to silty clay","Clays","Organic soils"];
+    for(var i=0;i<b.length;i++){ if(ic<b[i]) return names[i]; }
+    return names[5];
+  }
+  el("icStats").innerHTML = `
+    <div class="stat hi"><small>I<sub>c</sub> (Been & Jefferies, Eq. 4.13a)</small><strong>${IcBJ.toFixed(2)}</strong></div>
+    <div class="stat"><small>I<sub>c(R&W)</sub> (Eq. 4.13b)</small><strong>${IcRW.toFixed(2)}</strong></div>
+    <div class="stat"><small>soil behaviour type</small><strong>${classify(IcBJ,true)}</strong></div>`;
+}
+
+// ---------------- Section 3 ----------------
+var sandSel = el("sandSelect");
+sandSel.innerHTML = SANDS.map((s,i)=>`<option value="${i}"${i===8?" selected":""}>${s.name} (λ10=${s.lambda10})</option>`).join("");
+sandSel.addEventListener("change", updateSection12);
+
+function updateInversion(Qp){
+  var sand = SANDS[+sandSel.value];
+  var lam10 = sand.lambda10;
+  var k = 8 + 0.55/(lam10-0.01);
+  var m = 8.1 - 2.3*Math.log10(lam10);
+  var psi = -Math.log(Qp/k)/m;
+
+  el("invStats").innerHTML = `
+    <div class="stat"><small>k</small><strong>${k.toFixed(2)}</strong></div>
+    <div class="stat"><small>m</small><strong>${m.toFixed(2)}</strong></div>
+    <div class="stat hi"><small>&psi; from Q<sub>p</sub>=${Qp.toFixed(1)}</small><strong>${psi>=0?"+":""}${psi.toFixed(3)}</strong></div>`;
+
+  var W=el("qpChart").clientWidth||520,H=250;
+  var cv=el("qpChart"); cv.width=W; cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=60,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.3,xmax=0.05;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  var ymin=Math.log(5), ymax=Math.log(1000); // log scale for Qp
+  function Y(qp){ return mt+ph*(1-(Math.log(Math.max(qp,5))-ymin)/(ymax-ymin)); }
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  for(var xv=-0.3;xv<=0.05;xv+=0.05){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(2),x-14,mt+ph+13); }
+  ctx.textAlign="right";
+  [10,100,1000].forEach(function(qv){ var y=Y(qv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(String(qv),ml-8,y+3); });
+  ctx.textAlign="left";
+  ctx.fillText("state parameter, ψ", ml+pw/2-40, H-2);
+  ctx.save(); ctx.translate(14,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText("Qp (log scale)",0,0); ctx.restore();
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
+  for(var xv2=xmin;xv2<=xmax;xv2+=0.005){
+    var qpv = k*Math.exp(-m*xv2);
+    var x=X(xv2), y=Y(qpv);
+    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // Section 4.6.2's real Ticino stress-level bias anchors, all at Qp=100 (Sladen 1989a,b via Fig. 4.20)
+  var biasPts=[{psi:-0.10,label:"40 kPa"},{psi:-0.14,label:"overall"},{psi:-0.19,label:"400 kPa"}];
+  var yBias=Y(100);
+  ctx.fillStyle="#687a82"; ctx.font="10px Arial";
+  biasPts.forEach(function(bp){
+    var xx=X(bp.psi);
+    ctx.beginPath(); ctx.arc(xx,yBias,3.5,0,7); ctx.fill();
+    ctx.fillText(bp.label,xx-14,yBias-8);
+  });
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(Math.max(xmin,Math.min(xmax,psi))),Y(Qp),5.5,0,7); ctx.fill();
+}
+
+function updateJaky(){
+  var phi=num("jakyPhi");
+  el("jakyPhiOut").textContent=phi.toFixed(1);
+  var koJaky=1-Math.sin(phi*Math.PI/180);
+  el("jakyKoOut").textContent=koJaky.toFixed(3);
+}
+el("jakyPhi").addEventListener("input",updateJaky);
+updateJaky();
+
+updateSection12();
+window.addEventListener("resize",updateSection12);
+
+// ---------------- Section 4 ----------------
+function invNorm(p){
+  var a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  var b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  var c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  var d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  var plow=0.02425, phigh=1-plow, q,r;
+  if(p<plow){ q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if(p>phigh){ q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  q=p-0.5; r=q*q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+function normPdf(x,mu,sig){ return Math.exp(-0.5*Math.pow((x-mu)/sig,2))/(sig*Math.sqrt(2*Math.PI)); }
+
+var s4ids=["muSlide","sigSlide","pctSlide"];
+s4ids.forEach(id=>el(id).addEventListener("input",updateSection4));
+
+function updateSection4(){
+  var mu=num("muSlide"), sig=num("sigSlide"), pct=num("pctSlide");
+  el("muOut").textContent=mu.toFixed(3);
+  el("sigOut").textContent=sig.toFixed(3);
+  el("pctOut").textContent=pct.toFixed(0)+"%";
+
+  var z=invNorm(pct/100);
+  var psik = mu + z*sig;
+  var band = pct>=85 ? '<span class="badge warn">cyclic-loading range</span>' : (pct>=80?'<span class="badge ok">book\'s recommended range</span>':'<span class="badge">below recommended range</span>');
+
+  el("psikStats").innerHTML = `
+    <div class="stat"><small>z (percentile)</small><strong>${z.toFixed(3)}</strong></div>
+    <div class="stat hi"><small>&psi;<sub>k</sub> characteristic value</small><strong>${psik>=0?"+":""}${psik.toFixed(3)}</strong>${band}</div>`;
+
+  var W=el("distChart").clientWidth||520,H=250;
+  var cv=el("distChart"); cv.width=W; cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=56,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=mu-4*sig, xmax=mu+4*sig;
+  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
+  var ymax = normPdf(mu,mu,sig)*1.15;
+  function Y(v){ return mt+ph*(1-v/ymax); }
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  for(var k2=0;k2<=4;k2++){ var xv=xmin+(xmax-xmin)*k2/4; var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(2),x-14,mt+ph+13); }
+  ctx.textAlign="right";
+  for(var k3=0;k3<=4;k3++){ var yvv=ymax*k3/4; var yy=Y(yvv); ctx.beginPath();ctx.moveTo(ml,yy);ctx.lineTo(ml+pw,yy);ctx.stroke(); ctx.fillText(yvv.toFixed(1),ml-8,yy+3); }
+  ctx.textAlign="left";
+  ctx.fillText("state parameter, ψ", ml+pw/2-40, H-2);
+  ctx.save(); ctx.translate(12,mt+ph/2+30); ctx.rotate(-Math.PI/2); ctx.fillText("probability density",0,0); ctx.restore();
+  // curve
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2; ctx.beginPath();
+  for(var i=0;i<=200;i++){ var xv2=xmin+(xmax-xmin)*i/200; var y=Y(normPdf(xv2,mu,sig)); if(i===0) ctx.moveTo(X(xv2),y); else ctx.lineTo(X(xv2),y); }
+  ctx.stroke();
+  // shaded area beyond psik (weaker side, i.e. x > psik since higher psi = weaker)
+  ctx.fillStyle="rgba(198,72,82,0.18)";
+  ctx.beginPath(); ctx.moveTo(X(psik),mt+ph);
+  for(var i2=0;i2<=100;i2++){ var xv3=psik+(xmax-psik)*i2/100; if(xv3>xmax) break; ctx.lineTo(X(xv3),Y(normPdf(xv3,mu,sig))); }
+  ctx.lineTo(X(xmax),mt+ph); ctx.closePath(); ctx.fill();
+  // reference markers: Nerlerk median -0.08, 80pct -0.03, liquefiable threshold -0.02
+  function marker(x,label,color){
+    if(x<xmin||x>xmax) return;
+    var xx=X(x); ctx.strokeStyle=color; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xx,mt); ctx.lineTo(xx,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=color; ctx.font="10px Arial"; ctx.fillText(label,xx+3,mt+12);
+  }
+  marker(-0.02,"Nerlerk liquefiable >",  "#c64852");
+  // current psik line
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X(psik),mt); ctx.lineTo(X(psik),mt+ph); ctx.stroke();
+}
+updateSection4();
+window.addEventListener("resize",updateSection4);
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

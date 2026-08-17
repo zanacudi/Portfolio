@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PM4Sand — Interactive Companion</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
+header h1{margin:0;font-size:22px}
+header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
+header a{color:#bfe6f5}
+.view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
+.wrap{max-width:1200px;margin:auto;padding:16px}
+.back{font-size:12px}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
+.card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
+.card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
+.explain{font-size:13px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+canvas{display:block;width:100%;height:260px}
+.slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
+.slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
+.slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.slider-block .hint{font-weight:400;color:var(--muted);font-size:10.5px;display:block;margin-top:3px}
+.readout{color:var(--blue);font-weight:700}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.statgrid.n3{grid-template-columns:repeat(3,1fr)}
+.statgrid.n2{grid-template-columns:repeat(2,1fr)}
+.statgrid.n6{grid-template-columns:repeat(6,1fr)}
+.stat{background:#f2f7f9;padding:10px;border-radius:7px;text-align:center}
+.stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
+.stat strong{font-size:15px}
+.stat.hi strong{color:var(--blue)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.warn{background:#fdeee9;color:var(--red)}
+.badge.ok{background:#e9f6ef;color:var(--green)}
+.warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.sources{font-size:11px;color:var(--muted);line-height:1.6}
+.sources a{color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
+th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
+table.notation{min-width:640px}
+table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
+table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid,.statgrid.n6{grid-template-columns:repeat(2,1fr)}}
+</style></head>
+<body>
+<header><div class="wrap">
+<p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
+<h1>PM4Sand — Interactive Companion</h1>
+<p>Interactive companion to Boulanger, R.W. &amp; Ziotopoulou, K. (2017, revised 2018), <em>PM4Sand (Version 3.1): A Sand Plasticity Model for Earthquake Engineering Applications</em>, Report No. UCD/CGM-17-01, Center for Geotechnical Modeling, UC Davis. PM4Sand is the standard bounding-surface plasticity model used with FLAC/PLAXIS for liquefaction-deformation analysis &mdash; it uses the same state-parameter idea as <a href="jb-critical-state-lab.html">the Jefferies &amp; Been modules</a>, and the same penetration-resistance correlations as <a href="cpt-guide-lab.html">the CPT Guide module</a>, to turn field data into a full stress-strain constitutive response.</p>
+</div></header>
+
+<div class="wrap">
+
+<div class="card">
+<h2>About this module</h2>
+<div class="explain">
+<p>PM4Sand follows the stress-ratio-controlled, critical-state-compatible bounding-surface framework of Dafalias &amp; Manzari (2004), simplified to plane strain and recalibrated at the equation level so its default parameters reproduce standard design correlations (SPT/CPT-based relative density, shear-wave-velocity-based stiffness, and liquefaction-triggering-based cyclic strength) without extensive laboratory testing. Where Jefferies &amp; Been describe state using the state parameter &psi; (difference in void ratio from the critical state line), PM4Sand uses an equivalent but distinct quantity &mdash; the <b>relative state parameter index, &xi;<sub>R</sub></b> &mdash; built directly from relative density rather than void ratio, because sands rarely have a reliably measured e<sub>max</sub>/e<sub>min</sub> in the field. This module walks through how &xi;<sub>R</sub> is defined, how it sets the bounding and dilatancy surfaces that control strength and stiffness, and how the model's headline three primary parameters (D<sub>R</sub>, G<sub>o</sub>, h<sub>po</sub>) are actually calibrated from penetration resistance in practice.</p>
+</div>
+</div>
+
+<div class="card">
+<h2>Notation used in this module</h2>
+<div style="overflow-x:auto"><table class="notation">
+<tr><td><b>D<sub>R</sub></b></td><td>apparent relative density (input as a fraction, 0&ndash;1)</td><td><b>M</b></td><td>critical stress ratio, M = 2&middot;sin&phi;&prime;<sub>cv</sub></td></tr>
+<tr><td><b>D<sub>R,cs</sub></b></td><td>relative density the sand would have <i>at</i> critical state, for the current p&prime;</td><td><b>M<sub>b</sub>, M<sub>d</sub></b></td><td>bounding and dilatancy stress ratios</td></tr>
+<tr><td><b>&xi;<sub>R</sub></b></td><td>relative state parameter index, &xi;<sub>R</sub> = D<sub>R,cs</sub> &minus; D<sub>R</sub> (negative = dense of critical, positive = loose of critical)</td><td><b>n<sub>b</sub>, n<sub>d</sub></b></td><td>parameters controlling how fast M<sub>b</sub>, M<sub>d</sub> move away from M with &xi;<sub>R</sub></td></tr>
+<tr><td><b>Q, R</b></td><td>Bolton (1986) dilatancy parameters shaping the empirical critical state line</td><td><b>&phi;&prime;<sub>cv</sub></b></td><td>constant-volume (critical-state) effective friction angle</td></tr>
+<tr><td><b>p&prime;</b></td><td>mean effective stress</td><td><b>&phi;&prime;<sub>peak</sub>, &phi;<sub>PT</sub></b></td><td>peak and phase-transformation friction angles implied by M<sub>b</sub>, M<sub>d</sub></td></tr>
+<tr><td><b>p<sub>A</sub></b></td><td>atmospheric pressure (101.3 kPa)</td><td><b>G<sub>o</sub></b></td><td>shear-modulus coefficient (primary input)</td></tr>
+<tr><td><b>(N<sub>1</sub>)<sub>60</sub></b></td><td>SPT blow count, corrected to 60% energy and 1 atm overburden</td><td><b>h<sub>po</sub></b></td><td>contraction-rate parameter (primary input, sets CRR)</td></tr>
+<tr><td><b>q<sub>c1N</sub></b></td><td>normalized CPT tip resistance</td><td><b>V<sub>s1</sub></b></td><td>overburden-normalized shear-wave velocity</td></tr>
+<tr><td><b>h<sub>o</sub>, z<sub>max</sub>, C<sub>&epsilon;</sub>, C<sub>DR</sub>, C<sub>K&alpha;f</sub>, F<sub>sed,min</sub></b></td><td colspan="3">secondary parameters &mdash; given default values as functions of D<sub>R</sub> / &xi;<sub>R</sub> (Section 4)</td></tr>
+</table></div>
+</div>
+
+<div class="card">
+<h2>1. Relative state, &xi;<sub>R</sub> &mdash; the sand-specific stand-in for &psi;</h2>
+<div class="explain"><p>PM4Sand positions an empirical critical state line using Bolton's (1986) dilatancy relationship, expressed directly in terms of the relative density the sand would have <i>at</i> critical state for the current confining stress:</p></div>
+<div class="eq">D<sub>R,cs</sub> = R / [ Q &minus; ln(100&middot;p&prime;/p<sub>A</sub>) ]</div>
+<div class="eq">&xi;<sub>R</sub> = D<sub>R,cs</sub> &minus; D<sub>R</sub></div>
+<p class="explain" style="font-size:12px">Q&asymp;10, R&asymp;1.0 were Bolton's values for quartzitic sands; PM4Sand's own default is Q=10, R=1.5 (a slight increase used to better match direct simple shear data). As with &psi;, &xi;<sub>R</sub> &lt; 0 means dense of critical (dilative tendency), &xi;<sub>R</sub> &gt; 0 means loose of critical (contractive tendency), and &xi;<sub>R</sub> = 0 means the sand is exactly at critical state for that stress level.</p>
+
+<div class="grid2">
+<div>
+<div class="slider-block"><label>Relative density, D<sub>R</sub> <span class="readout" id="drOut">0.55</span></label><input id="dr1" type="range" min="0.20" max="0.95" step="0.01" value="0.55"></div>
+<div class="slider-block"><label>Mean effective stress, p&prime; (kPa) <span class="readout" id="pOut">100</span><span class="hint">log scale &mdash; represents &sigma;&prime;<sub>vc</sub> at model initialization</span></label><input id="pEff" type="range" min="10" max="1000" step="1" value="100"></div>
+<div class="slider-block"><label>Q (Bolton) <span class="readout" id="qOut">10.0</span></label><input id="qBolt" type="range" min="8" max="11" step="0.1" value="10"></div>
+<div class="slider-block"><label>R (Bolton) <span class="readout" id="rOut">1.5</span></label><input id="rBolt" type="range" min="1.0" max="2.0" step="0.1" value="1.5"></div>
+</div>
+<div class="statgrid n2" id="csStats"></div>
+</div>
+<canvas id="cslChart"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>D<sub>R,cs</sub>(p&prime;) &mdash; critical state line</span><span><i style="background:var(--red)"></i>current (p&prime;, D<sub>R</sub>)</span></div>
+<div class="callout" id="stateCallout"></div>
+</div>
+
+<div class="card">
+<h2>2. Bounding &amp; dilatancy surfaces &mdash; from &xi;<sub>R</sub> to strength</h2>
+<div class="explain"><p>The bounding surface (peak strength) and dilatancy surface (phase transformation) both collapse onto the critical stress ratio M as &xi;<sub>R</sub>&rarr;0, and diverge from it exponentially as the sand moves further from critical state:</p></div>
+<div class="eq">M = 2&middot;sin&phi;&prime;<sub>cv</sub> &nbsp;&nbsp; M<sub>b</sub> = M&middot;exp(&minus;n<sub>b</sub>&middot;&xi;<sub>R</sub>) &nbsp;&nbsp; M<sub>d</sub> = M&middot;exp(n<sub>d</sub>&middot;&xi;<sub>R</sub>)</div>
+<p class="explain" style="font-size:12px">Uses &xi;<sub>R</sub> from Section 1 above. Defaults: n<sub>b</sub>=0.50, n<sub>d</sub>=0.10 (dense of critical); the report notes that for loose-of-critical states these are effectively reduced/increased to n<sub>b</sub>/4 and 4n<sub>d</sub> respectively &mdash; toggle below to see the effect.</p>
+
+<div class="grid3">
+<div class="slider-block"><label>&phi;&prime;<sub>cv</sub> (&deg;) <span class="readout" id="phicvOut">33</span></label><input id="phicv2" type="range" min="28" max="40" step="0.5" value="33"></div>
+<div class="slider-block"><label>n<sub>b</sub> <span class="readout" id="nbOut">0.50</span></label><input id="nb" type="range" min="0.1" max="1.0" step="0.01" value="0.50"></div>
+<div class="slider-block"><label>n<sub>d</sub> <span class="readout" id="ndOut">0.10</span></label><input id="nd" type="range" min="0.02" max="0.4" step="0.01" value="0.10"></div>
+</div>
+<label style="font-size:12px;display:flex;align-items:center;gap:6px;margin:4px 0 8px"><input type="checkbox" id="looseAdj"> apply loose-of-critical reduction (n<sub>b</sub>/4, 4n<sub>d</sub>) when &xi;<sub>R</sub> &gt; 0</label>
+
+<div class="statgrid n3" id="surfStats"></div>
+<canvas id="surfChart"></canvas>
+<div class="legend"><span><i style="background:var(--navy)"></i>M<sub>b</sub>(&xi;<sub>R</sub>) &mdash; bounding</span><span><i style="background:var(--orange)"></i>M<sub>d</sub>(&xi;<sub>R</sub>) &mdash; dilatancy</span><span><i style="background:var(--red)"></i>current &xi;<sub>R</sub></span></div>
+</div>
+
+<div class="card">
+<h2>3. Calibrating D<sub>R</sub>, G<sub>o</sub> and h<sub>po</sub> from penetration resistance</h2>
+<div class="explain"><p>In practice, laboratory triaxial/DSS data are almost never available, so the model's three primary parameters are estimated directly from SPT/CPT and V<sub>s</sub> data:</p></div>
+<div class="eq">D<sub>R</sub> = &radic;[(N<sub>1</sub>)<sub>60</sub> / C<sub>d</sub>] &nbsp; (C<sub>d</sub>=46) &nbsp;&nbsp;&nbsp; D<sub>R</sub> = 0.465&middot;[q<sub>c1N</sub>/C<sub>dq</sub>]<sup>0.264</sup> &minus; 1.063 &nbsp; (C<sub>dq</sub>=0.9)</div>
+<div class="eq">V<sub>s1</sub> = 85&middot;[(N<sub>1</sub>)<sub>60</sub> + 2.5]<sup>0.25</sup> &nbsp;&nbsp;&nbsp; G<sub>o</sub> = 167&middot;&radic;[(N<sub>1</sub>)<sub>60</sub> + 2.5] &nbsp; (m/s, combining the above with default e<sub>max</sub>/e<sub>min</sub>)</div>
+<div class="slider-block" style="max-width:420px"><label>SPT, (N<sub>1</sub>)<sub>60</sub> <span class="readout" id="n160Out">14</span></label><input id="n160" type="range" min="2" max="40" step="1" value="14"></div>
+<div class="statgrid n3" id="calibStats"></div>
+
+<h3>h<sub>po</sub> &mdash; calibrated last, and only by iteration</h3>
+<p class="explain" style="font-size:12px">Unlike D<sub>R</sub> and G<sub>o</sub>, h<sub>po</sub> has no closed-form correlation: it is adjusted by trial simulation until the model's undrained cyclic response matches a target cyclic resistance ratio (CRR), commonly taken from the Idriss &amp; Boulanger (2008) liquefaction-triggering correlation. The report's own three worked examples anchor this relationship:</p>
+<table>
+<thead><tr><th>(N<sub>1</sub>)<sub>60</sub></th><th>D<sub>R</sub></th><th>Target CRR (M=7.5, &sigma;&prime;<sub>v</sub>=1 atm)</th><th>Calibrated h<sub>po</sub></th></tr></thead>
+<tbody>
+<tr><td>6</td><td>0.35</td><td>0.090</td><td>0.53</td></tr>
+<tr><td>14</td><td>0.55</td><td>0.147</td><td>0.40</td></tr>
+<tr><td>26</td><td>0.75</td><td>0.312</td><td>0.63</td></tr>
+</tbody>
+</table>
+<div class="callout">Note h<sub>po</sub> is <i>not</i> monotonic in D<sub>R</sub> here &mdash; it depends on whatever combination of D<sub>R</sub> and G<sub>o</sub> was chosen first, which is exactly why the report insists it be calibrated last.</div>
+</div>
+
+<div class="card">
+<h2>4. Secondary parameter defaults &mdash; computed from D<sub>R</sub> and &xi;<sub>R</sub></h2>
+<div class="explain"><p>Most of PM4Sand's 21 secondary parameters take fixed defaults, but five are themselves functions of D<sub>R</sub> (and, for z<sub>max</sub>, the initial &xi;<sub>R</sub> from Section 1) &mdash; computed live below using the D<sub>R</sub> from Section 1's slider:</p></div>
+<div class="statgrid n3" id="secStats"></div>
+<div style="overflow-x:auto"><table>
+<thead><tr><th>Parameter</th><th>Default formula</th></tr></thead>
+<tbody>
+<tr><td>h<sub>o</sub></td><td>max[(0.25+D<sub>R</sub>)/2, 0.30]</td></tr>
+<tr><td>z<sub>max</sub></td><td>min[0.70&middot;exp(&minus;6.1&middot;&xi;<sub>R</sub>), 20]</td></tr>
+<tr><td>C<sub>&epsilon;</sub></td><td>0.5 for D<sub>R</sub>&lt;0.55, linear down to 0.2 at D<sub>R</sub>=0.75</td></tr>
+<tr><td>C<sub>DR</sub></td><td>min[5+25&middot;(D<sub>R</sub>&minus;0.35), 10]</td></tr>
+<tr><td>C<sub>K&alpha;f</sub></td><td>clip[5+220&middot;(D<sub>R</sub>&minus;0.26)<sup>3</sup>, 4.0, 35.0]</td></tr>
+<tr><td>F<sub>sed,min</sub></td><td>min[0.03&middot;exp(2.6&middot;D<sub>R</sub>), 0.99]</td></tr>
+</tbody>
+</table></div>
+</div>
+
+<div class="card">
+<div class="warning"><b>About this tool.</b> All equations above (the &xi;<sub>R</sub>/critical-state-line definition, the M<sub>b</sub>/M<sub>d</sub> exponential forms, the D<sub>R</sub>/V<sub>s1</sub>/G<sub>o</sub> penetration-resistance correlations, and the six secondary-parameter default formulas) are transcribed directly from the report's own Sections 2.2&ndash;2.3 and 4.1 (Tables 4.1&ndash;4.2), and the G<sub>o</sub> formula was independently re-derived and numerically checked against the report's own stated example values (476, 677, 890 for (N<sub>1</sub>)<sub>60</sub>=6, 14, 26) to resolve an ambiguous OCR extraction &mdash; all three matched to within rounding. This module covers the model's calibration inputs and its critical-state/surface framework (Sections 2.2&ndash;2.4, 4.1); it does not implement the full incremental plastic stress-strain integration (the fabric-formation history terms, elastic-plastic coupling, and numerical time-stepping of Sections 2.6&ndash;2.9 and 3), which requires the actual FLAC implementation to reproduce faithfully. Treat this as a notation and calibration-logic guide, not a substitute for running the model.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Boulanger, R.W. &amp; Ziotopoulou, K. (2017, revised 2018). <em>PM4Sand (Version 3.1): A Sand Plasticity Model for Earthquake Engineering Applications.</em> Report No. UCD/CGM-17-01, Center for Geotechnical Modeling, Dept. of Civil &amp; Environmental Engineering, University of California, Davis.</p>
+</div>
+
+
+<div id="commentsSection"></div>
+</div>
+
+
+<script>
+function el(id){ return document.getElementById(id); }
+function num(id){ return +el(id).value; }
+
+var state = { dr:0.55, p:100, Q:10, R:1.5, xiR:0 };
+
+function drawAxes(ctx,W,H,ml,mr,mt,mb,xmin,xmax,xlog,ymin,ymax,xlab,ylab,xticks,yticks){
+  var pw=W-ml-mr, ph=H-mt-mb;
+  function X(v){ return xlog ? ml+pw*(Math.log10(v)-Math.log10(xmin))/(Math.log10(xmax)-Math.log10(xmin)) : ml+pw*(v-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
+  xticks.forEach(function(xv){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.textAlign="center"; ctx.fillText(String(xv),x,mt+ph+14); });
+  ctx.textAlign="right";
+  yticks.forEach(function(yv){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(2).replace(/\.?0+$/,'')||"0",ml-8,y+3); });
+  ctx.textAlign="left";
+  ctx.fillText(xlab, ml+pw/2-40, H-2);
+  ctx.save(); ctx.translate(14,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText(ylab,0,0); ctx.restore();
+  return {X:X,Y:Y,ml:ml,mt:mt,pw:pw,ph:ph};
+}
+
+function updateSection1(){
+  var dr=num("dr1"), p=num("pEff"), Q=num("qBolt"), R=num("rBolt");
+  el("drOut").textContent=dr.toFixed(2);
+  el("pOut").textContent=p.toFixed(0);
+  el("qOut").textContent=Q.toFixed(1);
+  el("rOut").textContent=R.toFixed(1);
+  var pA=101.3;
+  var drcs = R/(Q-Math.log(100*p/pA));
+  var xiR = drcs - dr;
+  state.dr=dr; state.p=p; state.Q=Q; state.R=R; state.xiR=xiR;
+
+  el("csStats").innerHTML = `
+    <div class="stat"><small>D<sub>R,cs</sub> at this p&prime;</small><strong>${drcs.toFixed(3)}</strong></div>
+    <div class="stat hi"><small>&xi;<sub>R</sub> = D<sub>R,cs</sub> &minus; D<sub>R</sub></small><strong>${xiR>=0?"+":""}${xiR.toFixed(3)}</strong></div>`;
+
+  var desc = xiR < -0.02 ? '<span class="badge ok">dense of critical (dilative)</span>' : (xiR > 0.02 ? '<span class="badge warn">loose of critical (contractive)</span>' : '<span class="badge">near critical state</span>');
+  el("stateCallout").innerHTML = "At p&prime;=" + p.toFixed(0) + " kPa, D<sub>R</sub>=" + dr.toFixed(2) + " is " + desc;
+
+  var W=el("cslChart").clientWidth||700,H=260;
+  var cv=el("cslChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d");
+  var ax = drawAxes(ctx,W,H,56,14,14,32,10,1000,true,0,1.0,"p′ (kPa, log scale)","DR,cs",[10,100,1000],[0,0.25,0.5,0.75,1.0]);
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  var first=true;
+  for(var pv=10; pv<=1000; pv*=1.02){
+    var d = R/(Q-Math.log(100*pv/pA));
+    if(d<0||d>1.2) continue;
+    var x=ax.X(pv), y=ax.Y(Math.max(0,Math.min(1,d)));
+    if(first){ctx.moveTo(x,y);first=false;} else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(ax.X(p),ax.Y(Math.max(0,Math.min(1,dr))),5,0,7); ctx.fill();
+
+  updateSection2();
+  updateSection4();
+}
+["dr1","pEff","qBolt","rBolt"].forEach(id=>el(id).addEventListener("input",updateSection1));
+
+function updateSection2(){
+  var phicv=num("phicv2"), nb=num("nb"), nd=num("nd"), loose=el("looseAdj").checked;
+  el("phicvOut").textContent=phicv.toFixed(1);
+  el("nbOut").textContent=nb.toFixed(2);
+  el("ndOut").textContent=nd.toFixed(2);
+
+  var xiR = state.xiR;
+  var M = 2*Math.sin(phicv*Math.PI/180);
+  var nbEff = (loose && xiR>0) ? nb/4 : nb;
+  var ndEff = (loose && xiR>0) ? nd*4 : nd;
+  var Mb = M*Math.exp(-nbEff*xiR);
+  var Md = M*Math.exp(ndEff*xiR);
+  function toPhi(Mv){ var s=Mv/2; return s<=1 ? (Math.asin(s)*180/Math.PI) : NaN; }
+  var phiB=toPhi(Mb), phiD=toPhi(Md);
+
+  el("surfStats").innerHTML = `
+    <div class="stat"><small>M (=2sin&phi;&prime;<sub>cv</sub>)</small><strong>${M.toFixed(3)}</strong></div>
+    <div class="stat hi"><small>M<sub>b</sub> &rarr; &phi;&prime;<sub>peak</sub></small><strong>${Mb.toFixed(3)} &rarr; ${isNaN(phiB)?"–":phiB.toFixed(1)+"°"}</strong></div>
+    <div class="stat hi"><small>M<sub>d</sub> &rarr; &phi;<sub>PT</sub></small><strong>${Md.toFixed(3)} &rarr; ${isNaN(phiD)?"–":phiD.toFixed(1)+"°"}</strong></div>`;
+
+  var W=el("surfChart").clientWidth||700,H=260;
+  var cv=el("surfChart"); cv.width=W;cv.height=H;
+  var ctx=cv.getContext("2d");
+  var ax = drawAxes(ctx,W,H,56,14,14,32,-0.3,0.3,false,0,2.2,"ξR","stress ratio",[-0.3,-0.15,0,0.15,0.3],[0,0.5,1.0,1.5,2.0]);
+  function curve(fn,color){
+    ctx.strokeStyle=color; ctx.lineWidth=2.2; ctx.beginPath();
+    var first=true;
+    for(var xv=-0.3; xv<=0.3+1e-9; xv+=0.01){
+      var yv=fn(xv); var x=ax.X(xv), y=ax.Y(Math.max(0,Math.min(2.2,yv)));
+      if(first){ctx.moveTo(x,y);first=false;} else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+  curve(function(xv){ var nbe=(loose&&xv>0)?nb/4:nb; return M*Math.exp(-nbe*xv); }, "#123b4a");
+  curve(function(xv){ var nde=(loose&&xv>0)?nd*4:nd; return M*Math.exp(nde*xv); }, "#e38a22");
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(ax.X(Math.max(-0.3,Math.min(0.3,xiR))),ax.Y(Math.max(0,Math.min(2.2,Mb))),5,0,7); ctx.fill();
+}
+["phicv2","nb","nd","looseAdj"].forEach(id=>el(id).addEventListener("input",updateSection2));
+
+function updateSection3(){
+  var n160=num("n160");
+  el("n160Out").textContent=n160.toFixed(0);
+  var Cd=46;
+  var drSpt = Math.sqrt(n160/Cd);
+  var Vs1 = 85*Math.pow(n160+2.5,0.25);
+  var Go = 167*Math.sqrt(n160+2.5);
+  el("calibStats").innerHTML = `
+    <div class="stat hi"><small>D<sub>R</sub> (from SPT, C<sub>d</sub>=46)</small><strong>${drSpt.toFixed(2)}</strong></div>
+    <div class="stat"><small>V<sub>s1</sub> (m/s)</small><strong>${Vs1.toFixed(0)}</strong></div>
+    <div class="stat hi"><small>G<sub>o</sub></small><strong>${Go.toFixed(0)}</strong></div>`;
+}
+el("n160").addEventListener("input",updateSection3);
+
+function updateSection4(){
+  var dr=state.dr, xiR=state.xiR;
+  var ho = Math.max((0.25+dr)/2, 0.30);
+  var zmax = Math.min(0.70*Math.exp(-6.1*xiR), 20);
+  var ce = dr<0.55 ? 0.5 : Math.max(0.2, 0.5 - (0.5-0.2)/(0.75-0.55)*(dr-0.55));
+  var cdr = Math.min(5+25*(dr-0.35), 10);
+  var ckaf = Math.min(35.0, Math.max(4.0, 5+220*Math.pow(dr-0.26,3)));
+  var fsed = Math.min(0.03*Math.exp(2.6*dr), 0.99);
+  el("secStats").innerHTML = `
+    <div class="stat"><small>h<sub>o</sub></small><strong>${ho.toFixed(3)}</strong></div>
+    <div class="stat"><small>z<sub>max</sub></small><strong>${zmax.toFixed(2)}</strong></div>
+    <div class="stat"><small>C<sub>&epsilon;</sub></small><strong>${ce.toFixed(3)}</strong></div>
+    <div class="stat"><small>C<sub>DR</sub></small><strong>${cdr.toFixed(2)}</strong></div>
+    <div class="stat"><small>C<sub>K&alpha;f</sub></small><strong>${ckaf.toFixed(2)}</strong></div>
+    <div class="stat"><small>F<sub>sed,min</sub></small><strong>${fsed.toFixed(3)}</strong></div>`;
+}
+
+updateSection1();
+updateSection3();
+window.addEventListener("resize",function(){updateSection1();});
+</script>
+<script src="view-counter.js"></script>
+<script src="comments.js"></script>
+</body></html>

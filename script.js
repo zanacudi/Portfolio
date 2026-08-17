@@ -1,6 +1,6 @@
-function renderResume() {
-  const list = document.getElementById("resume-list");
-  list.innerHTML = RESUME.map(item => `
+function renderTimeline(containerId, items) {
+  const list = document.getElementById(containerId);
+  list.innerHTML = items.map(item => `
     <li>
       <div class="entry-title">${item.title}</div>
       <div class="entry-meta">${item.meta}</div>
@@ -14,6 +14,7 @@ function renderCards(containerId, items, { showDate = false } = {}) {
   container.innerHTML = items.map(item => `
     <div class="card">
       <h3>${item.title}</h3>
+      ${item.meta ? `<div class="entry-meta">${item.meta}</div>` : ""}
       ${showDate && item.date ? `<div class="entry-meta">${item.date}</div>` : ""}
       <p>${item.description}</p>
       ${(item.tags || []).map(t => `<span class="tag">${t}</span>`).join("")}
@@ -27,8 +28,10 @@ function renderContact() {
   list.innerHTML = CONTACT.map(c => `<li><a href="${c.href}" target="_blank" rel="noopener">${c.label}</a></li>`).join("");
 }
 
-renderResume();
+renderTimeline("education-list", EDUCATION);
+renderTimeline("resume-list", RESUME);
 renderCards("project-grid", PROJECTS);
+renderCards("litreview-grid", LITREVIEW);
 renderCards("tutorial-grid", TUTORIALS, { showDate: true });
 renderContact();
 
