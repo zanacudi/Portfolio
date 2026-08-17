@@ -170,6 +170,15 @@ th.symcol{text-transform:none}
 .quiz-block-score{background:#eef8fc;color:var(--navy)}
 .quiz-block-result{margin:0 13px 12px;padding:9px 11px;border-radius:7px;background:#f2f7f9;font-size:12px;font-weight:700;line-height:1.4}
 @media(max-width:520px){.quiz-block summary{font-size:12px}}
+.quiz-checkpoint{border:1px solid #e8d9b8;border-left:4px solid var(--orange);border-radius:10px;padding:12px 14px;background:#fffaf0;margin:16px 0}
+.quiz-checkpoint h3{margin-top:0}
+.disclosure{border:1px solid var(--line);border-radius:10px;margin:14px 0;background:#fafcfd;overflow:hidden}
+.disclosure>summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:14px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+.disclosure>summary::-webkit-details-marker{display:none}
+.disclosure>summary:before{content:'▸';font-size:11px;color:var(--muted);transition:transform .15s}
+.disclosure[open]>summary:before{transform:rotate(90deg)}
+.disclosure>summary small{font-weight:400;color:var(--muted);margin-left:auto;font-size:11px}
+.disclosure>.disclosure-body{padding:0 13px 13px}
 
 /* --- v6: clickable goals, intro shear tool, animated concept-line, in-progress modules --- */
 .goal{border:0;text-align:left;width:100%;cursor:pointer;font-family:inherit;transition:.15s}
@@ -336,15 +345,18 @@ th.symcol{text-transform:none}
 <button type="button" class="notation-card" data-goto="dilatancy-section" data-pulse="dilChart" style="border-left-color:#c64852"><b>M<sub>tc</sub>, M</b><small>critical friction ratio &mdash; the stress ratio η a soil approaches at large strain, independent of density</small></button>
 <button type="button" class="notation-card" data-goto="dilatancy-section" data-pulse="phiBar" style="border-left-color:#c64852"><b>φ′</b><small>effective-stress friction angle</small></button>
 
-<div class="notation-group-label" style="grid-column:1/-1"><span class="notation-swatch" style="background:#687a82"></span>NorSand's own properties &amp; internal variables</div>
+</div>
+<details class="disclosure">
+<summary>NorSand's own properties &amp; internal variables <small>not needed until Section 4 &mdash; open this when you get there</small></summary>
+<div class="disclosure-body notation-grid">
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#687a82"><b>N</b><small>NorSand volumetric coupling coefficient (Table 3.1) &mdash; scales how far the image stress ratio M<sub>i</sub> departs from M<sub>tc</sub></small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#687a82"><b>H</b><small>NorSand plastic hardening modulus &mdash; how fast the yield surface grows/shrinks per unit strain</small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#687a82"><b>I<sub>r</sub></b><small>elastic rigidity index, G/p′ (shear modulus over mean stress)</small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#687a82"><b>p<sub>i</sub></b><small>NorSand "image" mean stress &mdash; the internal variable that sets the current yield surface size</small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#687a82"><b>ψ<sub>i</sub>, M<sub>i</sub>, χ<sub>i</sub></b><small>ψ, M and χ evaluated at the "image" condition (p′=p<sub>i</sub>) rather than the current stress</small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#687a82"><b>e<sub>0</sub>, p′<sub>0</sub>, ψ<sub>0</sub></b><small>value of e, p′, ψ at the <i>start</i> of a test, before shearing begins</small></button>
-
 </div>
+</details>
 </div>
 
 <div class="card" id="csl-section">
@@ -396,6 +408,13 @@ th.symcol{text-transform:none}
 <div class="callout" id="drVsPsiNote" style="margin-top:8px"></div>
 </div>
 
+<div class="quiz-checkpoint" id="quizCheckABC">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Three short blocks on what you just covered: the CSL itself, the state parameter &psi;, and why &psi; beats relative density. Answer a block, then press its own "Check this block" button for immediate feedback &mdash; no need to finish all three before continuing.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotABC">Expand all</button><button type="button" class="collapseGroup" data-group="quizSlotABC">Collapse all</button></div>
+<div id="quizSlotABC"></div>
+</div>
+
 <div class="card" id="dilatancy-section">
 <h2>2. Stress&ndash;dilatancy: how &psi; sets strength</h2>
 <div class="explain"><p><b>Dilatancy, D</b>, is the ratio of the volumetric strain increment to the shear (deviatoric) strain increment, D = d&epsilon;<sub>v</sub>/d&epsilon;<sub>q</sub> (Eq. 2.4) &mdash; how much a soil is bulking up or compacting for a given amount of shearing. Under the book's compression-positive sign convention, D is negative while a sample is dilating, so its most negative value during a test &mdash; usually reached at peak strength &mdash; is written D<sub>min</sub>. Dilation at peak strength scales linearly with &psi; through a soil property &chi;<sub>tc</sub> (fit from the same triaxial database):</p></div>
@@ -416,7 +435,7 @@ th.symcol{text-transform:none}
 <div class="s2-meter"><span id="s2Marker" class="s2-marker"></span></div><div class="s2-meter-labels"><span>Dense / dilative</span><span>ψ = 0</span><span>Loose / contractive</span></div>
 <div class="s2-chain"><div class="s2-box"><small>ψ</small><strong id="s2ChainPsi">−0.100</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>D<sub>min</sub></small><strong id="s2D">−0.350</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>η<sub>max</sub></small><strong id="s2Eta">1.610</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>φ′<sub>peak</sub></small><strong id="s2Phi">39.4°</strong></div></div>
 <div id="s2Interpret" class="s2-prompt"></div>
-<div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong">It is unchanged</button><div id="s2Feedback" class="feedback">Predict first, then move the ψ slider to test your answer.</div></div>
+<div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback">Predict first, then move the ψ slider to test your answer.</div></div>
 </div></div></div>
 
 <div class="grid2">
@@ -437,6 +456,13 @@ th.symcol{text-transform:none}
 </div>
 </div>
 
+<div class="quiz-checkpoint" id="quizCheckDE">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Two blocks on dilatancy and how &psi; translates into peak strength through &chi;<sub>tc</sub> and M<sub>tc</sub>.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotDE">Expand all</button><button type="button" class="collapseGroup" data-group="quizSlotDE">Collapse all</button></div>
+<div id="quizSlotDE"></div>
+</div>
+
 <div class="card" id="calibration-section">
 <h2>3. Where do &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N and H actually come from?</h2>
 <div class="explain">
@@ -452,7 +478,10 @@ th.symcol{text-transform:none}
 <button type="button" class="parameter-card" data-param="chi" data-goto="chiFitChart" data-pulse="chiFitChart" aria-pressed="false"><canvas class="param-mini" id="miniChi"></canvas><b>χ<sub>tc</sub></b><small>Slope of D<sub>min</sub> against ψ.</small></button>
 <button type="button" class="parameter-card" data-param="nh" data-goto="fitNHChart" data-pulse="fitNHChart" aria-pressed="false"><canvas class="param-mini" id="miniNH"></canvas><b>N and H</b><small>Forward-fit the full stress–strain curve.</small></button>
 </div><div id="parameterRoleText" class="callout">Choose a property.</div></div>
-<h3>What a real triaxial test program looks like</h3>
+<p class="explain" style="font-size:12px"><b>The four lettered panels below (A&ndash;D) are the essential content.</b> The worked example just underneath &mdash; a real test program table and one full raw-data-to-calibration pipeline &mdash; shows where the panels' numbers actually come from, but it's supporting detail: skim it or collapse it on a first pass, and come back to it once the four panels themselves make sense.</p>
+<details class="disclosure" open>
+<summary>What a real triaxial test program looks like <small>worked example &mdash; optional on a first pass</small></summary>
+<div class="disclosure-body">
 <p class="explain" style="font-size:12px">Six drained tests on the same sand, at different stresses and moulding densities. A technician only sets &sigma;&prime;<sub>3c</sub> and e<sub>0</sub> (first two columns) &mdash; everything else is <i>computed</i> from those plus the CSL and stress&ndash;dilatancy properties, which is exactly what the four panels below run in reverse.</p>
 <div style="overflow-x:auto">
 <table id="sampleTestTable" style="font-size:11px">
@@ -481,6 +510,8 @@ th.symcol{text-transform:none}
 <div class="callout" id="pipelineNote" style="margin-top:8px"></div>
 </div>
 </div>
+</div>
+</details>
 
 <h3>A. &Gamma; and &lambda;<sub>10</sub> — from where a set of tests end up at large strain</h3>
 <p class="explain" style="font-size:12.5px">Each drained/undrained triaxial test, sheared far enough, ends at a different (e, p&prime;) point on the critical state line. Plot those end-points on e vs. log(p&prime;) and fit a straight line: the intercept at p&prime;=1 kPa is &Gamma;, the slope is &lambda;<sub>10</sub>.</p>
@@ -522,6 +553,13 @@ th.symcol{text-transform:none}
 <div class="legend"><span><i style="background:#9aa9ae"></i>illustrative "measured" data</span><span><i style="background:var(--navy)"></i>your current model curve</span></div>
 </div>
 </div>
+</div>
+
+<div class="quiz-checkpoint" id="quizCheckFGH">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Three blocks on where &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N and H actually come from &mdash; the calibration process you just walked through.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotFGH">Expand all</button><button type="button" class="collapseGroup" data-group="quizSlotFGH">Collapse all</button></div>
+<div id="quizSlotFGH"></div>
 </div>
 
 <div class="card" id="norsand-section">
@@ -598,14 +636,21 @@ th.symcol{text-transform:none}
 </div>
 </div>
 
+<div class="quiz-checkpoint" id="quizCheckI">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">One block on NorSand's structure and the simplifications this simulator makes.</p>
+<div id="quizSlotI"></div>
+</div>
 
 <section id="knowledge-check" class="card">
-<h2>5. Knowledge check: 100 questions on Module 1's common misconceptions</h2>
-<p class="explain">These 100 questions are organized in ten blocks of ten, progressing from foundational definitions toward the subtler distinctions students most often get wrong — sign conventions, what's measured versus inferred, what stays the same versus changes, and where each parameter actually comes from. Read every explanation, not just for questions you miss: several are written to correct a specific, common misreading. Answer all questions, then submit.</p>
-<div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 100 answered</div>
-<div class="quiz-block-controls"><button type="button" id="expandAllBlocks">Expand all blocks</button><button type="button" id="collapseAllBlocks">Collapse all blocks</button></div>
-<div id="quiz"></div>
+<h2>5. Final synthesis check</h2>
+<p class="explain">You've already met checkpoints A&ndash;I along the way, right after the section that taught them. This last block, J, ties the whole module together &mdash; the kind of "a colleague says…" applied reasoning that only makes sense once everything above is in place. <b>"Check my understanding" below grades J together with every earlier block you've answered</b>, wherever it appeared on the page, so it's fine to submit even if you skimmed or skipped some.</p>
+<div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 100 answered (blocks A&ndash;I above, plus J below)</div>
+<div id="quizSlotJ"></div>
 <div class="quiz-actions"><button id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none"></div>
+
+<div class="callout" style="margin-top:14px"><b>Back to where you started.</b> The opening "Walk through reading a state" chain asked you to read the point, read the CSL, subtract, and predict. You now know how each of those arrows is actually computed: <b>read the point</b> is e and p′ off the state plane; <b>read the CSL</b> is e<sub>c</sub> = Γ − λ<sub>10</sub>·log<sub>10</sub>(p′), calibrated in Section 3; <b>subtract</b> is ψ = e − e<sub>c</sub>; and <b>predict</b> now has real machinery behind it &mdash; D<sub>min</sub> = χ<sub>tc</sub>ψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> for a first-order estimate, or the full NorSand loop in Section 4 for the entire stress&ndash;strain curve. Module 2 picks up from here: how ψ is actually measured in the field, from a CPT.</div>
+
 <h3>Quick-reference glossary</h3><div class="glossary-grid">
 <div class="term"><b>Critical state</b>Continued deformation at constant stress and constant void ratio.</div><div class="term"><b>CSL</b>The locus of critical void ratio versus mean effective stress.</div><div class="term"><b>State parameter, ψ</b>Current void ratio minus critical void ratio at the same p′.</div><div class="term"><b>Dilatancy, D</b>Plastic or total volumetric strain increment divided by shear strain increment.</div><div class="term"><b>η = q/p′</b>Dimensionless stress ratio used to describe mobilized shear resistance.</div><div class="term"><b>M<sub>tc</sub></b>Critical η for triaxial compression.</div><div class="term"><b>Γ</b>CSL intercept at p′ = 1 kPa.</div><div class="term"><b>λ or λ<sub>10</sub></b>CSL slope using natural or base-10 logarithms.</div><div class="term"><b>NorSand</b>A state-parameter critical-state constitutive model with an evolving image state.</div></div></section>
 
@@ -1947,19 +1992,33 @@ var QUIZ_100 = [
 {q:"Overall, what is the single relationship that most of Module 1's other equations and interactive panels ultimately trace back to?",opts:["The NorSand hardening rule, Eq. 3.39","The state parameter, ψ = e − ec, and its role as the organizing variable connecting critical-state theory to dilatancy, strength, and constitutive modelling","The Mohr-Coulomb friction angle conversion, sinφ′ = 3η/(6+η)"],correct:"b",exp:"Dilatancy, peak strength, all four calibration panels, and NorSand's own internal mechanics are all, in one way or another, built around comparing a soil's state to the critical state line via ψ — the single idea the entire module is organized to teach."}
 ];
 
-var quiz=document.getElementById('quiz'),fill=document.getElementById('quizProgressFill'),count=document.getElementById('quizCount');
-if(!quiz||!fill||!count) return;
+var fill=document.getElementById('quizProgressFill'),count=document.getElementById('quizCount');
+if(!fill||!count) return;
 var BLOCK_NAMES=['A — Critical state & the CSL','B — The state parameter ψ','C — Why not just relative density','D — Dilatancy, D','E — Stress-dilatancy to peak strength','F — Calibrating Γ and λ10','G — Calibrating Mtc and χtc','H — N and H','I — NorSand structure & simplifications','J — Synthesis & integration'];
 var letters=['a','b','c','d'];
-quiz.innerHTML = BLOCK_NAMES.map(function(name,blockIdx){
+// Checkpoints are physically scattered through the page (right after the section that
+// teaches each block) instead of dumped in one 100-question wall at the end — spaced
+// retrieval practice instead of a single terminal exam. Each slot still renders in the
+// same A..J order the slots themselves appear on the page, so a single flat, document-order
+// query for .quiz-q still lines up exactly with QUIZ_100's own block order below.
+var SLOT_FOR_BLOCK=['quizSlotABC','quizSlotABC','quizSlotABC','quizSlotDE','quizSlotDE','quizSlotFGH','quizSlotFGH','quizSlotFGH','quizSlotI','quizSlotJ'];
+var slotHtml={};
+BLOCK_NAMES.forEach(function(name,blockIdx){
   var blockItems = QUIZ_100.slice(blockIdx*10, blockIdx*10+10);
   var body = blockItems.map(function(item,j){
     var qn = blockIdx*10+j+1;
     var opts = item.opts.map(function(o,k){ return '<label><input type="radio" name="q'+qn+'" value="'+letters[k]+'"> '+o+'</label>'; }).join('');
     return '<div class="quiz-q" data-correct="'+item.correct+'"><p>'+qn+'. '+item.q+'</p>'+opts+'<div class="quiz-explanation"><b>Explanation:</b> '+item.exp+'</div></div>';
   }).join('');
-  return '<details class="quiz-block"'+(blockIdx===0?' open':'')+'><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of 10 answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none"></div></details>';
-}).join('');
+  var blockHtml='<details class="quiz-block" open><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of 10 answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none"></div></details>';
+  var slotId=SLOT_FOR_BLOCK[blockIdx];
+  slotHtml[slotId]=(slotHtml[slotId]||'')+blockHtml;
+});
+var slotEls=[];
+Object.keys(slotHtml).forEach(function(slotId){
+  var el=document.getElementById(slotId);
+  if(el){ el.innerHTML=slotHtml[slotId]; slotEls.push(el); }
+});
 var qs=Array.from(document.querySelectorAll('.quiz-q'));
 var blockCountEls=Array.from(document.querySelectorAll('[data-blockcount]'));
 // Grades exactly one block from its CURRENT selections — only runs when the
@@ -1968,8 +2027,8 @@ var blockCountEls=Array.from(document.querySelectorAll('[data-blockcount]'));
 // Recomputes from scratch every time, so repeated presses never accumulate.
 function gradeBlock(idx){
   var blockQs=qs.slice(idx*10, idx*10+10);
-  var scoreEl=quiz.querySelector('[data-blockscore="'+idx+'"]');
-  var resultEl=quiz.querySelector('[data-blockresult="'+idx+'"]');
+  var scoreEl=document.querySelector('[data-blockscore="'+idx+'"]');
+  var resultEl=document.querySelector('[data-blockresult="'+idx+'"]');
   var score=0, unanswered=0;
   blockQs.forEach(function(q){
     var pick=q.querySelector('input:checked');
@@ -1992,7 +2051,7 @@ Array.from(document.querySelectorAll('[data-blockcheck]')).forEach(function(btn)
 });
 function updateQuizProgress(){
   var answered=qs.filter(q=>q.querySelector('input:checked')).length;
-  count.textContent=answered+' of '+qs.length+' answered';
+  count.textContent=answered+' of '+qs.length+' answered (blocks A–I above, plus J below)';
   fill.style.width=(100*answered/qs.length)+'%';
   blockCountEls.forEach(function(el){
     var idx=+el.dataset.blockcount;
@@ -2001,11 +2060,43 @@ function updateQuizProgress(){
     el.textContent=blockAnswered+' of '+blockQs.length+' answered';
   });
 }
-quiz.addEventListener('change',updateQuizProgress);updateQuizProgress();
-document.getElementById('expandAllBlocks').addEventListener('click',function(){quiz.querySelectorAll('details').forEach(d=>d.open=true);});
-document.getElementById('collapseAllBlocks').addEventListener('click',function(){quiz.querySelectorAll('details').forEach(d=>d.open=false);});
-var grade=document.getElementById('gradeQuiz');grade.addEventListener('click',function(){var score=0,unanswered=0;qs.forEach(function(q){var pick=q.querySelector('input:checked');q.classList.remove('unanswered');q.classList.add('review');if(!pick){unanswered++;q.classList.add('unanswered');q.style.background='#fff8e8';}else if(pick.value===q.dataset.correct){score++;q.style.background='#e9f6ef';}else{q.style.background='#fdeee9';}});quiz.querySelectorAll('details').forEach(d=>d.open=true);var pct=Math.round(100*score/qs.length),r=document.getElementById('quizResult');r.style.display='block';r.innerHTML='<b>'+score+'/'+qs.length+' correct ('+pct+'%).</b> '+(unanswered?unanswered+' question(s) are unanswered. ':pct>=90?'Excellent. You can explain and apply the core framework. ':pct>=75?'Good foundation. Review the red items and try again. ':'Return to the relevant interactive sections, then retry. ')+'Explanations are now visible under every question.';r.scrollIntoView({behavior:'smooth',block:'nearest'});});
-document.getElementById('resetQuiz').addEventListener('click',function(){quiz.querySelectorAll('input').forEach(i=>i.checked=false);qs.forEach(function(q){q.style.background='';q.classList.remove('review','unanswered');});quiz.querySelectorAll('.quiz-block-score').forEach(el=>el.style.display='none');quiz.querySelectorAll('.quiz-block-result').forEach(el=>el.style.display='none');var r=document.getElementById('quizResult');r.style.display='none';r.textContent='';updateQuizProgress();});
+slotEls.forEach(function(el){ el.addEventListener('change',updateQuizProgress); });
+updateQuizProgress();
+Array.from(document.querySelectorAll('.expandGroup')).forEach(function(btn){
+  btn.addEventListener('click',function(){ var g=document.getElementById(btn.dataset.group); if(g) g.querySelectorAll('details').forEach(d=>d.open=true); });
+});
+Array.from(document.querySelectorAll('.collapseGroup')).forEach(function(btn){
+  btn.addEventListener('click',function(){ var g=document.getElementById(btn.dataset.group); if(g) g.querySelectorAll('details').forEach(d=>d.open=false); });
+});
+var grade=document.getElementById('gradeQuiz');grade.addEventListener('click',function(){
+  // Only answered questions get .review (which reveals their explanation) — an
+  // unanswered question's explanation stays hidden unless explicitly requested via
+  // "Show remaining answers anyway" below, so skipping to the end has a real cost
+  // instead of silently converting the whole exercise into passive reading.
+  var score=0,unanswered=0;
+  qs.forEach(function(q){
+    var pick=q.querySelector('input:checked');
+    q.classList.remove('unanswered','review');
+    if(pick){
+      q.classList.add('review');
+      if(pick.value===q.dataset.correct){score++;q.style.background='#e9f6ef';}
+      else{q.style.background='#fdeee9';}
+    } else {
+      unanswered++; q.classList.add('unanswered'); q.style.background='#fff8e8';
+    }
+  });
+  document.querySelectorAll('.quiz-block').forEach(d=>d.open=true);
+  var pct=Math.round(100*score/qs.length),r=document.getElementById('quizResult');
+  r.style.display='block';
+  r.innerHTML='<b>'+score+'/'+qs.length+' correct ('+pct+'%).</b> '+(unanswered?unanswered+' question(s) are unanswered — their explanations stay hidden until you answer them or reveal them below. ':pct>=90?'Excellent. You can explain and apply the core framework. ':pct>=75?'Good foundation. Review the red items and try again. ':'Return to the relevant interactive sections, then retry. ')+(unanswered?'<button type="button" id="revealRemaining" class="alt" style="margin-left:6px">Show remaining answers anyway</button>':'Explanations are now visible under every question.');
+  r.scrollIntoView({behavior:'smooth',block:'nearest'});
+  if(unanswered){
+    document.getElementById('revealRemaining').addEventListener('click',function(){
+      qs.forEach(function(q){ if(!q.querySelector('input:checked')) q.classList.add('review'); });
+    });
+  }
+});
+document.getElementById('resetQuiz').addEventListener('click',function(){qs.forEach(function(q){q.querySelectorAll('input').forEach(i=>i.checked=false);q.style.background='';q.classList.remove('review','unanswered');});document.querySelectorAll('.quiz-block-score').forEach(el=>el.style.display='none');document.querySelectorAll('.quiz-block-result').forEach(el=>el.style.display='none');var r=document.getElementById('quizResult');r.style.display='none';r.textContent='';updateQuizProgress();});
 })();
 </script>
 <script>
@@ -2019,7 +2110,7 @@ function update(){var pv=+psi.value,cv=+chi.value,mv=+m.value,d=cv*pv,eta=mv-d,p
 document.getElementById('s2PsiOut').textContent=fmt(pv,3);document.getElementById('s2ChiOut').textContent=cv.toFixed(1);document.getElementById('s2MOut').textContent=mv.toFixed(2);document.getElementById('s2ChainPsi').textContent=fmt(pv,3);document.getElementById('s2D').textContent=fmt(d,3);document.getElementById('s2Eta').textContent=eta.toFixed(3);document.getElementById('s2Phi').textContent=ph.toFixed(1)+'°';var pos=100*(pv-(-.25))/.40;document.getElementById('s2Marker').style.left='calc('+pos+'% - 2px)';document.getElementById('s2Interpret').innerHTML='<b>Interpretation:</b> This state is <b>'+state+'</b>. D<sub>min</sub> = χψ = <b>'+fmt(d,3)+'</b>. Therefore η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> = <b>'+eta.toFixed(3)+'</b>, corresponding to φ′<sub>peak</sub> = <b>'+ph.toFixed(1)+'°</b>. The difference from critical friction is <b>'+fmt(ph-phc,1)+'°</b>.';}
 [psi,chi,m].forEach(x=>x.addEventListener('input',update));
 document.querySelectorAll('[data-s2preset]').forEach(function(b){b.addEventListener('click',function(){var v=b.dataset.s2preset;if(v==='dense'){psi.value=-.10;chi.value=3.5;m.value=1.26}if(v==='critical'){psi.value=0;chi.value=3.5;m.value=1.26}if(v==='loose'){psi.value=.08;chi.value=3.5;m.value=1.26}if(v==='sensitive'){psi.value=-.10;chi.value=5.3;m.value=1.33}update();});});
-document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-s2answer]').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.s2answer==='right';b.classList.add(ok?'good':'bad');document.getElementById('s2Feedback').innerHTML=ok?'<b>Correct.</b> As ψ approaches zero, D<sub>min</sub> approaches zero, so η<sub>max</sub> approaches M<sub>tc</sub> and φ′<sub>peak</sub> approaches φ′<sub>cv</sub>.':'<b>Try the slider.</b> Watch D<sub>min</sub> shrink toward zero and follow the arrows to η<sub>max</sub> and φ′<sub>peak</sub>.';});});update();
+document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-s2answer]').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.s2answer==='right';b.classList.add(ok?'good':'bad');document.getElementById('s2Feedback').innerHTML=ok?'<b>Correct.</b> As ψ approaches zero, D<sub>min</sub> approaches zero, so η<sub>max</sub> approaches M<sub>tc</sub> and φ′<sub>peak</sub> approaches φ′<sub>cv</sub>.':b.dataset.s2exp;});});update();
 })();
 </script>
 <script>
