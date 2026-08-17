@@ -1592,32 +1592,37 @@ updateConstructionPanels();
       var cs=currentStrain===undefined?b.peakStrain:currentStrain;
       return Math.abs(risingSol-cs)<=Math.abs(fallingSol-cs) ? risingSol : fallingSol;
     }
-    // Stress-path view: q (deviator stress) vs p' (mean effective stress), BOTH axes log —
-    // p' uses the same fixed [1,2000] scale as the e-log(p') plot above (so the two stacked
-    // charts read as one consistent frame); q is log too specifically so the CSL renders as
-    // the familiar straight diagonal (q=Mtc.p' becomes log(q)=log(Mtc)+log(p'), a straight
-    // line of slope 1 in log-log space) rather than the curved line a log-x/linear-y mix
-    // would produce. q genuinely starts at 0 (freshly consolidated, no shear yet), which a
-    // log axis can't represent — values at or below qFloor are drawn pinned to the bottom
-    // edge rather than omitted, a standard convention for a quantity that legitimately
-    // starts at zero on a log plot. Neither axis depends on p0/density/drainage/strain, so
-    // the frame never rescales.
+    // Stress-path view: q (deviator stress) vs p' (mean effective stress). p' is log,
+    // matching the e-log(p') plot above. q uses a SYMLOG scale — linear from 0 up to
+    // qLinMax, then log beyond it — rather than pure log, because q genuinely starts at
+    // exactly 0 (freshly consolidated, no shear yet) and a pure log axis has no way to
+    // show gradual movement near zero: everything in the early "ramp-up" strain range
+    // gets crushed against a floor. The linear toe gives that region real, readable
+    // resolution; the log region beyond it keeps the CSL close to a straight line (only
+    // the very corner where the CSL dips below qLinMax — well outside the p0/pCrit range
+    // this tool ever reaches — would show any curvature). Neither axis depends on
+    // p0/density/drainage/strain, so the frame never rescales.
     function drawIntroQPChart(ctx,W,H,strain){
       ctx.clearRect(0,0,W,H);
       var ml=54,mr=14,mt=14,mb=32; var pw=W-ml-mr, ph=H-mt-mb;
-      var pmin=1,pmax=2000, qFloor=1,qmax=3200;
+      var pmin=1,pmax=2000, qLinMax=20,qmax=3200, linFrac=0.18;
       function X(pp){ return ml+pw*(Math.log10(pp)-Math.log10(pmin))/(Math.log10(pmax)-Math.log10(pmin)); }
-      function Y(qq){ var qc=Math.max(qq,qFloor); return mt+ph*(1-(Math.log10(qc)-Math.log10(qFloor))/(Math.log10(qmax)-Math.log10(qFloor))); }
+      function Y(qq){
+        qq=Math.max(qq,0);
+        if(qq<=qLinMax) return mt+ph*(1-linFrac*(qq/qLinMax));
+        var logFrac=(Math.log10(qq)-Math.log10(qLinMax))/(Math.log10(qmax)-Math.log10(qLinMax));
+        return mt+ph*(1-linFrac-(1-linFrac)*logFrac);
+      }
       ctx.strokeStyle="#c7d3d8"; ctx.fillStyle="#61737b"; ctx.font="11px 'Segoe UI',Arial,sans-serif"; ctx.lineWidth=1;
       ctx.beginPath();[1,10,100,1000,2000].forEach(function(pv){var x=X(pv);ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);});ctx.stroke();
       ctx.strokeStyle="#e5edf1"; ctx.textAlign="right";
-      [1,10,100,1000,3000].forEach(function(qv){var y=Y(qv);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();ctx.fillText(String(qv),ml-8,y+3);});
+      [0,10,20,100,1000,3000].forEach(function(qv){var y=Y(qv);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();ctx.fillText(String(qv),ml-8,y+3);});
       ctx.textAlign="left";
       [1,10,100,1000].forEach(function(pv){ctx.fillText(pv>=1000?"2000":String(pv),X(pv)-8,mt+ph+14);});
       drawXTitle(ctx,"p' (kPa, log scale)",ml+pw/2,H-2);
-      drawYTitle(ctx,"q (kPa, log scale)",14,mt+ph/2);
+      drawYTitle(ctx,"q (kPa)",14,mt+ph/2);
       ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
-      ctx.moveTo(X(pmin),Y(INTRO_SAND.Mtc*pmin)); ctx.lineTo(X(pmax),Y(INTRO_SAND.Mtc*pmax));
+      for(var pv2=pmin;pv2<=pmax;pv2*=1.03){ var qv2=INTRO_SAND.Mtc*pv2; var x2=X(pv2),y2b=Y(qv2); if(pv2===pmin)ctx.moveTo(x2,y2b); else ctx.lineTo(x2,y2b); }
       ctx.stroke();
       ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.5; ctx.beginPath();
       var step=Math.max(0.3,strain/60);
