@@ -249,7 +249,7 @@ th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
 <div>
 <div class="s2-presets" role="group" aria-label="Drainage condition"><button type="button" data-introdrain="drained" class="on">Drained</button><button type="button" data-introdrain="undrained">Undrained</button></div>
 <div class="s2-presets" role="group" aria-label="Starting density" style="margin-top:6px"><button type="button" data-introstate="dense" class="on">Start dense</button><button type="button" data-introstate="loose">Start loose</button></div>
-<div class="slider-block"><label><span>Consolidation stress, p′<sub>0</sub> (kPa)</span> <span class="readout" id="introP0Out">100</span></label><input id="introP0" type="range" min="20" max="300" step="5" value="100"></div>
+<div class="slider-block"><label><span>Consolidation stress, p′<sub>0</sub> (kPa)</span> <span class="readout" id="introP0Out">100</span></label><input id="introP0" type="range" min="1" max="1000" step="1" value="100"><div class="hint">Floored at 1 kPa, not 0 &mdash; the CSL itself (e<sub>c</sub> = &Gamma; &minus; &lambda;<sub>10</sub>&middot;log<sub>10</sub>p′) is undefined at p′ = 0, and 1 kPa is exactly where &Gamma; is defined.</div></div>
 <div class="slider-block" id="introEtaBlock"><label for="introEta"><span>Shear stress ratio, η = q/p′ <span class="badge" id="introEtaModeTag">response</span></span> <span class="readout" id="introEtaOut">0.00</span></label><input id="introEta" type="range" min="0" max="1.5" step="0.001" value="0"><div class="hint">Drag this OR the strain slider below &mdash; whichever you move becomes the control, the other becomes the computed response.</div></div>
 <div class="slider-block" id="introStrainBlock"><label><span>Shear strain applied, ε<sub>q</sub> (%) <span class="badge" id="introStrainModeTag">control</span></span> <span class="readout" id="introStrainOut">0.0</span></label><input id="introStrain" type="range" min="0" max="100" step="0.5" value="0"><div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through 20&ndash;50% strain, which is already flat, for illustration.</div></div>
 <div id="introStatus" class="callout">Consolidated below the CSL. Drag the strain slider to apply the loading — watch how the state responds.</div>
@@ -1526,16 +1526,16 @@ updateConstructionPanels();
     function drawIntroChart(ctx,W,H,strain){
       ctx.clearRect(0,0,W,H);
       var ml=54,mr=14,mt=14,mb=32; var pw=W-ml-mr, ph=H-mt-mb;
-      var pmin=1,pmax=2000;
+      var pmin=0.1,pmax=10000;
       function X(pp){ return ml+pw*(Math.log10(pp)-Math.log10(pmin))/(Math.log10(pmax)-Math.log10(pmin)); }
       var emin=0.5, emax=1.0;
       function Y(ee){ return mt+ph*(1-(ee-emin)/(emax-emin)); }
       ctx.strokeStyle="#c7d3d8"; ctx.fillStyle="#61737b"; ctx.font="11px 'Segoe UI',Arial,sans-serif"; ctx.lineWidth=1;
-      ctx.beginPath();[1,10,100,1000,2000].forEach(function(pv){var x=X(pv);ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);});ctx.stroke();
+      ctx.beginPath();[0.1,1,10,100,1000,10000].forEach(function(pv){var x=X(pv);ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);});ctx.stroke();
       ctx.strokeStyle="#e5edf1"; ctx.textAlign="right";
       [0.5,0.65,0.8,0.95].forEach(function(ev){var y=Y(ev);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();ctx.fillText(ev.toFixed(2),ml-8,y+3);});
       ctx.textAlign="left";
-      [1,10,100,1000].forEach(function(pv){ctx.fillText(pv>=1000?"2000":String(pv),X(pv)-8,mt+ph+14);});
+      [0.1,1,10,100,1000,10000].forEach(function(pv){ctx.fillText(String(pv),X(pv)-8,mt+ph+14);});
       drawXTitle(ctx,"p' (kPa, log scale)",ml+pw/2,H-2);
       drawYTitle(ctx,"void ratio, e",14,mt+ph/2);
       ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
@@ -1605,7 +1605,7 @@ updateConstructionPanels();
     function drawIntroQPChart(ctx,W,H,strain){
       ctx.clearRect(0,0,W,H);
       var ml=54,mr=14,mt=14,mb=32; var pw=W-ml-mr, ph=H-mt-mb;
-      var pmin=1,pmax=2000, qLinMax=20,qmax=3200, linFrac=0.18;
+      var pmin=0.1,pmax=10000, qLinMax=20,qmax=16000, linFrac=0.18;
       function X(pp){ return ml+pw*(Math.log10(pp)-Math.log10(pmin))/(Math.log10(pmax)-Math.log10(pmin)); }
       function Y(qq){
         qq=Math.max(qq,0);
@@ -1614,19 +1614,23 @@ updateConstructionPanels();
         return mt+ph*(1-linFrac-(1-linFrac)*logFrac);
       }
       ctx.strokeStyle="#c7d3d8"; ctx.fillStyle="#61737b"; ctx.font="11px 'Segoe UI',Arial,sans-serif"; ctx.lineWidth=1;
-      ctx.beginPath();[1,10,100,1000,2000].forEach(function(pv){var x=X(pv);ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);});ctx.stroke();
+      ctx.beginPath();[0.1,1,10,100,1000,10000].forEach(function(pv){var x=X(pv);ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);});ctx.stroke();
       ctx.strokeStyle="#e5edf1"; ctx.textAlign="right";
-      [0,10,20,100,1000,3000].forEach(function(qv){var y=Y(qv);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();ctx.fillText(String(qv),ml-8,y+3);});
+      [0,10,20,100,1000,10000].forEach(function(qv){var y=Y(qv);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();ctx.fillText(String(qv),ml-8,y+3);});
       ctx.textAlign="left";
-      [1,10,100,1000].forEach(function(pv){ctx.fillText(pv>=1000?"2000":String(pv),X(pv)-8,mt+ph+14);});
+      [0.1,1,10,100,1000,10000].forEach(function(pv){ctx.fillText(String(pv),X(pv)-8,mt+ph+14);});
       drawXTitle(ctx,"p' (kPa, log scale)",ml+pw/2,H-2);
       drawYTitle(ctx,"q (kPa)",14,mt+ph/2);
       ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
       for(var pv2=pmin;pv2<=pmax;pv2*=1.03){ var qv2=INTRO_SAND.Mtc*pv2; var x2=X(pv2),y2b=Y(qv2); if(pv2===pmin)ctx.moveTo(x2,y2b); else ctx.lineTo(x2,y2b); }
       ctx.stroke();
       ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.5; ctx.beginPath();
-      var step=Math.max(0.3,strain/60);
-      for(var s=0;s<=strain;s+=step){ var x=X(currentP(s)),y2=Y(currentQ(s)); if(s===0)ctx.moveTo(x,y2); else ctx.lineTo(x,y2); }
+      // Fixed (not strain-scaled) step: the early strain range curves fastest, so it
+      // needs to stay finely traced even when the slider is way out at 40-50% strain —
+      // a step tied to the current strain would coarsen the whole curve, including the
+      // part already drawn back near zero.
+      for(var s=0;s<=strain;s+=0.15){ var x=X(currentP(s)),y2=Y(currentQ(s)); if(s===0)ctx.moveTo(x,y2); else ctx.lineTo(x,y2); }
+      ctx.lineTo(X(currentP(strain)),Y(currentQ(strain)));
       ctx.stroke();
       var x0=X(p0()), y0=Y(0);
       var xN=X(currentP(strain)), yN=Y(currentQ(strain));
@@ -1696,7 +1700,7 @@ updateConstructionPanels();
       function check(cond,label){ results.push({label:label,pass:!!cond}); }
       var origDense=isDense, origDrained=isDrained, origP0=p0Slide.value;
 
-      [20,100,300].forEach(function(p0val){
+      [1,100,1000].forEach(function(p0val){
         p0Slide.value=p0val;
         [true,false].forEach(function(dense){
           isDense=dense;
@@ -1736,11 +1740,11 @@ updateConstructionPanels();
             var pVal=pUndrained(s2), pGap=Math.abs(pVal-pc);
             if(pGap>prevPGap+1e-6) pMonotonic=false;
             prevPGap=pGap;
-            if(pVal<1||pVal>2000) outOfRange=true;
+            if(pVal<0.1||pVal>10000) outOfRange=true;
           }
           check(!eDrifted, tag+'undrained e never moves');
           check(pMonotonic, tag+'undrained p converges monotonically toward pCrit');
-          check(!outOfRange, tag+'undrained p stays within 1-2000 kPa over the slider range');
+          check(!outOfRange, tag+'undrained p stays within 0.1-10000 kPa over the slider range');
           check(Math.abs(ecAt(INTRO_SAND,pc)-e0())<1e-6, tag+'ec(pCrit) equals e0 within tolerance');
 
           // D. eta: starts at 0; dense overshoots Mtc then relaxes; loose never overshoots
