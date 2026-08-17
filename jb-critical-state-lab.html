@@ -251,7 +251,7 @@ th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
 <div class="s2-presets" role="group" aria-label="Starting density" style="margin-top:6px"><button type="button" data-introstate="dense" class="on">Start dense</button><button type="button" data-introstate="loose">Start loose</button></div>
 <div class="slider-block"><label><span>Consolidation stress, p′<sub>0</sub> (kPa)</span> <span class="readout" id="introP0Out">100</span></label><input id="introP0" type="range" min="20" max="300" step="5" value="100"></div>
 <div class="slider-block" id="introEtaBlock"><label for="introEta"><span>Shear stress ratio, η = q/p′ <span class="badge" id="introEtaModeTag">response</span></span> <span class="readout" id="introEtaOut">0.00</span></label><input id="introEta" type="range" min="0" max="1.5" step="0.001" value="0"><div class="hint">Drag this OR the strain slider below &mdash; whichever you move becomes the control, the other becomes the computed response.</div></div>
-<div class="slider-block" id="introStrainBlock"><label><span>Shear strain applied, ε<sub>q</sub> (%) <span class="badge" id="introStrainModeTag">control</span></span> <span class="readout" id="introStrainOut">0.0</span></label><input id="introStrain" type="range" min="0" max="50" step="0.5" value="0"></div>
+<div class="slider-block" id="introStrainBlock"><label><span>Shear strain applied, ε<sub>q</sub> (%) <span class="badge" id="introStrainModeTag">control</span></span> <span class="readout" id="introStrainOut">0.0</span></label><input id="introStrain" type="range" min="0" max="100" step="0.5" value="0"><div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through 20&ndash;50% strain, which is already flat, for illustration.</div></div>
 <div id="introStatus" class="callout">Consolidated below the CSL. Drag the strain slider to apply the loading — watch how the state responds.</div>
 </div>
 <div><canvas id="introChart"></canvas><canvas id="introQPChart" style="margin-top:10px"></canvas></div>
@@ -1496,6 +1496,20 @@ updateConstructionPanels();
     }
     function currentE(strainPct){ return isDrained ? eDrained(strainPct) : e0(); }
     function currentP(strainPct){ return isDrained ? p0() : pUndrained(strainPct); }
+    // The strain SLIDER's own travel (0-100) is not 1:1 with strain (0-50%): the first 80%
+    // of the slider covers 0-20% strain (where e/p'/eta are actually still moving), and the
+    // last 20% of the slider fast-forwards through the flat 20-50% strain tail (included
+    // only to illustrate "no further change," per the book's own definition of critical
+    // state) — so dragging feels focused on the part worth watching. This mapping is purely
+    // a UI concern; every physics function above still takes and returns real strain.
+    function sliderPosToStrain(pos){
+      pos=Math.max(0,Math.min(100,pos));
+      return pos<=80 ? pos/80*20 : 20+(pos-80)/20*30;
+    }
+    function strainToSliderPos(strainPct){
+      strainPct=Math.max(0,Math.min(50,strainPct));
+      return strainPct<=20 ? strainPct/20*80 : 80+(strainPct-20)/30*20;
+    }
     // Shear stress ratio response: starts at 0 (freshly consolidated, isotropic —
     // q=0 before any shear), then rises quickly toward Mtc − χtc·ψ(strain) — the
     // same Rowe/Nova relation (D=M−η) and Eq. 2.11 used in Section 2, just
@@ -1578,38 +1592,35 @@ updateConstructionPanels();
       var cs=currentStrain===undefined?b.peakStrain:currentStrain;
       return Math.abs(risingSol-cs)<=Math.abs(fallingSol-cs) ? risingSol : fallingSol;
     }
-    function niceStep(range){
-      var raw=range/4, mag=Math.pow(10,Math.floor(Math.log10(raw))), norm=raw/mag;
-      return (norm<1.5?1:norm<3?2:norm<7?5:10)*mag;
-    }
-    // Stress-path view: q (deviator stress) vs p' (mean effective stress). p' uses the
-    // SAME fixed log scale [1,2000] as the e-log(p') plot above (so the two stacked charts
-    // read as one consistent frame); q is linear but on a fixed [0,2600] range sized to
-    // cover every reachable combination (p0 up to 300, p' up to the 2000 undrained ceiling,
-    // Mtc plus the dense overshoot margin). Neither axis depends on p0/density/drainage/
-    // strain, so the frame never rescales — the CSL renders as a rising curve rather than a
-    // straight diagonal here specifically because the x-axis is log while y stays linear;
-    // that's the tradeoff for matching the top chart's p' scale.
+    // Stress-path view: q (deviator stress) vs p' (mean effective stress), BOTH axes log —
+    // p' uses the same fixed [1,2000] scale as the e-log(p') plot above (so the two stacked
+    // charts read as one consistent frame); q is log too specifically so the CSL renders as
+    // the familiar straight diagonal (q=Mtc.p' becomes log(q)=log(Mtc)+log(p'), a straight
+    // line of slope 1 in log-log space) rather than the curved line a log-x/linear-y mix
+    // would produce. q genuinely starts at 0 (freshly consolidated, no shear yet), which a
+    // log axis can't represent — values at or below qFloor are drawn pinned to the bottom
+    // edge rather than omitted, a standard convention for a quantity that legitimately
+    // starts at zero on a log plot. Neither axis depends on p0/density/drainage/strain, so
+    // the frame never rescales.
     function drawIntroQPChart(ctx,W,H,strain){
       ctx.clearRect(0,0,W,H);
       var ml=54,mr=14,mt=14,mb=32; var pw=W-ml-mr, ph=H-mt-mb;
-      var pmin=1,pmax=2000, qmin=0,qmax=4000;
+      var pmin=1,pmax=2000, qFloor=1,qmax=3200;
       function X(pp){ return ml+pw*(Math.log10(pp)-Math.log10(pmin))/(Math.log10(pmax)-Math.log10(pmin)); }
-      function Y(qq){ return mt+ph*(1-(qq-qmin)/(qmax-qmin)); }
-      var qStep=niceStep(qmax);
+      function Y(qq){ var qc=Math.max(qq,qFloor); return mt+ph*(1-(Math.log10(qc)-Math.log10(qFloor))/(Math.log10(qmax)-Math.log10(qFloor))); }
       ctx.strokeStyle="#c7d3d8"; ctx.fillStyle="#61737b"; ctx.font="11px 'Segoe UI',Arial,sans-serif"; ctx.lineWidth=1;
       ctx.beginPath();[1,10,100,1000,2000].forEach(function(pv){var x=X(pv);ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);});ctx.stroke();
       ctx.strokeStyle="#e5edf1"; ctx.textAlign="right";
-      for(var qv=0;qv<=qmax;qv+=qStep){ var y=Y(qv); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.fillText(Math.round(qv),ml-8,y+3); }
+      [1,10,100,1000,3000].forEach(function(qv){var y=Y(qv);ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();ctx.fillText(String(qv),ml-8,y+3);});
       ctx.textAlign="left";
       [1,10,100,1000].forEach(function(pv){ctx.fillText(pv>=1000?"2000":String(pv),X(pv)-8,mt+ph+14);});
       drawXTitle(ctx,"p' (kPa, log scale)",ml+pw/2,H-2);
-      drawYTitle(ctx,"q (kPa)",14,mt+ph/2);
+      drawYTitle(ctx,"q (kPa, log scale)",14,mt+ph/2);
       ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
-      for(var pv2=pmin;pv2<=pmax;pv2*=1.03){ var qv2=INTRO_SAND.Mtc*pv2; var x=X(pv2),y2=Y(qv2); if(pv2===pmin)ctx.moveTo(x,y2); else ctx.lineTo(x,y2); }
+      ctx.moveTo(X(pmin),Y(INTRO_SAND.Mtc*pmin)); ctx.lineTo(X(pmax),Y(INTRO_SAND.Mtc*pmax));
       ctx.stroke();
       ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.5; ctx.beginPath();
-      var step=Math.max(0.5,strain/60);
+      var step=Math.max(0.3,strain/60);
       for(var s=0;s<=strain;s+=step){ var x=X(currentP(s)),y2=Y(currentQ(s)); if(s===0)ctx.moveTo(x,y2); else ctx.lineTo(x,y2); }
       ctx.stroke();
       var x0=X(p0()), y0=Y(0);
@@ -1646,10 +1657,10 @@ updateConstructionPanels();
       if(introControlMode==='eta'){
         var etaTarget=Math.max(b.min,Math.min(b.max,+etaSlide.value));
         etaSlide.value=etaTarget;
-        strain=strainForEta(etaTarget,+strainSlide.value);
-        strainSlide.value=Math.max(+strainSlide.min,Math.min(+strainSlide.max,strain));
+        strain=strainForEta(etaTarget,sliderPosToStrain(+strainSlide.value));
+        strainSlide.value=strainToSliderPos(strain);
       } else {
-        strain=+strainSlide.value;
+        strain=sliderPosToStrain(+strainSlide.value);
       }
       strainOut.textContent=strain.toFixed(1);
       p0Out.textContent=p0().toFixed(0);
