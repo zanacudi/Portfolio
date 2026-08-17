@@ -157,6 +157,7 @@ th.symcol{text-transform:none}
 #nsRun.just-synced{background-color:var(--green)}
 #nsSyncBadge{background:#e9f6ef;color:#1f7a4c;transition:background-color .3s}
 #nsSyncBadge.just-synced{background:#c9ecd8}
+#nsTour.on{background:var(--red)}
 .quiz-block-controls{display:flex;gap:8px;margin-bottom:8px}
 .quiz-block-controls button{font-size:11px;padding:6px 9px;background:#687a82}
 .quiz-block{border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:#fafcfd;overflow:hidden}
@@ -179,6 +180,9 @@ th.symcol{text-transform:none}
 .disclosure[open]>summary:before{transform:rotate(90deg)}
 .disclosure>summary small{font-weight:400;color:var(--muted);margin-left:auto;font-size:11px}
 .disclosure>.disclosure-body{padding:0 13px 13px}
+.back-float{position:fixed;left:16px;bottom:20px;z-index:60;background:var(--navy);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 4px 14px rgba(12,44,58,.3);cursor:pointer;transition:transform .15s,box-shadow .15s;display:none;align-items:center;gap:6px}
+.back-float:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(12,44,58,.35)}
+@media(max-width:520px){.back-float{left:10px;bottom:14px;padding:9px 13px;font-size:11.5px;max-width:calc(100vw - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
 
 /* --- v6: clickable goals, intro shear tool, animated concept-line, in-progress modules --- */
 .goal{border:0;text-align:left;width:100%;cursor:pointer;font-family:inherit;transition:.15s}
@@ -219,6 +223,7 @@ th.symcol{text-transform:none}
 <a href="#start">Start here</a><a href="#mental-model">Mental model</a><a href="#notation">Notation</a><a href="#csl-section">CSL & ψ</a><a href="#dilatancy-section">Dilatancy</a><a href="#calibration-section">Calibration</a><a href="#norsand-section">NorSand</a><a href="#knowledge-check">Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
+<button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
 
 
 <div class="wrap">
@@ -598,6 +603,7 @@ th.symcol{text-transform:none}
 <div class="hint">Starting confining stress. Raising it alone moves the sample toward denser-of-critical (&psi;<sub>0</sub> more negative) since the CSL itself drops with stress.</div></div>
 </div>
 <button id="nsRun">Run simulation</button>
+<button type="button" id="nsTour" class="alt">▶ Step through each slider</button>
 <span class="badge" id="nsSyncBadge">● live — reruns automatically as you move any slider above</span>
 <span class="badge" id="nsPsi0"></span>
 </div>
@@ -1517,13 +1523,38 @@ updateConstructionPanels();
   window.addEventListener('scroll',progress,{passive:true});progress();
 
   // ---- clickable "goal", notation, and parameter-role cards: scroll to + pulse the relevant section ----
+  // Every one of these jumps the reader somewhere else on the page with no native browser
+  // "back" available (it's a scroll, not a URL/hash change), so a floating Back button
+  // tracks where each jump started and can undo it — a small stack rather than a single
+  // slot, so a chain of jumps (card -> card -> card) still unwinds one step at a time.
+  var navStack=[];
+  var backBtn=document.getElementById('backToPrevious');
+  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'Calibration','norsand-section':'NorSand','knowledge-check':'Check learning'};
+  function navOriginLabel(el){
+    var idEl=el.closest('[id]');
+    return (idEl && SECTION_LABELS[idEl.id]) || 'where you were';
+  }
+  function updateBackBtn(){
+    if(!navStack.length){ backBtn.style.display='none'; return; }
+    backBtn.textContent='← Back to '+navStack[navStack.length-1].label;
+    backBtn.style.display='inline-flex';
+  }
   document.querySelectorAll('.goal[data-goto], .notation-card[data-goto], .parameter-card[data-goto]').forEach(function(b){
     b.addEventListener('click',function(){
       var target=document.getElementById(b.dataset.goto);
-      if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+      if(target){
+        navStack.push({y:window.scrollY, label:navOriginLabel(b)});
+        updateBackBtn();
+        target.scrollIntoView({behavior:'smooth',block:'start'});
+      }
       var pulseEl=document.getElementById(b.dataset.pulse);
       if(pulseEl){ pulseEl.classList.add('pulse-target'); setTimeout(function(){ pulseEl.classList.remove('pulse-target'); },2600); }
     });
+  });
+  backBtn.addEventListener('click',function(){
+    var last=navStack.pop();
+    if(last) window.scrollTo({top:last.y,behavior:'smooth'});
+    updateBackBtn();
   });
 
   // ---- animated "walk through it" for the 4-step concept line ----
@@ -2177,6 +2208,66 @@ document.querySelectorAll('#s2Transfer button').forEach(function(b){b.addEventLi
 // NorSand guided experiments
 function resetNs(){nsPreset.value='erksak';applyPreset();}
 document.querySelectorAll('[data-nsexp]').forEach(function(b){b.addEventListener('click',function(){resetNs();var v=b.dataset.nsexp,msg='';if(v==='loose'){nsE0.value=.76;msg='Positive ψ0: look for a contractive or hardening response toward critical state.';}if(v==='dense'){nsE0.value=.56;msg='Negative ψ0: look for peak strength and evolution back toward Mtc.';}if(v==='soft'){nsH.value=80;msg='Low H: expect a slower, more ductile evolution.';}if(v==='sharp'){nsH.value=480;msg='High H: expect faster evolution and a sharper early response.';}if(v==='highchi'){nsX.value=5.3;msg='High χtc: state has a stronger influence on dilation and peak response.';}nsPreset.value='custom';syncNsOuts();runNorSand();document.getElementById('nsExperimentStatus').innerHTML='<b>What to inspect:</b> '+msg;document.getElementById('nsQChart').classList.add('pulse-target');setTimeout(()=>document.getElementById('nsQChart').classList.remove('pulse-target'),2600);});});var nr=document.getElementById('nsResetGuided');if(nr)nr.addEventListener('click',function(){resetNs();document.getElementById('nsExperimentStatus').textContent='Erksak preset restored.';});
+
+// "Step through each slider": animates one slider at a time from the Erksak baseline
+// out to an illustrative value, re-running the simulation on every frame, so a learner
+// can watch each parameter's isolated effect on the chart without having to drag all
+// eight sliders themselves. Always resets to Erksak before each step, so effects never
+// compound across sliders.
+var NS_TOUR = [
+  {slider:nsG, target:1.05, label:'Γ (CSL intercept)', note:'Raising Γ lifts the whole CSL, pushing ψ0 positive (looser of critical) even though nothing else has changed.'},
+  {slider:nsL, target:0.09, label:'λ10 (CSL slope)', note:'A steeper CSL means critical void ratio drops faster with stress — more compressible, less brittle behaviour.'},
+  {slider:nsM, target:1.45, label:'Mtc (critical friction ratio)', note:'Mtc sets the height the curve ultimately settles at, regardless of density.'},
+  {slider:nsX, target:5.3, label:'χtc (state–dilatancy coupling)', note:'Higher χtc means the same density offset produces a bigger peak-strength swing.'},
+  {slider:nsN, target:0.50, label:'N (volumetric coupling)', note:'A secondary shaping term on top of χtc — expect a subtler change than the others.'},
+  {slider:nsH, target:480, label:'H (plastic hardening modulus)', note:'High H gives a sharp, early peak instead of a slow, ductile approach.'},
+  {slider:nsE0, target:0.76, label:'Initial void ratio, e0', note:'Raising e0 alone pushes ψ0 positive — watch the response shift from dilative toward contractive.'},
+  {slider:nsP0, target:700, label:'Initial p′0 (kPa)', note:'Raising p′0 alone moves the sample toward denser-of-critical, since the CSL itself drops with stress.'}
+];
+var nsTourRunning=false, nsTourCancel=false;
+function tweenNsSlider(step,duration,cb){
+  var startVal=+step.slider.value, endVal=step.target, startTime=null;
+  function frame(ts){
+    if(nsTourCancel){ cb(true); return; }
+    if(!startTime) startTime=ts;
+    var t=Math.min(1,(ts-startTime)/duration);
+    var eased=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    step.slider.value = startVal+(endVal-startVal)*eased;
+    syncNsOuts(); runNorSand();
+    if(t<1) requestAnimationFrame(frame); else cb(false);
+  }
+  requestAnimationFrame(frame);
+}
+function runNsTour(){
+  nsTourRunning=true; nsTourCancel=false;
+  var tourBtn=document.getElementById('nsTour'), statusEl=document.getElementById('nsExperimentStatus'), chart=document.getElementById('nsQChart');
+  tourBtn.textContent='■ Stop tour'; tourBtn.classList.add('on');
+  var idx=0;
+  function nextStep(){
+    if(nsTourCancel || idx>=NS_TOUR.length){ finish(nsTourCancel); return; }
+    resetNs(); nsPreset.value='custom';
+    var step=NS_TOUR[idx];
+    statusEl.innerHTML='<b>Now varying: '+step.label+'</b> ('+(idx+1)+' of '+NS_TOUR.length+') — '+step.note;
+    chart.classList.add('pulse-target');
+    tweenNsSlider(step,1400,function(canceled){
+      chart.classList.remove('pulse-target');
+      if(canceled){ finish(true); return; }
+      setTimeout(function(){ idx++; nextStep(); },1100);
+    });
+  }
+  function finish(canceled){
+    nsTourRunning=false; nsTourCancel=false;
+    tourBtn.textContent='▶ Step through each slider'; tourBtn.classList.remove('on');
+    resetNs();
+    statusEl.innerHTML = canceled
+      ? 'Tour stopped — Erksak values restored.'
+      : '<b>Tour complete.</b> Each slider was moved on its own from the Erksak baseline, so you could see its isolated effect. Erksak values are restored — now try combining changes yourself.';
+  }
+  nextStep();
+}
+document.getElementById('nsTour').addEventListener('click',function(){
+  if(nsTourRunning){ nsTourCancel=true; } else { runNsTour(); }
+});
 })();
 </script>
 <script>
