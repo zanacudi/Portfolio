@@ -187,6 +187,16 @@ th.symcol{text-transform:none}
 .concept-step{transition:transform .25s,box-shadow .25s,background .25s,border-color .25s}
 .concept-step.walking{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 6px 16px rgba(20,121,184,.22);background:#eef8fc}
 @media(max-width:900px){.intro-shear-grid{grid-template-columns:1fr}}
+/* NorSand's 8 sliders used to sit in a full-width row above its 2 charts, pushing the
+   response plots below the fold on most screens. Side-by-side (controls | charts), like
+   the intro tool and Section 1/2's sandboxes already do, keeps cause and effect visible
+   together without scrolling. */
+.ns-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:10px}
+.ns-layout>div{min-width:0}
+.ns-sliders{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;min-width:0}
+.ns-sliders .slider-block{min-width:0}
+@media(max-width:900px){.ns-layout{grid-template-columns:1fr}}
+@media(max-width:520px){.ns-sliders{grid-template-columns:1fr}}
 .goal:focus-visible,.notation-card:focus-visible,.parameter-card:focus-visible,.guided-step:focus-visible,.fn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
 
 </style></head>
@@ -436,11 +446,11 @@ th.symcol{text-transform:none}
 <div id="fnnote-3" class="fn-note"><b>3.</b> The book also documents an alternative image stress-ratio rule, M<sub>i</sub> = M(1&minus;|&psi;<sub>i</sub>|/M<sub>tc</sub>) (Jefferies &amp; Shuttle 2002), noting it matches NorSand's own rule (used throughout this page) on average at peak dilation &mdash; close, but not identical, another small reminder that even the model's own internal relationships aren't perfectly unique.</div>
 
 
-<div class="guided-panel"><h3 style="margin-top:0">Parameter role explorer</h3><p class="explain" style="font-size:12px">Select a property to see what evidence constrains it and where to look below &mdash; each card previews the shape of the plot that pins it down.</p><div class="parameter-cards">
-<button type="button" class="parameter-card" data-param="csl" aria-pressed="false"><canvas class="param-mini" id="miniCSL"></canvas><b>Γ and λ<sub>10</sub></b><small>Critical end-state points in e–log p′ space.</small></button>
-<button type="button" class="parameter-card" data-param="mtc" aria-pressed="false"><canvas class="param-mini" id="miniMtc"></canvas><b>M<sub>tc</sub></b><small>D–η intercept or common large-strain stress ratio.</small></button>
-<button type="button" class="parameter-card" data-param="chi" aria-pressed="false"><canvas class="param-mini" id="miniChi"></canvas><b>χ<sub>tc</sub></b><small>Slope of D<sub>min</sub> against ψ.</small></button>
-<button type="button" class="parameter-card" data-param="nh" aria-pressed="false"><canvas class="param-mini" id="miniNH"></canvas><b>N and H</b><small>Forward-fit the full stress–strain curve.</small></button>
+<div class="guided-panel"><h3 style="margin-top:0">Parameter role explorer</h3><p class="explain" style="font-size:12px">Select a property to see what evidence constrains it &mdash; each card previews the shape of the plot that pins it down. Click again (or the button below) to jump to that plot in full size, with real axis labels and this sand's real values.</p><div class="parameter-cards">
+<button type="button" class="parameter-card" data-param="csl" data-goto="cslFitChart" data-pulse="cslFitChart" aria-pressed="false"><canvas class="param-mini" id="miniCSL"></canvas><b>Γ and λ<sub>10</sub></b><small>Critical end-state points in e–log p′ space.</small></button>
+<button type="button" class="parameter-card" data-param="mtc" data-goto="mtcChart" data-pulse="mtcChart" aria-pressed="false"><canvas class="param-mini" id="miniMtc"></canvas><b>M<sub>tc</sub></b><small>D–η intercept or common large-strain stress ratio.</small></button>
+<button type="button" class="parameter-card" data-param="chi" data-goto="chiFitChart" data-pulse="chiFitChart" aria-pressed="false"><canvas class="param-mini" id="miniChi"></canvas><b>χ<sub>tc</sub></b><small>Slope of D<sub>min</sub> against ψ.</small></button>
+<button type="button" class="parameter-card" data-param="nh" data-goto="fitNHChart" data-pulse="fitNHChart" aria-pressed="false"><canvas class="param-mini" id="miniNH"></canvas><b>N and H</b><small>Forward-fit the full stress–strain curve.</small></button>
 </div><div id="parameterRoleText" class="callout">Choose a property.</div></div>
 <h3>What a real triaxial test program looks like</h3>
 <p class="explain" style="font-size:12px">Six drained tests on the same sand, at different stresses and moulding densities. A technician only sets &sigma;&prime;<sub>3c</sub> and e<sub>0</sub> (first two columns) &mdash; everything else is <i>computed</i> from those plus the CSL and stress&ndash;dilatancy properties, which is exactly what the four panels below run in reverse.</p>
@@ -499,15 +509,19 @@ th.symcol{text-transform:none}
 <h3>D. N and H — fit to the whole curve, not read off one plot</h3>
 <p class="explain" style="font-size:12.5px">Unlike the four properties above, N and H have no single defining plot &mdash; the book calibrates them by <i>iterative forward modelling</i>: running NorSand and adjusting N and H until the predicted stress&ndash;strain curve matches a real measured one (Ch. 3, Section 9.3.6). Try it yourself: drag N and H below until the navy model curve tracks the grey "measured" points as closely as possible.</p>
 <p class="explain" style="font-size:12.5px"><b>If you fit each of the six tests above separately, you generally get six slightly different (N, H) pairs, not one.</b> That's normal, not an error &mdash; real stress&ndash;strain curves carry test-to-test scatter, so a forward fit to one curve alone will always land on a slightly different compromise than a fit to another. The single (N, H) reported for a sand is a <i>best compromise across the whole program</i> (or a fit to one representative, well-behaved test), chosen to track every curve reasonably well rather than any single one perfectly &mdash; the same calibration humility already flagged for &Gamma; and &chi;<sub>tc</sub> in the box above.</p>
-<div class="grid3">
+<div class="ns-layout">
+<div>
 <div class="slider-block"><label for="fitN">N <span class="readout" id="fitNOut">0.30</span></label><input id="fitN" type="range" min="0.15" max="0.55" step="0.01" value="0.30"></div>
 <div class="slider-block"><label for="fitH">H <span class="readout" id="fitHOut">300</span></label><input id="fitH" type="range" min="25" max="500" step="5" value="300"></div>
-<div class="stat" style="align-self:center"><small>fit quality (lower = better)</small><strong id="fitRMSE">&ndash;</strong></div>
-</div>
-<canvas id="fitNHChart"></canvas>
-<div class="legend"><span><i style="background:#9aa9ae"></i>illustrative "measured" data</span><span><i style="background:var(--navy)"></i>your current model curve</span></div>
+<div class="statgrid n2"><div class="stat"><small>fit quality (lower = better)</small><strong id="fitRMSE">&ndash;</strong></div></div>
 <button id="fitReveal" class="alt" style="background:#687a82;margin-top:8px">Reveal the values used to generate the data</button>
 <span class="badge" id="fitTrueVals" style="display:none"></span>
+</div>
+<div>
+<canvas id="fitNHChart"></canvas>
+<div class="legend"><span><i style="background:#9aa9ae"></i>illustrative "measured" data</span><span><i style="background:var(--navy)"></i>your current model curve</span></div>
+</div>
+</div>
 </div>
 
 <div class="card" id="norsand-section">
@@ -518,6 +532,8 @@ th.symcol{text-transform:none}
 </div>
 
 
+<div class="ns-layout">
+<div class="ns-controls">
 <div class="guided-panel"><h3 style="margin-top:0">One-variable-at-a-time NorSand experiments</h3><p class="explain" style="font-size:12px">Each experiment resets the model, changes one control, runs it, and highlights what to compare.</p><div class="interaction-bar"><button data-nsexp="loose">Make ψ<sub>0</sub> positive</button><button data-nsexp="dense">Make ψ<sub>0</sub> negative</button><button data-nsexp="soft">Lower H</button><button data-nsexp="sharp">Raise H</button><button data-nsexp="highchi">Raise χ<sub>tc</sub></button><button id="nsResetGuided" class="ghost">Reset Erksak</button></div><div id="nsExperimentStatus" class="experiment-status">Choose an experiment, then compare peak η, strain at peak, and the void-ratio path.</div></div>
 <label style="font-size:12.5px;font-weight:700">Parameter set</label><br>
 <select id="nsPreset">
@@ -525,7 +541,7 @@ th.symcol{text-transform:none}
 <option value="custom">Custom (use sliders below)</option>
 </select>
 
-<div class="grid4" style="margin-top:10px">
+<div class="ns-sliders">
 <div class="slider-block"><label for="nsG">&Gamma; (CSL intercept) <span class="readout" id="nsGOut">0.816</span></label><input id="nsG" type="range" min="0.70" max="1.50" step="0.002" value="0.816">
 <div class="hint">Critical void ratio at p&prime;=1 kPa (Eq. 2.1) &mdash; shifts the whole CSL up or down, so it moves &psi; for every e and p&prime; at once.</div></div>
 <div class="slider-block"><label for="nsL"><span>&lambda;<sub>10</sub> (CSL slope)</span> <span class="readout" id="nsLOut">0.031</span></label><input id="nsL" type="range" min="0.010" max="0.200" step="0.001" value="0.031">
@@ -546,12 +562,13 @@ th.symcol{text-transform:none}
 <button id="nsRun">Run simulation</button>
 <span class="badge" id="nsSyncBadge">● live — reruns automatically as you move any slider above</span>
 <span class="badge" id="nsPsi0"></span>
-
-<div class="grid2" style="margin-top:12px">
+</div>
+<div class="ns-charts">
 <div><canvas id="nsQChart"></canvas><div class="legend"><span><i style="background:var(--blue)"></i>stress ratio &eta; = q/p&prime;</span></div></div>
 <div><canvas id="nsEChart"></canvas><div class="legend"><span><i style="background:var(--green)"></i>void ratio e</span><span><i style="background:var(--muted)"></i>e<sub>c</sub> at current p&prime;</span></div></div>
-</div>
 <div class="statgrid" id="nsStats"></div>
+</div>
+</div>
 
 <h3>The seventh (and eighth) properties: elasticity, I<sub>r</sub> and &nu;</h3>
 <div class="explain"><p>NorSand needs seven properties in total &mdash; the six above plus a Poisson's ratio &nu;. Elasticity itself is set by a single dimensionless number, the <b>rigidity index I<sub>r</sub> = G/p&prime;</b> (elastic shear modulus over mean stress, Table 3.2's typical range 100&ndash;600 for sands): high I<sub>r</sub> means the soil is very stiff relative to how hard it's being confined (dense, heavily overconsolidated), low I<sub>r</sub> means it's compliant relative to its confinement (loose, lightly stressed). This simulator neglects elastic strains entirely (disclosed below), so I<sub>r</sub> plays no role in the curves above &mdash; but you can still see what it represents:</p></div>
@@ -1454,8 +1471,8 @@ updateConstructionPanels();
   function progress(){var d=document.documentElement,b=document.body;var top=d.scrollTop||b.scrollTop;var h=(d.scrollHeight||b.scrollHeight)-d.clientHeight;var pct=h?100*top/h:0;var f=document.getElementById('readingProgress');if(f)f.style.width=pct+'%';}
   window.addEventListener('scroll',progress,{passive:true});progress();
 
-  // ---- clickable "goal" and notation cards: scroll to + pulse the relevant section ----
-  document.querySelectorAll('.goal[data-goto], .notation-card[data-goto]').forEach(function(b){
+  // ---- clickable "goal", notation, and parameter-role cards: scroll to + pulse the relevant section ----
+  document.querySelectorAll('.goal[data-goto], .notation-card[data-goto], .parameter-card[data-goto]').forEach(function(b){
     b.addEventListener('click',function(){
       var target=document.getElementById(b.dataset.goto);
       if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
