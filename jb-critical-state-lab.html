@@ -489,7 +489,7 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:11px;margin:4px 0 0">A new kind of plot &mdash; horizontal is stress ratio &eta;=q/p&prime;, vertical is dilatancy D (Section 3 later uses this exact style of plot, fit to real test data, to calibrate M<sub>tc</sub>). The line is D=M<sub>tc</sub>&minus;&eta;. <b style="color:#1479b8">Blue dot: M<sub>tc</sub> = <span id="s2ChartMtc">1.26</span></b>, where the line crosses D=0. <b style="color:#c64852">Red dot: your current state</b> &mdash; D<sub>min</sub> = <span id="s2ChartDmin">&minus;0.35</span>, &eta;<sub>max</sub> = <span id="s2ChartEtaMax">1.61</span>.</p>
 </div>
 <div style="text-align:center">
-<canvas id="s2MohrChart" style="height:170px" role="img" aria-label="Live Mohr circle diagram tangent to a strength envelope at the current peak friction angle."></canvas>
+<canvas id="s2MohrChart" style="height:205px" role="img" aria-label="Live Mohr circle diagram tangent to a strength envelope at the current peak friction angle, with clearly labeled normal-stress and shear-stress axes."></canvas>
 <p class="explain" style="font-size:11px;margin:4px 0 0">At failure the Mohr circle is tangent to the strength envelope at &phi;&prime;. In terms of &eta;=q/p&prime;, that condition is exactly sin&phi;&prime; = 3&eta;/(6+&eta;). <b style="color:#7653a6">Purple arc: your current &phi;&prime;<sub>peak</sub> = <span id="s2ChartPhi">39.4</span>&deg;</b> &mdash; the circle's size is illustrative, but this angle is exact.</p>
 </div>
 </div>
@@ -628,8 +628,8 @@ body{padding-bottom:54px}
 </div>
 
 <div class="guided-panel" id="yieldSurfaceExplorer">
-<h3 style="margin-top:0">Try it: the yield surface itself</h3>
-<p class="explain" style="font-size:12px">Before running the full simulation, play with the yield locus on its own: &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below. Drag <b>p<sub>i</sub></b> to watch the surface itself grow or shrink; drag <b>p&prime;</b> to move the current stress state along it.</p>
+<h3 style="margin-top:0">Try it: what a yield surface actually is</h3>
+<p class="explain" style="font-size:12px">In plain terms: the yield surface is an invisible boundary in stress space. While the soil's state sits <b>inside</b> it (the shaded region on the right), it can still respond to stress changes, but only elastically &mdash; nothing permanently deforms. Push the state up <b>against</b> the boundary and the soil starts to yield: it deforms permanently, and the boundary itself grows or shrinks to keep up (that's exactly what H does, strain by strain, in the simulation below). The curve on the right is that boundary, frozen at one instant &mdash; try it here first: drag <b>p<sub>i</sub></b> to watch the boundary itself grow or shrink; drag <b>p&prime;</b> to slide the current stress state along it. Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below.</p>
 <div class="ns-layout">
 <div>
 <div class="slider-block"><label for="ysM"><span>M<sub>i</sub> (image stress ratio)</span> <span class="readout" id="ysMOut">1.26</span></label><input id="ysM" type="range" min="0.80" max="1.60" step="0.01" value="1.26">
@@ -641,7 +641,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <canvas id="yieldSurfaceChart" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, and where the current stress state falls on it."></canvas>
-<p class="explain" style="font-size:11px;margin:4px 0 0">At p&prime; = p<sub>i</sub> (grey dashed line), the surface always predicts exactly &eta; = M<sub>i</sub> &mdash; that's the "image condition" the model is named for. <b style="color:#c64852">Red dot: your current state</b> &mdash; p&prime; = <span id="ysCurrentP">120</span> kPa, &eta; = <span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
+<p class="explain" style="font-size:11px;margin:4px 0 0"><b>Shaded region: elastic</b> &mdash; the soil just responds without permanently deforming. The line itself is the boundary where it starts to yield. At p&prime; = p<sub>i</sub> (grey dashed line), the surface always predicts exactly &eta; = M<sub>i</sub> &mdash; that's the "image condition" the model is named for. <b style="color:#c64852">Red dot: your current state</b> &mdash; p&prime; = <span id="ysCurrentP">120</span> kPa, &eta; = <span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
 </div>
 </div>
 </div>
@@ -1313,15 +1313,26 @@ function drawYieldSurfaceChart(Mi, pi, p){
   ctx.fillStyle="#61737b"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
   ctx.fillText("0",ml-4,mt+ph+3);
   // yield locus: η = Mi·(1 − ln(p′/pi)), drawn only where η ≥ 0
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
-  var started=false, steps=160;
+  var steps=160, curvePts=[];
   for(var i=1;i<=steps;i++){
     var pv=pMax*i/steps;
     var eta=Mi*(1-Math.log(pv/pi));
-    if(eta<0){ if(started) break; else continue; }
-    var x=X(pv), y=Y(eta);
-    if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y);
+    if(eta<0){ if(curvePts.length) break; else continue; }
+    curvePts.push([X(pv),Y(eta)]);
   }
+  // shade the region under the curve — this IS the elastic zone: while the current
+  // state sits in here, the soil only responds elastically. The line itself is the
+  // boundary where it starts to yield, which is the whole intuitive point of the panel.
+  if(curvePts.length){
+    ctx.fillStyle="rgba(20,121,184,0.08)";
+    ctx.beginPath();
+    ctx.moveTo(curvePts[0][0], mt+ph);
+    curvePts.forEach(function(pt){ ctx.lineTo(pt[0],pt[1]); });
+    ctx.lineTo(curvePts[curvePts.length-1][0], mt+ph);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  curvePts.forEach(function(pt,i){ if(i===0) ctx.moveTo(pt[0],pt[1]); else ctx.lineTo(pt[0],pt[1]); });
   ctx.stroke();
   // image condition marker: p′=pi, η=Mi exactly
   var imgX=X(pi), imgY=Y(Mi);
@@ -2349,13 +2360,15 @@ function drawS2DEtaChart(mv,d,eta){
 // phi' value is reported in the HTML caption below instead.
 function drawS2MohrChart(phDeg){
   var cv3=document.getElementById('s2MohrChart'); if(!cv3) return;
-  var W=cv3.clientWidth||260,H=170; cv3.width=W; cv3.height=H;
+  var W=cv3.clientWidth||260,H=205; cv3.width=W; cv3.height=H;
   var ctx=cv3.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ox=32,oy=128,axisRight=W-16,axisTop=22;
+  var ox=44,oy=H-40,axisRight=W-16,axisTop=18;
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ox,axisTop); ctx.lineTo(ox,oy); ctx.lineTo(axisRight,oy); ctx.stroke();
-  ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
-  ctx.fillText("τ",ox-18,axisTop+6); ctx.fillText("σ′",axisRight-16,oy+14);
+  // full axis titles below/left of the plot, well clear of the σ′3/σ′1 tick row —
+  // the old single-letter titles sat right on top of the σ′1 tick, reading as jumbled text
+  drawXTitle(ctx,"σ′  (normal stress)", ox+(axisRight-ox)/2, H-4, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"τ  (shear stress)", 12, axisTop+(oy-axisTop)/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
   var phiRad=Math.max(1,Math.min(48,phDeg))*Math.PI/180;
   var d=70,r=d*Math.sin(phiRad);
   var scale=(axisRight-ox-20)/(d+r+10);
@@ -2364,7 +2377,7 @@ function drawS2MohrChart(phDeg){
   var s3x=cx-rPx,s1x=cx+rPx;
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(s3x,oy); ctx.lineTo(s3x,oy+6); ctx.moveTo(s1x,oy); ctx.lineTo(s1x,oy+6); ctx.stroke();
-  ctx.font="9.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="center";
+  ctx.fillStyle="#61737b"; ctx.font="9.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="center";
   ctx.fillText("σ′3",s3x,oy+18); ctx.fillText("σ′1",s1x,oy+18);
   var tanLen=Math.sqrt(Math.max(0,d*d-r*r))*scale*1.25;
   var tx=ox+tanLen*Math.cos(phiRad),ty=oy-tanLen*Math.sin(phiRad);
