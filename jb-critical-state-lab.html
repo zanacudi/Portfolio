@@ -245,7 +245,9 @@ body{padding-bottom:54px}
 <p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
 <h1>Soil Liquefaction: A Critical State Approach — Interactive Companion</h1>
 <p><b>Module 1: The Critical State Framework</b> (Chapters 1&ndash;3). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press.</p>
+<p style="font-size:9.5px;opacity:.6;margin:6px 0 0">Prepared by: Zana Taher</p>
 </div></header>
+<div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
 <a href="#start">Start here</a><a href="#mental-model">Mental model</a><a href="#notation">Notation</a><a href="#csl-section">CSL & ψ</a><a href="#dilatancy-section">Dilatancy</a><a href="#calibration-section">Calibration</a><a href="#norsand-section">NorSand</a><a href="#knowledge-check">Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
@@ -2371,9 +2373,16 @@ function drawS2MohrChart(phDeg){
   drawYTitle(ctx,"τ  (shear stress)", 12, axisTop+(oy-axisTop)/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
   var phiRad=Math.max(1,Math.min(48,phDeg))*Math.PI/180;
   var d=70,r=d*Math.sin(phiRad);
-  var scale=(axisRight-ox-20)/(d+r+10);
+  // scale must fit the circle both horizontally AND vertically — without the vertical
+  // check, a large radius could dip the circle's bottom half down into the σ′3/σ′1 tick
+  // row below the axis, exactly the overlap being fixed here
+  var scaleH=(axisRight-ox-20)/(d+r+10);
+  var scaleV=(oy-axisTop-10)/r;
+  var scale=Math.min(scaleH,scaleV);
   var dPx=d*scale,rPx=r*scale,cx=ox+dPx,cy=oy;
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,rPx,0,Math.PI*2); ctx.stroke();
+  // only the upper half is drawn (τ is treated as non-negative here) — this also keeps
+  // the circle from ever crossing below the axis into the tick-label row
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,rPx,Math.PI,2*Math.PI); ctx.stroke();
   var s3x=cx-rPx,s1x=cx+rPx;
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(s3x,oy); ctx.lineTo(s3x,oy+6); ctx.moveTo(s1x,oy); ctx.lineTo(s1x,oy+6); ctx.stroke();
