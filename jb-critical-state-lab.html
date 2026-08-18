@@ -3,8 +3,14 @@
 <title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 1)</title>
 <style>
 /* ===== 1. Base layout, reset & typography ===== */
-:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5;
+  /* WCAG AA-safe (>=4.5:1) variants for small colored text sitting on the pale
+     contract/dilate/warn/ok badge backgrounds — --red/--green stay unchanged
+     everywhere else (buttons, chart lines, borders) where they already pass. */
+  --red-text:#b03a44;--green-text:#1f7a4c}
 *{box-sizing:border-box}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion: reduce){.pulse-target{animation:none!important}}
 body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
 header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
 header h1{margin:0;font-size:22px}
@@ -42,8 +48,8 @@ canvas{display:block;width:100%;height:260px}
 .stat strong{font-size:15px}
 .stat.hi strong{color:var(--blue)}
 .badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
-.badge.contract,.badge.warn{background:#fdeee9;color:var(--red)}
-.badge.dilate,.badge.ok{background:#e9f6ef;color:var(--green)}
+.badge.contract,.badge.warn{background:#fdeee9;color:var(--red-text)}
+.badge.dilate,.badge.ok{background:#e9f6ef;color:var(--green-text)}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
 .callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0}
 .sources{font-size:11px;color:var(--muted);line-height:1.6}
@@ -193,9 +199,12 @@ body{padding-bottom:54px}
 .page-stepper-nav:disabled{opacity:.35;cursor:default}
 .page-stepper-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
 .page-stepper-label{font-weight:700;color:var(--navy);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
-.page-dots{display:flex;gap:5px}
-.page-dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;border:0;padding:0}
-.page-dot.active{background:var(--blue);width:18px;border-radius:4px}
+.page-dots{display:flex;gap:2px}
+.page-dot{width:26px;height:26px;padding:0;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.page-dot:hover{background:#f2f7f9}
+.page-dot::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:var(--line);transition:width .15s,border-radius .15s}
+.page-dot.active::before{background:var(--blue);width:18px;border-radius:4px}
+.page-dot[aria-current="page"]::before{background:var(--blue)}
 @media(max-width:640px){.page-stepper{gap:7px;padding:7px 8px}.page-stepper-nav{padding:7px 10px;font-size:11px}.page-stepper-label{max-width:34vw;font-size:10.5px}}
 
 .page-next-prompt{margin:20px 0 6px}
@@ -215,7 +224,7 @@ body{padding-bottom:54px}
 .intro-shear-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:14px;align-items:start;margin-top:8px}
 .intro-shear-tool .s2-presets button.on{background:var(--navy);color:#fff}
 .slider-block.is-response{border-left:3px solid var(--red);background:#fdf3f1}
-.slider-block.is-response .readout{color:var(--red)}
+.slider-block.is-response .readout{color:var(--red-text)}
 .slider-block.is-response input[type=range]{accent-color:var(--red)}
 #introChart{width:100%;height:220px}
 #introQPChart{width:100%;height:220px}
@@ -247,6 +256,7 @@ body{padding-bottom:54px}
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
+<div id="pageAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 
 <div class="wrap">
@@ -267,7 +277,7 @@ body{padding-bottom:54px}
 <div class="callout"><b>Recommended route:</b> first use the visual mental model, then the guided CSL tool, then stress–dilatancy, and only then open the NorSand simulator.</div></div>
 <div class="big-idea"><div class="eyebrow" style="color:#aee7f7">The big idea</div><div class="formula">ψ = e − e<sub>c</sub>(p′)</div><p>Void ratio alone is not enough. Stress alone is not enough. ψ combines both by measuring vertical distance from the critical state line.</p></div>
 </div>
-<p class="explain" style="font-size:11.5px;margin-top:10px">Click any goal below to jump straight to where it's practiced.</p>
+<p class="explain" style="font-size:11.5px;margin-top:10px">Choose any goal below to jump straight to where it's practiced.</p>
 <div class="goal-grid">
 <button type="button" class="goal" data-goto="csl-section" data-pulse="cslChart"><span class="goal-num">1</span><b>Locate a soil state</b>Read e and p′ on the state plane and calculate ψ.</button>
 <button type="button" class="goal" data-goto="predictQuiz" data-pulse="predictQuiz"><span class="goal-num">2</span><b>Predict the tendency</b>Use the sign and magnitude of ψ to anticipate contraction or dilation.</button>
@@ -305,14 +315,14 @@ body{padding-bottom:54px}
 <p class="explain">Before any equations: the same sand, consolidated to the same stress at two different starting densities, then sheared. <b>What actually moves &mdash; void ratio or effective stress &mdash; depends on drainage.</b> Strain is applied either way (that's the loading); which quantity responds to it is the thing to watch.</p>
 <div class="intro-shear-grid">
 <div>
-<div class="s2-presets" role="group" aria-label="Drainage condition"><button type="button" data-introdrain="drained" class="on">Drained</button><button type="button" data-introdrain="undrained">Undrained</button></div>
-<div class="s2-presets" role="group" aria-label="Starting density" style="margin-top:6px"><button type="button" data-introstate="dense" class="on">Start dense</button><button type="button" data-introstate="loose">Start loose</button></div>
+<div class="s2-presets" role="group" aria-label="Drainage condition"><button type="button" data-introdrain="drained" class="on" aria-pressed="true">Drained</button><button type="button" data-introdrain="undrained" aria-pressed="false">Undrained</button></div>
+<div class="s2-presets" role="group" aria-label="Starting density" style="margin-top:6px"><button type="button" data-introstate="dense" class="on" aria-pressed="true">Start dense</button><button type="button" data-introstate="loose" aria-pressed="false">Start loose</button></div>
 <div class="slider-block"><label for="introP0"><span>Consolidation stress, p′<sub>0</sub> (kPa)</span> <span class="readout" id="introP0Out">100</span></label><input id="introP0" type="range" min="1" max="1000" step="1" value="100"><div class="hint">Floored at 1 kPa, not 0 &mdash; the CSL itself (e<sub>c</sub> = &Gamma; &minus; &lambda;<sub>10</sub>&middot;log<sub>10</sub>p′) is undefined at p′ = 0, and 1 kPa is exactly where &Gamma; is defined.</div></div>
 <div class="slider-block" id="introEtaBlock"><label for="introEta"><span>Shear stress ratio, η = q/p′ <span class="badge" id="introEtaModeTag">response</span></span> <span class="readout" id="introEtaOut">0.00</span></label><input id="introEta" type="range" min="0" max="1.5" step="0.001" value="0"><div class="hint">Drag this OR the strain slider below &mdash; whichever you move becomes the control, the other becomes the computed response.</div></div>
 <div class="slider-block" id="introStrainBlock"><label for="introStrain"><span>Shear strain applied, ε<sub>q</sub> (%) <span class="badge" id="introStrainModeTag">control</span></span> <span class="readout" id="introStrainOut">0.0</span></label><input id="introStrain" type="range" min="0" max="100" step="0.5" value="0"><div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through 20&ndash;50% strain, which is already flat, for illustration.</div></div>
-<div id="introStatus" class="callout">Consolidated below the CSL. Drag the strain slider to apply the loading — watch how the state responds.</div>
+<div id="introStatus" class="callout" aria-live="polite">Consolidated below the CSL. Drag the strain slider to apply the loading — watch how the state responds.</div>
 </div>
-<div><canvas id="introChart"></canvas><canvas id="introQPChart" style="margin-top:10px"></canvas></div>
+<div><canvas id="introChart" role="img" aria-label="Chart of void ratio versus mean effective stress as strain is applied, showing whether the sample dilates toward or contracts toward the critical state line."></canvas><canvas id="introQPChart" style="margin-top:10px" role="img" aria-label="Chart of stress ratio versus mean effective stress during the consolidate-then-shear demonstration."></canvas></div>
 </div>
 <p class="explain" style="font-size:11px;margin-top:6px">Illustrative curve (a smooth approach to critical state), not a full NorSand integration &mdash; that's Section 4. <b>Drained:</b> volume can change freely, so e itself moves toward e<sub>c</sub> at the fixed consolidation stress &mdash; dense samples dilate (e rises), loose samples contract (e falls). This is the book's own Fig. 2.5 idealization. <b>Undrained:</b> volume <i>can't</i> change at all (e is frozen at its starting value), so instead p′ moves &mdash; dense samples generate negative excess pore pressure and p′ rises; loose samples generate positive excess pore pressure and p′ falls toward zero, which is exactly the flow-liquefaction mechanism Module 3 covers. Either way, applying strain is the loading; e or p′ is the response, and both converge toward the same critical state line.</p>
 </div>
@@ -329,7 +339,7 @@ body{padding-bottom:54px}
 <h3 id="predictQuiz">Predict before calculating</h3>
 <p class="explain">A sample lies <b>above</b> the CSL at its current p′. Using the four steps above, what is the best first-order prediction?</p>
 <div class="choice-row" id="predictionChoices"><button data-answer="wrong">Dilative, ψ &lt; 0</button><button data-answer="correct">Contractive, ψ &gt; 0</button><button data-answer="wrong">State cannot be inferred</button></div>
-<div id="predictionFeedback" class="feedback">Choose an answer, then use Section 1 to test it numerically.</div>
+<div id="predictionFeedback" class="feedback" aria-live="polite">Choose an answer, then use Section 1 to test it numerically.</div>
 
 <div class="grid2" style="margin-top:16px">
 <div class="visual-panel"><h3>Particle-scale intuition</h3><div class="two-state">
@@ -337,18 +347,18 @@ body{padding-bottom:54px}
 <div class="state-box loose"><b>Loose of critical, ψ &gt; 0</b><div class="particles" id="looseParticles"></div><small>Particles can collapse into available voids. The assembly tends to contract and may generate positive pore pressure if drainage is prevented.</small></div>
 </div></div>
 <div class="visual-panel"><h3>Guided “what changes?” explorer</h3>
-<div class="lesson-tabs"><button class="on" data-pane="pane-e">Increase e</button><button data-pane="pane-p">Increase p′</button><button data-pane="pane-g">Increase Γ</button><button data-pane="pane-l">Increase λ</button></div>
-<div id="pane-e" class="lesson-pane on callout"><b>Increase e at fixed p′:</b> the state point moves upward, ψ becomes more positive, and the response becomes more contractive.</div>
-<div id="pane-p" class="lesson-pane callout"><b>Increase p′ at fixed e:</b> the CSL moves downward at the new stress. ψ becomes more positive. This is why the same relative density can behave differently at different stress levels.</div>
-<div id="pane-g" class="lesson-pane callout"><b>Increase Γ:</b> the complete CSL shifts upward. At the same e and p′, ψ becomes more negative.</div>
-<div id="pane-l" class="lesson-pane callout"><b>Increase λ:</b> the CSL becomes steeper in e–log p′ space. Stress level has a larger influence on the reference void ratio.</div>
+<div class="lesson-tabs" role="tablist" aria-label="What changes?"><button role="tab" id="tab-pane-e" aria-controls="pane-e" aria-selected="true" class="on" data-pane="pane-e">Increase e</button><button role="tab" id="tab-pane-p" aria-controls="pane-p" aria-selected="false" data-pane="pane-p">Increase p′</button><button role="tab" id="tab-pane-g" aria-controls="pane-g" aria-selected="false" data-pane="pane-g">Increase Γ</button><button role="tab" id="tab-pane-l" aria-controls="pane-l" aria-selected="false" data-pane="pane-l">Increase λ</button></div>
+<div id="pane-e" class="lesson-pane on callout" role="tabpanel" aria-labelledby="tab-pane-e"><b>Increase e at fixed p′:</b> the state point moves upward, ψ becomes more positive, and the response becomes more contractive.</div>
+<div id="pane-p" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-p"><b>Increase p′ at fixed e:</b> the CSL moves downward at the new stress. ψ becomes more positive. This is why the same relative density can behave differently at different stress levels.</div>
+<div id="pane-g" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-g"><b>Increase Γ:</b> the complete CSL shifts upward. At the same e and p′, ψ becomes more negative.</div>
+<div id="pane-l" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-l"><b>Increase λ:</b> the CSL becomes steeper in e–log p′ space. Stress level has a larger influence on the reference void ratio.</div>
 <div class="warning"><b>Sign-convention checkpoint:</b> this module uses compression-positive volumetric strain. Dilation therefore gives a negative D, and the strongest dilation is D<sub>min</sub>.</div>
 </div></div>
 </section>
 
 <div class="card" id="notation">
 <h2>Notation used in this module</h2>
-<p class="explain" style="font-size:12px">This page (and the book itself) introduces symbols in the flow of the text rather than up front. Terms are grouped by what they describe, not alphabetically &mdash; click any card to jump to where it's actually used.</p>
+<p class="explain" style="font-size:12px">This page (and the book itself) introduces symbols in the flow of the text rather than up front. Terms are grouped by what they describe, not alphabetically &mdash; choose any card to jump to where it's actually used.</p>
 <div class="notation-grid">
 
 <div class="notation-group-label" style="grid-column:1/-1"><span class="notation-swatch" style="background:#586d75"></span>State &mdash; where the sample actually is</div>
@@ -407,7 +417,7 @@ body{padding-bottom:54px}
 <button type="button" class="guided-step" data-cslcase="loose" aria-pressed="false"><b>3. Loose</b>Move 0.08 above the CSL and observe contraction.</button>
 <button type="button" class="guided-step" data-cslcase="stress" aria-pressed="false"><b>4. Stress effect</b>Hold e fixed and raise p′ to 1000 kPa.</button>
 <button type="button" class="guided-step" data-cslcase="shear" aria-pressed="false"><b>5. Apply strain</b>Start loose, then watch shearing itself pull the point down onto the CSL.</button>
-</div><div id="cslExperimentStatus" class="experiment-status">Select a case to begin.</div></div>
+</div><div id="cslExperimentStatus" class="experiment-status" aria-live="polite">Select a case to begin.</div></div>
 <label style="font-size:12.5px;font-weight:700">Sand / tailings (real properties, Table 2.1)</label><br>
 <select id="sandSelect"></select>
 
@@ -424,7 +434,7 @@ body{padding-bottom:54px}
 </div>
 <div class="statgrid n3" id="cslStats"></div>
 </div>
-<div><canvas id="cslChart"></canvas>
+<div><canvas id="cslChart" role="img" aria-label="Critical state line chart: void ratio versus mean effective stress on a log scale, showing the current state point and its vertical distance from the line."></canvas>
 <label class="ln-overlay-toggle"><input type="checkbox" id="showLnForm"> overlay the &lambda;/ln form (computed independently) &mdash; should land exactly on top of the curve above, confirming the two are the same line</label>
 </div>
 </div>
@@ -433,13 +443,13 @@ body{padding-bottom:54px}
 <div class="explain"><p>Section 2.2.1 makes this the whole motivation for &psi;: relative density, D<sub>r</sub> = (e<sub>max</sub>&minus;e)/(e<sub>max</sub>&minus;e<sub>min</sub>), only ever compares a soil to itself &mdash; it says nothing about stress level, because e<sub>max</sub> and e<sub>min</sub> don't depend on p&prime;. But the critical state line drops as p&prime; rises, so <i>the same D<sub>r</sub> can be dilative at shallow depth and contractive at high stress in the very same soil</i>. Try it on the currently-selected sand:</p></div>
 <div class="slider-block"><label for="drFixed"><span>Relative density, D<sub>r</sub> (%) &mdash; held fixed at both stresses below</span> <span class="readout" id="drFixedOut">50</span></label><input id="drFixed" type="range" min="0" max="100" step="1" value="50"></div>
 <div class="statgrid n2" id="drVsPsiStats"></div>
-<div class="callout" id="drVsPsiNote" style="margin-top:8px"></div>
+<div class="callout" id="drVsPsiNote" style="margin-top:8px" aria-live="polite"></div>
 </div>
 
 <div class="quiz-checkpoint" id="quizCheckABC">
 <h3>Quick check &mdash; before moving on</h3>
 <p class="explain" style="font-size:12px;margin-top:0">Three short blocks on what you just covered: the CSL itself, the state parameter &psi;, and why &psi; beats relative density. Answer a block, then press its own "Check this block" button for immediate feedback &mdash; no need to finish all three before continuing.</p>
-<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotABC">Expand all</button><button type="button" class="collapseGroup" data-group="quizSlotABC">Collapse all</button></div>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotABC">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotABC">Hide questions</button></div>
 <div id="quizSlotABC"></div>
 </div>
 
@@ -462,8 +472,8 @@ body{padding-bottom:54px}
 </div><div>
 <div class="s2-meter"><span id="s2Marker" class="s2-marker"></span></div><div class="s2-meter-labels"><span>Dense / dilative</span><span>ψ = 0</span><span>Loose / contractive</span></div>
 <div class="s2-chain"><div class="s2-box"><small>ψ</small><strong id="s2ChainPsi">−0.100</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>D<sub>min</sub></small><strong id="s2D">−0.350</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>η<sub>max</sub></small><strong id="s2Eta">1.610</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>φ′<sub>peak</sub></small><strong id="s2Phi">39.4°</strong></div></div>
-<div id="s2Interpret" class="s2-prompt"></div>
-<div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback">Predict first, then move the ψ slider to test your answer.</div></div>
+<div id="s2Interpret" class="s2-prompt" aria-live="polite"></div>
+<div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback" aria-live="polite">Predict first, then move the ψ slider to test your answer.</div></div>
 </div></div></div>
 
 <div class="grid2">
@@ -471,11 +481,11 @@ body{padding-bottom:54px}
 <div class="statgrid n3" id="dilStats"></div>
 <h3>Same soil, same stress ratio — different friction angle depending only on state</h3>
 <p class="explain" style="font-size:12px">The bars compare this sand's critical-state friction angle &phi;&prime;<sub>cv</sub> (from M<sub>tc</sub> alone, state-independent) against the peak &phi;&prime; predicted for the current &psi;.</p>
-<div class="chart-host"><canvas id="phiBar" style="height:150px"></canvas><div class="chart-tip" id="phiBarTip"></div></div>
+<div class="chart-host"><canvas id="phiBar" style="height:150px" role="img" aria-label="Bar chart comparing the critical-state friction angle to the peak friction angle predicted for the current state."></canvas><div class="chart-tip" id="phiBarTip"></div></div>
 </div>
-<div><div class="chart-host"><canvas id="dilChart"></canvas><div class="chart-tip" id="dilChartTip"></div></div>
+<div><div class="chart-host"><canvas id="dilChart" role="img" aria-label="Chart of maximum dilatancy versus the state parameter psi, showing the current state's position on the trend line for this sand."></canvas><div class="chart-tip" id="dilChartTip"></div></div>
 <div class="legend"><span><i style="background:var(--blue)"></i>D<sub>min</sub>=&chi;<sub>tc</sub>&psi; trend for this sand</span><span><i style="background:var(--red)"></i>current state</span></div>
-<p class="explain" style="font-size:11px;margin:4px 0 0">Hover the chart to read exact values anywhere along the line.</p>
+<p class="explain" style="font-size:11px;margin:4px 0 0">Hover or touch the chart to read exact values anywhere along the line.</p>
 </div>
 </div>
 
@@ -487,7 +497,7 @@ body{padding-bottom:54px}
 <div class="quiz-checkpoint" id="quizCheckDE">
 <h3>Quick check &mdash; before moving on</h3>
 <p class="explain" style="font-size:12px;margin-top:0">Two blocks on dilatancy and how &psi; translates into peak strength through &chi;<sub>tc</sub> and M<sub>tc</sub>.</p>
-<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotDE">Expand all</button><button type="button" class="collapseGroup" data-group="quizSlotDE">Collapse all</button></div>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotDE">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotDE">Hide questions</button></div>
 <div id="quizSlotDE"></div>
 </div>
 
@@ -500,12 +510,12 @@ body{padding-bottom:54px}
 <div id="fnnote-3" class="fn-note"><b>3.</b> The book also documents an alternative image stress-ratio rule, M<sub>i</sub> = M(1&minus;|&psi;<sub>i</sub>|/M<sub>tc</sub>) (Jefferies &amp; Shuttle 2002), noting it matches NorSand's own rule (used throughout this page) on average at peak dilation &mdash; close, but not identical, another small reminder that even the model's own internal relationships aren't perfectly unique.</div>
 
 
-<div class="guided-panel"><h3 style="margin-top:0">Parameter role explorer</h3><p class="explain" style="font-size:12px">Select a property to see what evidence constrains it &mdash; each card previews the shape of the plot that pins it down. Click again (or the button below) to jump to that plot in full size, with real axis labels and this sand's real values.</p><div class="parameter-cards">
-<button type="button" class="parameter-card" data-param="csl" data-goto="cslFitChart" data-pulse="cslFitChart" aria-pressed="false"><canvas class="param-mini" id="miniCSL"></canvas><b>Γ and λ<sub>10</sub></b><small>Critical end-state points in e–log p′ space.</small></button>
-<button type="button" class="parameter-card" data-param="mtc" data-goto="mtcChart" data-pulse="mtcChart" aria-pressed="false"><canvas class="param-mini" id="miniMtc"></canvas><b>M<sub>tc</sub></b><small>D–η intercept or common large-strain stress ratio.</small></button>
-<button type="button" class="parameter-card" data-param="chi" data-goto="chiFitChart" data-pulse="chiFitChart" aria-pressed="false"><canvas class="param-mini" id="miniChi"></canvas><b>χ<sub>tc</sub></b><small>Slope of D<sub>min</sub> against ψ.</small></button>
-<button type="button" class="parameter-card" data-param="nh" data-goto="fitNHChart" data-pulse="fitNHChart" aria-pressed="false"><canvas class="param-mini" id="miniNH"></canvas><b>N and H</b><small>Forward-fit the full stress–strain curve.</small></button>
-</div><div id="parameterRoleText" class="callout">Choose a property.</div></div>
+<div class="guided-panel"><h3 style="margin-top:0">Parameter role explorer</h3><p class="explain" style="font-size:12px">Select a property to see what evidence constrains it &mdash; each card previews the shape of the plot that pins it down. Select again (or use the button below) to jump to that plot in full size, with real axis labels and this sand's real values.</p><div class="parameter-cards">
+<button type="button" class="parameter-card" data-param="csl" data-goto="cslFitChart" data-pulse="cslFitChart" aria-pressed="false"><canvas class="param-mini" id="miniCSL" aria-hidden="true"></canvas><b>Γ and λ<sub>10</sub></b><small>Critical end-state points in e–log p′ space.</small></button>
+<button type="button" class="parameter-card" data-param="mtc" data-goto="mtcChart" data-pulse="mtcChart" aria-pressed="false"><canvas class="param-mini" id="miniMtc" aria-hidden="true"></canvas><b>M<sub>tc</sub></b><small>D–η intercept or common large-strain stress ratio.</small></button>
+<button type="button" class="parameter-card" data-param="chi" data-goto="chiFitChart" data-pulse="chiFitChart" aria-pressed="false"><canvas class="param-mini" id="miniChi" aria-hidden="true"></canvas><b>χ<sub>tc</sub></b><small>Slope of D<sub>min</sub> against ψ.</small></button>
+<button type="button" class="parameter-card" data-param="nh" data-goto="fitNHChart" data-pulse="fitNHChart" aria-pressed="false"><canvas class="param-mini" id="miniNH" aria-hidden="true"></canvas><b>N and H</b><small>Forward-fit the full stress–strain curve.</small></button>
+</div><div id="parameterRoleText" class="callout" aria-live="polite">Choose a property.</div></div>
 <p class="explain" style="font-size:12px"><b>The four lettered panels below (A&ndash;D) are the essential content.</b> The worked example just underneath &mdash; a real test program table and one full raw-data-to-calibration pipeline &mdash; shows where the panels' numbers actually come from, but it's supporting detail: skim it or collapse it on a first pass, and come back to it once the four panels themselves make sense.</p>
 <details class="disclosure" open>
 <summary>What a real triaxial test program looks like <small>worked example &mdash; optional on a first pass</small></summary>
@@ -517,25 +527,25 @@ body{padding-bottom:54px}
 <tbody id="sampleTestBody"></tbody>
 </table>
 </div>
-<p class="explain" style="font-size:11.5px;color:var(--muted);margin-top:4px">&uarr; Click any row to trace that one test through the full data-reduction pipeline below.</p>
+<p class="explain" style="font-size:11.5px;color:var(--muted);margin-top:4px">&uarr; Choose any row to trace that one test through the full data-reduction pipeline below.</p>
 
 <h3 style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">One test, start to finish <span class="badge" id="pipelineTestBadge" style="margin-left:0">CID-01</span></h3>
 <p class="explain" style="font-size:12.5px">This is the step every panel below skips over: what a lab technician actually records (deviator stress and volume change vs. strain, with real scatter), and how that gets turned into the stress&ndash;dilatancy plot Section 2.4.3 uses to read off M<sub>tc</sub>. The dots are illustrative measurement noise scattered around a NorSand simulation run at this sand's own real properties &mdash; not a digitized real test &mdash; but the reduction method is exactly the book's.</p>
 
 <div class="grid2">
-<div><canvas id="rawQChart"></canvas>
+<div><canvas id="rawQChart" role="img" aria-label="Chart of illustrative noisy deviator stress versus strain for one triaxial test, overlaid on the underlying model curve."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>"measured" q (noisy)</span><span><i style="background:var(--navy)"></i>underlying model</span></div></div>
-<div><canvas id="rawEvChart"></canvas>
+<div><canvas id="rawEvChart" role="img" aria-label="Chart of illustrative noisy volumetric strain versus strain for the same triaxial test, overlaid on the underlying model curve."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>"measured" &epsilon;<sub>v</sub> (noisy)</span><span><i style="background:var(--green)"></i>underlying model</span></div></div>
 </div>
 
 <div class="grid2" style="margin-top:12px">
-<div><canvas id="stressDilChart"></canvas>
+<div><canvas id="stressDilChart" role="img" aria-label="Stress-dilatancy chart: dilatancy versus stress ratio for the noisy test data, with a fitted line used to read off M-tc at the point where dilatancy is zero."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>(D, &eta;) pairs from the noisy curves above</span><span><i style="background:var(--red)"></i>line fit</span><span><i style="background:var(--navy)"></i>this sand's real M<sub>tc</sub></span></div></div>
 <div>
 <div class="explain" style="font-size:12px"><p>Rowe/Nova's stress&ndash;dilatancy rule in its full form is &eta; = M<sub>i</sub> &minus; (1&minus;N)&middot;D<sup>p</sup> (NorSand's Eq. 3.31) &mdash; a straight line of slope <b>N&minus;1</b> on a D&ndash;&eta; plot, not exactly &minus;1. This is genuinely the method Fig. 2.30 uses on real Erksak data: the book's own trend line there is explicitly labeled with slope N&minus;1, so that single plot calibrates both M<sub>tc</sub> (the intercept) <i>and</i> N (the slope) together. At the special point D=0 (no volume change &mdash; the soil is momentarily at critical state <i>locally</i>, even mid-test), the &eta;-intercept <i>is</i> M<sub>tc</sub> regardless of the slope, since the (1&minus;N)&middot;D term vanishes &mdash; that part of the logic is unaffected by which form you use. The simpler D=M&minus;&eta; form used elsewhere on this page (slope exactly &minus;1, i.e. N=0) is a common first-order simplification: exact at D=0, but not the book's own full relationship away from that point.</p></div>
 <div class="statgrid n2" id="pipelineStats"></div>
-<div class="callout" id="pipelineNote" style="margin-top:8px"></div>
+<div class="callout" id="pipelineNote" style="margin-top:8px" aria-live="polite"></div>
 </div>
 </div>
 </div>
@@ -544,7 +554,7 @@ body{padding-bottom:54px}
 <h3>A. &Gamma; and &lambda;<sub>10</sub> — from where a set of tests end up at large strain</h3>
 <p class="explain" style="font-size:12.5px">Each drained/undrained triaxial test, sheared far enough, ends at a different (e, p&prime;) point on the critical state line. Plot those end-points on e vs. log(p&prime;) and fit a straight line: the intercept at p&prime;=1 kPa is &Gamma;, the slope is &lambda;<sub>10</sub>.</p>
 <div class="grid2">
-<div><canvas id="cslFitChart"></canvas>
+<div><canvas id="cslFitChart" role="img" aria-label="Chart fitting the critical state line to illustrative test end-points, compared to this sand's real published line and the recovered fit."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>illustrative test end-points</span><span><i style="background:var(--navy)"></i>this sand's real CSL (Table 2.1)</span><span><i style="background:var(--red)"></i>line fit through the points</span></div></div>
 <div class="statgrid n2" id="cslFitStats"></div>
 </div>
@@ -552,7 +562,7 @@ body{padding-bottom:54px}
 <h3>B. M<sub>tc</sub> — the one stress ratio every test heads toward</h3>
 <p class="explain" style="font-size:12.5px">Run the same sand's NorSand simulation (Section 4's model, this sand's real properties) at three different starting densities. Loose samples harden up to it; dense samples overshoot and soften back down &mdash; but all three curves converge on the <i>same</i> &eta;, regardless of density. That common value is M<sub>tc</sub>.</p>
 <div class="grid2">
-<div><canvas id="mtcChart"></canvas>
+<div><canvas id="mtcChart" role="img" aria-label="Chart of three NorSand simulations at different starting densities, all converging to the same critical stress ratio M-tc regardless of density."></canvas>
 <div class="legend"><span><i style="background:var(--red)"></i>dense (&psi;&lt;0)</span><span><i style="background:var(--orange)"></i>near-critical</span><span><i style="background:var(--blue)"></i>loose (&psi;&gt;0)</span><span><i style="background:#9aa9ae"></i>M<sub>tc</sub></span></div></div>
 <div class="statgrid n2" id="mtcStats"></div>
 </div>
@@ -560,7 +570,7 @@ body{padding-bottom:54px}
 <h3>C. &chi;<sub>tc</sub> — how strongly density controls peak dilation</h3>
 <p class="explain" style="font-size:12.5px">Run several tests at different initial &psi;, record each one's peak dilation D<sub>min</sub>, and plot D<sub>min</sub> against &psi;. Eq. 2.11 says that should be a straight line through the origin &mdash; its slope is &chi;<sub>tc</sub>.</p>
 <div class="grid2">
-<div><canvas id="chiFitChart"></canvas>
+<div><canvas id="chiFitChart" role="img" aria-label="Chart fitting maximum dilatancy versus the state parameter psi through the origin, used to recover chi-tc as the slope."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>illustrative test results</span><span><i style="background:var(--navy)"></i>this sand's real &chi;<sub>tc</sub> (Table 2.1)</span><span><i style="background:var(--red)"></i>line fit through the points</span></div></div>
 <div class="statgrid n2" id="chiFitStats"></div>
 </div>
@@ -577,7 +587,7 @@ body{padding-bottom:54px}
 <span class="badge" id="fitTrueVals" style="display:none"></span>
 </div>
 <div>
-<canvas id="fitNHChart"></canvas>
+<canvas id="fitNHChart" role="img" aria-label="Chart comparing illustrative measured stress-strain data to your current NorSand model curve, updating live as you adjust N and H."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>illustrative "measured" data</span><span><i style="background:var(--navy)"></i>your current model curve</span></div>
 </div>
 </div>
@@ -586,7 +596,7 @@ body{padding-bottom:54px}
 <div class="quiz-checkpoint" id="quizCheckFGH">
 <h3>Quick check &mdash; before moving on</h3>
 <p class="explain" style="font-size:12px;margin-top:0">Three blocks on where &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N and H actually come from &mdash; the calibration process you just walked through.</p>
-<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotFGH">Expand all</button><button type="button" class="collapseGroup" data-group="quizSlotFGH">Collapse all</button></div>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotFGH">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotFGH">Hide questions</button></div>
 <div id="quizSlotFGH"></div>
 </div>
 
@@ -600,7 +610,7 @@ body{padding-bottom:54px}
 
 <div class="ns-layout">
 <div class="ns-controls">
-<div class="guided-panel"><h3 style="margin-top:0">One-variable-at-a-time NorSand experiments</h3><p class="explain" style="font-size:12px">Each experiment resets the model, changes one control, runs it, and highlights what to compare.</p><div class="interaction-bar"><button data-nsexp="loose">Make ψ<sub>0</sub> positive</button><button data-nsexp="dense">Make ψ<sub>0</sub> negative</button><button data-nsexp="soft">Lower H</button><button data-nsexp="sharp">Raise H</button><button data-nsexp="highchi">Raise χ<sub>tc</sub></button><button id="nsResetGuided" class="ghost">Reset Erksak</button></div><div id="nsExperimentStatus" class="experiment-status">Choose an experiment, then compare peak η, strain at peak, and the void-ratio path.</div></div>
+<div class="guided-panel"><h3 style="margin-top:0">One-variable-at-a-time NorSand experiments</h3><p class="explain" style="font-size:12px">Each experiment resets the model, changes one control, runs it, and highlights what to compare.</p><div class="interaction-bar"><button data-nsexp="loose">Make ψ<sub>0</sub> positive</button><button data-nsexp="dense">Make ψ<sub>0</sub> negative</button><button data-nsexp="soft">Lower H</button><button data-nsexp="sharp">Raise H</button><button data-nsexp="highchi">Raise χ<sub>tc</sub></button><button id="nsResetGuided" class="ghost">Reset Erksak</button></div><div id="nsExperimentStatus" class="experiment-status" aria-live="polite">Choose an experiment, then compare peak η, strain at peak, and the void-ratio path.</div></div>
 <label style="font-size:12.5px;font-weight:700">Parameter set</label><br>
 <select id="nsPreset">
 <option value="erksak">Erksak 330/0.7 sand — the book's own Ch.3 calibration (&Gamma;=0.816, &lambda;<sub>10</sub>=0.031, M<sub>tc</sub>=1.26, &chi;<sub>tc</sub>=3.5)</option>
@@ -625,14 +635,14 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="nsP0"><span>Initial p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="nsP0Out">200</span></label><input id="nsP0" type="range" min="10" max="1000" step="10" value="200">
 <div class="hint">Starting confining stress. Raising it alone moves the sample toward denser-of-critical (&psi;<sub>0</sub> more negative) since the CSL itself drops with stress.</div></div>
 </div>
-<button id="nsRun">Run simulation</button>
+<button id="nsRun" title="Sliders already re-run this live as you drag them — this button just replays the current settings, useful after using Tab/arrow keys.">↻ Re-run now</button>
 <button type="button" id="nsTour" class="alt">▶ Step through each slider</button>
 <span class="badge" id="nsSyncBadge">● live — reruns automatically as you move any slider above</span>
 <span class="badge" id="nsPsi0"></span>
 </div>
 <div class="ns-charts">
-<div><canvas id="nsQChart"></canvas><div class="legend"><span><i style="background:var(--blue)"></i>stress ratio &eta; = q/p&prime;</span></div></div>
-<div><canvas id="nsEChart"></canvas><div class="legend"><span><i style="background:var(--green)"></i>void ratio e</span><span><i style="background:var(--muted)"></i>e<sub>c</sub> at current p&prime;</span></div></div>
+<div><canvas id="nsQChart" role="img" aria-label="Chart of stress ratio versus shear strain from the NorSand simulation, showing the peak and how it evolves toward Mtc."></canvas><div class="legend"><span><i style="background:var(--blue)"></i>stress ratio &eta; = q/p&prime;</span></div></div>
+<div><canvas id="nsEChart" role="img" aria-label="Chart of void ratio versus shear strain from the NorSand simulation, compared to the critical void ratio at the current stress."></canvas><div class="legend"><span><i style="background:var(--green)"></i>void ratio e</span><span><i style="background:var(--muted)"></i>e<sub>c</sub> at current p&prime;</span></div></div>
 <div class="statgrid" id="nsStats"></div>
 </div>
 </div>
@@ -678,7 +688,7 @@ body{padding-bottom:54px}
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 100 answered (blocks A&ndash;I above, plus J below)</div>
 <div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotJ">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotJ">Hide questions</button></div>
 <div id="quizSlotJ"></div>
-<div class="quiz-actions"><button id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none"></div>
+<div class="quiz-actions"><button id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
 
 <div class="callout" style="margin-top:14px"><b>Back to where you started.</b> The opening "Walk through reading a state" chain asked you to read the point, read the CSL, subtract, and predict. You now know how each of those arrows is actually computed: <b>read the point</b> is e and p′ off the state plane; <b>read the CSL</b> is e<sub>c</sub> = Γ − λ<sub>10</sub>·log<sub>10</sub>(p′), calibrated in Section 3; <b>subtract</b> is ψ = e − e<sub>c</sub>; and <b>predict</b> now has real machinery behind it &mdash; D<sub>min</sub> = χ<sub>tc</sub>ψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> for a first-order estimate, or the full NorSand loop in Section 4 for the entire stress&ndash;strain curve. Module 2 picks up from here: how ψ is actually measured in the field, from a CPT.</div>
 
@@ -1542,10 +1552,15 @@ updateConstructionPanels();
 (function(){
   function addParticles(id, dense){var el=document.getElementById(id);if(!el)return;var pts=dense?[[5,7],[28,4],[51,8],[74,4],[16,29],[40,27],[64,31],[86,27],[4,52],[28,50],[52,54],[76,49],[89,58]]:[[5,8],[42,4],[78,13],[20,36],[63,39],[88,48],[8,65],[43,66],[75,70]];pts.forEach(function(p,i){var g=document.createElement('span');g.className='grain v'+((i%4)+1);g.style.left=p[0]+'%';g.style.top=p[1]+'px';var sz=15+((i*7)%8);g.style.width=sz+'px';g.style.height=sz+'px';g.style.transform='rotate('+((i*53)%360)+'deg)';el.appendChild(g);});}
   addParticles('denseParticles',true);addParticles('looseParticles',false);
-  document.querySelectorAll('.lesson-tabs button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.lesson-tabs button').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.lesson-pane').forEach(x=>x.classList.remove('on'));b.classList.add('on');document.getElementById(b.dataset.pane).classList.add('on');});});
+  document.querySelectorAll('.lesson-tabs button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.lesson-tabs button').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});document.querySelectorAll('.lesson-pane').forEach(x=>x.classList.remove('on'));b.classList.add('on');b.setAttribute('aria-selected','true');document.getElementById(b.dataset.pane).classList.add('on');});});
   document.querySelectorAll('#predictionChoices button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#predictionChoices button').forEach(x=>x.classList.remove('correct','wrong'));var ok=b.dataset.answer==='correct';b.classList.add(ok?'correct':'wrong');document.getElementById('predictionFeedback').innerHTML=ok?'<b>Correct.</b> Above the CSL means e &gt; e<sub>c</sub>, so ψ is positive and the first-order tendency is contraction.':'<b>Not quite.</b> Compare the current void ratio with e<sub>c</sub> at the same p′. Above the CSL, e − e<sub>c</sub> is positive.';});});
   function progress(){var d=document.documentElement,b=document.body;var top=d.scrollTop||b.scrollTop;var h=(d.scrollHeight||b.scrollHeight)-d.clientHeight;var pct=h?100*top/h:0;var f=document.getElementById('readingProgress');if(f)f.style.width=pct+'%';}
   window.addEventListener('scroll',progress,{passive:true});progress();
+  // exposed so the pagination script can recompute this after switching pages — page
+  // switches change document scrollHeight (hidden pages contribute 0), and without this
+  // the bar would keep showing a stale value from the previous page until the next scroll
+  window.recomputeReadingProgress=progress;
+  window.prefersReducedMotion=function(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); };
 
   // ---- clickable "goal", notation, and parameter-role cards: scroll to + pulse the relevant section ----
   // Every one of these jumps the reader somewhere else on the page with no native browser
@@ -1564,17 +1579,29 @@ updateConstructionPanels();
     backBtn.textContent='← Back to '+navStack[navStack.length-1].label;
     backBtn.style.display='inline-flex';
   }
+  // Moves focus to a target that may not natively take focus (a chart, a heading) by
+  // giving it tabindex="-1" first — programmatically focusable without joining the
+  // normal Tab order. Keyboard/screen-reader users then land where sighted users land
+  // instead of being left on a control that just scrolled off (or, with pagination,
+  // was hidden entirely).
+  window.focusElement=function(el){
+    if(!el) return;
+    if(!el.hasAttribute('tabindex')) el.setAttribute('tabindex','-1');
+    el.focus({preventScroll:true});
+  };
   document.querySelectorAll('.goal[data-goto], .notation-card[data-goto], .parameter-card[data-goto]').forEach(function(b){
     b.addEventListener('click',function(){
       var target=document.getElementById(b.dataset.goto);
       if(target){
         var curPage = window.getCurrentPageIndex ? window.getCurrentPageIndex() : 0;
-        navStack.push({page:curPage, y:window.scrollY, label:navOriginLabel(b)});
+        navStack.push({page:curPage, y:window.scrollY, label:navOriginLabel(b), el:b});
         updateBackBtn();
         // the target may live on a different "page" (see pagination script at the end
         // of the file) — switch pages first, without scrolling, then scroll to the target
-        if(window.gotoPageForElement) window.gotoPageForElement(target, {noScroll:true});
-        target.scrollIntoView({behavior:'smooth',block:'start'});
+        if(window.gotoPageForElement) window.gotoPageForElement(target, {noScroll:true, noFocus:true});
+        var smooth = window.prefersReducedMotion && window.prefersReducedMotion() ? 'auto' : 'smooth';
+        target.scrollIntoView({behavior:smooth,block:'start'});
+        window.focusElement(target);
       }
       var pulseEl=document.getElementById(b.dataset.pulse);
       if(pulseEl){ pulseEl.classList.add('pulse-target'); setTimeout(function(){ pulseEl.classList.remove('pulse-target'); },2600); }
@@ -1583,8 +1610,10 @@ updateConstructionPanels();
   backBtn.addEventListener('click',function(){
     var last=navStack.pop();
     if(last){
-      if(window.showPage && typeof last.page==='number') window.showPage(last.page,{noScroll:true});
-      window.scrollTo({top:last.y,behavior:'smooth'});
+      if(window.showPage && typeof last.page==='number') window.showPage(last.page,{noScroll:true, noFocus:true});
+      var smooth = window.prefersReducedMotion && window.prefersReducedMotion() ? 'auto' : 'smooth';
+      window.scrollTo({top:last.y,behavior:smooth});
+      if(last.el) window.focusElement(last.el);
     }
     updateBackBtn();
   });
@@ -1928,14 +1957,14 @@ updateConstructionPanels();
     }
     stateBtns.forEach(function(b){
       b.addEventListener('click',function(){
-        stateBtns.forEach(x=>x.classList.remove('on')); b.classList.add('on');
+        stateBtns.forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');}); b.classList.add('on'); b.setAttribute('aria-pressed','true');
         isDense=b.dataset.introstate==='dense';
         strainSlide.value=0; setControlMode('strain'); update();
       });
     });
     drainBtns.forEach(function(b){
       b.addEventListener('click',function(){
-        drainBtns.forEach(x=>x.classList.remove('on')); b.classList.add('on');
+        drainBtns.forEach(x=>{x.classList.remove('on');x.setAttribute('aria-pressed','false');}); b.classList.add('on'); b.setAttribute('aria-pressed','true');
         isDrained=b.dataset.introdrain==='drained';
         strainSlide.value=0; setControlMode('strain'); update();
       });
@@ -2073,7 +2102,7 @@ BLOCK_NAMES.forEach(function(name,blockIdx){
     var opts = item.opts.map(function(o,k){ return '<label><input type="radio" name="q'+qn+'" value="'+letters[k]+'"> '+o+'</label>'; }).join('');
     return '<div class="quiz-q" data-correct="'+item.correct+'"><p>'+qn+'. '+item.q+'</p>'+opts+'<div class="quiz-explanation"><b>Explanation:</b> '+item.exp+'</div></div>';
   }).join('');
-  var blockHtml='<details class="quiz-block"><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of 10 answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none"></div></details>';
+  var blockHtml='<details class="quiz-block"><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of 10 answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none" aria-live="polite"></div></details>';
   var slotId=SLOT_FOR_BLOCK[blockIdx];
   slotHtml[slotId]=(slotHtml[slotId]||'')+blockHtml;
 });
@@ -2300,6 +2329,9 @@ function runNsTour(){
 document.getElementById('nsTour').addEventListener('click',function(){
   if(nsTourRunning){ nsTourCancel=true; } else { runNsTour(); }
 });
+// exposed so the pagination script can stop the tour if the reader navigates away
+// mid-tour, instead of it continuing to animate hidden sliders and pulse a hidden chart
+window.cancelNsTour=function(){ if(nsTourRunning) nsTourCancel=true; };
 })();
 </script>
 <script>
@@ -2349,6 +2381,8 @@ document.addEventListener('keydown', function(e){
   // Dilatancy as one continuous flow — keep that same range now that they're separate pages.
   var STICKY_RANGE = [1,4];
   var currentPage = 0;
+  var historyReady = false;
+  var announcer = document.getElementById('pageAnnouncer');
 
   function pageIndexForElement(el){
     if(!el) return null;
@@ -2362,14 +2396,15 @@ document.addEventListener('keydown', function(e){
   }
 
   var navLinks=Array.from(document.querySelectorAll('.sticky-nav a[href^="#"]'));
-  var stepper=document.createElement('div'); stepper.className='page-stepper';
+  var stepper=document.createElement('nav'); stepper.className='page-stepper'; stepper.setAttribute('aria-label','Module page navigation');
   var prevBtn=document.createElement('button'); prevBtn.type='button'; prevBtn.className='page-stepper-nav';
   var nextBtn=document.createElement('button'); nextBtn.type='button'; nextBtn.className='page-stepper-nav';
   var mid=document.createElement('div'); mid.className='page-stepper-mid';
   var labelEl=document.createElement('div'); labelEl.className='page-stepper-label';
   var dotsEl=document.createElement('div'); dotsEl.className='page-dots';
   PAGES.forEach(function(p,i){
-    var d=document.createElement('button'); d.type='button'; d.className='page-dot'; d.title='Page '+(i+1)+': '+p.label;
+    var d=document.createElement('button'); d.type='button'; d.className='page-dot';
+    d.setAttribute('aria-label','Go to page '+(i+1)+' of '+PAGES.length+': '+p.label);
     d.addEventListener('click',function(){ showPage(i); });
     dotsEl.appendChild(d);
   });
@@ -2381,19 +2416,47 @@ document.addEventListener('keydown', function(e){
 
   function updateStepper(){
     labelEl.textContent='Page '+(currentPage+1)+' of '+PAGES.length+' · '+PAGES[currentPage].label;
-    Array.from(dotsEl.children).forEach(function(d,i){ d.classList.toggle('active', i===currentPage); });
+    Array.from(dotsEl.children).forEach(function(d,i){
+      d.classList.toggle('active', i===currentPage);
+      if(i===currentPage) d.setAttribute('aria-current','page'); else d.removeAttribute('aria-current');
+    });
     prevBtn.disabled = currentPage===0;
     prevBtn.textContent = currentPage===0 ? '← Previous' : '← '+PAGES[currentPage-1].label;
     if(currentPage===PAGES.length-1){ nextBtn.disabled=true; nextBtn.textContent='Finished ✓'; }
     else { nextBtn.disabled=false; nextBtn.textContent=PAGES[currentPage+1].label+' →'; }
     navLinks.forEach(function(a){
       var idx=pageIndexForElement(document.getElementById(a.getAttribute('href').slice(1)));
-      a.classList.toggle('on-page', idx===currentPage);
+      var onPage = idx===currentPage;
+      a.classList.toggle('on-page', onPage);
+      if(onPage) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current');
     });
+  }
+
+  // Charts on Section 1/2 and Calibration are already wired to redraw on window
+  // 'resize' (see the existing window resize handler earlier in the file); a canvas
+  // hidden by pagination reports clientWidth 0, so if a resize fires while its page is
+  // hidden it falls back to a fixed width and looks wrong once revealed. Re-firing that
+  // same redraw path — plus NorSand's own redraw, which isn't resize-driven — on every
+  // page change is a cheap, simple fix: whichever page is now visible ends up correctly
+  // sized, at the cost of redrawing a few charts nobody's currently looking at.
+  function redrawVisibleCharts(){
+    try{ window.dispatchEvent(new Event('resize')); }catch(e){}
+    if(typeof window.runNorSand==='function'){ try{ window.runNorSand(); }catch(e){} }
+  }
+
+  function focusPageHeading(idx){
+    var root=document.getElementById(PAGES[idx].ids[0]);
+    if(!root || !window.focusElement) return;
+    var heading = (root.matches && root.matches('h1,h2,h3')) ? root : root.querySelector('h1,h2,h3');
+    window.focusElement(heading||root);
   }
 
   function showPage(idx, opts){
     idx=Math.max(0,Math.min(PAGES.length-1,idx));
+    var prevIdx=currentPage, changed=prevIdx!==idx || !historyReady;
+    // stop the NorSand slider tour if we're navigating away from its page — otherwise
+    // it keeps animating hidden sliders and pulsing a hidden chart in the background
+    if(prevIdx!==idx && window.cancelNsTour) window.cancelNsTour();
     PAGES.forEach(function(p,i){
       p.ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display=(i===idx)?'':'none'; });
     });
@@ -2401,8 +2464,24 @@ document.addEventListener('keydown', function(e){
     if(fs) fs.style.display=(idx>=STICKY_RANGE[0]&&idx<=STICKY_RANGE[1])?'':'none';
     currentPage=idx;
     updateStepper();
-    if(!(opts&&opts.noScroll)) window.scrollTo({top:0,behavior:(opts&&opts.instant)?'auto':'smooth'});
+    redrawVisibleCharts();
+    var reduced = window.prefersReducedMotion && window.prefersReducedMotion();
+    if(!(opts&&opts.noScroll)) window.scrollTo({top:0,behavior:(reduced||(opts&&opts.instant))?'auto':'smooth'});
+    if(announcer && prevIdx!==idx) announcer.textContent='Page '+(idx+1)+' of '+PAGES.length+': '+PAGES[idx].label+'.';
+    if(!(opts&&opts.noFocus) && prevIdx!==idx) focusPageHeading(idx);
+    if(!(opts&&opts.noHistory)){
+      var url='#'+PAGES[idx].ids[0];
+      if(historyReady) history.pushState({page:idx},'',url);
+      else history.replaceState({page:idx},'',url);
+    }
+    historyReady=true;
+    if(window.recomputeReadingProgress) window.recomputeReadingProgress();
   }
+
+  window.addEventListener('popstate', function(e){
+    var idx=(e.state && typeof e.state.page==='number') ? e.state.page : 0;
+    showPage(idx, {noHistory:true});
+  });
 
   // ---- inline "continue" prompt at the end of every page but the last ----
   for(var i=0;i<PAGES.length-1;i++){
@@ -2440,7 +2519,7 @@ document.addEventListener('keydown', function(e){
     var idx=pageIndexForElement(document.getElementById(location.hash.slice(1)));
     if(idx!==null) initialIdx=idx;
   }
-  showPage(initialIdx, {noScroll:true, instant:true});
+  showPage(initialIdx, {noScroll:true, instant:true, noFocus:true});
 })();
 </script>
 </body></html>
