@@ -636,14 +636,14 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:11.5px;margin:0 0 6px">Same controls as the consolidate-then-shear tool above: drag <b>&eta;</b> OR <b>strain</b> below &mdash; whichever you move becomes the control, the other the computed response. p&prime;<sub>0</sub> and M<sub>tc</sub> here are the exact same sliders as further down (moving either copy moves both). Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)), step 4 of the equation chain further down.</p>
 <div class="ns-layout">
 <div>
-<div class="slider-block"><label for="ysP0"><span>Consolidation stress, p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="ysP0Out">200</span></label><input id="ysP0" type="range" min="10" max="5000" step="10" value="200">
+<div class="slider-block"><label for="ysP0"><span>Consolidation stress, p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="ysP0Out">200</span></label><input id="ysP0" type="range" min="10" max="1500" step="10" value="200">
 <div class="hint">Fixed for the whole test (this is the constant-p&prime; idealization) &mdash; same slider as p&prime;<sub>0</sub> further down. It mostly rescales everything together (the CSL itself only shifts by ln p&prime;), so it gets <b>less</b> sensitive at high values &mdash; that's expected, not a bug. <b>Strain is what actually moves the dot across the surface</b>; drag that to see real change.</div></div>
 <div class="slider-block"><label for="ysMtc"><span>Critical friction ratio, M<sub>tc</sub></span> <span class="readout" id="ysMtcOut">1.26</span></label><input id="ysMtc" type="range" min="1.0" max="1.6" step="0.01" value="1.26">
 <div class="hint">Same slider as M<sub>tc</sub> further down &mdash; the flat critical-state line (green, on the right) is always exactly this value.</div></div>
 <div class="slider-block" id="ysEtaBlock"><label for="ysEta"><span>Shear stress ratio, &eta; = q/p&prime; <span class="badge" id="ysEtaModeTag">response</span></span> <span class="readout" id="ysEtaOut">0.00</span></label><input id="ysEta" type="range" min="0" max="2" step="0.001" value="0">
 <div class="hint">Drag this OR the strain slider below &mdash; whichever you move becomes the control, the other becomes the computed response.</div></div>
 <div class="slider-block" id="ysStrainBlock"><label for="ysStrain"><span>Shear strain applied, &epsilon;<sub>q</sub> (%) <span class="badge" id="ysStrainModeTag">control</span></span> <span class="readout" id="ysStrainOut">0.0</span></label><input id="ysStrain" type="range" min="0" max="100" step="0.5" value="0">
-<div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through the mostly-flat 20&ndash;50% tail.</div></div>
+<div class="hint">The first half of this slider covers just 0&ndash;5% strain for a smooth, controllable ride through where &eta; actually moves fastest; the next third covers 5&ndash;20%; the rest fast-forwards through the mostly-flat 20&ndash;50% tail.</div></div>
 <div class="callout" style="font-size:11px;line-height:1.6">&psi;<sub>0</sub> (starting state): <b><span id="ysPsi0Display">-0.145 (dense)</span></b><br>At this strain: p<sub>i</sub> = <b><span id="ysPiDisplay">73.6</span></b> kPa, M<sub>i</sub> = <b><span id="ysMiDisplay">1.088</span></b><br><span id="ysConvergenceNote">Just consolidated &mdash; the yield surface hasn't started evolving toward critical state yet.</span></div>
 </div>
 <div>
@@ -661,6 +661,7 @@ body{padding-bottom:54px}
 </div>
 <p class="explain" style="font-size:10.5px;margin:4px 0 0">These are 5 snapshots of <b>one</b> test's boundary, not five different tests &mdash; same M<sub>tc</sub>, same p&prime;<sub>0</sub>, only the strain each was taken at differs: &epsilon;<sub>q</sub>=0 (palest, smallest) up to your current strain (<b style="color:#c64852">red</b>, boldest). As strain increases, p<sub>i</sub> grows via H, so each surface is both bigger <i>and</i> shifted right &mdash; its own zero-crossing at p′=p<sub>i</sub>&middot;e moves further right too, which is why the lines fan out on the right instead of stacking on top of each other. p&prime; itself never moves (dotted vertical): the dot on each layer is the real (p&prime;,q) at that snapshot, tracing the actual stress path this test followed, projected onto every surface it passed through along the way.</p>
 <p class="explain" style="font-size:10.5px;margin:4px 0 0">Notice the dot never sits on the steep rising part of any curve, only the declining half between each surface's own vertex and its peak. That's not a slider limit &mdash; in this idealization p<sub>i</sub> starts at exactly p&prime;/e (the vertex itself) and only grows from there toward p&prime; as strain proceeds, so a single drained test can only ever trace that declining half. The rising segment represents a state denser than this test's own history could produce &mdash; it would take a sample that arrived here already more overconsolidated than starting fresh at p&prime;<sub>0</sub> allows.</p>
+<p class="explain" style="font-size:10.5px;margin:4px 0 0">The faint red line joining the five dots is that real path, drawn out. It's <b>vertical</b> by construction &mdash; not a rendering limit &mdash; because p&prime; is fixed all through this test: the state can only move up or down in q, never sideways in p&prime;. That's the whole point of the constant-p&prime; idealization: q (and so &eta;) keeps changing purely because the boundary is growing underneath a state that itself never shifts horizontally.</p>
 </div>
 <div>
 <p style="font-weight:700;font-size:11.5px;margin:0 0 4px;color:var(--navy)">The classic view &mdash; q vs p&prime;</p>
@@ -701,7 +702,7 @@ body{padding-bottom:54px}
 <div class="hint">How fast the yield surface grows or shrinks toward its image size per unit strain &mdash; low H gives a slow, ductile approach to peak; high H gives a sharp, early peak.</div></div>
 <div class="slider-block"><label for="nsE0"><span>Initial void ratio, e<sub>0</sub></span> <span class="readout" id="nsE0Out">0.60</span></label><input id="nsE0" type="range" min="0.45" max="0.85" step="0.002" value="0.60">
 <div class="hint">Together with p&prime;<sub>0</sub> and the CSL above, this sets &psi;<sub>0</sub> &mdash; the single number that determines whether the test contracts or dilates.</div></div>
-<div class="slider-block"><label for="nsP0"><span>Initial p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="nsP0Out">200</span></label><input id="nsP0" type="range" min="10" max="5000" step="10" value="200">
+<div class="slider-block"><label for="nsP0"><span>Initial p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="nsP0Out">200</span></label><input id="nsP0" type="range" min="10" max="1500" step="10" value="200">
 <div class="hint">Starting confining stress. Raising it alone moves the sample toward denser-of-critical (&psi;<sub>0</sub> more negative) since the CSL itself drops with stress.</div></div>
 </div>
 <button type="button" id="nsTour" class="alt">▶ Step through each slider</button>
@@ -1414,7 +1415,16 @@ function drawYieldSurfaceEvolutionChart(sim, currentStrainPct, p0, Mtc, pMax){
     ctx.strokeStyle=colors[k]; ctx.lineWidth=isLast?2.8:1.6; ctx.beginPath();
     pts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
     ctx.stroke();
-    var qAtP0=snaps[k].eta*p0;
+  });
+  // connects the 5 dots into one visible path — since p′ never moves, that path is
+  // vertical by construction, not a chart limitation: this IS what "the state changes at
+  // constant p′" looks like, drawn explicitly rather than left as five isolated dots
+  ctx.strokeStyle="#c64852"; ctx.lineWidth=1.3; ctx.globalAlpha=0.55; ctx.beginPath();
+  snaps.forEach(function(sn,k){ var y=Y(sn.eta*p0); if(k===0) ctx.moveTo(xP0,y); else ctx.lineTo(xP0,y); });
+  ctx.stroke(); ctx.globalAlpha=1;
+  snaps.forEach(function(sn,k){
+    var isLast=(k===snaps.length-1);
+    var qAtP0=sn.eta*p0;
     ctx.fillStyle=colors[k];
     ctx.beginPath(); ctx.arc(xP0,Y(qAtP0),isLast?4.5:3,0,7); ctx.fill();
   });
@@ -2601,18 +2611,22 @@ function setControlMode(mode){
   if(etaBlock) etaBlock.classList.toggle('is-response', mode==='strain');
   if(strainBlock) strainBlock.classList.toggle('is-response', mode==='eta');
 }
-// Slider travel (0-100) isn't 1:1 with strain (0-50%): the first 80% of the slider covers
-// 0-20% strain (where things actually move), the last 20% fast-forwards through the mostly
-// flat 20-50% tail — identical mapping to the intro tool's own strain slider, so the two
-// controls feel the same, and 50% gives enough room for M_i to actually reach M_tc even for
-// slow (low-H) combinations, rather than stopping short at 30%.
+// Slider travel (0-100) isn't 1:1 with strain (0-50%). Three tiers, front-loaded harder than
+// the intro tool's own 80/20 split: half the slider (0-50) covers just 0-5% strain, since
+// that's where eta genuinely moves fastest and a plain 80/20 split still felt too twitchy
+// there; the next third (50-85) covers 5-20%; the last bit (85-100) fast-forwards through
+// the mostly-flat 20-50% tail, kept mainly so slow (low-H) combinations can still reach Mtc.
 function sliderPosToStrain(pos){
   pos=Math.max(0,Math.min(100,pos));
-  return pos<=80 ? pos/80*20 : 20+(pos-80)/20*30;
+  if(pos<=50) return pos/50*5;
+  if(pos<=85) return 5+(pos-50)/35*15;
+  return 20+(pos-85)/15*30;
 }
 function strainToSliderPos(strainPct){
   strainPct=Math.max(0,Math.min(50,strainPct));
-  return strainPct<=20 ? strainPct/20*80 : 80+(strainPct-20)/30*20;
+  if(strainPct<=5) return strainPct/5*50;
+  if(strainPct<=20) return 50+(strainPct-5)/15*35;
+  return 85+(strainPct-20)/30*15;
 }
 function convergenceNote(pct){
   if(pct>=99) return 'At critical state — M<sub>i</sub> has converged to M<sub>tc</sub>; the red dot sits on the green line (to the precision shown).';
