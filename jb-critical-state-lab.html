@@ -648,6 +648,7 @@ body{padding-bottom:54px}
 <canvas id="yieldSurfaceChart" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, where the current stress state falls on it, and a flat dashed critical state line at eta equals Mtc for comparison. The region under the curve is labeled elastic; the curve itself is labeled the yield surface boundary."></canvas>
 <p class="explain" style="font-size:11px;margin:4px 0 0"><b>Shaded region: elastic</b> &mdash; the soil just responds without permanently deforming. <b>The line itself: the yield surface</b> &mdash; where it starts to yield. At p&prime; = p<sub>i</sub> (grey dashed line), the surface always predicts exactly &eta; = M<sub>i</sub> &mdash; that's the "image condition" the model is named for. <b style="color:#c64852">Red dot: your current state</b> &mdash; p&prime; = <span id="ysCurrentP">120</span> kPa, &eta; = <span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
 <p class="explain" style="font-size:11px;margin:4px 0 0"><b style="color:#2d8b65">Green dashed line: critical state</b>, &eta; = M<sub>tc</sub> = <span id="ysCritMtc">1.26</span> (from this section's own M<sub>tc</sub> slider below). Unlike the yield surface, it's flat &mdash; a genuine material constant that doesn't depend on p&prime; or p<sub>i</sub> at all. As the soil's state itself approaches critical, M<sub>i</sub> is drawn toward this same line.</p>
+<p class="explain" style="font-size:11px;margin:4px 0 0">Notice the curve can rise well <b>above</b> the green line for p&prime; &lt; p<sub>i</sub> (the dense/hardening side) &mdash; that's not a flaw in the picture, it's exactly why NorSand predicts peak strength above critical strength for dense sand (&phi;&prime;<sub>peak</sub> &gt; &phi;&prime;<sub>cv</sub>, Section 2). Physically, M<sub>i</sub> itself is always &le; M<sub>tc</sub> (M<sub>i</sub> = M<sub>tc</sub> &minus; &chi;<sub>i</sub>N|&psi;<sub>i</sub>|, reaching M<sub>tc</sub> only exactly at critical state) &mdash; the surface just isn't capped there away from that one point.<span id="ysMiAboveMtcNote"></span></p>
 </div>
 </div>
 </div>
@@ -2444,6 +2445,10 @@ function update(){
     noteEl.textContent='';
   }
   document.getElementById('ysCritMtc').textContent=result.Mtc.toFixed(2);
+  var miNoteEl=document.getElementById('ysMiAboveMtcNote');
+  miNoteEl.textContent = Mi>result.Mtc
+    ? ' Right now your M_i ('+Mi.toFixed(2)+') is set ABOVE M_tc ('+result.Mtc.toFixed(2)+') — real NorSand can never produce that combination; try lowering M_i or raising M_tc below to see a physically reachable image point.'
+    : '';
 }
 [ysM,ysPi,ysP].forEach(function(x){ x.addEventListener('input',update); });
 window.updateYieldSurfaceExplorer=update;
