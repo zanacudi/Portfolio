@@ -643,8 +643,8 @@ body{padding-bottom:54px}
 <div class="slider-block" id="ysEtaBlock"><label for="ysEta"><span>Shear stress ratio, &eta; = q/p&prime; <span class="badge" id="ysEtaModeTag">response</span></span> <span class="readout" id="ysEtaOut">0.00</span></label><input id="ysEta" type="range" min="0" max="2" step="0.001" value="0">
 <div class="hint">Drag this OR the strain slider below &mdash; whichever you move becomes the control, the other becomes the computed response.</div></div>
 <div class="slider-block" id="ysStrainBlock"><label for="ysStrain"><span>Shear strain applied, &epsilon;<sub>q</sub> (%) <span class="badge" id="ysStrainModeTag">control</span></span> <span class="readout" id="ysStrainOut">0.0</span></label><input id="ysStrain" type="range" min="0" max="100" step="0.5" value="0">
-<div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through the mostly-flat 20&ndash;30% tail.</div></div>
-<div class="callout" style="font-size:11px;line-height:1.6">&psi;<sub>0</sub> (starting state): <b><span id="ysPsi0Display">-0.145 (dense)</span></b><br>At this strain: p<sub>i</sub> = <b><span id="ysPiDisplay">73.6</span></b> kPa, M<sub>i</sub> = <b><span id="ysMiDisplay">1.088</span></b></div>
+<div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through the mostly-flat 20&ndash;50% tail.</div></div>
+<div class="callout" style="font-size:11px;line-height:1.6">&psi;<sub>0</sub> (starting state): <b><span id="ysPsi0Display">-0.145 (dense)</span></b><br>At this strain: p<sub>i</sub> = <b><span id="ysPiDisplay">73.6</span></b> kPa, M<sub>i</sub> = <b><span id="ysMiDisplay">1.088</span></b><br><span id="ysConvergenceNote">Just consolidated &mdash; the yield surface hasn't started evolving toward critical state yet.</span></div>
 </div>
 <div>
 <p style="font-weight:700;font-size:11.5px;margin:0 0 4px;color:var(--navy)">For scale: the compression plane</p>
@@ -2513,10 +2513,12 @@ document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListe
 // --- interactive yield-surface explorer (NorSand section) ---
 // Mirrors the consolidate-then-shear intro tool's own controls: eta/strain are a dual
 // control/response pair (drag either one), strain uses the same 80/20 slider weighting
-// (fine resolution over 0-20% strain, fast-forward over the flat 20-30% tail), and p'0/Mtc
-// are literally the same sliders as the main NorSand simulator below (two-way synced) —
-// so pi and Mi here are genuine points sampled off that one real simulation, not
-// illustrative combinations a reader could set inconsistently.
+// over a 0-50% range (fine resolution over 0-20% strain, fast-forward over the flat
+// 20-50% tail), and p'0/Mtc are literally the same sliders as the main NorSand simulator
+// below (two-way synced) — so pi and Mi here are genuine points sampled off that one real
+// simulation, not illustrative combinations a reader could set inconsistently. This panel
+// runs its own 1667-step simulation (dEq=0.0003) to reach 50% strain; the shared nsQChart/
+// nsEChart further down still use their own 1000-step, 30%-strain call, untouched.
 (function(){
 var ysP0=document.getElementById('ysP0'), ysMtc=document.getElementById('ysMtc');
 var ysEta=document.getElementById('ysEta'), ysStrain=document.getElementById('ysStrain');
@@ -2531,17 +2533,24 @@ function setControlMode(mode){
   if(etaBlock) etaBlock.classList.toggle('is-response', mode==='strain');
   if(strainBlock) strainBlock.classList.toggle('is-response', mode==='eta');
 }
-// Slider travel (0-100) isn't 1:1 with strain (0-30%): the first 80% of the slider covers
+// Slider travel (0-100) isn't 1:1 with strain (0-50%): the first 80% of the slider covers
 // 0-20% strain (where things actually move), the last 20% fast-forwards through the mostly
-// flat 20-30% tail — same UI convention as the intro tool's strain slider, scaled to this
-// tool's 30%-strain simulation range instead of that one's 50%.
+// flat 20-50% tail — identical mapping to the intro tool's own strain slider, so the two
+// controls feel the same, and 50% gives enough room for M_i to actually reach M_tc even for
+// slow (low-H) combinations, rather than stopping short at 30%.
 function sliderPosToStrain(pos){
   pos=Math.max(0,Math.min(100,pos));
-  return pos<=80 ? pos/80*20 : 20+(pos-80)/20*10;
+  return pos<=80 ? pos/80*20 : 20+(pos-80)/20*30;
 }
 function strainToSliderPos(strainPct){
-  strainPct=Math.max(0,Math.min(30,strainPct));
-  return strainPct<=20 ? strainPct/20*80 : 80+(strainPct-20)/10*20;
+  strainPct=Math.max(0,Math.min(50,strainPct));
+  return strainPct<=20 ? strainPct/20*80 : 80+(strainPct-20)/30*20;
+}
+function convergenceNote(pct){
+  if(pct>=99) return 'At critical state — M<sub>i</sub> has converged to M<sub>tc</sub>; the red dot sits on the green line (to the precision shown).';
+  if(pct>=90) return 'Nearly there — the red dot is close to the green line now.';
+  if(pct<=1) return "Just consolidated — the yield surface hasn't started evolving toward critical state yet.";
+  return 'Not yet at critical state (' + pct + '% of the way there) — keep increasing strain and watch the red dot approach the green line.';
 }
 // Inverts eta(strain) using the discretized simulation itself: scan for sign changes of
 // (eta-target) across the array, linearly interpolate strain at each crossing, then pick
@@ -2571,7 +2580,7 @@ function update(){
   ysP0.value=p0; document.getElementById('ysP0Out').textContent=p0.toFixed(0);
   ysMtc.value=Mtc; document.getElementById('ysMtcOut').textContent=Mtc.toFixed(2);
 
-  var sim=simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,1000,0.0003);
+  var sim=simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,1667,0.0003); // steps for a 50%-strain range
   var etaMaxSim=Math.max.apply(null,sim.eta);
   ysEta.max=Math.max(etaMaxSim,0.5).toFixed(3);
 
@@ -2587,7 +2596,7 @@ function update(){
   lastStrainPct=strainPct;
   document.getElementById('ysStrainOut').textContent=strainPct.toFixed(1);
 
-  var idx=Math.max(0,Math.min(sim.strain.length-1, Math.round(strainPct/30*1000)));
+  var idx=Math.max(0,Math.min(sim.strain.length-1, Math.round(strainPct/50*1667)));
   var pi=sim.pi[idx], Mi=sim.Mi[idx], etaHere=sim.eta[idx];
   if(controlMode!=='eta') ysEta.value=etaHere;
   document.getElementById('ysEtaOut').textContent=(+ysEta.value).toFixed(3);
@@ -2596,6 +2605,11 @@ function update(){
   document.getElementById('ysPsi0Display').textContent=(psi0>=0?'+':'')+psi0.toFixed(3)+(psi0<0?' (dense)':' (loose)');
   document.getElementById('ysPiDisplay').textContent=pi.toFixed(1);
   document.getElementById('ysMiDisplay').textContent=Mi.toFixed(3);
+  // convergence: how far Mi has closed the gap to Mtc, relative to the gap it started with —
+  // a genuine measure from this real simulation, not a generic assumed decay shape
+  var gap0=Math.abs(sim.Mi[0]-Mtc), gapNow=Math.abs(Mi-Mtc);
+  var pctConverged = gap0>1e-9 ? Math.max(0,Math.min(100,Math.round(100*(1-gapNow/gap0)))) : 100;
+  document.getElementById('ysConvergenceNote').innerHTML = convergenceNote(pctConverged);
 
   // one shared p′ domain for all three charts, so they're directly comparable side by side
   var sharedPMax=Math.max(pi*3, p0*1.2, 620);
