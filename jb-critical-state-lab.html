@@ -487,12 +487,12 @@ body{padding-bottom:54px}
 <div id="s2Interpret" class="s2-prompt" aria-live="polite"></div>
 <div class="grid2" style="margin:10px 0">
 <div style="text-align:center">
-<canvas id="s2DEtaChart" style="height:170px" role="img" aria-label="Live diagram of dilatancy D versus stress ratio eta, showing the Rowe-Nova line D equals Mtc minus eta and where the current state's Dmin and eta max fall on it, with their live values labeled."></canvas>
-<p class="explain" style="font-size:11px;margin:2px 0 0">D = M<sub>tc</sub>&minus;&eta; (slope &minus;1). It crosses D=0 at M<sub>tc</sub>; follow it to your current D<sub>min</sub> and read &eta;<sub>max</sub> straight below &mdash; the same numbers as the chain above, drawn to scale.</p>
+<canvas id="s2DEtaChart" style="height:170px" role="img" aria-label="Live diagram of dilatancy D versus stress ratio eta, showing the Rowe-Nova line D equals Mtc minus eta and where the current state's Dmin and eta max fall on it."></canvas>
+<p class="explain" style="font-size:11px;margin:4px 0 0">A new kind of plot &mdash; horizontal is stress ratio &eta;=q/p&prime;, vertical is dilatancy D (Section 3 later uses this exact style of plot, fit to real test data, to calibrate M<sub>tc</sub>). The line is D=M<sub>tc</sub>&minus;&eta;. <b style="color:#1479b8">Blue dot: M<sub>tc</sub> = <span id="s2ChartMtc">1.26</span></b>, where the line crosses D=0. <b style="color:#c64852">Red dot: your current state</b> &mdash; D<sub>min</sub> = <span id="s2ChartDmin">&minus;0.35</span>, &eta;<sub>max</sub> = <span id="s2ChartEtaMax">1.61</span>.</p>
 </div>
 <div style="text-align:center">
-<canvas id="s2MohrChart" style="height:170px" role="img" aria-label="Live Mohr circle diagram tangent to a strength envelope at the current peak friction angle, with its live value labeled."></canvas>
-<p class="explain" style="font-size:11px;margin:2px 0 0">At failure the Mohr circle is tangent to the strength envelope at &phi;&prime;. In terms of &eta;=q/p&prime;, that condition is exactly sin&phi;&prime; = 3&eta;/(6+&eta;) &mdash; the circle's size is illustrative, but the angle shown is your real current &phi;&prime;<sub>peak</sub>.</p>
+<canvas id="s2MohrChart" style="height:170px" role="img" aria-label="Live Mohr circle diagram tangent to a strength envelope at the current peak friction angle."></canvas>
+<p class="explain" style="font-size:11px;margin:4px 0 0">At failure the Mohr circle is tangent to the strength envelope at &phi;&prime;. In terms of &eta;=q/p&prime;, that condition is exactly sin&phi;&prime; = 3&eta;/(6+&eta;). <b style="color:#7653a6">Purple arc: your current &phi;&prime;<sub>peak</sub> = <span id="s2ChartPhi">39.4</span>&deg;</b> &mdash; the circle's size is illustrative, but this angle is exact.</p>
 </div>
 </div>
 <div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback" aria-live="polite">Predict first, then move the ψ slider to test your answer.</div></div>
@@ -2229,6 +2229,11 @@ function phi(eta){var x=3*eta/(6+eta);x=Math.max(-.99,Math.min(.99,x));return Ma
 // fills the plot regardless of how far the sliders push Dmin/etamax — the axis range
 // is derived FROM the current state rather than fixed, so this stays readable across
 // the sliders' full range (Dmin alone can swing from about +0.9 to -1.5).
+// No text is drawn near the diagonal line itself — the peak point sits mathematically
+// ON that line, so any nearby label collides with it regardless of offset. Axis letters
+// and the "0" tick live in the margins (guaranteed clear); the live Mtc/Dmin/etamax
+// values are reported in the HTML caption below the canvas instead, via update()'s
+// s2Chart* spans.
 function drawS2DEtaChart(mv,d,eta){
   var cv2=document.getElementById('s2DEtaChart'); if(!cv2) return;
   var W=cv2.clientWidth||260,H=170; cv2.width=W; cv2.height=H;
@@ -2238,13 +2243,6 @@ function drawS2DEtaChart(mv,d,eta){
   var etaLo=mv-dHi, etaHi=mv-dLo;
   function X(v){ return ml+pw*(v-etaLo)/(etaHi-etaLo); }
   function Y(v){ return mt+ph2*(1-(v-dLo)/(dHi-dLo)); }
-  // clamps a centered label horizontally so it never clips past the plot edges
-  function labelAt(x,y,text,color,above){
-    ctx.font="bold 10.5px 'Segoe UI',Arial,sans-serif";
-    var w=ctx.measureText(text).width;
-    var lx=Math.max(ml+2,Math.min(ml+pw-w-2,x-w/2));
-    ctx.fillStyle=color; ctx.textAlign="left"; ctx.fillText(text,lx,above?y-8:y+16);
-  }
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph2); ctx.lineTo(ml+pw,mt+ph2); ctx.stroke();
   ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
@@ -2261,16 +2259,16 @@ function drawS2DEtaChart(mv,d,eta){
   ctx.strokeStyle="#1479b8"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(mtcX,zeroY); ctx.lineTo(mtcX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#1479b8"; ctx.beginPath(); ctx.arc(mtcX,zeroY,3.5,0,7); ctx.fill();
-  labelAt(mtcX,zeroY,"Mtc = "+mv.toFixed(2),"#1479b8",true);
   var peakX=X(eta),peakY=Y(d);
   ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,peakY); ctx.lineTo(peakX,peakY); ctx.lineTo(peakX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(peakX,peakY,3.5,0,7); ctx.fill();
-  labelAt(peakX,peakY,"Dmin="+d.toFixed(2)+", ηmax="+eta.toFixed(2),"#c64852",peakY>mt+30);
 }
 // Live Mohr circle: only the ANGLE (sin phi' = r/d) reflects the real current phi'peak —
 // the circle's absolute size/position is illustrative (no real sigma1'/sigma3' values were
-// given), fixed so the diagram itself doesn't jump around as phi' changes.
+// given), fixed so the diagram itself doesn't jump around as phi' changes. No text sits
+// near the tangent line itself, for the same reason as the D-eta chart above; the live
+// phi' value is reported in the HTML caption below instead.
 function drawS2MohrChart(phDeg){
   var cv3=document.getElementById('s2MohrChart'); if(!cv3) return;
   var W=cv3.clientWidth||260,H=170; cv3.width=W; cv3.height=H;
@@ -2294,12 +2292,13 @@ function drawS2MohrChart(phDeg){
   var tx=ox+tanLen*Math.cos(phiRad),ty=oy-tanLen*Math.sin(phiRad);
   ctx.strokeStyle="#c64852"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(tx,ty); ctx.stroke();
   ctx.strokeStyle="#7653a6"; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(ox,oy,25,-phiRad,0); ctx.stroke();
-  ctx.fillStyle="#7653a6"; ctx.font="bold 11px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
-  ctx.fillText("φ′ = "+phDeg.toFixed(1)+"°",ox+30,oy-14);
 }
 function update(){var pv=+psi.value,cv=+chi.value,mv=+m.value,d=cv*pv,eta=mv-d,ph=phi(eta),phc=phi(mv),state=pv<-.005?'dense of critical and dilative':pv>.005?'loose of critical and contractive':'near critical';
 document.getElementById('s2PsiOut').textContent=fmt(pv,3);document.getElementById('s2ChiOut').textContent=cv.toFixed(1);document.getElementById('s2MOut').textContent=mv.toFixed(2);document.getElementById('s2ChainPsi').textContent=fmt(pv,3);document.getElementById('s2D').textContent=fmt(d,3);document.getElementById('s2Eta').textContent=eta.toFixed(3);document.getElementById('s2Phi').textContent=ph.toFixed(1)+'°';var pos=100*(pv-(-.25))/.40;document.getElementById('s2Marker').style.left='calc('+pos+'% - 2px)';document.getElementById('s2Interpret').innerHTML='<b>Interpretation:</b> This state is <b>'+state+'</b>. D<sub>min</sub> = χψ = <b>'+fmt(d,3)+'</b>. Therefore η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> = <b>'+eta.toFixed(3)+'</b>, corresponding to φ′<sub>peak</sub> = <b>'+ph.toFixed(1)+'°</b>. The difference from critical friction is <b>'+fmt(ph-phc,1)+'°</b>.';
-drawS2DEtaChart(mv,d,eta); drawS2MohrChart(ph);}
+drawS2DEtaChart(mv,d,eta); drawS2MohrChart(ph);
+var mtcEl=document.getElementById('s2ChartMtc'),dminEl=document.getElementById('s2ChartDmin'),etamaxEl=document.getElementById('s2ChartEtaMax'),phEl=document.getElementById('s2ChartPhi');
+if(mtcEl){mtcEl.textContent=mv.toFixed(2);dminEl.textContent=fmt(d,2);etamaxEl.textContent=eta.toFixed(2);phEl.textContent=ph.toFixed(1);}
+}
 [psi,chi,m].forEach(x=>x.addEventListener('input',update));
 document.querySelectorAll('[data-s2preset]').forEach(function(b){b.addEventListener('click',function(){var v=b.dataset.s2preset;if(v==='dense'){psi.value=-.10;chi.value=3.5;m.value=1.26}if(v==='critical'){psi.value=0;chi.value=3.5;m.value=1.26}if(v==='loose'){psi.value=.08;chi.value=3.5;m.value=1.26}if(v==='sensitive'){psi.value=-.10;chi.value=5.3;m.value=1.33}update();});});
 document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-s2answer]').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.s2answer==='right';b.classList.add(ok?'good':'bad');document.getElementById('s2Feedback').innerHTML=ok?'<b>Correct.</b> As ψ approaches zero, D<sub>min</sub> approaches zero, so η<sub>max</sub> approaches M<sub>tc</sub> and φ′<sub>peak</sub> approaches φ′<sub>cv</sub>.':b.dataset.s2exp;});});update();
