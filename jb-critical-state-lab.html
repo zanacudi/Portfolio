@@ -11,7 +11,7 @@
 *{box-sizing:border-box}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion: reduce){.pulse-target{animation:none!important}}
-body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);font-size:16px}
 header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
 header h1{margin:0;font-size:22px}
 header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
@@ -23,11 +23,11 @@ header a{color:#bfe6f5}
 .card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
 .card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
 .card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
-.explain{font-size:13px;line-height:1.6}
+.explain{font-size:14.5px;line-height:1.6}
 select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px;max-width:100%}
 button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
 button.alt{background:#687a82}
-.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap;position:relative}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:8px 0;overflow-x:auto;white-space:nowrap;position:relative}
 /* Long equations get cut off on narrow screens with only a thin native scrollbar as a
    cue; a right-edge fade makes "there's more here" visible without relying on that. */
 @media(max-width:520px){.eq::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:linear-gradient(to right,rgba(242,247,249,0),#f2f7f9);pointer-events:none}}
@@ -350,23 +350,17 @@ body{padding-bottom:54px}
 </div></div>
 <div class="visual-panel"><h3>Guided “what changes?” explorer</h3>
 <p class="explain" style="font-size:11.5px;margin-top:0">Two of the tabs below ask you to change &Gamma; and &lambda; — properties of the line itself, not of any one sample. Here's what they mean on the curve, before you use them:</p>
-<svg viewBox="0 0 280 150" style="width:100%;max-width:280px;display:block;margin:0 auto 8px" role="img" aria-label="Diagram of the critical state line in void ratio versus log mean effective stress, showing Gamma as the intercept at p prime equals 1 kPa and lambda as the slope per decade of stress.">
+<svg viewBox="0 0 280 150" style="width:100%;max-width:280px;display:block;margin:0 auto 4px" role="img" aria-label="Diagram of the critical state line in void ratio versus log mean effective stress, showing Gamma as the intercept at p prime equals 1 kPa and lambda as the slope per decade of stress.">
 <line x1="40" y1="15" x2="40" y2="120" stroke="#61737b" stroke-width="1"/>
 <line x1="40" y1="120" x2="265" y2="120" stroke="#61737b" stroke-width="1"/>
 <text x="14" y="20" font-size="10.5" fill="#61737b">e</text>
-<text x="230" y="134" font-size="10.5" fill="#61737b">log p′</text>
-<text x="30" y="132" font-size="9.5" fill="#61737b" text-anchor="middle">p′=1</text>
+<text x="225" y="134" font-size="10.5" fill="#61737b">log p′</text>
+<text x="40" y="133" font-size="9" fill="#61737b" text-anchor="middle">p′=1</text>
 <line x1="40" y1="32.5" x2="265" y2="85" stroke="#123b4a" stroke-width="2.2"/>
-<circle cx="40" cy="32.5" r="3.2" fill="#1479b8"/>
-<line x1="40" y1="32.5" x2="8" y2="32.5" stroke="#1479b8" stroke-width="1" stroke-dasharray="2,2"/>
-<text x="4" y="29" font-size="12" font-weight="700" fill="#1479b8" text-anchor="start">Γ</text>
-<text x="46" y="44" font-size="9.5" fill="#1479b8">e at p′=1 kPa</text>
-<line x1="115" y1="50" x2="190" y2="50" stroke="#7653a6" stroke-width="1" stroke-dasharray="2,2"/>
-<line x1="190" y1="50" x2="190" y2="67.5" stroke="#7653a6" stroke-width="1" stroke-dasharray="2,2"/>
-<text x="152" y="46" font-size="9.5" fill="#7653a6" text-anchor="middle">1 decade of p′</text>
-<text x="196" y="61" font-size="12" font-weight="700" fill="#7653a6">λ</text>
-<text x="196" y="72" font-size="9.5" fill="#7653a6">= drop per decade</text>
+<circle cx="40" cy="32.5" r="3.8" fill="#1479b8"/>
+<path d="M 115 50 L 190 50 L 190 67.5" fill="none" stroke="#7653a6" stroke-width="1.6" stroke-dasharray="3,2"/>
 </svg>
+<div class="legend" style="font-size:10.5px;justify-content:center"><span><i style="background:#1479b8"></i>Γ &mdash; e at p′=1 kPa (blue dot)</span><span><i style="background:#7653a6"></i>λ &mdash; drop in e per decade of p′ (purple bracket)</span></div>
 <div class="lesson-tabs" role="tablist" aria-label="What changes?"><button role="tab" id="tab-pane-e" aria-controls="pane-e" aria-selected="true" class="on" data-pane="pane-e">Increase e</button><button role="tab" id="tab-pane-p" aria-controls="pane-p" aria-selected="false" data-pane="pane-p">Increase p′</button><button role="tab" id="tab-pane-g" aria-controls="pane-g" aria-selected="false" data-pane="pane-g">Increase Γ</button><button role="tab" id="tab-pane-l" aria-controls="pane-l" aria-selected="false" data-pane="pane-l">Increase λ</button></div>
 <div id="pane-e" class="lesson-pane on callout" role="tabpanel" aria-labelledby="tab-pane-e"><b>Increase e at fixed p′:</b> the state point moves upward, ψ becomes more positive, and the response becomes more contractive.</div>
 <div id="pane-p" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-p"><b>Increase p′ at fixed e:</b> the CSL moves downward at the new stress. ψ becomes more positive. This is why the same relative density can behave differently at different stress levels.</div>
@@ -999,6 +993,14 @@ updateAll();
 updateDrPsi();
 window.addEventListener("resize",()=>{updateAll();updateConstructionPanels();});
 
+// window's own 'resize' event doesn't fire reliably for pinch-zoom or browser-zoom
+// level changes in every browser; visualViewport's resize event does. Re-broadcasting
+// it as a real window resize means every existing (and future) resize listener on this
+// page — chart redraws, the sticky nav-height calc, etc. — gets notified consistently
+// regardless of how the zoom change happened.
+if(window.visualViewport){
+  window.visualViewport.addEventListener("resize", function(){ window.dispatchEvent(new Event("resize")); });
+}
 // ---------------- Sticky mental-model chain ----------------
 (function(){
   var nav=document.querySelector(".sticky-nav"), sticky=document.getElementById("flowSticky"), marker=document.getElementById("flowStickyMarker");
@@ -1015,6 +1017,14 @@ window.addEventListener("resize",()=>{updateAll();updateConstructionPanels();});
   }
   window.addEventListener("scroll", checkStuck, {passive:true});
   checkStuck();
+  // window's 'resize' event doesn't reliably fire for pinch-zoom / browser-zoom level
+  // changes in every browser — visualViewport's own resize/scroll events do, and are
+  // the correct signal for "the effective layout just changed," which is exactly when
+  // --nav-h (and therefore where flowSticky parks itself) needs recomputing.
+  if(window.visualViewport){
+    window.visualViewport.addEventListener("resize", function(){ setNavHeight(); checkStuck(); });
+    window.visualViewport.addEventListener("scroll", checkStuck, {passive:true});
+  }
 })();
 
 // ---------------- Section 2 charts: hover tooltips ----------------
@@ -2298,8 +2308,10 @@ var figureInfo={
 'nsQChart':['NorSand stress-ratio response','Blue curve: η = q/p′ versus shear strain. The statistics below report peak, strain at peak, final η, and target Mtc.','Read peak height, strain at peak, softening or hardening direction, and the approach toward Mtc.'],
 'nsEChart':['NorSand state evolution','Green curve: current void ratio. Gray dashed curve: critical void ratio at current p′. Their vertical separation is current ψ.','Watch whether the two curves converge. That convergence represents evolution toward critical state.']};
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);tools.querySelector('button').addEventListener('click',function(){help.classList.toggle('open');this.setAttribute('aria-expanded',help.classList.contains('open'));parent.classList.toggle('chart-reading-mode');});});
-// Ensure every visible legend states its encoding purpose.
-document.querySelectorAll('.legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors and line styles identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
+// Ensure every legend that actually HAS a figure-reading button states its purpose —
+// scoped to .figure-shell so legends without one (e.g. plain explanatory diagrams) don't
+// get a note pointing at a button that isn't there.
+document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors and line styles identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
 // Section 1 cases
 var status=document.getElementById('cslExperimentStatus');var _shearTimer=null;if(status){document.querySelectorAll('[data-cslcase]').forEach(function(b){b.addEventListener('click',function(){clearInterval(_shearTimer);document.querySelectorAll('[data-cslcase]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false');});b.classList.add('active');b.setAttribute('aria-pressed','true');var c=b.dataset.cslcase,s=currentSand(),p=100,e=ecAt(s,p),msg='';if(c==='critical'){p=100;e=ecAt(s,p);msg='ψ is approximately zero. The state point lies on the CSL.';}if(c==='dense'){p=100;e=ecAt(s,p)-.08;msg='ψ = −0.08. The point is below the CSL and the response is dilative.';}if(c==='loose'){p=100;e=ecAt(s,p)+.08;msg='ψ = +0.08. The point is above the CSL and the response is contractive.';}if(c==='stress'){p=1000;e=ecAt(s,100)+.01;msg='Void ratio is held near its 100 kPa critical value, but p′ rises to 1000 kPa. Because the CSL drops, ψ becomes more positive.';}if(c==='shear'){p=100;var eStart=ecAt(s,p)+.08,ecTarget=ecAt(s,p),steps=0,maxSteps=45;eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,eStart));pSlide.value=pToSlider(p);updateAll();status.innerHTML='<b>Observation:</b> Starting loose (ψ = +0.08) at fixed p′ = 100 kPa. Applying shear strain now — watch e fall as the sample contracts toward the line.';_shearTimer=setInterval(function(){steps++;var frac=1-Math.exp(-steps/12);var eNow=eStart+(ecTarget-eStart)*frac;eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,eNow));updateAll();if(steps>=maxSteps){clearInterval(_shearTimer);status.innerHTML='<b>Observation:</b> After enough strain, e has converged onto the CSL (ψ ≈ 0) — this is what "critical state" means: the destination continued shearing leads to, regardless of the starting density. Stress level alone never changed here; strain did the work.';}},60);return;}eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,e));pSlide.value=pToSlider(p);updateAll();status.innerHTML='<b>Observation:</b> '+msg;document.getElementById('cslChart').classList.add('pulse-target');setTimeout(()=>document.getElementById('cslChart').classList.remove('pulse-target'),2600);});});}
 // parameter cards
