@@ -2244,7 +2244,7 @@ function drawS2DEtaChart(mv,d,eta){
   ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph2); ctx.lineTo(ml+pw,mt+ph2); ctx.stroke();
   ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
   ctx.fillText("D",ml-24,mt+6);
-  ctx.textAlign="right"; ctx.fillText("η",ml+pw+4,mt+ph2+18);
+  ctx.textAlign="right"; ctx.fillText("η",ml+pw+4,mt+6);
   var zeroY=Y(0);
   ctx.strokeStyle="#c7d3d8"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,zeroY); ctx.lineTo(ml+pw,zeroY); ctx.stroke();
@@ -2260,6 +2260,21 @@ function drawS2DEtaChart(mv,d,eta){
   ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,peakY); ctx.lineTo(peakX,peakY); ctx.lineTo(peakX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(peakX,peakY,3.5,0,7); ctx.fill();
+  // x-axis value ticks, marking exactly where Mtc and ηmax sit on the η axis
+  ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="center";
+  var closeTicks = Math.abs(mtcX-peakX) < 44;
+  var mtcTickY = mt+ph2+12, peakTickY = mt+ph2+12;
+  if(closeTicks){
+    if(mtcX<=peakX){ mtcTickY = mt+ph2+11; peakTickY = mt+ph2+21; }
+    else { peakTickY = mt+ph2+11; mtcTickY = mt+ph2+21; }
+  }
+  function clampTickX(x){ return Math.min(Math.max(x, ml+28), ml+pw-28); }
+  ctx.strokeStyle="#1479b8"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(mtcX,mt+ph2); ctx.lineTo(mtcX,mt+ph2+4); ctx.stroke();
+  ctx.fillStyle="#1479b8"; ctx.fillText("Mtc="+mv.toFixed(2), clampTickX(mtcX), mtcTickY);
+  ctx.strokeStyle="#c64852"; ctx.beginPath();
+  ctx.moveTo(peakX,mt+ph2); ctx.lineTo(peakX,mt+ph2+4); ctx.stroke();
+  ctx.fillStyle="#c64852"; ctx.fillText("ηmax="+eta.toFixed(2), clampTickX(peakX), peakTickY);
 }
 // Live Mohr circle: only the ANGLE (sin phi' = r/d) reflects the real current phi'peak —
 // the circle's absolute size/position is illustrative (no real sigma1'/sigma3' values were
