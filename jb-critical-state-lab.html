@@ -75,8 +75,6 @@ th.symcol{text-transform:none}
 /* ===== Responsive rules: kept next to the component they resize (not consolidated into one block) so source order between overlapping breakpoints — e.g. .grid4's 1100px and 820px rules below — stays cascade-correct ===== */
 @media(max-width:820px){.notation-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.notation-grid{grid-template-columns:1fr}}
-.ln-overlay-toggle{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--muted);background:#f2f7f9;border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin-top:7px;cursor:pointer}
-.ln-overlay-toggle input{margin-top:2px;flex:0 0 auto}
 #cslGuidedExperiment .guided-steps{grid-template-columns:repeat(5,1fr)}
 @media(max-width:820px){#cslGuidedExperiment .guided-steps{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){#cslGuidedExperiment .guided-steps{grid-template-columns:1fr}}
@@ -425,7 +423,7 @@ body{padding-bottom:54px}
 <p>Every real sand has its own critical state line (CSL) &mdash; the void ratio it reaches at large shear strain, as a function of confining stress &mdash; commonly idealized as semi-log:</p>
 </div>
 <div class="eq">e<sub>c</sub> = &Gamma; &minus; &lambda;&middot;ln(p&prime;) &nbsp; (Eq. 2.1 exactly as printed &mdash; natural log)</div>
-<div class="explain"><p>The book is explicit that both forms are in everyday use, and gives the exact conversion: natural logs (&lambda;) are more convenient for constitutive modelling, base-10 logs (&lambda;<sub>10</sub>) arise naturally when plotting lab data by hand &mdash; <b>&lambda;<sub>10</sub> = 2.303&middot;&lambda;</b>. Table 2.1 and the rest of this page use &lambda;<sub>10</sub>, so here is the same line written that way &mdash; toggle to confirm they trace out the identical curve below:</p></div>
+<div class="explain"><p>The book is explicit that both forms are in everyday use, and gives the exact conversion: natural logs (&lambda;) are more convenient for constitutive modelling, base-10 logs (&lambda;<sub>10</sub>) arise naturally when plotting lab data by hand &mdash; <b>&lambda;<sub>10</sub> = 2.303&middot;&lambda;</b>. Table 2.1 and the rest of this page use &lambda;<sub>10</sub>, so here is the same line written that way &mdash; algebraically identical, just a different log base:</p></div>
 <div class="eq">e<sub>c</sub> = &Gamma; &minus; &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;) &nbsp; (identical line, &lambda;<sub>10</sub>-form &mdash; used throughout this page)</div>
 <div class="callout" style="margin:8px 0"><p style="margin:0"><b>A curved alternative &mdash; and the book has a real example.</b> The semi-log form above is a convenient idealization, and the book is explicit that it isn't the only option (a related power-law approach is also used elsewhere in the literature, e.g. Li &amp; Wang (1998)<span class="fn" data-fn="csl-alt" tabindex="0" role="button" aria-expanded="false">*</span>). For Toyoura sand &mdash; one of the 17 sands in this page's own Table 2.1 data &mdash; the book gives its own power-law fit, Eq. 2.12, that straightens the curvature its Fig. 2.29 shows in semi-log space:</p><div class="eq" style="margin:6px 0 2px">e<sub>c</sub> = 0.9325 &minus; 0.19&middot;(p&prime;/p<sub>ref</sub>)<sup>0.7</sup>, &nbsp; p<sub>ref</sub> = 100 kPa</div><p style="margin:2px 0 0;font-size:11.5px">In the general form e<sub>c</sub> = e<sub>&Gamma;</sub> &minus; &lambda;<sub>c</sub>&middot;(p&prime;/p<sub>ref</sub>)<sup>&xi;</sup>, the three fitted parameters &mdash; e<sub>&Gamma;</sub> (intercept), &lambda;<sub>c</sub> (coefficient), and the exponent &xi; &mdash; play the same general role as &Gamma; and &lambda;<sub>10</sub> above, but the numbers above are Toyoura's own real, published values (Eq. 2.12, fitted to Verdugo (1992) data) &mdash; not invented for illustration.</p></div>
 <div id="fnnote-csl-alt" class="fn-note">* Li, X.S. &amp; Wang, Y. (1998). "Linear representation of steady-state line for sand." <i>Journal of Geotechnical and Geoenvironmental Engineering</i>, ASCE, 124(12), 1215&ndash;1217.</div>
@@ -440,12 +438,11 @@ body{padding-bottom:54px}
 <button type="button" class="guided-step" data-cslcase="stress" aria-pressed="false"><b>4. Stress effect</b>Hold e fixed and raise p′ to 1000 kPa.</button>
 <button type="button" class="guided-step" data-cslcase="shear" aria-pressed="false"><b>5. Apply strain</b>Start loose, then watch shearing itself pull the point down onto the CSL.</button>
 </div><div id="cslExperimentStatus" class="experiment-status" aria-live="polite">Select a case to begin.</div></div>
+<div class="ns-layout" style="margin-top:10px">
+<div>
 <label style="font-size:12.5px;font-weight:700">Sand / tailings (real properties, Table 2.1)</label><br>
 <select id="sandSelect"></select>
-
-<div class="grid2" style="margin-top:10px">
-<div>
-<div class="slider-block">
+<div class="slider-block" style="margin-top:10px">
 <label for="eSlide">Void ratio, e <span class="readout" id="eOut">0.70</span></label>
 <input id="eSlide" type="range" min="0.3" max="1.2" step="0.001" value="0.7">
 </div>
@@ -457,7 +454,6 @@ body{padding-bottom:54px}
 <div class="statgrid n3" id="cslStats"></div>
 </div>
 <div><canvas id="cslChart" role="img" aria-label="Critical state line chart: void ratio versus mean effective stress on a log scale, showing the current state point and its vertical distance from the line."></canvas>
-<label class="ln-overlay-toggle"><input type="checkbox" id="showLnForm"> overlay the &lambda;/ln form (computed independently) &mdash; should land exactly on top of the curve above, confirming the two are the same line</label>
 </div>
 </div>
 
@@ -833,7 +829,7 @@ function drawYTitle(ctx,text,tx,ty,titleFont){
   ctx.font = prevFont; ctx.textAlign = prevAlign;
 }
 
-function drawCSL(ctx,W,H,sand,e,p,showLn){
+function drawCSL(ctx,W,H,sand,e,p){
   ctx.clearRect(0,0,W,H);
   var ml=58,mr=14,mt=14,mb=34;
   var pw=W-ml-mr, ph=H-mt-mb;
@@ -862,16 +858,6 @@ function drawCSL(ctx,W,H,sand,e,p,showLn){
     if(pv===pmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
   ctx.stroke();
-  // optional overlay: identical curve computed independently via the book's literal λ/ln form
-  if(showLn){
-    var lambdaE = sand.lambda10/2.303;
-    ctx.strokeStyle="#c64852"; ctx.lineWidth=3.2; ctx.setLineDash([1,5]); ctx.lineCap="round"; ctx.beginPath();
-    for(var pv2=pmin; pv2<=pmax; pv2*=1.03){
-      var ee2 = sand.Gamma - lambdaE*Math.log(pv2); var x2=X(pv2), y2=Y(ee2);
-      if(pv2===pmin) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
-    }
-    ctx.stroke(); ctx.setLineDash([]); ctx.lineCap="butt";
-  }
   // current point
   var x0=X(p), y0=Y(e);
   // ψ = 0 is a genuine third state — neither dilative nor contractive (the book is
@@ -940,7 +926,7 @@ function updateAll(){
 
   var W=document.getElementById("cslChart").clientWidth||560, H=260;
   var c1=document.getElementById("cslChart"); c1.width=W; c1.height=H;
-  drawCSL(c1.getContext("2d"),W,H,sand,e,p,document.getElementById("showLnForm").checked);
+  drawCSL(c1.getContext("2d"),W,H,sand,e,p);
 
   // section 2
   var dmin = sand.chitc*psi;
@@ -995,7 +981,6 @@ function updateDrPsi(){
   document.getElementById("drVsPsiNote").innerHTML = note;
 }
 document.getElementById("drFixed").addEventListener("input",updateDrPsi);
-document.getElementById("showLnForm").addEventListener("change",updateAll);
 
 eSlide.addEventListener("input",updateAll);
 pSlide.addEventListener("input",updateAll);
