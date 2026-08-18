@@ -478,7 +478,7 @@ body{padding-bottom:54px}
 <div class="explain"><p>One more property is needed before going further: <b>M<sub>tc</sub></b>, the critical stress ratio &eta; = q/p&prime; a soil in triaxial compression heads toward at large strain &mdash; the same flat target every sample converges to eventually, whatever &psi; it started at (that's the whole point of "critical"). It's a property of the sand itself, not of its current density, and you'll see exactly how it's measured in Section 3. Rowe/Nova's stress&ndash;dilatancy rule<span class="fn" data-fn="2" tabindex="0" role="button" aria-expanded="false">2</span> (D = M &minus; &eta;) then converts dilation directly into a peak stress ratio above (or below) that critical value M<sub>tc</sub>, which converts to a peak friction angle via the standard triaxial Mohr&ndash;Coulomb relation sin&phi;&prime; = 3&eta;/(6+&eta;):</p></div>
 <div id="fnnote-2" class="fn-note"><b>2.</b> Rowe's 1962 original relates mobilized friction to dilation through a more elaborate ratio derived from a sliding-block energy analysis. Nova's rule, as first incorporated into NorSand (Eq. 3.31), is actually the <i>fuller</i> form with the (1&minus;N) term shown above &mdash; it's the simple D = M &minus; &eta; form used throughout most of this page (Eq. 3.32) that came later, from a further Dafalias-inspired revision, not from Nova's own simplification.</div>
 <div class="eq">&eta;<sub>max</sub> = M<sub>tc</sub> &minus; D<sub>min</sub> &nbsp;&nbsp; sin&phi;&prime;<sub>peak</sub> = 3&eta;<sub>max</sub> / (6 + &eta;<sub>max</sub>)</div>
-<p class="explain">Uses the same sand and &psi; from Section 1 above &mdash; move the sliders there and watch the numbers update here.</p>
+<p class="explain">The sandbox below includes two live diagrams that update as you move the sliders &mdash; watch them redraw to see exactly why each equation looks the way it does. Uses the same sand and &psi; from Section 1 above &mdash; move the sliders there and watch the numbers update here.</p>
 <div class="s2-lab" id="s2IndependentLab">
 <h3 style="margin-top:0">Interactive stress–dilatancy sandbox</h3>
 <p class="explain">This sandbox is independent of Section 1. Change one quantity at a time and follow the calculation from state to predicted peak strength. The values are illustrative but the displayed relationships are the same ones described above.</p>
@@ -491,6 +491,16 @@ body{padding-bottom:54px}
 <div class="s2-meter"><span id="s2Marker" class="s2-marker"></span></div><div class="s2-meter-labels"><span>Dense / dilative</span><span>ψ = 0</span><span>Loose / contractive</span></div>
 <div class="s2-chain"><div class="s2-box"><small>ψ</small><strong id="s2ChainPsi">−0.100</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>D<sub>min</sub></small><strong id="s2D">−0.350</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>η<sub>max</sub></small><strong id="s2Eta">1.610</strong></div><div class="s2-arrow">→</div><div class="s2-box"><small>φ′<sub>peak</sub></small><strong id="s2Phi">39.4°</strong></div></div>
 <div id="s2Interpret" class="s2-prompt" aria-live="polite"></div>
+<div class="grid2" style="margin:10px 0">
+<div style="text-align:center">
+<canvas id="s2DEtaChart" style="height:150px" role="img" aria-label="Live diagram of dilatancy D versus stress ratio eta, showing the Rowe-Nova line D equals Mtc minus eta and where the current state's Dmin and eta max fall on it."></canvas>
+<p class="explain" style="font-size:11px;margin:2px 0 0">D = M<sub>tc</sub>&minus;&eta; (slope &minus;1). It crosses D=0 at M<sub>tc</sub>; follow it to your current D<sub>min</sub> and read &eta;<sub>max</sub> straight below.</p>
+</div>
+<div style="text-align:center">
+<canvas id="s2MohrChart" style="height:150px" role="img" aria-label="Live Mohr circle diagram tangent to a strength envelope at the current peak friction angle, illustrating where the sine phi prime formula comes from."></canvas>
+<p class="explain" style="font-size:11px;margin:2px 0 0">At failure the Mohr circle is tangent to the strength envelope at &phi;&prime;. In terms of &eta;=q/p&prime;, that condition is exactly sin&phi;&prime; = 3&eta;/(6+&eta;).</p>
+</div>
+</div>
 <div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback" aria-live="polite">Predict first, then move the ψ slider to test your answer.</div></div>
 </div></div></div>
 
@@ -2205,8 +2215,67 @@ var psi=document.getElementById('s2Psi'),chi=document.getElementById('s2Chi'),m=
 if(!psi)return;
 function fmt(v,n){return (v>0?'+':'')+v.toFixed(n).replace('-', '−');}
 function phi(eta){var x=3*eta/(6+eta);x=Math.max(-.99,Math.min(.99,x));return Math.asin(x)*180/Math.PI;}
+// Live construction diagram: the D=Mtc-eta line, drawn corner-to-corner so it always
+// fills the plot regardless of how far the sliders push Dmin/etamax — the axis range
+// is derived FROM the current state rather than fixed, so this stays readable across
+// the sliders' full range (Dmin alone can swing from about +0.9 to -1.5).
+function drawS2DEtaChart(mv,d,eta){
+  var cv2=document.getElementById('s2DEtaChart'); if(!cv2) return;
+  var W=cv2.clientWidth||260,H=150; cv2.width=W; cv2.height=H;
+  var ctx=cv2.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ml=36,mr=14,mt=14,mb=28,pw=W-ml-mr,ph2=H-mt-mb;
+  var dLo=Math.min(0,d)-0.08, dHi=Math.max(0,d)+0.08;
+  var etaLo=mv-dHi, etaHi=mv-dLo;
+  function X(v){ return ml+pw*(v-etaLo)/(etaHi-etaLo); }
+  function Y(v){ return mt+ph2*(1-(v-dLo)/(dHi-dLo)); }
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph2); ctx.lineTo(ml+pw,mt+ph2); ctx.stroke();
+  ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif";
+  ctx.fillText("D",ml-22,mt+8); ctx.fillText("η",ml+pw-6,mt+ph2+20);
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  ctx.moveTo(X(etaLo),Y(dHi)); ctx.lineTo(X(etaHi),Y(dLo)); ctx.stroke();
+  var mtcX=X(mv),zeroY=Y(0);
+  ctx.strokeStyle="#1479b8"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,zeroY); ctx.lineTo(mtcX,zeroY); ctx.lineTo(mtcX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#1479b8"; ctx.beginPath(); ctx.arc(mtcX,zeroY,3,0,7); ctx.fill();
+  ctx.font="bold 10px 'Segoe UI',Arial,sans-serif"; ctx.fillText("Mtc",mtcX-11,mt+ph2+14);
+  var peakX=X(eta),peakY=Y(d);
+  ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,peakY); ctx.lineTo(peakX,peakY); ctx.lineTo(peakX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(peakX,peakY,3,0,7); ctx.fill();
+  ctx.font="bold 10px 'Segoe UI',Arial,sans-serif";
+  ctx.fillText("Dmin",ml-30,peakY+3); ctx.fillText("ηmax",peakX-13,mt+ph2+14);
+}
+// Live Mohr circle: only the ANGLE (sin phi' = r/d) reflects the real current phi'peak —
+// the circle's absolute size/position is illustrative (no real sigma1'/sigma3' values were
+// given), fixed so the diagram itself doesn't jump around as phi' changes.
+function drawS2MohrChart(phDeg){
+  var cv3=document.getElementById('s2MohrChart'); if(!cv3) return;
+  var W=cv3.clientWidth||260,H=150; cv3.width=W; cv3.height=H;
+  var ctx=cv3.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ox=30,oy=120,axisRight=W-15,axisTop=20;
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ox,axisTop); ctx.lineTo(ox,oy); ctx.lineTo(axisRight,oy); ctx.stroke();
+  ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif";
+  ctx.fillText("τ",ox-16,axisTop+8); ctx.fillText("σ′",axisRight-14,oy+14);
+  var phiRad=Math.max(1,Math.min(48,phDeg))*Math.PI/180;
+  var d=70,r=d*Math.sin(phiRad);
+  var scale=(axisRight-ox-20)/(d+r+10);
+  var dPx=d*scale,rPx=r*scale,cx=ox+dPx,cy=oy;
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(cx,cy,rPx,0,Math.PI*2); ctx.stroke();
+  var s3x=cx-rPx,s1x=cx+rPx;
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(s3x,oy); ctx.lineTo(s3x,oy+6); ctx.moveTo(s1x,oy); ctx.lineTo(s1x,oy+6); ctx.stroke();
+  ctx.font="9.5px 'Segoe UI',Arial,sans-serif"; ctx.fillText("σ′3",s3x-10,oy+18); ctx.fillText("σ′1",s1x-10,oy+18);
+  var tanLen=Math.sqrt(Math.max(0,d*d-r*r))*scale*1.25;
+  var tx=ox+tanLen*Math.cos(phiRad),ty=oy-tanLen*Math.sin(phiRad);
+  ctx.strokeStyle="#c64852"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(ox,oy); ctx.lineTo(tx,ty); ctx.stroke();
+  ctx.strokeStyle="#7653a6"; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(ox,oy,25,-phiRad,0); ctx.stroke();
+  ctx.fillStyle="#7653a6"; ctx.font="bold 11px 'Segoe UI',Arial,sans-serif"; ctx.fillText("φ′",ox+27,oy-9);
+}
 function update(){var pv=+psi.value,cv=+chi.value,mv=+m.value,d=cv*pv,eta=mv-d,ph=phi(eta),phc=phi(mv),state=pv<-.005?'dense of critical and dilative':pv>.005?'loose of critical and contractive':'near critical';
-document.getElementById('s2PsiOut').textContent=fmt(pv,3);document.getElementById('s2ChiOut').textContent=cv.toFixed(1);document.getElementById('s2MOut').textContent=mv.toFixed(2);document.getElementById('s2ChainPsi').textContent=fmt(pv,3);document.getElementById('s2D').textContent=fmt(d,3);document.getElementById('s2Eta').textContent=eta.toFixed(3);document.getElementById('s2Phi').textContent=ph.toFixed(1)+'°';var pos=100*(pv-(-.25))/.40;document.getElementById('s2Marker').style.left='calc('+pos+'% - 2px)';document.getElementById('s2Interpret').innerHTML='<b>Interpretation:</b> This state is <b>'+state+'</b>. D<sub>min</sub> = χψ = <b>'+fmt(d,3)+'</b>. Therefore η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> = <b>'+eta.toFixed(3)+'</b>, corresponding to φ′<sub>peak</sub> = <b>'+ph.toFixed(1)+'°</b>. The difference from critical friction is <b>'+fmt(ph-phc,1)+'°</b>.';}
+document.getElementById('s2PsiOut').textContent=fmt(pv,3);document.getElementById('s2ChiOut').textContent=cv.toFixed(1);document.getElementById('s2MOut').textContent=mv.toFixed(2);document.getElementById('s2ChainPsi').textContent=fmt(pv,3);document.getElementById('s2D').textContent=fmt(d,3);document.getElementById('s2Eta').textContent=eta.toFixed(3);document.getElementById('s2Phi').textContent=ph.toFixed(1)+'°';var pos=100*(pv-(-.25))/.40;document.getElementById('s2Marker').style.left='calc('+pos+'% - 2px)';document.getElementById('s2Interpret').innerHTML='<b>Interpretation:</b> This state is <b>'+state+'</b>. D<sub>min</sub> = χψ = <b>'+fmt(d,3)+'</b>. Therefore η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> = <b>'+eta.toFixed(3)+'</b>, corresponding to φ′<sub>peak</sub> = <b>'+ph.toFixed(1)+'°</b>. The difference from critical friction is <b>'+fmt(ph-phc,1)+'°</b>.';
+drawS2DEtaChart(mv,d,eta); drawS2MohrChart(ph);}
 [psi,chi,m].forEach(x=>x.addEventListener('input',update));
 document.querySelectorAll('[data-s2preset]').forEach(function(b){b.addEventListener('click',function(){var v=b.dataset.s2preset;if(v==='dense'){psi.value=-.10;chi.value=3.5;m.value=1.26}if(v==='critical'){psi.value=0;chi.value=3.5;m.value=1.26}if(v==='loose'){psi.value=.08;chi.value=3.5;m.value=1.26}if(v==='sensitive'){psi.value=-.10;chi.value=5.3;m.value=1.33}update();});});
 document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-s2answer]').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.s2answer==='right';b.classList.add(ok?'good':'bad');document.getElementById('s2Feedback').innerHTML=ok?'<b>Correct.</b> As ψ approaches zero, D<sub>min</sub> approaches zero, so η<sub>max</sub> approaches M<sub>tc</sub> and φ′<sub>peak</sub> approaches φ′<sub>cv</sub>.':b.dataset.s2exp;});});update();
