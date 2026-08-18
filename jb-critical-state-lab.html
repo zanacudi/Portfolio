@@ -633,15 +633,12 @@ body{padding-bottom:54px}
 <h3 style="margin-top:0">Try it: what a yield surface actually is</h3>
 <p class="explain" style="font-size:12.5px;background:#eef8fc;border-radius:8px;padding:8px 10px;margin-top:0"><b>Purpose, in one line:</b> this one boundary is what lets NorSand predict a whole stress&ndash;strain curve instead of just a peak number. Every strain increment, the boundary grows a little, and the model simply reads &eta; off wherever the state now sits on the bigger boundary. That's it &mdash; everything below just makes that one idea concrete.</p>
 <p class="explain" style="font-size:12px">Inside the boundary, the soil only responds elastically &mdash; nothing permanently deforms. Push the state up against it and the soil yields: it deforms permanently, and the boundary itself grows to keep up. That growth is exactly what H controls, strain by strain, in the simulation further down.</p>
-<p class="explain" style="font-size:11.5px;margin:0 0 6px">Drag <b>p<sub>i</sub></b> to grow or shrink the boundary; drag <b>p&prime;</b> to slide the current stress state along it. Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below.</p>
+<p class="explain" style="font-size:11.5px;margin:0 0 6px">This uses the exact same test as the simulation further down &mdash; same &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub> sliders (or the density/preset buttons below them). Drag <b>shear strain</b> here to see exactly where the boundary is at that point in the test &mdash; formally, &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)), step 4 of the equation chain further down.</p>
 <div class="ns-layout">
 <div>
-<div class="slider-block"><label for="ysM"><span>M<sub>i</sub> (image stress ratio)</span> <span class="readout" id="ysMOut">1.26</span></label><input id="ysM" type="range" min="0.80" max="1.60" step="0.01" value="1.26">
-<div class="hint">Sets the height of the surface at its image point, where p&prime;=p<sub>i</sub>.</div></div>
-<div class="slider-block"><label for="ysPi"><span>p<sub>i</sub> (yield surface size, kPa)</span> <span class="readout" id="ysPiOut">200</span></label><input id="ysPi" type="range" min="20" max="600" step="5" value="200">
-<div class="hint">The internal variable that sizes the surface &mdash; this is exactly what H makes evolve, strain by strain, in the simulation below. <b>Drag this and watch the whole boundary grow or shrink</b> &mdash; that's the entire point made concrete.</div></div>
-<div class="slider-block"><label for="ysP"><span>p&prime; (current mean effective stress, kPa)</span> <span class="readout" id="ysPOut">120</span></label><input id="ysP" type="range" min="5" max="600" step="5" value="120">
-<div class="hint">Where the actual stress state currently sits &mdash; independent of the surface's own size, p<sub>i</sub>.</div></div>
+<div class="slider-block"><label for="ysStrain"><span>Shear strain applied, &epsilon;<sub>q</sub> (%)</span> <span class="readout" id="ysStrainOut">0.0</span></label><input id="ysStrain" type="range" min="0" max="30" step="0.2" value="0">
+<div class="hint">How far into the test you are. Drag it and watch p<sub>i</sub> and M<sub>i</sub> evolve below &mdash; that's H doing its job, strain by strain, exactly as it does in the full simulation.</div></div>
+<div class="callout" style="font-size:11.5px;line-height:1.7">p&prime; (fixed all test): <b><span id="ysP0Display">200</span> kPa</b><br>&psi;<sub>0</sub> (starting state): <b><span id="ysPsi0Display">+0.000</span></b><br>At this strain: p<sub>i</sub> = <b><span id="ysPiDisplay">73.6</span> kPa</b>, M<sub>i</sub> = <b><span id="ysMiDisplay">1.260</span></b></div>
 </div>
 <div>
 <p style="font-weight:700;font-size:11.5px;margin:0 0 4px;color:var(--navy)">For scale: the compression plane</p>
@@ -658,7 +655,7 @@ body{padding-bottom:54px}
 <canvas id="yieldSurfaceChart" style="height:180px" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, where the current stress state falls on it, and a flat dashed critical state line at eta equals Mtc for comparison. The region under the curve is labeled elastic; the curve itself is labeled the yield surface boundary."></canvas>
 <p class="explain" style="font-size:10.5px;margin:4px 0 0"><b>Shaded: elastic.</b> <b>Line: the yield surface</b> &mdash; where it starts to yield. At p&prime;=p<sub>i</sub> (grey dashed), &eta;=M<sub>i</sub> exactly &mdash; the "image condition". <b style="color:#c64852">Red dot: current state</b> &mdash; p&prime;=<span id="ysCurrentP">120</span> kPa, &eta;=<span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
 <p class="explain" style="font-size:10.5px;margin:4px 0 0"><b style="color:#2d8b65">Green dashed: critical state</b>, &eta;=M<sub>tc</sub>=<span id="ysCritMtc">1.26</span> (section's M<sub>tc</sub> slider) &mdash; flat, a material constant independent of p&prime; or p<sub>i</sub>.</p>
-<p class="explain" style="font-size:10.5px;margin:4px 0 0">The curve can rise <b>above</b> the green line for p&prime;&lt;p<sub>i</sub> (dense side) &mdash; not a flaw, that's how NorSand predicts peak strength above critical (&phi;&prime;<sub>peak</sub>&gt;&phi;&prime;<sub>cv</sub>, Section 2). M<sub>i</sub> itself is always &le;M<sub>tc</sub> physically.<span id="ysMiAboveMtcNote"></span></p>
+<p class="explain" style="font-size:10.5px;margin:4px 0 0">If the curve sits <b>above</b> the green line here (whenever p&prime;&lt;p<sub>i</sub> at this strain), that's not a flaw &mdash; it's how NorSand predicts peak strength above critical (&phi;&prime;<sub>peak</sub>&gt;&phi;&prime;<sub>cv</sub>, Section 2). M<sub>i</sub> itself is always &le;M<sub>tc</sub>, by construction of the equation above.</p>
 </div>
 </div>
 
@@ -1131,7 +1128,7 @@ function simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,steps,dEq){
   var lambda = lambda10/2.303;
   var chii = chitc/(1-chitc*lambda/Mtc);
   var p = p0, e = e0, pi = p0/Math.E; // freshly isotropically consolidated: eta=0 at start
-  var Q=[], E=[], EC=[], STRAIN=[], DIL=[], EV=[];
+  var Q=[], E=[], EC=[], STRAIN=[], DIL=[], EV=[], PI=[], MIARR=[];
   var etaPeak=0, epsAtPeak=0, evCum=0;
   for(var i=0;i<=steps;i++){
     var eq = i*dEq;
@@ -1145,7 +1142,7 @@ function simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,steps,dEq){
     eta = Math.max(0,eta);
     var Dp = Mi - eta;
     if(eta>etaPeak){ etaPeak=eta; epsAtPeak=eq*100; }
-    Q.push(eta); E.push(e); EC.push(ec); STRAIN.push(eq*100); DIL.push(Dp); EV.push(evCum*100);
+    Q.push(eta); E.push(e); EC.push(ec); STRAIN.push(eq*100); DIL.push(Dp); EV.push(evCum*100); PI.push(pi); MIARR.push(Mi);
     // advance — Eq. 3.38/Table 3.1 use the fixed reference Mitc here (which under this
     // tool's triaxial-compression-only scope equals Mtc), not the evolving Mi computed
     // above; using the evolving Mi would make piMax circularly depend on itself via psii.
@@ -1156,7 +1153,7 @@ function simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,steps,dEq){
     e += de; pi += dpi; evCum += dev;
     if(pi<1) pi=1;
   }
-  return {strain:STRAIN, eta:Q, e:E, ec:EC, etaPeak:etaPeak, epsAtPeak:epsAtPeak, D:DIL, ev:EV};
+  return {strain:STRAIN, eta:Q, e:E, ec:EC, etaPeak:etaPeak, epsAtPeak:epsAtPeak, D:DIL, ev:EV, pi:PI, Mi:MIARR};
 }
 function sinToPhi(eta){ var s=3*eta/(6+eta); s=Math.max(-0.99,Math.min(0.99,s)); return Math.asin(s)*180/Math.PI; }
 
@@ -1192,6 +1189,8 @@ function runNorSand(){
 
   drawLineChart("nsQChart", Q.map((v,i)=>[i*dEq*100,v]), {color:"#1479b8", xlab:"shear strain ε~q~ (%)", ylab:"η = q/p'", yfix:2});
   drawLineChart("nsEChart", E.map((v,i)=>[i*dEq*100,v]).concat([]), {color:"#2d8b65", xlab:"shear strain ε~q~ (%)", ylab:"void ratio", yfix:3, extra: EC.map((v,i)=>[i*dEq*100,v])});
+  // keep the yield-surface explorer above in sync — it samples this exact same simulation
+  if(typeof window.updateYieldSurfaceExplorer==="function") window.updateYieldSurfaceExplorer();
 }
 
 function drawLineChart(id, pts, opt){
@@ -2506,21 +2505,33 @@ document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListe
 })();
 
 // --- interactive yield-surface explorer (NorSand section) ---
+// Driven by the exact same test as the main NorSand simulator below (same Gamma, lambda10,
+// Mtc, chitc, N, H, e0, p0 sliders) rather than independent Mi/pi/p' sliders, so pi and Mi
+// here are genuine points sampled off that one simulation at the chosen strain — not
+// illustrative combinations a reader could set inconsistently.
 (function(){
-var ysM=document.getElementById('ysM'), ysPi=document.getElementById('ysPi'), ysP=document.getElementById('ysP');
-if(!ysM) return;
+var ysStrain=document.getElementById('ysStrain');
+if(!ysStrain) return;
 function update(){
-  var Mi=+ysM.value, pi=+ysPi.value, p=+ysP.value;
-  document.getElementById('ysMOut').textContent=Mi.toFixed(2);
-  document.getElementById('ysPiOut').textContent=pi.toFixed(0);
-  document.getElementById('ysPOut').textContent=p.toFixed(0);
+  var Gamma=+nsG.value, lambda10=+nsL.value, Mtc=+nsM.value, chitc=+nsX.value, N=+nsN.value, H=+nsH.value, e0=+nsE0.value, p0=+nsP0.value;
+  var strainPct=+ysStrain.value;
+  document.getElementById('ysStrainOut').textContent=strainPct.toFixed(1);
+  var sim=simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,1000,0.0003);
+  var idx=Math.max(0,Math.min(sim.strain.length-1, Math.round(strainPct/30*1000)));
+  var pi=sim.pi[idx], Mi=sim.Mi[idx];
+  var ec0=Gamma-lambda10*Math.log10(p0), psi0=e0-ec0;
+  document.getElementById('ysP0Display').textContent=p0.toFixed(0);
+  document.getElementById('ysPsi0Display').textContent=(psi0>=0?'+':'')+psi0.toFixed(3)+(psi0<0?' (dense)':' (loose)');
+  document.getElementById('ysPiDisplay').textContent=pi.toFixed(1);
+  document.getElementById('ysMiDisplay').textContent=Mi.toFixed(3);
+
   // one shared p′ domain for all three charts, so they're directly comparable side by side
-  var sharedPMax=Math.max(pi*3, p*1.2, 620);
-  drawYieldSurfaceEPChart(pi,p,sharedPMax);
-  var result=drawYieldSurfaceChart(Mi,pi,p,sharedPMax);
+  var sharedPMax=Math.max(pi*3, p0*1.2, 620);
+  drawYieldSurfaceEPChart(pi,p0,sharedPMax);
+  var result=drawYieldSurfaceChart(Mi,pi,p0,sharedPMax);
   var curEta=result.curEta;
-  drawYieldSurfaceQPChart(Mi,pi,p,result.Mtc,sharedPMax);
-  document.getElementById('ysCurrentP').textContent=p.toFixed(0);
+  drawYieldSurfaceQPChart(Mi,pi,p0,result.Mtc,sharedPMax);
+  document.getElementById('ysCurrentP').textContent=p0.toFixed(0);
   var etaEl=document.getElementById('ysCurrentEta'), noteEl=document.getElementById('ysBeyondNote');
   if(curEta<0){
     etaEl.textContent='0 (off this branch)';
@@ -2530,12 +2541,8 @@ function update(){
     noteEl.textContent='';
   }
   document.getElementById('ysCritMtc').textContent=result.Mtc.toFixed(2);
-  var miNoteEl=document.getElementById('ysMiAboveMtcNote');
-  miNoteEl.textContent = Mi>result.Mtc
-    ? ' Right now your M_i ('+Mi.toFixed(2)+') is set ABOVE M_tc ('+result.Mtc.toFixed(2)+') — real NorSand can never produce that combination; try lowering M_i or raising M_tc below to see a physically reachable image point.'
-    : '';
 }
-[ysM,ysPi,ysP].forEach(function(x){ x.addEventListener('input',update); });
+ysStrain.addEventListener('input',update);
 window.updateYieldSurfaceExplorer=update;
 update();
 })();
