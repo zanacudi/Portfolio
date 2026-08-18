@@ -17,7 +17,7 @@ header h1{margin:0;font-size:22px}
 header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
 header a{color:#bfe6f5}
 .view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
-.wrap{max-width:1200px;margin:auto;padding:16px}
+.wrap{max-width:1400px;margin:auto;padding:16px}
 .back{font-size:12px}
 /* ===== 2. Component styles (cards, forms, tables, badges, notation, equations) ===== */
 .card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
@@ -277,12 +277,16 @@ body{padding-bottom:54px}
 <div class="callout"><b>Recommended route:</b> first use the visual mental model, then the guided CSL tool, then stress–dilatancy, and only then open the NorSand simulator.</div></div>
 <div class="big-idea"><div class="eyebrow" style="color:#aee7f7">The big idea</div><div class="formula">ψ = e − e<sub>c</sub>(p′)</div><p>Void ratio alone is not enough. Stress alone is not enough. ψ combines both by measuring vertical distance from the critical state line.</p></div>
 </div>
-<p class="explain" style="font-size:11.5px;margin-top:10px">Choose any goal below to jump straight to where it's practiced.</p>
+<p class="explain" style="font-size:11.5px;margin-top:10px">This module is 8 short pages, in this order — jump to any of them, or just use the Next button below to go straight through.</p>
 <div class="goal-grid">
-<button type="button" class="goal" data-goto="csl-section" data-pulse="cslChart"><span class="goal-num">1</span><b>Locate a soil state</b>Read e and p′ on the state plane and calculate ψ.</button>
-<button type="button" class="goal" data-goto="predictQuiz" data-pulse="predictQuiz"><span class="goal-num">2</span><b>Predict the tendency</b>Use the sign and magnitude of ψ to anticipate contraction or dilation.</button>
-<button type="button" class="goal" data-goto="dilatancy-section" data-pulse="dilChart"><span class="goal-num">3</span><b>Connect state to strength</b>Trace ψ → D<sub>min</sub> → η<sub>max</sub> → φ′<sub>peak</sub>.</button>
-<button type="button" class="goal" data-goto="norsand-section" data-pulse="nsQChart"><span class="goal-num">4</span><b>Read a model response</b>Explain how NorSand evolves toward critical state.</button>
+<button type="button" class="goal" data-gotopage="start"><span class="goal-num">1</span><b>Start here</b>Why ψ organizes everything in this book, and where to jump in.</button>
+<button type="button" class="goal" data-gotopage="mental-model"><span class="goal-num">2</span><b>Mental model</b>See dilation and contraction happen before touching any equations.</button>
+<button type="button" class="goal" data-gotopage="notation"><span class="goal-num">3</span><b>Notation</b>Every symbol used in this module, grouped by what it describes.</button>
+<button type="button" class="goal" data-gotopage="csl-section"><span class="goal-num">4</span><b>CSL &amp; ψ</b>The critical state line, the state parameter, and why it beats relative density.</button>
+<button type="button" class="goal" data-gotopage="dilatancy-section"><span class="goal-num">5</span><b>Dilatancy</b>How ψ converts to D<sub>min</sub>, peak strength, and friction angle.</button>
+<button type="button" class="goal" data-gotopage="calibration-section"><span class="goal-num">6</span><b>Calibration</b>Where Γ, λ<sub>10</sub>, M<sub>tc</sub>, χ<sub>tc</sub>, N and H actually come from — real test data, not a lookup table.</button>
+<button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">7</span><b>NorSand</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
+<button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">8</span><b>Check learning</b>100 questions, split into checkpoints you'll already have met along the way.</button>
 </div>
 </section>
 
@@ -304,6 +308,7 @@ body{padding-bottom:54px}
 <div class="flow-node" id="flowPsi" style="background:#7653a6">Distance, ψ<small>e − e<sub>c</sub></small></div><div class="flow-arrow">→</div>
 <div class="flow-node" id="flowResponse" style="background:#2d8b65">Response<small>D, η, strength</small></div>
 </div>
+<p class="explain" style="font-size:10.5px;margin:4px 0 0;color:var(--muted)">Live recap — tracks the e and p′ sliders below as you move them.</p>
 </div>
 
 <section id="mental-model" class="card">
@@ -2376,10 +2381,12 @@ document.addEventListener('keydown', function(e){
     {label:'NorSand', ids:['norsand-section','quizCheckI']},
     {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']}
   ];
-  // The pinned "mental model chain" recap box (flowSticky) sits before Mental model in the
-  // DOM and was designed to stay visible while scrolling through Mental model/Notation/CSL/
-  // Dilatancy as one continuous flow — keep that same range now that they're separate pages.
-  var STICKY_RANGE = [1,4];
+  // The pinned "mental model chain" recap box (flowSticky) only means anything on the pages
+  // where its driving controls (the e/p′ sliders in CSL, whose psi flows into Dilatancy's
+  // Dmin/etamax) are actually visible. Showing it on Mental model/Notation — reachable
+  // directly via the TOC now — left numbers with no visible source and, on those shorter
+  // pages, no scroll room to even notice it was "sticky" at all.
+  var STICKY_RANGE = [3,4];
   var currentPage = 0;
   var historyReady = false;
   var announcer = document.getElementById('pageAnnouncer');
@@ -2504,6 +2511,14 @@ document.addEventListener('keydown', function(e){
       if(!target) return;
       e.preventDefault();
       var idx=pageIndexForElement(target);
+      if(idx!==null) showPage(idx);
+    });
+  });
+
+  // ---- Start-page table-of-contents cards: same whole-page jump as the nav bar ----
+  document.querySelectorAll('[data-gotopage]').forEach(function(b){
+    b.addEventListener('click',function(){
+      var idx=pageIndexForElement(document.getElementById(b.dataset.gotopage));
       if(idx!==null) showPage(idx);
     });
   });
