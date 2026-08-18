@@ -633,12 +633,18 @@ body{padding-bottom:54px}
 <h3 style="margin-top:0">Try it: what a yield surface actually is</h3>
 <p class="explain" style="font-size:12.5px;background:#eef8fc;border-radius:8px;padding:8px 10px;margin-top:0"><b>Purpose, in one line:</b> this one boundary is what lets NorSand predict a whole stress&ndash;strain curve instead of just a peak number. Every strain increment, the boundary grows a little, and the model simply reads &eta; off wherever the state now sits on the bigger boundary. That's it &mdash; everything below just makes that one idea concrete.</p>
 <p class="explain" style="font-size:12px">Inside the boundary, the soil only responds elastically &mdash; nothing permanently deforms. Push the state up against it and the soil yields: it deforms permanently, and the boundary itself grows to keep up. That growth is exactly what H controls, strain by strain, in the simulation further down.</p>
-<p class="explain" style="font-size:11.5px;margin:0 0 6px">This uses the exact same test as the simulation further down &mdash; same &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub> sliders (or the density/preset buttons below them). Drag <b>shear strain</b> here to see exactly where the boundary is at that point in the test &mdash; formally, &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)), step 4 of the equation chain further down.</p>
+<p class="explain" style="font-size:11.5px;margin:0 0 6px">Same controls as the consolidate-then-shear tool above: drag <b>&eta;</b> OR <b>strain</b> below &mdash; whichever you move becomes the control, the other the computed response. p&prime;<sub>0</sub> and M<sub>tc</sub> here are the exact same sliders as further down (moving either copy moves both). Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)), step 4 of the equation chain further down.</p>
 <div class="ns-layout">
 <div>
-<div class="slider-block"><label for="ysStrain"><span>Shear strain applied, &epsilon;<sub>q</sub> (%)</span> <span class="readout" id="ysStrainOut">0.0</span></label><input id="ysStrain" type="range" min="0" max="30" step="0.2" value="0">
-<div class="hint">How far into the test you are. Drag it and watch p<sub>i</sub> and M<sub>i</sub> evolve below &mdash; that's H doing its job, strain by strain, exactly as it does in the full simulation.</div></div>
-<div class="callout" style="font-size:11.5px;line-height:1.7">p&prime; (fixed all test): <b><span id="ysP0Display">200</span> kPa</b><br>&psi;<sub>0</sub> (starting state): <b><span id="ysPsi0Display">+0.000</span></b><br>At this strain: p<sub>i</sub> = <b><span id="ysPiDisplay">73.6</span> kPa</b>, M<sub>i</sub> = <b><span id="ysMiDisplay">1.260</span></b></div>
+<div class="slider-block"><label for="ysP0"><span>Consolidation stress, p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="ysP0Out">200</span></label><input id="ysP0" type="range" min="10" max="1000" step="10" value="200">
+<div class="hint">Fixed for the whole test (this is the constant-p&prime; idealization) &mdash; same slider as p&prime;<sub>0</sub> further down.</div></div>
+<div class="slider-block"><label for="ysMtc"><span>Critical friction ratio, M<sub>tc</sub></span> <span class="readout" id="ysMtcOut">1.26</span></label><input id="ysMtc" type="range" min="1.0" max="1.6" step="0.01" value="1.26">
+<div class="hint">Same slider as M<sub>tc</sub> further down &mdash; the flat critical-state line (green, on the right) is always exactly this value.</div></div>
+<div class="slider-block" id="ysEtaBlock"><label for="ysEta"><span>Shear stress ratio, &eta; = q/p&prime; <span class="badge" id="ysEtaModeTag">response</span></span> <span class="readout" id="ysEtaOut">0.00</span></label><input id="ysEta" type="range" min="0" max="2" step="0.001" value="0">
+<div class="hint">Drag this OR the strain slider below &mdash; whichever you move becomes the control, the other becomes the computed response.</div></div>
+<div class="slider-block" id="ysStrainBlock"><label for="ysStrain"><span>Shear strain applied, &epsilon;<sub>q</sub> (%) <span class="badge" id="ysStrainModeTag">control</span></span> <span class="readout" id="ysStrainOut">0.0</span></label><input id="ysStrain" type="range" min="0" max="100" step="0.5" value="0">
+<div class="hint">The first 80% of this slider covers 0&ndash;20% strain, where the response actually moves &mdash; the rest fast-forwards through the mostly-flat 20&ndash;30% tail.</div></div>
+<div class="callout" style="font-size:11px;line-height:1.6">&psi;<sub>0</sub> (starting state): <b><span id="ysPsi0Display">-0.145 (dense)</span></b><br>At this strain: p<sub>i</sub> = <b><span id="ysPiDisplay">73.6</span></b> kPa, M<sub>i</sub> = <b><span id="ysMiDisplay">1.088</span></b></div>
 </div>
 <div>
 <p style="font-weight:700;font-size:11.5px;margin:0 0 4px;color:var(--navy)">For scale: the compression plane</p>
@@ -2505,22 +2511,88 @@ document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListe
 })();
 
 // --- interactive yield-surface explorer (NorSand section) ---
-// Driven by the exact same test as the main NorSand simulator below (same Gamma, lambda10,
-// Mtc, chitc, N, H, e0, p0 sliders) rather than independent Mi/pi/p' sliders, so pi and Mi
-// here are genuine points sampled off that one simulation at the chosen strain — not
+// Mirrors the consolidate-then-shear intro tool's own controls: eta/strain are a dual
+// control/response pair (drag either one), strain uses the same 80/20 slider weighting
+// (fine resolution over 0-20% strain, fast-forward over the flat 20-30% tail), and p'0/Mtc
+// are literally the same sliders as the main NorSand simulator below (two-way synced) —
+// so pi and Mi here are genuine points sampled off that one real simulation, not
 // illustrative combinations a reader could set inconsistently.
 (function(){
-var ysStrain=document.getElementById('ysStrain');
-if(!ysStrain) return;
+var ysP0=document.getElementById('ysP0'), ysMtc=document.getElementById('ysMtc');
+var ysEta=document.getElementById('ysEta'), ysStrain=document.getElementById('ysStrain');
+if(!ysEta) return;
+var etaBlock=document.getElementById('ysEtaBlock'), strainBlock=document.getElementById('ysStrainBlock');
+var etaModeTag=document.getElementById('ysEtaModeTag'), strainModeTag=document.getElementById('ysStrainModeTag');
+var controlMode='strain', lastStrainPct=0;
+function setControlMode(mode){
+  controlMode=mode;
+  if(etaModeTag) etaModeTag.textContent = mode==='eta' ? 'control' : 'response';
+  if(strainModeTag) strainModeTag.textContent = mode==='strain' ? 'control' : 'response';
+  if(etaBlock) etaBlock.classList.toggle('is-response', mode==='strain');
+  if(strainBlock) strainBlock.classList.toggle('is-response', mode==='eta');
+}
+// Slider travel (0-100) isn't 1:1 with strain (0-30%): the first 80% of the slider covers
+// 0-20% strain (where things actually move), the last 20% fast-forwards through the mostly
+// flat 20-30% tail — same UI convention as the intro tool's strain slider, scaled to this
+// tool's 30%-strain simulation range instead of that one's 50%.
+function sliderPosToStrain(pos){
+  pos=Math.max(0,Math.min(100,pos));
+  return pos<=80 ? pos/80*20 : 20+(pos-80)/20*10;
+}
+function strainToSliderPos(strainPct){
+  strainPct=Math.max(0,Math.min(30,strainPct));
+  return strainPct<=20 ? strainPct/20*80 : 80+(strainPct-20)/10*20;
+}
+// Inverts eta(strain) using the discretized simulation itself: scan for sign changes of
+// (eta-target) across the array, linearly interpolate strain at each crossing, then pick
+// whichever crossing is closest to the current strain — dense samples are unimodal (rise
+// past Mtc then soften back), so a given eta can correspond to two strains; preferring the
+// nearer one keeps the response from jumping to the far branch on a small nudge.
+function findStrainForEta(sim,targetEta,currentStrainPct){
+  var candidates=[];
+  for(var i=1;i<sim.eta.length;i++){
+    var e0=sim.eta[i-1], e1=sim.eta[i];
+    if((e0-targetEta)*(e1-targetEta)<=0 && e0!==e1){
+      var t=(targetEta-e0)/(e1-e0);
+      candidates.push(sim.strain[i-1]+t*(sim.strain[i]-sim.strain[i-1]));
+    }
+  }
+  if(!candidates.length){
+    var bestIdx=0;
+    for(var j=1;j<sim.eta.length;j++){ if(Math.abs(sim.eta[j]-targetEta)<Math.abs(sim.eta[bestIdx]-targetEta)) bestIdx=j; }
+    return sim.strain[bestIdx];
+  }
+  candidates.sort(function(a,b){ return Math.abs(a-currentStrainPct)-Math.abs(b-currentStrainPct); });
+  return candidates[0];
+}
 function update(){
-  var Gamma=+nsG.value, lambda10=+nsL.value, Mtc=+nsM.value, chitc=+nsX.value, N=+nsN.value, H=+nsH.value, e0=+nsE0.value, p0=+nsP0.value;
-  var strainPct=+ysStrain.value;
-  document.getElementById('ysStrainOut').textContent=strainPct.toFixed(1);
+  var Gamma=+nsG.value, lambda10=+nsL.value, chitc=+nsX.value, N=+nsN.value, H=+nsH.value, e0=+nsE0.value;
+  var Mtc=+nsM.value, p0=+nsP0.value;
+  ysP0.value=p0; document.getElementById('ysP0Out').textContent=p0.toFixed(0);
+  ysMtc.value=Mtc; document.getElementById('ysMtcOut').textContent=Mtc.toFixed(2);
+
   var sim=simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,1000,0.0003);
+  var etaMaxSim=Math.max.apply(null,sim.eta);
+  ysEta.max=Math.max(etaMaxSim,0.5).toFixed(3);
+
+  var strainPct;
+  if(controlMode==='eta'){
+    var target=Math.max(0,Math.min(+ysEta.max,+ysEta.value));
+    ysEta.value=target;
+    strainPct=findStrainForEta(sim,target,lastStrainPct);
+    ysStrain.value=strainToSliderPos(strainPct);
+  } else {
+    strainPct=sliderPosToStrain(+ysStrain.value);
+  }
+  lastStrainPct=strainPct;
+  document.getElementById('ysStrainOut').textContent=strainPct.toFixed(1);
+
   var idx=Math.max(0,Math.min(sim.strain.length-1, Math.round(strainPct/30*1000)));
-  var pi=sim.pi[idx], Mi=sim.Mi[idx];
+  var pi=sim.pi[idx], Mi=sim.Mi[idx], etaHere=sim.eta[idx];
+  if(controlMode!=='eta') ysEta.value=etaHere;
+  document.getElementById('ysEtaOut').textContent=(+ysEta.value).toFixed(3);
+
   var ec0=Gamma-lambda10*Math.log10(p0), psi0=e0-ec0;
-  document.getElementById('ysP0Display').textContent=p0.toFixed(0);
   document.getElementById('ysPsi0Display').textContent=(psi0>=0?'+':'')+psi0.toFixed(3)+(psi0<0?' (dense)':' (loose)');
   document.getElementById('ysPiDisplay').textContent=pi.toFixed(1);
   document.getElementById('ysMiDisplay').textContent=Mi.toFixed(3);
@@ -2542,7 +2614,11 @@ function update(){
   }
   document.getElementById('ysCritMtc').textContent=result.Mtc.toFixed(2);
 }
-ysStrain.addEventListener('input',update);
+ysStrain.addEventListener('input',function(){ setControlMode('strain'); update(); });
+ysEta.addEventListener('input',function(){ setControlMode('eta'); update(); });
+ysP0.addEventListener('input',function(){ nsP0.value=ysP0.value; nsPreset.value='custom'; syncNsOuts(); runNorSand(); });
+ysMtc.addEventListener('input',function(){ nsM.value=ysMtc.value; nsPreset.value='custom'; syncNsOuts(); runNorSand(); });
+setControlMode('strain');
 window.updateYieldSurfaceExplorer=update;
 update();
 })();
