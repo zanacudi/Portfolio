@@ -485,7 +485,7 @@ body{padding-bottom:54px}
 <div id="s2Interpret" class="s2-prompt" aria-live="polite"></div>
 <div class="grid2" style="margin:10px 0">
 <div style="text-align:center">
-<canvas id="s2DEtaChart" style="height:170px" role="img" aria-label="Live diagram of dilatancy D versus stress ratio eta, showing the Rowe-Nova line D equals Mtc minus eta and where the current state's Dmin and eta max fall on it."></canvas>
+<canvas id="s2DEtaChart" style="height:205px" role="img" aria-label="Live diagram of dilatancy D versus stress ratio eta, showing the Rowe-Nova line D equals Mtc minus eta and where the current state's Dmin and eta max fall on it, with tick marks on both axes showing exactly how Dmin translates across to eta max."></canvas>
 <p class="explain" style="font-size:11px;margin:4px 0 0">A new kind of plot &mdash; horizontal is stress ratio &eta;=q/p&prime;, vertical is dilatancy D (Section 3 later uses this exact style of plot, fit to real test data, to calibrate M<sub>tc</sub>). The line is D=M<sub>tc</sub>&minus;&eta;. <b style="color:#1479b8">Blue dot: M<sub>tc</sub> = <span id="s2ChartMtc">1.26</span></b>, where the line crosses D=0. <b style="color:#c64852">Red dot: your current state</b> &mdash; D<sub>min</sub> = <span id="s2ChartDmin">&minus;0.35</span>, &eta;<sub>max</sub> = <span id="s2ChartEtaMax">1.61</span>.</p>
 </div>
 <div style="text-align:center">
@@ -632,9 +632,9 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:12px">Before running the full simulation, play with the yield locus on its own: &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below. Drag <b>p<sub>i</sub></b> to watch the surface itself grow or shrink; drag <b>p&prime;</b> to move the current stress state along it.</p>
 <div class="ns-layout">
 <div>
-<div class="slider-block"><label for="ysM">M<sub>i</sub> (image stress ratio) <span class="readout" id="ysMOut">1.26</span></label><input id="ysM" type="range" min="0.80" max="1.60" step="0.01" value="1.26">
+<div class="slider-block"><label for="ysM"><span>M<sub>i</sub> (image stress ratio)</span> <span class="readout" id="ysMOut">1.26</span></label><input id="ysM" type="range" min="0.80" max="1.60" step="0.01" value="1.26">
 <div class="hint">Sets the height of the surface at its image point, where p&prime;=p<sub>i</sub>.</div></div>
-<div class="slider-block"><label for="ysPi">p<sub>i</sub> (yield surface size, kPa) <span class="readout" id="ysPiOut">200</span></label><input id="ysPi" type="range" min="20" max="600" step="5" value="200">
+<div class="slider-block"><label for="ysPi"><span>p<sub>i</sub> (yield surface size, kPa)</span> <span class="readout" id="ysPiOut">200</span></label><input id="ysPi" type="range" min="20" max="600" step="5" value="200">
 <div class="hint">The internal variable that sizes the surface &mdash; this is exactly what H makes evolve, strain by strain, in the simulation below.</div></div>
 <div class="slider-block"><label for="ysP"><span>p&prime; (current mean effective stress, kPa)</span> <span class="readout" id="ysPOut">120</span></label><input id="ysP" type="range" min="5" max="600" step="5" value="120">
 <div class="hint">Where the actual stress state currently sits &mdash; independent of the surface's own size, p<sub>i</sub>.</div></div>
@@ -1301,16 +1301,15 @@ function drawYieldSurfaceChart(Mi, pi, p){
   var cv=document.getElementById('yieldSurfaceChart'); if(!cv) return null;
   var W=cv.clientWidth||400,H=230; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ml=38,mr=16,mt=18,mb=28,pw=W-ml-mr,ph=H-mt-mb;
+  var ml=48,mr=16,mt=14,mb=34,pw=W-ml-mr,ph=H-mt-mb;
   var pMax=Math.max(pi*3, p*1.2, 620);
   var etaMax=Math.max(Mi*1.5, 2.2);
   function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
   function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/etaMax))); }
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph); ctx.lineTo(ml+pw,mt+ph); ctx.stroke();
-  ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
-  ctx.fillText("η",ml-24,mt+6);
-  ctx.textAlign="right"; ctx.fillText("p′ (kPa)",ml+pw+4,mt+6);
+  drawXTitle(ctx,"p′  (mean effective stress, kPa)", ml+pw/2, H-4, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"η  (stress ratio)", 12, mt+ph/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
   ctx.fillStyle="#61737b"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
   ctx.fillText("0",ml-4,mt+ph+3);
   // yield locus: η = Mi·(1 − ln(p′/pi)), drawn only where η ≥ 0
@@ -2293,18 +2292,17 @@ function phi(eta){var x=3*eta/(6+eta);x=Math.max(-.99,Math.min(.99,x));return Ma
 // s2Chart* spans.
 function drawS2DEtaChart(mv,d,eta){
   var cv2=document.getElementById('s2DEtaChart'); if(!cv2) return;
-  var W=cv2.clientWidth||260,H=170; cv2.width=W; cv2.height=H;
+  var W=cv2.clientWidth||260,H=205; cv2.width=W; cv2.height=H;
   var ctx=cv2.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ml=36,mr=16,mt=18,mb=26,pw=W-ml-mr,ph2=H-mt-mb;
+  var ml=48,mr=16,mt=14,mb=40,pw=W-ml-mr,ph2=H-mt-mb;
   var dLo=Math.min(0,d)-0.08, dHi=Math.max(0,d)+0.08;
   var etaLo=mv-dHi, etaHi=mv-dLo;
   function X(v){ return ml+pw*(v-etaLo)/(etaHi-etaLo); }
   function Y(v){ return mt+ph2*(1-(v-dLo)/(dHi-dLo)); }
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph2); ctx.lineTo(ml+pw,mt+ph2); ctx.stroke();
-  ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
-  ctx.fillText("D",ml-24,mt+6);
-  ctx.textAlign="right"; ctx.fillText("η",ml+pw+4,mt+6);
+  drawXTitle(ctx,"η = q/p′  (stress ratio)", ml+pw/2, H-4, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"D  (dilatancy)", 12, mt+ph2/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
   var zeroY=Y(0);
   ctx.strokeStyle="#c7d3d8"; ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,zeroY); ctx.lineTo(ml+pw,zeroY); ctx.stroke();
@@ -2317,16 +2315,24 @@ function drawS2DEtaChart(mv,d,eta){
   ctx.moveTo(mtcX,zeroY); ctx.lineTo(mtcX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#1479b8"; ctx.beginPath(); ctx.arc(mtcX,zeroY,3.5,0,7); ctx.fill();
   var peakX=X(eta),peakY=Y(d);
+  // guide for the current state: horizontal from the D axis over to the point, then
+  // vertical down to the η axis — this IS the Dmin → ηmax translation the reader asked
+  // to see on the plot, not just described in the caption below.
   ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(ml,peakY); ctx.lineTo(peakX,peakY); ctx.lineTo(peakX,mt+ph2); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(peakX,peakY,3.5,0,7); ctx.fill();
+  // y-axis tick for Dmin itself — skipped only when it would sit on top of the "0" tick
+  if(Math.abs(peakY-zeroY) > 10){
+    ctx.fillStyle="#c64852"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
+    ctx.fillText((d>=0?'+':'−')+Math.abs(d).toFixed(2), ml-4, peakY+3);
+  }
   // x-axis value ticks, marking exactly where Mtc and ηmax sit on the η axis
   ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="center";
   var closeTicks = Math.abs(mtcX-peakX) < 44;
   var mtcTickY = mt+ph2+12, peakTickY = mt+ph2+12;
   if(closeTicks){
-    if(mtcX<=peakX){ mtcTickY = mt+ph2+11; peakTickY = mt+ph2+21; }
-    else { peakTickY = mt+ph2+11; mtcTickY = mt+ph2+21; }
+    if(mtcX<=peakX){ mtcTickY = mt+ph2+12; peakTickY = mt+ph2+24; }
+    else { peakTickY = mt+ph2+12; mtcTickY = mt+ph2+24; }
   }
   function clampTickX(x){ return Math.min(Math.max(x, ml+28), ml+pw-28); }
   ctx.strokeStyle="#1479b8"; ctx.lineWidth=1; ctx.beginPath();
