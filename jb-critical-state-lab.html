@@ -644,7 +644,15 @@ body{padding-bottom:54px}
 <div class="hint">Where the actual stress state currently sits &mdash; independent of the surface's own size, p<sub>i</sub>.</div></div>
 </div>
 <div>
-<p style="font-weight:700;font-size:12px;margin:0 0 4px;color:var(--navy)">The yield surface itself &mdash; &eta; vs p&prime;</p>
+<p style="font-weight:700;font-size:12px;margin:0 0 4px;color:var(--navy)">For scale: p&prime; and p<sub>i</sub> on the compression plane</p>
+<canvas id="yieldSurfaceEPChart" role="img" aria-label="Chart of void ratio versus mean effective stress on a log scale, showing this sand's critical state line with vertical reference lines marking the current mean effective stress p prime and the yield surface size p i."></canvas>
+<p class="explain" style="font-size:11px;margin:4px 0 6px">This is the same critical state line (CSL) from Section 1, for this sand's own &Gamma; and &lambda;<sub>10</sub> (sliders below). <b style="color:#c64852">Red dashed: p&prime;</b>, <b style="color:#9aa9ae">grey dashed: p<sub>i</sub></b> &mdash; not new points, just anchoring the pressures you're dragging above against the same compression plane the whole module is built around.</p>
+
+<p style="font-weight:700;font-size:12px;margin:10px 0 4px;color:var(--navy)">The classic view &mdash; q vs p&prime;</p>
+<canvas id="yieldSurfaceQPChart" role="img" aria-label="Chart of deviator stress q versus mean effective stress p prime, showing the yield surface as a closed bullet shape that starts and ends at q equals zero, a straight critical state line through the origin, the image condition point, and the current stress state."></canvas>
+<p class="explain" style="font-size:11px;margin:4px 0 6px"><b>Shaded bullet: the same yield surface</b>, just in q&ndash;p&prime; instead of &eta;&ndash;p&prime; &mdash; it closes back to q=0 at both ends (at p&prime;=p<sub>i</sub>&middot;e as well as p&prime;&rarr;0) because q=&eta;&middot;p&prime; and p&prime;&middot;ln(p&prime;)&rarr;0. <b style="color:#2d8b65">Green line: critical state</b>, q=M<sub>tc</sub>&middot;p&prime; &mdash; straight, since it's a fixed ratio. <b style="color:#9aa9ae">Grey dot: image condition</b>. <b style="color:#c64852">Red dot: current state</b>.</p>
+
+<p style="font-weight:700;font-size:12px;margin:10px 0 4px;color:var(--navy)">The interactive view &mdash; &eta; vs p&prime;</p>
 <canvas id="yieldSurfaceChart" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, where the current stress state falls on it, and a flat dashed critical state line at eta equals Mtc for comparison. The region under the curve is labeled elastic; the curve itself is labeled the yield surface boundary."></canvas>
 <p class="explain" style="font-size:11px;margin:4px 0 0"><b>Shaded region: elastic</b> &mdash; the soil just responds without permanently deforming. <b>The line itself: the yield surface</b> &mdash; where it starts to yield. At p&prime; = p<sub>i</sub> (grey dashed line), the surface always predicts exactly &eta; = M<sub>i</sub> &mdash; that's the "image condition" the model is named for. <b style="color:#c64852">Red dot: your current state</b> &mdash; p&prime; = <span id="ysCurrentP">120</span> kPa, &eta; = <span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
 <p class="explain" style="font-size:11px;margin:4px 0 0"><b style="color:#2d8b65">Green dashed line: critical state</b>, &eta; = M<sub>tc</sub> = <span id="ysCritMtc">1.26</span> (from this section's own M<sub>tc</sub> slider below). Unlike the yield surface, it's flat &mdash; a genuine material constant that doesn't depend on p&prime; or p<sub>i</sub> at all. As the soil's state itself approaches critical, M<sub>i</sub> is drawn toward this same line.</p>
@@ -1304,6 +1312,78 @@ function drawChiFit(id, sand, points, slope){
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.psi),Y(pt.dmin),4.5,0,7); ctx.fill(); });
 }
 
+// Third companion view: e vs log p′, the compression plane the whole module is built
+// around. This explorer's Mi/pi/p′ sliders don't track void ratio, so rather than invent
+// one, this just anchors p′ and pi against this section's own CSL (Γ, λ10 sliders) — a
+// scale reference showing where these pressures sit relative to critical, not a new point.
+function drawYieldSurfaceEPChart(pi, p){
+  var cv=document.getElementById('yieldSurfaceEPChart'); if(!cv) return;
+  var W=cv.clientWidth||400,H=170; cv.width=W; cv.height=H;
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ml=48,mr=16,mt=14,mb=34,pw=W-ml-mr,ph=H-mt-mb;
+  var nsGEl=document.getElementById('nsG'), nsLEl=document.getElementById('nsL');
+  var sand={Gamma:nsGEl?+nsGEl.value:0.816, lambda10:nsLEl?+nsLEl.value:0.031};
+  var pmin=1, pmax=Math.max(pi*4, p*1.3, 1000);
+  function X(pp){ return ml+pw*(Math.log10(pp)-Math.log10(pmin))/(Math.log10(pmax)-Math.log10(pmin)); }
+  var eHi=ecAt(sand,pmin), eLo=ecAt(sand,pmax);
+  var emin=eLo-0.05, emax=eHi+0.05;
+  function Y(ee){ return mt+ph*(1-(ee-emin)/(emax-emin)); }
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph); ctx.lineTo(ml+pw,mt+ph); ctx.stroke();
+  drawXTitle(ctx,"p′  (kPa, log scale)", ml+pw/2, H-4, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"void ratio, e", 12, mt+ph/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  for(var pv=pmin; pv<=pmax; pv*=1.05){ var ee=ecAt(sand,pv); var x=X(pv),y=Y(ee); if(pv===pmin) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  var xP=X(p), xPi=X(pi);
+  ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1.3; ctx.beginPath();
+  ctx.moveTo(xP,mt); ctx.lineTo(xP,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle="#9aa9ae"; ctx.setLineDash([2,2]); ctx.lineWidth=1.3; ctx.beginPath();
+  ctx.moveTo(xPi,mt); ctx.lineTo(xPi,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+}
+// Second companion view: q vs p′, the classic Cambridge-style representation of the same
+// yield surface — a closed "bullet" shape (q=0 at both p′→0 and p′=pi·e) rather than the
+// unbounded curve the η-p′ plot shows, since q=η·p′ and p′·ln(p′) → 0 as p′→0.
+function drawYieldSurfaceQPChart(Mi, pi, p, Mtc){
+  var cv=document.getElementById('yieldSurfaceQPChart'); if(!cv) return;
+  var W=cv.clientWidth||400,H=200; cv.width=W; cv.height=H;
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ml=48,mr=16,mt=14,mb=34,pw=W-ml-mr,ph=H-mt-mb;
+  var pEnd=pi*Math.E;
+  var pMax=Math.max(pEnd*1.08, p*1.15);
+  var steps=160, bulletPts=[], qPeak=0;
+  for(var i=0;i<=steps;i++){
+    var pv=pMax*i/steps;
+    var eta = pv<=0 ? 0 : (pv>=pEnd ? 0 : Mi*(1-Math.log(pv/pi)));
+    eta=Math.max(0,eta);
+    var qv=eta*pv;
+    if(qv>qPeak) qPeak=qv;
+    bulletPts.push([pv,qv]);
+  }
+  var qCSLAtPmax=Mtc*pMax;
+  var curEtaLocal = p<=0 ? 0 : (p>=pEnd ? 0 : Mi*(1-Math.log(p/pi)));
+  curEtaLocal=Math.max(0,curEtaLocal);
+  var curQ=curEtaLocal*p, imgQ=Mi*pi;
+  var qMax=Math.max(qPeak, qCSLAtPmax, curQ, imgQ)*1.15;
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/qMax))); }
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph); ctx.lineTo(ml+pw,mt+ph); ctx.stroke();
+  drawXTitle(ctx,"p′  (mean effective stress, kPa)", ml+pw/2, H-4, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"q  (deviator stress, kPa)", 12, mt+ph/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
+  ctx.fillStyle="#61737b"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
+  ctx.fillText("0",ml-4,mt+ph+3);
+  ctx.fillStyle="rgba(20,121,184,0.08)"; ctx.beginPath();
+  bulletPts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  bulletPts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+  ctx.strokeStyle="#2d8b65"; ctx.setLineDash([6,3]); ctx.lineWidth=1.6; ctx.beginPath();
+  ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(pMax),Y(Mtc*pMax)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#9aa9ae"; ctx.beginPath(); ctx.arc(X(pi),Y(imgQ),3,0,7); ctx.fill();
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(p),Y(curQ),3.5,0,7); ctx.fill();
+}
 function drawYieldSurfaceChart(Mi, pi, p){
   var cv=document.getElementById('yieldSurfaceChart'); if(!cv) return null;
   var W=cv.clientWidth||400,H=230; cv.width=W; cv.height=H;
@@ -2433,8 +2513,10 @@ function update(){
   document.getElementById('ysMOut').textContent=Mi.toFixed(2);
   document.getElementById('ysPiOut').textContent=pi.toFixed(0);
   document.getElementById('ysPOut').textContent=p.toFixed(0);
+  drawYieldSurfaceEPChart(pi,p);
   var result=drawYieldSurfaceChart(Mi,pi,p);
   var curEta=result.curEta;
+  drawYieldSurfaceQPChart(Mi,pi,p,result.Mtc);
   document.getElementById('ysCurrentP').textContent=p.toFixed(0);
   var etaEl=document.getElementById('ysCurrentEta'), noteEl=document.getElementById('ysBeyondNote');
   if(curEta<0){
