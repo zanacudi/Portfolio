@@ -180,9 +180,32 @@ th.symcol{text-transform:none}
 .disclosure[open]>summary:before{transform:rotate(90deg)}
 .disclosure>summary small{font-weight:400;color:var(--muted);margin-left:auto;font-size:11px}
 .disclosure>.disclosure-body{padding:0 13px 13px}
-.back-float{position:fixed;left:16px;bottom:20px;z-index:60;background:var(--navy);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 4px 14px rgba(12,44,58,.3);cursor:pointer;transition:transform .15s,box-shadow .15s;display:none;align-items:center;gap:6px}
+.back-float{position:fixed;left:16px;bottom:70px;z-index:60;background:var(--navy);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 4px 14px rgba(12,44,58,.3);cursor:pointer;transition:transform .15s,box-shadow .15s;display:none;align-items:center;gap:6px}
 .back-float:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(12,44,58,.35)}
-@media(max-width:520px){.back-float{left:10px;bottom:14px;padding:9px 13px;font-size:11.5px;max-width:calc(100vw - 20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+@media(max-width:520px){.back-float{left:8px;bottom:60px;padding:9px 13px;font-size:11.5px;max-width:calc(100vw - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+
+/* ---- pagination: the module is shown one "slide" at a time (see the pagination
+   script at the end of the file) instead of one long scroll, so a first-time reader
+   sees one manageable chunk instead of the whole 30000px document at once. ---- */
+body{padding-bottom:54px}
+.page-stepper{position:fixed;left:0;right:0;bottom:0;z-index:55;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(12,44,58,.1);padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:12.5px}
+.page-stepper-nav{background:var(--navy);color:#fff;border:0;border-radius:20px;padding:8px 14px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+.page-stepper-nav:disabled{opacity:.35;cursor:default}
+.page-stepper-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.page-stepper-label{font-weight:700;color:var(--navy);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.page-dots{display:flex;gap:5px}
+.page-dot{width:7px;height:7px;border-radius:50%;background:var(--line);cursor:pointer;border:0;padding:0}
+.page-dot.active{background:var(--blue);width:18px;border-radius:4px}
+@media(max-width:640px){.page-stepper{gap:7px;padding:7px 8px}.page-stepper-nav{padding:7px 10px;font-size:11px}.page-stepper-label{max-width:34vw;font-size:10.5px}}
+
+.page-next-prompt{margin:20px 0 6px}
+.page-next-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#0f4052,#167494);color:#fff;border-radius:12px;padding:16px 18px}
+.page-next-inner span{font-size:13px;line-height:1.5}
+.page-next-btn{background:#fff;color:var(--navy);border:0;border-radius:22px;padding:10px 18px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;transition:transform .15s}
+.page-next-btn:hover{transform:translateY(-1px)}
+@media(max-width:520px){.page-next-inner{flex-direction:column;align-items:stretch;text-align:center}}
+
+.sticky-nav a.on-page{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
 
 /* --- v6: clickable goals, intro shear tool, animated concept-line, in-progress modules --- */
 .goal{border:0;text-align:left;width:100%;cursor:pointer;font-family:inherit;transition:.15s}
@@ -253,7 +276,7 @@ th.symcol{text-transform:none}
 </div>
 </section>
 
-<div class="card">
+<div class="card" id="about-module">
 <h2>About this module</h2>
 <div class="explain">
 <p>This book builds its entire treatment of liquefaction &mdash; static and cyclic, laboratory and in-situ, case histories and constitutive models &mdash; on one idea: a soil's behavior is governed not just by its density or its stress level alone, but by how far it sits from the <b>critical state</b>, the unique void ratio a soil settles into after enough shearing at a given effective stress. That distance is the <b>state parameter</b>, &psi;. Everything downstream &mdash; whether a sand contracts or dilates, how strong it is, whether it can flow-fail &mdash; is, to first order, a function of &psi; and a small number of soil properties.</p>
@@ -645,6 +668,7 @@ th.symcol{text-transform:none}
 <div class="quiz-checkpoint" id="quizCheckI">
 <h3>Quick check &mdash; before moving on</h3>
 <p class="explain" style="font-size:12px;margin-top:0">One block on NorSand's structure and the simplifications this simulator makes.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotI">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotI">Hide questions</button></div>
 <div id="quizSlotI"></div>
 </div>
 
@@ -652,6 +676,7 @@ th.symcol{text-transform:none}
 <h2>5. Final synthesis check</h2>
 <p class="explain">You've already met checkpoints A&ndash;I along the way, right after the section that taught them. This last block, J, ties the whole module together &mdash; the kind of "a colleague says…" applied reasoning that only makes sense once everything above is in place. <b>"Check my understanding" below grades J together with every earlier block you've answered</b>, wherever it appeared on the page, so it's fine to submit even if you skimmed or skipped some.</p>
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 100 answered (blocks A&ndash;I above, plus J below)</div>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotJ">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotJ">Hide questions</button></div>
 <div id="quizSlotJ"></div>
 <div class="quiz-actions"><button id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none"></div>
 
@@ -660,7 +685,7 @@ th.symcol{text-transform:none}
 <h3>Quick-reference glossary</h3><div class="glossary-grid">
 <div class="term"><b>Critical state</b>Continued deformation at constant stress and constant void ratio.</div><div class="term"><b>CSL</b>The locus of critical void ratio versus mean effective stress.</div><div class="term"><b>State parameter, ψ</b>Current void ratio minus critical void ratio at the same p′.</div><div class="term"><b>Dilatancy, D</b>Plastic or total volumetric strain increment divided by shear strain increment.</div><div class="term"><b>η = q/p′</b>Dimensionless stress ratio used to describe mobilized shear resistance.</div><div class="term"><b>M<sub>tc</sub></b>Critical η for triaxial compression.</div><div class="term"><b>Γ</b>CSL intercept at p′ = 1 kPa.</div><div class="term"><b>λ or λ<sub>10</sub></b>CSL slope using natural or base-10 logarithms.</div><div class="term"><b>NorSand</b>A state-parameter critical-state constitutive model with an evolving image state.</div></div></section>
 
-<div class="card">
+<div class="card" id="about-tool">
 <div class="warning"><b>About this tool.</b> Section 1's critical state line parameters (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>) for all 17 sands/tailings are transcribed directly from Table 2.1 of the book, with one deliberate exception: Erksak 330/0.7's M<sub>tc</sub> uses the Chapter 3 recalibration (1.26) rather than Table 2.1's own entry (1.27), for consistency with the "uniqueness of the CSL" discussion in Section 3 below, which relies on that specific Chapter 3 value. Section 2's formulas (Eq. 2.11, Rowe/Nova stress&ndash;dilatancy, and the standard triaxial sin&phi;&prime;=3&eta;/(6+&eta;) conversion) are exact. <b>Section 3's "sample triaxial test program" table is illustrative, not a real lab data sheet</b>: the confining stresses and target &psi;<sub>0</sub> values are chosen to give a representative spread from loose to dense, and every other column (e<sub>0</sub>, peak &eta;, &phi;&prime;<sub>peak</sub>, D<sub>min</sub>) is then computed exactly from this sand's real Table 2.1 properties using the same equations shown throughout this page &mdash; it's meant to show the shape and structure of real triaxial data, not to reproduce any specific test. <b>The "one test, start to finish" pipeline directly beneath the table works the same way</b>: the "raw" q and &epsilon;<sub>v</sub> curves are a NorSand simulation (this sand's real properties) with pseudo-random noise added at sparse sample points, and the stress&ndash;dilatancy plot's (D, &eta;) pairs are numerically differentiated from those <i>noisy</i> curves &mdash; not read off the smooth model directly &mdash; which is why the fitted M<sub>tc</sub> doesn't land exactly on the real value, and lands closer for some tests than others: differentiating noisy data amplifies scatter, and a test whose D range doesn't reach near zero needs a longer, less reliable extrapolation to the D=0 intercept. Both effects are real phenomena in actual stress&ndash;dilatancy data reduction, not artifacts of this tool. <b>The four panels' data points are similarly synthetic, not digitized from the book's actual figures</b> (the book's own real test data isn't available to reproduce here): each panel generates illustrative scatter by taking this sand's real, published Table 2.1 value (or, for panel D, an illustrative N/H pair) and adding deterministic pseudo-random noise, then fits a line back through the noisy points using ordinary least squares &mdash; so the "recovered" value you see should land close to, but not necessarily exactly on, the real one, exactly as happens with real scattered lab data. The underlying relationships used (Eq. 2.1 for the CSL, Eq. 2.11 for &chi;<sub>tc</sub>, and NorSand's own equations for the M<sub>tc</sub>-convergence and N/H panels) are all real and exact; only the "measured" points around them are constructed for illustration. Section 4's NorSand simulator implements the model's real governing equations (Table 3.1) but makes two disclosed simplifications for a browser-friendly explicit integration: (1) the stress path is idealized as constant mean effective stress p&prime; (the same idealization the book itself uses in Fig. 2.5, and directly imposed here rather than solved via full elastic&ndash;plastic coupling), and (2) elastic strains are neglected so that total shear strain is treated as plastic strain (a simplification the book explicitly endorses for stress&ndash;dilatancy data reduction in Section 2.1.3). The hardening law uses the simple difference form (Eq. 3.39) rather than its dimensionless reformulation (Eq. 3.40). N and H are not given for Erksak sand in the book's worked example, so the default N=0.30 and H&asymp;4/&lambda; (the book's own stated first-estimate rule, Table 3.2) are used as literature-typical values. All eight sliders (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub>) are freely adjustable and independent of Section 1's sand selector, so you can explore illustrative, made-up combinations &mdash; not just the book's own published sands &mdash; to build intuition for what each one individually does to the curve; the "Erksak preset" option is just a sensible starting point, not a constraint.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
@@ -1543,8 +1568,12 @@ updateConstructionPanels();
     b.addEventListener('click',function(){
       var target=document.getElementById(b.dataset.goto);
       if(target){
-        navStack.push({y:window.scrollY, label:navOriginLabel(b)});
+        var curPage = window.getCurrentPageIndex ? window.getCurrentPageIndex() : 0;
+        navStack.push({page:curPage, y:window.scrollY, label:navOriginLabel(b)});
         updateBackBtn();
+        // the target may live on a different "page" (see pagination script at the end
+        // of the file) — switch pages first, without scrolling, then scroll to the target
+        if(window.gotoPageForElement) window.gotoPageForElement(target, {noScroll:true});
         target.scrollIntoView({behavior:'smooth',block:'start'});
       }
       var pulseEl=document.getElementById(b.dataset.pulse);
@@ -1553,7 +1582,10 @@ updateConstructionPanels();
   });
   backBtn.addEventListener('click',function(){
     var last=navStack.pop();
-    if(last) window.scrollTo({top:last.y,behavior:'smooth'});
+    if(last){
+      if(window.showPage && typeof last.page==='number') window.showPage(last.page,{noScroll:true});
+      window.scrollTo({top:last.y,behavior:'smooth'});
+    }
     updateBackBtn();
   });
 
@@ -2041,7 +2073,7 @@ BLOCK_NAMES.forEach(function(name,blockIdx){
     var opts = item.opts.map(function(o,k){ return '<label><input type="radio" name="q'+qn+'" value="'+letters[k]+'"> '+o+'</label>'; }).join('');
     return '<div class="quiz-q" data-correct="'+item.correct+'"><p>'+qn+'. '+item.q+'</p>'+opts+'<div class="quiz-explanation"><b>Explanation:</b> '+item.exp+'</div></div>';
   }).join('');
-  var blockHtml='<details class="quiz-block" open><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of 10 answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none"></div></details>';
+  var blockHtml='<details class="quiz-block"><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of 10 answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none"></div></details>';
   var slotId=SLOT_FOR_BLOCK[blockIdx];
   slotHtml[slotId]=(slotHtml[slotId]||'')+blockHtml;
 });
@@ -2294,4 +2326,121 @@ document.addEventListener('keydown', function(e){
 </script>
 <script src="view-counter.js"></script>
 <script src="comments.js"></script>
+<script>
+// ---------------- Pagination: show the module one "page" (slide) at a time ----------------
+// Runs LAST, after every chart above has already drawn once at its natural (visible)
+// size — hiding a page afterward via display:none only stops it painting to the screen,
+// it does not clear an already-rendered canvas's pixel buffer, so charts on pages 2-8
+// still look correct the moment their page is revealed. Every page group is just a list
+// of existing element ids — nothing is moved or re-nested in the DOM.
+(function(){
+  var PAGES = [
+    {label:'Start here', ids:['start','about-module']},
+    {label:'Mental model', ids:['mental-model']},
+    {label:'Notation', ids:['notation']},
+    {label:'CSL & ψ', ids:['csl-section','quizCheckABC']},
+    {label:'Dilatancy', ids:['dilatancy-section','quizCheckDE']},
+    {label:'Calibration', ids:['calibration-section','quizCheckFGH']},
+    {label:'NorSand', ids:['norsand-section','quizCheckI']},
+    {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']}
+  ];
+  // The pinned "mental model chain" recap box (flowSticky) sits before Mental model in the
+  // DOM and was designed to stay visible while scrolling through Mental model/Notation/CSL/
+  // Dilatancy as one continuous flow — keep that same range now that they're separate pages.
+  var STICKY_RANGE = [1,4];
+  var currentPage = 0;
+
+  function pageIndexForElement(el){
+    if(!el) return null;
+    for(var i=0;i<PAGES.length;i++){
+      for(var j=0;j<PAGES[i].ids.length;j++){
+        var c=document.getElementById(PAGES[i].ids[j]);
+        if(c && (c===el||c.contains(el))) return i;
+      }
+    }
+    return null;
+  }
+
+  var navLinks=Array.from(document.querySelectorAll('.sticky-nav a[href^="#"]'));
+  var stepper=document.createElement('div'); stepper.className='page-stepper';
+  var prevBtn=document.createElement('button'); prevBtn.type='button'; prevBtn.className='page-stepper-nav';
+  var nextBtn=document.createElement('button'); nextBtn.type='button'; nextBtn.className='page-stepper-nav';
+  var mid=document.createElement('div'); mid.className='page-stepper-mid';
+  var labelEl=document.createElement('div'); labelEl.className='page-stepper-label';
+  var dotsEl=document.createElement('div'); dotsEl.className='page-dots';
+  PAGES.forEach(function(p,i){
+    var d=document.createElement('button'); d.type='button'; d.className='page-dot'; d.title='Page '+(i+1)+': '+p.label;
+    d.addEventListener('click',function(){ showPage(i); });
+    dotsEl.appendChild(d);
+  });
+  mid.appendChild(labelEl); mid.appendChild(dotsEl);
+  stepper.appendChild(prevBtn); stepper.appendChild(mid); stepper.appendChild(nextBtn);
+  document.body.appendChild(stepper);
+  prevBtn.addEventListener('click',function(){ showPage(currentPage-1); });
+  nextBtn.addEventListener('click',function(){ showPage(currentPage+1); });
+
+  function updateStepper(){
+    labelEl.textContent='Page '+(currentPage+1)+' of '+PAGES.length+' · '+PAGES[currentPage].label;
+    Array.from(dotsEl.children).forEach(function(d,i){ d.classList.toggle('active', i===currentPage); });
+    prevBtn.disabled = currentPage===0;
+    prevBtn.textContent = currentPage===0 ? '← Previous' : '← '+PAGES[currentPage-1].label;
+    if(currentPage===PAGES.length-1){ nextBtn.disabled=true; nextBtn.textContent='Finished ✓'; }
+    else { nextBtn.disabled=false; nextBtn.textContent=PAGES[currentPage+1].label+' →'; }
+    navLinks.forEach(function(a){
+      var idx=pageIndexForElement(document.getElementById(a.getAttribute('href').slice(1)));
+      a.classList.toggle('on-page', idx===currentPage);
+    });
+  }
+
+  function showPage(idx, opts){
+    idx=Math.max(0,Math.min(PAGES.length-1,idx));
+    PAGES.forEach(function(p,i){
+      p.ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display=(i===idx)?'':'none'; });
+    });
+    var fs=document.getElementById('flowSticky');
+    if(fs) fs.style.display=(idx>=STICKY_RANGE[0]&&idx<=STICKY_RANGE[1])?'':'none';
+    currentPage=idx;
+    updateStepper();
+    if(!(opts&&opts.noScroll)) window.scrollTo({top:0,behavior:(opts&&opts.instant)?'auto':'smooth'});
+  }
+
+  // ---- inline "continue" prompt at the end of every page but the last ----
+  for(var i=0;i<PAGES.length-1;i++){
+    (function(i){
+      var ids=PAGES[i].ids, anchor=document.getElementById(ids[ids.length-1]);
+      if(!anchor) return;
+      var div=document.createElement('div');
+      div.className='page-next-prompt'; div.id='pageNextPrompt'+i;
+      div.innerHTML='<div class="page-next-inner"><span>You’ve finished <b>'+PAGES[i].label+'</b> ('+(i+1)+' of '+PAGES.length+').</span><button type="button" class="page-next-btn">Continue: '+PAGES[i+1].label+' →</button></div>';
+      div.querySelector('.page-next-btn').addEventListener('click',function(){ showPage(i+1); });
+      anchor.parentNode.insertBefore(div, anchor.nextSibling);
+      PAGES[i].ids.push(div.id);
+    })(i);
+  }
+
+  // ---- nav-bar links jump straight to the right page instead of a dead scroll ----
+  navLinks.forEach(function(a){
+    a.addEventListener('click',function(e){
+      var target=document.getElementById(a.getAttribute('href').slice(1));
+      if(!target) return;
+      e.preventDefault();
+      var idx=pageIndexForElement(target);
+      if(idx!==null) showPage(idx);
+    });
+  });
+
+  // ---- exposed for the data-goto/back-button script earlier in the file ----
+  window.showPage=showPage;
+  window.getCurrentPageIndex=function(){ return currentPage; };
+  window.gotoPageForElement=function(el,opts){ var idx=pageIndexForElement(el); if(idx!==null && idx!==currentPage) showPage(idx,opts); };
+
+  // ---- respect a direct link to a specific section on first load (e.g. a bookmark) ----
+  var initialIdx=0;
+  if(location.hash){
+    var idx=pageIndexForElement(document.getElementById(location.hash.slice(1)));
+    if(idx!==null) initialIdx=idx;
+  }
+  showPage(initialIdx, {noScroll:true, instant:true});
+})();
+</script>
 </body></html>
