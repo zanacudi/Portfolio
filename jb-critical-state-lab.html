@@ -631,7 +631,16 @@ body{padding-bottom:54px}
 
 <div class="guided-panel" id="yieldSurfaceExplorer">
 <h3 style="margin-top:0">Try it: what a yield surface actually is</h3>
-<p class="explain" style="font-size:12px">In plain terms: the yield surface is an invisible boundary in stress space. While the soil's state sits <b>inside</b> it (the shaded region on the right), it can still respond to stress changes, but only elastically &mdash; nothing permanently deforms. Push the state up <b>against</b> the boundary and the soil starts to yield: it deforms permanently, and the boundary itself grows or shrinks to keep up (that's exactly what H does, strain by strain, in the simulation below). The curve on the right is that boundary, frozen at one instant &mdash; try it here first: drag <b>p<sub>i</sub></b> to watch the boundary itself grow or shrink; drag <b>p&prime;</b> to slide the current stress state along it. Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below.</p>
+<p class="explain" style="font-size:12.5px;background:#eef8fc;border-radius:8px;padding:8px 10px;margin-top:0"><b>Purpose, in one line:</b> this one boundary is what lets NorSand predict a whole stress&ndash;strain curve instead of just a peak number. Every strain increment, the boundary grows a little, and the model simply reads &eta; off wherever the state now sits on the bigger boundary. That's it &mdash; everything below just makes that one idea concrete.</p>
+<p class="explain" style="font-size:12px">Inside the boundary, the soil only responds elastically &mdash; nothing permanently deforms. Push the state up against it and the soil yields: it deforms permanently, and the boundary itself grows to keep up. That growth is exactly what H controls, strain by strain, in the simulation further down.</p>
+
+<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:10px 0;padding:10px 12px;background:#f7fafb;border-radius:8px">
+<canvas id="yieldGrowthChart" style="max-width:260px;flex:0 0 auto" role="img" aria-label="Static comparison chart showing three NorSand yield surfaces of increasing size at the same image stress ratio, illustrating that a larger surface lets the soil sustain a higher stress ratio before yielding at the same mean effective stress."></canvas>
+<p class="explain" style="font-size:11.5px;flex:1;min-width:180px;margin:0">Here's why the boundary growing matters: at the exact same p&prime;=200 kPa (dotted line), a bigger surface sustains a higher &eta; before yielding. <b style="color:#9aa9ae">Small, p<sub>i</sub>=100:</b> &eta;&approx;<span id="ygSmall">&ndash;</span>. <b style="color:#1479b8">Medium, p<sub>i</sub>=250:</b> &eta;&approx;<span id="ygMed">&ndash;</span>. <b style="color:#123b4a">Large, p<sub>i</sub>=500:</b> &eta;&approx;<span id="ygLarge">&ndash;</span>. Nothing else changed between these three curves &mdash; growing p<sub>i</sub> alone is what raises the strength.</p>
+</div>
+
+<h4 style="margin:14px 0 4px;font-size:12.5px">Now try one surface yourself</h4>
+<p class="explain" style="font-size:11.5px;margin:0 0 6px">Drag <b>p<sub>i</sub></b> to grow or shrink the boundary; drag <b>p&prime;</b> to slide the current stress state along it. Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below.</p>
 <div class="ns-layout">
 <div>
 <div class="slider-block"><label for="ysM"><span>M<sub>i</sub> (image stress ratio)</span> <span class="readout" id="ysMOut">1.26</span></label><input id="ysM" type="range" min="0.80" max="1.60" step="0.01" value="1.26">
@@ -1299,6 +1308,43 @@ function drawChiFit(id, sand, points, slope){
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.psi),Y(pt.dmin),4.5,0,7); ctx.fill(); });
 }
 
+// Static, non-interactive comparison: three fixed-size yield surfaces at the same Mi,
+// evaluated at the same p′, to make the "purpose" payoff concrete — growing pi alone
+// raises the η the soil can sustain before yielding at an unchanged stress level.
+function drawYieldGrowthChart(){
+  var cv=document.getElementById('yieldGrowthChart'); if(!cv) return null;
+  var W=cv.clientWidth||260,H=175; cv.width=W; cv.height=H;
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ml=40,mr=14,mt=14,mb=30,pw=W-ml-mr,ph=H-mt-mb;
+  var Mi=1.26, pFixed=200;
+  var stages=[{pi:100,color:'#9aa9ae'},{pi:250,color:'#1479b8'},{pi:500,color:'#123b4a'}];
+  var pMax=stages[stages.length-1].pi*3, etaMax=Mi*1.6;
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/etaMax))); }
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph); ctx.lineTo(ml+pw,mt+ph); ctx.stroke();
+  drawXTitle(ctx,"p′ (kPa)", ml+pw/2, H-3, "600 9.5px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"η", 11, mt+ph/2, "600 9.5px 'Segoe UI',Arial,sans-serif");
+  ctx.strokeStyle="#c7d3d8"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(X(pFixed),mt); ctx.lineTo(X(pFixed),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  var etas=[];
+  stages.forEach(function(s){
+    var curvePts=[], steps=140;
+    for(var i=1;i<=steps;i++){
+      var pv=pMax*i/steps;
+      var eta=Mi*(1-Math.log(pv/s.pi));
+      if(eta<0){ if(curvePts.length) break; else continue; }
+      curvePts.push([X(pv),Y(eta)]);
+    }
+    ctx.strokeStyle=s.color; ctx.lineWidth=2; ctx.beginPath();
+    curvePts.forEach(function(pt,i){ if(i===0) ctx.moveTo(pt[0],pt[1]); else ctx.lineTo(pt[0],pt[1]); });
+    ctx.stroke();
+    var etaHere=Mi*(1-Math.log(pFixed/s.pi));
+    etas.push(etaHere);
+    ctx.fillStyle=s.color; ctx.beginPath(); ctx.arc(X(pFixed),Y(Math.max(0,etaHere)),3.2,0,7); ctx.fill();
+  });
+  return etas;
+}
 function drawYieldSurfaceChart(Mi, pi, p){
   var cv=document.getElementById('yieldSurfaceChart'); if(!cv) return null;
   var W=cv.clientWidth||400,H=230; cv.width=W; cv.height=H;
@@ -2422,6 +2468,12 @@ function update(){
   } else {
     etaEl.textContent=curEta.toFixed(3);
     noteEl.textContent='';
+  }
+  var growthEtas=drawYieldGrowthChart();
+  if(growthEtas){
+    document.getElementById('ygSmall').textContent=growthEtas[0].toFixed(2);
+    document.getElementById('ygMed').textContent=growthEtas[1].toFixed(2);
+    document.getElementById('ygLarge').textContent=growthEtas[2].toFixed(2);
   }
 }
 [ysM,ysPi,ysP].forEach(function(x){ x.addEventListener('input',update); });
