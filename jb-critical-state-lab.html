@@ -645,8 +645,9 @@ body{padding-bottom:54px}
 </div>
 <div>
 <p style="font-weight:700;font-size:12px;margin:0 0 4px;color:var(--navy)">The yield surface itself &mdash; &eta; vs p&prime;</p>
-<canvas id="yieldSurfaceChart" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, and where the current stress state falls on it. The region under the curve is labeled elastic; the curve itself is labeled the yield surface boundary."></canvas>
+<canvas id="yieldSurfaceChart" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, where the current stress state falls on it, and a flat dashed critical state line at eta equals Mtc for comparison. The region under the curve is labeled elastic; the curve itself is labeled the yield surface boundary."></canvas>
 <p class="explain" style="font-size:11px;margin:4px 0 0"><b>Shaded region: elastic</b> &mdash; the soil just responds without permanently deforming. <b>The line itself: the yield surface</b> &mdash; where it starts to yield. At p&prime; = p<sub>i</sub> (grey dashed line), the surface always predicts exactly &eta; = M<sub>i</sub> &mdash; that's the "image condition" the model is named for. <b style="color:#c64852">Red dot: your current state</b> &mdash; p&prime; = <span id="ysCurrentP">120</span> kPa, &eta; = <span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
+<p class="explain" style="font-size:11px;margin:4px 0 0"><b style="color:#2d8b65">Green dashed line: critical state</b>, &eta; = M<sub>tc</sub> = <span id="ysCritMtc">1.26</span> (from this section's own M<sub>tc</sub> slider below). Unlike the yield surface, it's flat &mdash; a genuine material constant that doesn't depend on p&prime; or p<sub>i</sub> at all. As the soil's state itself approaches critical, M<sub>i</sub> is drawn toward this same line.</p>
 </div>
 </div>
 </div>
@@ -1307,8 +1308,10 @@ function drawYieldSurfaceChart(Mi, pi, p){
   var W=cv.clientWidth||400,H=230; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
   var ml=48,mr=16,mt=14,mb=34,pw=W-ml-mr,ph=H-mt-mb;
+  var nsMEl=document.getElementById('nsM');
+  var Mtc=nsMEl?+nsMEl.value:1.26;
   var pMax=Math.max(pi*3, p*1.2, 620);
-  var etaMax=Math.max(Mi*1.5, 2.2);
+  var etaMax=Math.max(Mi*1.5, Mtc*1.3, 2.2);
   function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
   function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/etaMax))); }
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
@@ -1355,7 +1358,15 @@ function drawYieldSurfaceChart(Mi, pi, p){
   ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
   ctx.moveTo(curX,mt+ph); ctx.lineTo(curX,curY); ctx.lineTo(ml,curY); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(curX,curY,3.5,0,7); ctx.fill();
-  return curEta;
+  // critical state line: η = Mtc, flat and independent of p′ — unlike the yield surface
+  // itself, this is a genuine material constant (Section 1's Mtc), not a snapshot that
+  // depends on pi. Drawn last, on top, so it stays visible over the shaded region.
+  var critY=Y(Mtc);
+  ctx.strokeStyle="#2d8b65"; ctx.setLineDash([6,3]); ctx.lineWidth=1.6; ctx.beginPath();
+  ctx.moveTo(ml,critY); ctx.lineTo(ml+pw,critY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#2d8b65"; ctx.font="600 10px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
+  ctx.fillText("critical state, η=M_tc", ml+pw-6, critY-5);
+  return {curEta:curEta, Mtc:Mtc};
 }
 
 function drawMtcConverge(id, curves, Mtc){
@@ -2421,7 +2432,8 @@ function update(){
   document.getElementById('ysMOut').textContent=Mi.toFixed(2);
   document.getElementById('ysPiOut').textContent=pi.toFixed(0);
   document.getElementById('ysPOut').textContent=p.toFixed(0);
-  var curEta=drawYieldSurfaceChart(Mi,pi,p);
+  var result=drawYieldSurfaceChart(Mi,pi,p);
+  var curEta=result.curEta;
   document.getElementById('ysCurrentP').textContent=p.toFixed(0);
   var etaEl=document.getElementById('ysCurrentEta'), noteEl=document.getElementById('ysBeyondNote');
   if(curEta<0){
@@ -2431,6 +2443,7 @@ function update(){
     etaEl.textContent=curEta.toFixed(3);
     noteEl.textContent='';
   }
+  document.getElementById('ysCritMtc').textContent=result.Mtc.toFixed(2);
 }
 [ysM,ysPi,ysP].forEach(function(x){ x.addEventListener('input',update); });
 window.updateYieldSurfaceExplorer=update;
