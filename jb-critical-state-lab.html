@@ -157,8 +157,6 @@ th.symcol{text-transform:none}
 .chart-tip{position:absolute;pointer-events:none;background:#12333f;color:#fff;font-size:11px;line-height:1.4;padding:6px 8px;border-radius:6px;box-shadow:0 4px 12px rgba(0,0,0,.22);white-space:nowrap;z-index:5;opacity:0;transition:opacity .1s;transform:translate(-50%,-100%)}
 .chart-tip.show{opacity:1}
 .chart-host{position:relative}
-#nsRun{transition:background-color .3s,transform .15s}
-#nsRun.just-synced{background-color:var(--green)}
 #nsSyncBadge{background:#e9f6ef;color:#1f7a4c;transition:background-color .3s}
 #nsSyncBadge.just-synced{background:#c9ecd8}
 #nsTour.on{background:var(--red)}
@@ -582,11 +580,11 @@ body{padding-bottom:54px}
 </div>
 
 <h3>B. M<sub>tc</sub> — the one stress ratio every test heads toward</h3>
-<p class="explain" style="font-size:12.5px">Run the same sand's NorSand simulation (Section 4's model, this sand's real properties) at three different starting densities. Loose samples harden up to it; dense samples overshoot and soften back down &mdash; but all three curves converge on the <i>same</i> &eta;, regardless of density. That common value is M<sub>tc</sub>.</p>
+<p class="explain" style="font-size:12.5px"><b>This is the actual determination method:</b> plot stress ratio &eta; = q/p&prime; against shear strain for several tests at different densities (below, three runs of Section 4's model at this sand's real properties). Loose samples harden up to it; dense samples overshoot and soften back down &mdash; but all three curves converge on the <i>same</i> &eta; at large strain, regardless of density. <b>Read straight off the plot, that common convergence value is M<sub>tc</sub></b> &mdash; with real lab data you'd read it the same way, off several tests' actual measured &eta;&ndash;strain curves.</p>
 <div class="grid2">
 <div><canvas id="mtcChart" role="img" aria-label="Chart of three NorSand simulations at different starting densities, all converging to the same critical stress ratio M-tc regardless of density."></canvas>
 <div class="legend"><span><i style="background:var(--red)"></i>dense (&psi;&lt;0)</span><span><i style="background:var(--orange)"></i>near-critical</span><span><i style="background:var(--blue)"></i>loose (&psi;&gt;0)</span><span><i style="background:#9aa9ae"></i>M<sub>tc</sub></span></div></div>
-<div class="statgrid n2" id="mtcStats"></div>
+<div class="statgrid n3" id="mtcStats"></div>
 </div>
 
 <h3>C. &chi;<sub>tc</sub> — how strongly density controls peak dilation</h3>
@@ -625,7 +623,7 @@ body{padding-bottom:54px}
 <div class="card" id="norsand-section">
 <h2>4. NorSand: simulating a drained triaxial compression test</h2>
 <div class="explain">
-<p>Chapter 3 develops NorSand, the constitutive model that turns &psi; from a static index into an evolving internal state variable capable of predicting an entire stress&ndash;strain curve, not just its peak. Below is a direct numerical integration of NorSand's own governing equations (Table 3.1) for a <b>drained triaxial compression test at constant mean effective stress</b> &mdash; the same idealized state path the book itself uses in Figure 2.5 to introduce &psi;. Two simplifications are made explicit in full below the results: elastic strains are neglected (the book notes this is standard practice when reducing stress&ndash;dilatancy data), and the simpler difference-form hardening law (Eq. 3.39) is used in place of its dimensionless reformulation (Eq. 3.40).</p>
+<p>Chapter 3 develops NorSand, the constitutive model that turns &psi; from a static index into an evolving internal state variable capable of predicting an entire stress&ndash;strain curve, not just its peak. The core idea is a <b>yield surface</b> &mdash; a boundary in stress space that separates the elastic and plastic response, whose current size is tracked by the internal variable p<sub>i</sub>. As the sample strains, this surface grows or shrinks toward an "image" condition set by how far the soil sits from critical state; that evolving size, not a fixed strength value, is what produces the whole stress&ndash;strain curve below. Below is a direct numerical integration of NorSand's own governing equations (Table 3.1) for a <b>drained triaxial compression test at constant mean effective stress</b> &mdash; the same idealized state path the book itself uses in Figure 2.5 to introduce &psi;. Two simplifications are made explicit in full below the results: elastic strains are neglected (the book notes this is standard practice when reducing stress&ndash;dilatancy data), and the simpler difference-form hardening law (Eq. 3.39) is used in place of its dimensionless reformulation (Eq. 3.40).</p>
 <p>Every soil property below is a free slider &mdash; drag any one on its own to build intuition for what it actually does to the curve, using illustrative (not necessarily real) combinations. "Erksak preset" just resets to the book's own Chapter 3 calibration as a sensible starting point.</p>
 </div>
 
@@ -657,7 +655,6 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="nsP0"><span>Initial p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="nsP0Out">200</span></label><input id="nsP0" type="range" min="10" max="1000" step="10" value="200">
 <div class="hint">Starting confining stress. Raising it alone moves the sample toward denser-of-critical (&psi;<sub>0</sub> more negative) since the CSL itself drops with stress.</div></div>
 </div>
-<button id="nsRun" title="Sliders already re-run this live as you drag them — this button just replays the current settings, useful after using Tab/arrow keys.">↻ Re-run now</button>
 <button type="button" id="nsTour" class="alt">▶ Step through each slider</button>
 <span class="badge" id="nsSyncBadge">● live — reruns automatically as you move any slider above</span>
 <span class="badge" id="nsPsi0"></span>
@@ -1093,7 +1090,6 @@ function syncNsOuts(){
 }
 [nsG,nsL,nsE0,nsP0,nsN,nsH,nsM,nsX].forEach(el=>el.addEventListener("input",function(){ nsPreset.value="custom"; syncNsOuts(); runNorSand(); }));
 nsPreset.addEventListener("change",applyPreset);
-document.getElementById("nsRun").addEventListener("click",runNorSand);
 
 function simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,steps,dEq){
   steps = steps||1000; dEq = dEq||0.0003;
@@ -1131,11 +1127,11 @@ function sinToPhi(eta){ var s=3*eta/(6+eta); s=Math.max(-0.99,Math.min(0.99,s));
 
 var _nsPulseTimer=null;
 function pulseNsSync(){
-  var btn=document.getElementById("nsRun"), badge=document.getElementById("nsSyncBadge");
-  if(!btn) return;
-  btn.classList.add("just-synced"); badge.classList.add("just-synced");
+  var badge=document.getElementById("nsSyncBadge");
+  if(!badge) return;
+  badge.classList.add("just-synced");
   clearTimeout(_nsPulseTimer);
-  _nsPulseTimer=setTimeout(function(){ btn.classList.remove("just-synced"); badge.classList.remove("just-synced"); },350);
+  _nsPulseTimer=setTimeout(function(){ badge.classList.remove("just-synced"); },350);
 }
 function runNorSand(){
   pulseNsSync();
@@ -1549,7 +1545,8 @@ function updateConstructionPanels(){
   var avgFinal=finalEtas.reduce((a,b)=>a+b,0)/finalEtas.length;
   document.getElementById("mtcStats").innerHTML = `
     <div class="stat"><small>&eta; at 30% strain, all 3 curves</small><strong>${finalEtas.map(v=>v.toFixed(2)).join(" / ")}</strong></div>
-    <div class="stat hi"><small>M<sub>tc</sub> (real Table 2.1 value)</small><strong>${sand.Mtc.toFixed(3)}</strong></div>`;
+    <div class="stat hi"><small>read off the convergence &rarr; this <i>is</i> M<sub>tc</sub></small><strong>${avgFinal.toFixed(3)}</strong></div>
+    <div class="stat"><small>real M<sub>tc</sub> (Table 2.1)</small><strong>${sand.Mtc.toFixed(3)}</strong></div>`;
 
   NH_STATE=genNHData(sand,idx);
   document.getElementById("fitN").value=0.30; document.getElementById("fitH").value=300;
