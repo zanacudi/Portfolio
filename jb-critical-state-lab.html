@@ -650,6 +650,9 @@ body{padding-bottom:54px}
 <p style="font-weight:700;font-size:11.5px;margin:0 0 4px;color:var(--navy)">For scale: the compression plane</p>
 <canvas id="yieldSurfaceEPChart" style="height:150px" role="img" aria-label="Chart of void ratio versus mean effective stress on a log scale, showing this sand's critical state line with vertical reference lines marking the current mean effective stress p prime and the yield surface size p i."></canvas>
 <p class="explain" style="font-size:10.5px;margin:4px 0 0">This section's own CSL (&Gamma;, &lambda;<sub>10</sub> sliders below). <b style="color:#c64852">Red dashed: p&prime;</b>, <b style="color:#9aa9ae">grey dashed: p<sub>i</sub></b> &mdash; anchoring the pressures below, not new points.</p>
+<p style="font-weight:700;font-size:11.5px;margin:14px 0 4px;color:var(--navy)">Watch it actually grow: five snapshots of this test</p>
+<canvas id="yieldSurfaceEvolutionChart" style="height:340px" role="img" aria-label="Chart showing five nested yield surfaces of increasing size, snapshotted at five different points in the same test, growing from small and light at zero strain to large and dark navy at the strain currently selected, with dots marking the actual stress state at the fixed consolidation stress on each snapshot surface."></canvas>
+<p class="explain" style="font-size:10.5px;margin:4px 0 0">Five snapshots of the <b>same</b> boundary, from &epsilon;<sub>q</sub>=0 (palest, smallest) up to your current strain (<b style="color:#c64852">red</b>, boldest). p&prime; never moves (dotted vertical) &mdash; only the boundary grows underneath the state, which is <i>exactly</i> why &eta; can keep changing at a constant p&prime;: the dot on each layer marks the actual (p&prime;,q) at that moment, tracing the real stress path up through the growing surfaces.</p>
 </div>
 <div>
 <p style="font-weight:700;font-size:11.5px;margin:0 0 4px;color:var(--navy)">The classic view &mdash; q vs p&prime;</p>
@@ -1352,6 +1355,62 @@ function drawYieldSurfaceEPChart(pi, p, pMax){
 // Second companion view: q vs p′, the classic Cambridge-style representation of the same
 // yield surface — a closed "bullet" shape (q=0 at both p′→0 and p′=pi·e) rather than the
 // unbounded curve the η-p′ plot shows, since q=η·p′ and p′·ln(p′) → 0 as p′→0.
+// Fourth companion view: the same q-p′ bullet, but drawn five times — snapshotted at
+// 0%, 25%, 50%, 75% and 100% of the way from strain=0 to the current strain — so the
+// "growing boundary" language in the purpose statement becomes something you can actually
+// watch happen, layer by layer, rather than only ever seeing one instant of it. The dot on
+// each layer is the real (p′,q) at that moment — since p′ never moves in this idealization,
+// those dots trace the actual stress path climbing up through the growing surfaces.
+function drawYieldSurfaceEvolutionChart(sim, currentStrainPct, p0, Mtc, pMax){
+  var cv=document.getElementById('yieldSurfaceEvolutionChart'); if(!cv) return;
+  var W=cv.clientWidth||400,H=340; cv.width=W; cv.height=H;
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ml=48,mr=16,mt=14,mb=30,pw=W-ml-mr,ph=H-mt-mb;
+  var spanEnd=Math.max(currentStrainPct,3);
+  var fracs=[0,0.25,0.5,0.75,1];
+  var snaps=fracs.map(function(f,k){
+    var s = k===4 ? currentStrainPct : spanEnd*f;
+    var idx=Math.max(0,Math.min(sim.strain.length-1, Math.round(s/50*1667)));
+    return {strain:s, pi:sim.pi[idx], Mi:sim.Mi[idx], eta:sim.eta[idx]};
+  });
+  function bulletPoints(Mi,pi){
+    var pEnd=pi*Math.E, pts=[], steps2=120;
+    for(var i=0;i<=steps2;i++){
+      var pv=pMax*i/steps2;
+      var eta = pv<=0 ? 0 : (pv>=pEnd ? 0 : Mi*(1-Math.log(pv/pi)));
+      eta=Math.max(0,eta);
+      pts.push([pv,eta*pv]);
+    }
+    return pts;
+  }
+  var snapCurves=snaps.map(function(sn){ return bulletPoints(sn.Mi,sn.pi); });
+  var qMax=Mtc*pMax;
+  snapCurves.forEach(function(pts){ pts.forEach(function(pt){ if(pt[1]>qMax) qMax=pt[1]; }); });
+  qMax*=1.15;
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/qMax))); }
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph); ctx.lineTo(ml+pw,mt+ph); ctx.stroke();
+  drawXTitle(ctx,"p′ (kPa)", ml+pw/2, H-4, "600 10px 'Segoe UI',Arial,sans-serif");
+  drawYTitle(ctx,"q (kPa)", 12, mt+ph/2, "600 10px 'Segoe UI',Arial,sans-serif");
+  ctx.fillStyle="#61737b"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
+  ctx.fillText("0",ml-4,mt+ph+3);
+  ctx.strokeStyle="#2d8b65"; ctx.setLineDash([6,3]); ctx.lineWidth=1.4; ctx.beginPath();
+  ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(pMax),Y(Mtc*pMax)); ctx.stroke(); ctx.setLineDash([]);
+  var xP0=X(p0);
+  ctx.strokeStyle="#c7d3d8"; ctx.setLineDash([2,3]); ctx.lineWidth=1.2; ctx.beginPath();
+  ctx.moveTo(xP0,mt); ctx.lineTo(xP0,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  var colors=["#d5e6ee","#a8cddf","#6fa8c4","#2f7396","#c64852"];
+  snapCurves.forEach(function(pts,k){
+    var isLast=(k===snapCurves.length-1);
+    ctx.strokeStyle=colors[k]; ctx.lineWidth=isLast?2.8:1.6; ctx.beginPath();
+    pts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke();
+    var qAtP0=snaps[k].eta*p0;
+    ctx.fillStyle=colors[k];
+    ctx.beginPath(); ctx.arc(xP0,Y(qAtP0),isLast?4.5:3,0,7); ctx.fill();
+  });
+}
 function drawYieldSurfaceQPChart(Mi, pi, p, Mtc, pMax){
   var cv=document.getElementById('yieldSurfaceQPChart'); if(!cv) return;
   var W=cv.clientWidth||400,H=160; cv.width=W; cv.height=H;
@@ -2611,12 +2670,13 @@ function update(){
   var pctConverged = gap0>1e-9 ? Math.max(0,Math.min(100,Math.round(100*(1-gapNow/gap0)))) : 100;
   document.getElementById('ysConvergenceNote').innerHTML = convergenceNote(pctConverged);
 
-  // one shared p′ domain for all three charts, so they're directly comparable side by side
+  // one shared p′ domain for all four charts, so they're directly comparable side by side
   var sharedPMax=Math.max(pi*3, p0*1.2, 620);
   drawYieldSurfaceEPChart(pi,p0,sharedPMax);
   var result=drawYieldSurfaceChart(Mi,pi,p0,sharedPMax);
   var curEta=result.curEta;
   drawYieldSurfaceQPChart(Mi,pi,p0,result.Mtc,sharedPMax);
+  drawYieldSurfaceEvolutionChart(sim,strainPct,p0,result.Mtc,sharedPMax);
   document.getElementById('ysCurrentP').textContent=p0.toFixed(0);
   var etaEl=document.getElementById('ysCurrentEta'), noteEl=document.getElementById('ysBeyondNote');
   if(curEta<0){
