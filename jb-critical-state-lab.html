@@ -627,6 +627,25 @@ body{padding-bottom:54px}
 <p>Every soil property below is a free slider &mdash; drag any one on its own to build intuition for what it actually does to the curve, using illustrative (not necessarily real) combinations. "Erksak preset" just resets to the book's own Chapter 3 calibration as a sensible starting point.</p>
 </div>
 
+<div class="guided-panel" id="yieldSurfaceExplorer">
+<h3 style="margin-top:0">Try it: the yield surface itself</h3>
+<p class="explain" style="font-size:12px">Before running the full simulation, play with the yield locus on its own: &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &mdash; step 4 of the equation chain below. Drag <b>p<sub>i</sub></b> to watch the surface itself grow or shrink; drag <b>p&prime;</b> to move the current stress state along it.</p>
+<div class="ns-layout">
+<div>
+<div class="slider-block"><label for="ysM">M<sub>i</sub> (image stress ratio) <span class="readout" id="ysMOut">1.26</span></label><input id="ysM" type="range" min="0.80" max="1.60" step="0.01" value="1.26">
+<div class="hint">Sets the height of the surface at its image point, where p&prime;=p<sub>i</sub>.</div></div>
+<div class="slider-block"><label for="ysPi">p<sub>i</sub> (yield surface size, kPa) <span class="readout" id="ysPiOut">200</span></label><input id="ysPi" type="range" min="20" max="600" step="5" value="200">
+<div class="hint">The internal variable that sizes the surface &mdash; this is exactly what H makes evolve, strain by strain, in the simulation below.</div></div>
+<div class="slider-block"><label for="ysP"><span>p&prime; (current mean effective stress, kPa)</span> <span class="readout" id="ysPOut">120</span></label><input id="ysP" type="range" min="5" max="600" step="5" value="120">
+<div class="hint">Where the actual stress state currently sits &mdash; independent of the surface's own size, p<sub>i</sub>.</div></div>
+</div>
+<div>
+<canvas id="yieldSurfaceChart" role="img" aria-label="Interactive chart of the NorSand yield surface: stress ratio eta versus mean effective stress p prime, showing how the curve's height and shape change with the image stress ratio and yield surface size, and where the current stress state falls on it."></canvas>
+<p class="explain" style="font-size:11px;margin:4px 0 0">At p&prime; = p<sub>i</sub> (grey dashed line), the surface always predicts exactly &eta; = M<sub>i</sub> &mdash; that's the "image condition" the model is named for. <b style="color:#c64852">Red dot: your current state</b> &mdash; p&prime; = <span id="ysCurrentP">120</span> kPa, &eta; = <span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span></p>
+</div>
+</div>
+</div>
+
 
 <div class="ns-layout">
 <div class="ns-controls">
@@ -1276,6 +1295,47 @@ function drawChiFit(id, sand, points, slope){
   ctx.strokeStyle="#c64852"; ctx.lineWidth=2; ctx.setLineDash([5,3]); ctx.beginPath(); ctx.moveTo(X(xmin),Y(slope*xmin)); ctx.lineTo(X(xmax),Y(slope*xmax)); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#687a82";
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.psi),Y(pt.dmin),4.5,0,7); ctx.fill(); });
+}
+
+function drawYieldSurfaceChart(Mi, pi, p){
+  var cv=document.getElementById('yieldSurfaceChart'); if(!cv) return null;
+  var W=cv.clientWidth||400,H=230; cv.width=W; cv.height=H;
+  var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var ml=38,mr=16,mt=18,mb=28,pw=W-ml-mr,ph=H-mt-mb;
+  var pMax=Math.max(pi*3, p*1.2, 620);
+  var etaMax=Math.max(Mi*1.5, 2.2);
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/etaMax))); }
+  ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(ml,mt); ctx.lineTo(ml,mt+ph); ctx.lineTo(ml+pw,mt+ph); ctx.stroke();
+  ctx.fillStyle="#61737b"; ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
+  ctx.fillText("η",ml-24,mt+6);
+  ctx.textAlign="right"; ctx.fillText("p′ (kPa)",ml+pw+4,mt+6);
+  ctx.fillStyle="#61737b"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
+  ctx.fillText("0",ml-4,mt+ph+3);
+  // yield locus: η = Mi·(1 − ln(p′/pi)), drawn only where η ≥ 0
+  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
+  var started=false, steps=160;
+  for(var i=1;i<=steps;i++){
+    var pv=pMax*i/steps;
+    var eta=Mi*(1-Math.log(pv/pi));
+    if(eta<0){ if(started) break; else continue; }
+    var x=X(pv), y=Y(eta);
+    if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  // image condition marker: p′=pi, η=Mi exactly
+  var imgX=X(pi), imgY=Y(Mi);
+  ctx.strokeStyle="#9aa9ae"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(imgX,mt+ph); ctx.lineTo(imgX,imgY); ctx.lineTo(ml,imgY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#9aa9ae"; ctx.beginPath(); ctx.arc(imgX,imgY,3,0,7); ctx.fill();
+  // current state marker
+  var curEta=Mi*(1-Math.log(p/pi));
+  var curX=X(p), curY=Y(Math.max(0,curEta));
+  ctx.strokeStyle="#c64852"; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath();
+  ctx.moveTo(curX,mt+ph); ctx.lineTo(curX,curY); ctx.lineTo(ml,curY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(curX,curY,3.5,0,7); ctx.fill();
+  return curEta;
 }
 
 function drawMtcConverge(id, curves, Mtc){
@@ -2315,6 +2375,31 @@ if(mtcEl){mtcEl.textContent=mv.toFixed(2);dminEl.textContent=fmt(d,2);etamaxEl.t
 document.querySelectorAll('[data-s2preset]').forEach(function(b){b.addEventListener('click',function(){var v=b.dataset.s2preset;if(v==='dense'){psi.value=-.10;chi.value=3.5;m.value=1.26}if(v==='critical'){psi.value=0;chi.value=3.5;m.value=1.26}if(v==='loose'){psi.value=.08;chi.value=3.5;m.value=1.26}if(v==='sensitive'){psi.value=-.10;chi.value=5.3;m.value=1.33}update();});});
 document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-s2answer]').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.s2answer==='right';b.classList.add(ok?'good':'bad');document.getElementById('s2Feedback').innerHTML=ok?'<b>Correct.</b> As ψ approaches zero, D<sub>min</sub> approaches zero, so η<sub>max</sub> approaches M<sub>tc</sub> and φ′<sub>peak</sub> approaches φ′<sub>cv</sub>.':b.dataset.s2exp;});});update();
 })();
+
+// --- interactive yield-surface explorer (NorSand section) ---
+(function(){
+var ysM=document.getElementById('ysM'), ysPi=document.getElementById('ysPi'), ysP=document.getElementById('ysP');
+if(!ysM) return;
+function update(){
+  var Mi=+ysM.value, pi=+ysPi.value, p=+ysP.value;
+  document.getElementById('ysMOut').textContent=Mi.toFixed(2);
+  document.getElementById('ysPiOut').textContent=pi.toFixed(0);
+  document.getElementById('ysPOut').textContent=p.toFixed(0);
+  var curEta=drawYieldSurfaceChart(Mi,pi,p);
+  document.getElementById('ysCurrentP').textContent=p.toFixed(0);
+  var etaEl=document.getElementById('ysCurrentEta'), noteEl=document.getElementById('ysBeyondNote');
+  if(curEta<0){
+    etaEl.textContent='0 (off this branch)';
+    noteEl.textContent=' — p′ has gone past the surface’s compression vertex (p′ > pi·e ≈ '+(pi*Math.E).toFixed(0)+' kPa), so this equation no longer gives a valid η here.';
+  } else {
+    etaEl.textContent=curEta.toFixed(3);
+    noteEl.textContent='';
+  }
+}
+[ysM,ysPi,ysP].forEach(function(x){ x.addEventListener('input',update); });
+window.updateYieldSurfaceExplorer=update;
+update();
+})();
 </script>
 <script>
 // --- maximize interaction throughout and strengthen figure legends ---
@@ -2557,6 +2642,7 @@ document.addEventListener('keydown', function(e){
   function redrawVisibleCharts(){
     try{ window.dispatchEvent(new Event('resize')); }catch(e){}
     if(typeof window.runNorSand==='function'){ try{ window.runNorSand(); }catch(e){} }
+    if(typeof window.updateYieldSurfaceExplorer==='function'){ try{ window.updateYieldSurfaceExplorer(); }catch(e){} }
   }
 
   function focusPageHeading(idx){
