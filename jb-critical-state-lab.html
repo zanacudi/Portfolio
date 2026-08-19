@@ -645,6 +645,8 @@ body{padding-bottom:54px}
 <p>Every soil property below is a free slider &mdash; drag any one on its own to build intuition for what it actually does to the curve, using illustrative (not necessarily real) combinations. "Erksak preset" just resets to the book's own Chapter 3 calibration as a sensible starting point.</p>
 </div>
 
+<div class="callout" style="margin:12px 0"><b>A closer look at the yield surface</b> is planned as its own separate module later, with more room to do it justice. The interactive yield-surface explorer that used to live here is deactivated for now &mdash; its code is preserved just below, commented out, ready to be reactivated when that module is built.</div>
+<!--
 <div class="guided-panel" id="yieldSurfaceExplorer">
 <h3 style="margin-top:0">Try it: what a yield surface actually is</h3>
 <p class="explain" style="font-size:12.5px;background:#eef8fc;border-radius:8px;padding:8px 10px;margin-top:0"><b>Purpose, in one line:</b> this one boundary is what lets NorSand predict a whole stress&ndash;strain curve instead of just a peak number. Every strain increment, the boundary grows a little, and the model simply reads &eta; off wherever the state now sits on the bigger boundary. That's it &mdash; everything below just makes that one idea concrete.</p>
@@ -689,6 +691,7 @@ body{padding-bottom:54px}
 </div>
 </div>
 </div>
+-->
 
 
 <div class="ns-layout">
@@ -1358,6 +1361,9 @@ function drawChiFit(id, sand, points, slope){
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.psi),Y(pt.dmin),4.5,0,7); ctx.fill(); });
 }
 
+// --- DEACTIVATED (see the "closer look at the yield surface" note in the NorSand section)
+// -- preserved below, commented out, for a future dedicated yield-surface module.
+/*
 // Third companion view: e vs log p′, the compression plane the whole module is built
 // around. This explorer's Mi/pi/p′ sliders don't track void ratio, so rather than invent
 // one, this just anchors p′ and pi against this section's own CSL (Γ, λ10 sliders) — a
@@ -1579,6 +1585,7 @@ function drawYieldSurfaceChart(Mi, pi, p, pMax){
   ctx.fillText("critical state, η=M_tc", ml+pw-6, critY-5);
   return {curEta:curEta, Mtc:Mtc};
 }
+*/
 
 function drawMtcConverge(id, curves, Mtc){
   var cv=document.getElementById(id); var W=cv.clientWidth||520,H=260; cv.width=W;cv.height=H;
@@ -2702,6 +2709,9 @@ document.querySelectorAll('[data-s2preset]').forEach(function(b){b.addEventListe
 document.querySelectorAll('[data-s2answer]').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('[data-s2answer]').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.s2answer==='right';b.classList.add(ok?'good':'bad');document.getElementById('s2Feedback').innerHTML=ok?'<b>Correct.</b> As ψ approaches zero, D<sub>min</sub> approaches zero, so η<sub>max</sub> approaches M<sub>tc</sub> and φ′<sub>peak</sub> approaches φ′<sub>cv</sub>.':b.dataset.s2exp;});});update();
 })();
 
+// --- DEACTIVATED (see the "closer look at the yield surface" note above the commented-out
+// HTML block) -- preserved below, commented out, for a future dedicated yield-surface module.
+/*
 // --- interactive yield-surface explorer (NorSand section) ---
 // Mirrors the consolidate-then-shear intro tool's own controls: eta/strain are a dual
 // control/response pair (drag either one), strain uses the same 80/20 slider weighting
@@ -2834,6 +2844,7 @@ setControlMode('strain');
 window.updateYieldSurfaceExplorer=update;
 update();
 })();
+*/
 </script>
 <script>
 // --- maximize interaction throughout and strengthen figure legends ---
