@@ -3,7 +3,7 @@
 <title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 1)</title>
 <style>
 /* ===== 1. Base layout, reset & typography ===== */
-:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5;
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#268160;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5;
   /* WCAG AA-safe (>=4.5:1) variants for small colored text sitting on the pale
      contract/dilate/warn/ok badge backgrounds — --red/--green stay unchanged
      everywhere else (buttons, chart lines, borders) where they already pass. */
@@ -26,7 +26,7 @@ header a{color:#bfe6f5}
 .explain{font-size:14.5px;line-height:1.6}
 select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px;max-width:100%}
 button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
-button.alt{background:#687a82}
+button.alt{background:#647680}
 .eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:8px 0;overflow-x:auto;white-space:nowrap;position:relative}
 /* Long equations get cut off on narrow screens with only a thin native scrollbar as a
    cue; a right-edge fade makes "there's more here" visible without relying on that. */
@@ -47,7 +47,7 @@ canvas{display:block;width:100%;height:260px}
 .stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
 .stat strong{font-size:15px}
 .stat.hi strong{color:var(--blue)}
-.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:#1177b0;border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
 .badge.contract,.badge.warn{background:#fdeee9;color:var(--red-text)}
 .badge.dilate,.badge.ok{background:#e9f6ef;color:var(--green-text)}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
@@ -58,7 +58,7 @@ table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
 th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
 th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
 th.symcol{text-transform:none}
-#sampleTestBody tr:hover{background:#f2f7f9}
+#sampleTestBody tr:hover{background:#f2f7f9}#sampleTestBody tr:focus-visible{outline:3px solid var(--blue);outline-offset:-2px}
 #sampleTestBody tr.selected-row{background:#eef8fc}
 #sampleTestBody tr.selected-row td:first-child{color:var(--blue);font-weight:700}
 .legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
@@ -114,14 +114,14 @@ th.symcol{text-transform:none}
 
 .quiz-progress{height:7px;background:#e4edf0;border-radius:20px;overflow:hidden;margin:8px 0 16px}.quiz-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .2s}.quiz-q.unanswered{outline:2px solid #e9a52b;outline-offset:2px}.quiz-explanation{font-size:11.5px;color:var(--muted);padding:6px 8px 9px;display:none}.quiz-q.review .quiz-explanation{display:block}.quiz-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.quiz-count{font-size:11.5px;color:var(--muted)}
 .module-path{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0}.module-link{display:block;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;color:var(--ink);transition:.15s}.module-link:hover{box-shadow:0 5px 14px rgba(12,44,58,.12)}.module-link.current{background:var(--navy);color:#fff}.module-link b{display:block;margin-bottom:4px}.module-link small{display:block;line-height:1.4;opacity:.85}.module-link.disabled{opacity:.6;cursor:not-allowed;pointer-events:none}.module-link.disabled .badge{margin-top:6px}
-.s2-lab{border:1px solid #bcd7e2;background:linear-gradient(145deg,#f7fcfe,#eef7fa);border-radius:12px;padding:14px;margin:12px 0}.s2-lab-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px}.s2-chain{display:grid;grid-template-columns:repeat(7,auto);gap:6px;align-items:center;justify-content:center;margin:10px 0}.s2-box{padding:10px;border-radius:8px;text-align:center;background:#fff;border:1px solid var(--line);min-width:90px}.s2-box strong{display:block;color:var(--blue);font-size:16px}.s2-arrow{font-size:20px;color:var(--muted)}.s2-meter{position:relative;height:32px;background:linear-gradient(90deg,#2d8b65 0 48%,#f4f7f8 48% 52%,#c64852 52% 100%);border-radius:18px;margin:18px 8px 8px}.s2-marker{position:absolute;top:-7px;width:4px;height:46px;background:#102f3b;border-radius:3px;left:50%;transition:left .15s}.s2-meter-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)}.s2-presets{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.s2-presets button{font-size:11px;background:#687a82}.s2-prompt{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;line-height:1.5}.s2-challenge button{background:#fff;color:var(--navy);border:1px solid var(--line);margin:3px}.s2-challenge button.good{background:var(--green);color:#fff}.s2-challenge button.bad{background:var(--red);color:#fff}
+.s2-lab{border:1px solid #bcd7e2;background:linear-gradient(145deg,#f7fcfe,#eef7fa);border-radius:12px;padding:14px;margin:12px 0}.s2-lab-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:14px}.s2-chain{display:grid;grid-template-columns:repeat(7,auto);gap:6px;align-items:center;justify-content:center;margin:10px 0}.s2-box{padding:10px;border-radius:8px;text-align:center;background:#fff;border:1px solid var(--line);min-width:90px}.s2-box strong{display:block;color:var(--blue);font-size:16px}.s2-arrow{font-size:20px;color:var(--muted)}.s2-meter{position:relative;height:32px;background:linear-gradient(90deg,#2d8b65 0 48%,#f4f7f8 48% 52%,#c64852 52% 100%);border-radius:18px;margin:18px 8px 8px}.s2-marker{position:absolute;top:-7px;width:4px;height:46px;background:#102f3b;border-radius:3px;left:50%;transition:left .15s}.s2-meter-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)}.s2-presets{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.s2-presets button{font-size:11px;background:#647680}.s2-prompt{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;line-height:1.5}.s2-challenge button{background:#fff;color:var(--navy);border:1px solid var(--line);margin:3px}.s2-challenge button.good{background:var(--green);color:#fff}.s2-challenge button.bad{background:var(--red);color:#fff}
 @media(max-width:900px){.module-path{grid-template-columns:1fr 1fr}.s2-lab-grid{grid-template-columns:1fr}.s2-chain{grid-template-columns:1fr}.s2-arrow{transform:rotate(90deg);text-align:center}}
 @media(max-width:520px){.module-path{grid-template-columns:1fr}}
 
 
 /* --- v4: interaction and figure-reading enhancements --- */
 .interaction-bar{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:8px 0}.interaction-bar button{font-size:11px;padding:6px 9px}.interaction-bar .ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
-.figure-shell{position:relative}.figure-tools{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:4px 0 7px}.figure-tools button{font-size:10.5px;padding:5px 8px;background:#687a82}.figure-caption{font-size:11px;color:var(--muted);line-height:1.45}.figure-help{display:none;background:#fffaf0;border-left:3px solid var(--orange);padding:8px 10px;border-radius:0 7px 7px 0;font-size:11.5px;line-height:1.5;margin:5px 0}.figure-help.open{display:block}.legend{padding:6px 8px;background:#f7fafb;border:1px solid var(--line);border-radius:7px}.legend:before{content:'LEGEND';font-weight:800;font-size:9px;letter-spacing:.08em;color:var(--muted);margin-right:3px}.legend span{padding:3px 5px;border-radius:5px;cursor:help}.legend span:hover{background:#e7f2f6}.legend-note{width:100%;font-size:10.5px;color:var(--muted);margin-top:2px}
+.figure-shell{position:relative}.figure-tools{display:flex;justify-content:space-between;gap:8px;align-items:center;margin:4px 0 7px}.figure-tools button{font-size:10.5px;padding:5px 8px;background:#647680}.figure-caption{font-size:11px;color:var(--muted);line-height:1.45}.figure-help{display:none;background:#fffaf0;border-left:3px solid var(--orange);padding:8px 10px;border-radius:0 7px 7px 0;font-size:11.5px;line-height:1.5;margin:5px 0}.figure-help.open{display:block}.legend{padding:6px 8px;background:#f7fafb;border:1px solid var(--line);border-radius:7px}.legend:before{content:'LEGEND';font-weight:800;font-size:9px;letter-spacing:.08em;color:var(--muted);margin-right:3px}.legend span{padding:3px 5px;border-radius:5px;cursor:help}.legend span:hover{background:#e7f2f6}.legend-note{width:100%;font-size:10.5px;color:var(--muted);margin-top:2px}
 .micro-challenge{border:1px solid #c9dce4;border-radius:10px;background:#f8fcfd;padding:12px;margin:12px 0}.micro-challenge h3{margin-top:0}.micro-options{display:flex;gap:7px;flex-wrap:wrap}.micro-options button{background:#fff;color:var(--navy);border:1px solid var(--line);font-size:11.5px}.micro-options button.good{background:var(--green);color:#fff}.micro-options button.bad{background:var(--red);color:#fff}.micro-feedback{font-size:11.5px;line-height:1.5;margin-top:7px;min-height:32px;padding:7px;background:#fff;border-radius:6px}
 .guided-panel{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb);margin:12px 0}.guided-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.guided-step{display:block;width:100%;text-align:left;font-family:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;line-height:1.4;cursor:pointer;color:var(--ink)}.guided-step.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(20,121,184,.15);background:#eef8fc}.guided-step b{display:block;color:var(--navy);margin-bottom:3px}.experiment-status{font-size:11.5px;background:#eef8fc;border-radius:7px;padding:8px;margin-top:8px}
 .parameter-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}.parameter-card{display:block;width:100%;text-align:left;font-family:inherit;border:1px solid var(--line);border-radius:8px;padding:9px;background:#fff;cursor:pointer;transition:.15s}.parameter-card:hover,.parameter-card.active{border-color:var(--blue);box-shadow:0 4px 12px rgba(12,44,58,.1)}.parameter-card b{display:block;color:var(--blue);font-size:14px}.parameter-card small{line-height:1.4;color:var(--muted)}
@@ -161,7 +161,7 @@ th.symcol{text-transform:none}
 #nsSyncBadge.just-synced{background:#c9ecd8}
 #nsTour.on{background:var(--red)}
 .quiz-block-controls{display:flex;gap:8px;margin-bottom:8px}
-.quiz-block-controls button{font-size:11px;padding:6px 9px;background:#687a82}
+.quiz-block-controls button{font-size:11px;padding:6px 9px;background:#647680}
 .quiz-block{border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:#fafcfd;overflow:hidden}
 .quiz-block summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:13px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
 .quiz-block summary::-webkit-details-marker{display:none}
@@ -196,7 +196,7 @@ body{padding-bottom:54px}
 .page-stepper-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
 .page-stepper-label{font-weight:700;color:var(--navy);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
 .page-dots{display:flex;gap:2px}
-.page-dot{width:26px;height:26px;padding:0;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.page-dot{width:34px;height:34px;padding:0;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px}
 .page-dot:hover{background:#f2f7f9}
 .page-dot::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:var(--line);transition:width .15s,border-radius .15s}
 .page-dot.active::before{background:var(--blue);width:18px;border-radius:4px}
@@ -316,7 +316,7 @@ body{padding-bottom:54px}
 <div class="flow-node" id="flowCurrent" style="background:#586d75">Current state<small>e and p′</small></div><div class="flow-arrow">→</div>
 <div class="flow-node" id="flowRef" style="background:#1479b8">Reference state<small>CSL: Γ and λ</small></div><div class="flow-arrow">→</div>
 <div class="flow-node" id="flowPsi" style="background:#7653a6">Distance, ψ<small>e − e<sub>c</sub></small></div><div class="flow-arrow">→</div>
-<div class="flow-node" id="flowResponse" style="background:#2d8b65">Response<small>D, η, strength</small></div>
+<div class="flow-node" id="flowResponse" style="background:var(--green)">Response<small>D, η, strength</small></div>
 </div>
 <p class="explain" style="font-size:10.5px;margin:4px 0 0;color:var(--muted)">Live recap — tracks the e and p′ sliders below as you move them.</p>
 </div>
@@ -353,7 +353,7 @@ body{padding-bottom:54px}
 
 <h3 id="predictQuiz">Predict before calculating</h3>
 <p class="explain">A sample lies <b>above</b> the CSL at its current p′. Using the four steps above, what is the best first-order prediction?</p>
-<div class="choice-row" id="predictionChoices"><button data-answer="wrong">Dilative, ψ &lt; 0</button><button data-answer="correct">Contractive, ψ &gt; 0</button><button data-answer="wrong">State cannot be inferred</button></div>
+<div class="choice-row" id="predictionChoices"><button type="button" data-answer="wrong">Dilative, ψ &lt; 0</button><button type="button" data-answer="correct">Contractive, ψ &gt; 0</button><button type="button" data-answer="wrong">State cannot be inferred</button></div>
 <div id="predictionFeedback" class="feedback" aria-live="polite">Choose an answer, then use Section 1 to test it numerically.</div>
 
 <div class="grid2" style="margin-top:16px">
@@ -377,7 +377,7 @@ body{padding-bottom:54px}
 <circle id="wcStateDot" cx="152" cy="50" r="4" fill="#c64852" style="display:none"/>
 </svg>
 <div class="legend" style="font-size:10.5px;justify-content:center"><span><i style="background:#1479b8"></i>Γ &mdash; e at p′=1 kPa (blue dot)</span><span><i style="background:#7653a6"></i>λ &mdash; drop in e per decade of p′ (purple bracket)</span><span><i style="background:#c64852"></i>state point (red)</span></div>
-<div class="lesson-tabs" role="tablist" aria-label="What changes?"><button role="tab" id="tab-pane-e" aria-controls="pane-e" aria-selected="true" class="on" data-pane="pane-e">Increase e</button><button role="tab" id="tab-pane-p" aria-controls="pane-p" aria-selected="false" data-pane="pane-p">Increase p′</button><button role="tab" id="tab-pane-g" aria-controls="pane-g" aria-selected="false" data-pane="pane-g">Increase Γ</button><button role="tab" id="tab-pane-l" aria-controls="pane-l" aria-selected="false" data-pane="pane-l">Increase λ</button></div>
+<div class="lesson-tabs" role="tablist" aria-label="What changes?"><button type="button" role="tab" id="tab-pane-e" aria-controls="pane-e" aria-selected="true" class="on" data-pane="pane-e">Increase e</button><button type="button" role="tab" id="tab-pane-p" aria-controls="pane-p" aria-selected="false" data-pane="pane-p">Increase p′</button><button type="button" role="tab" id="tab-pane-g" aria-controls="pane-g" aria-selected="false" data-pane="pane-g">Increase Γ</button><button type="button" role="tab" id="tab-pane-l" aria-controls="pane-l" aria-selected="false" data-pane="pane-l">Increase λ</button></div>
 <div id="pane-e" class="lesson-pane on callout" role="tabpanel" aria-labelledby="tab-pane-e"><b>Increase e at fixed p′:</b> the state point moves upward, ψ becomes more positive, and the response becomes more contractive.</div>
 <div id="pane-p" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-p"><b>Increase p′ at fixed e:</b> the CSL moves downward at the new stress. ψ becomes more positive. This is why the same relative density can behave differently at different stress levels.</div>
 <div id="pane-g" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-g"><b>Increase Γ:</b> the complete CSL shifts upward. At the same e and p′, ψ becomes more negative.</div>
@@ -417,12 +417,12 @@ body{padding-bottom:54px}
 <details class="disclosure">
 <summary>NorSand's own properties &amp; internal variables <small>not needed until Section 4 &mdash; open this when you get there</small></summary>
 <div class="disclosure-body notation-grid">
-<button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#687a82"><b>N</b><small>NorSand volumetric coupling coefficient (Table 3.1) &mdash; scales how far the image stress ratio M<sub>i</sub> departs from M<sub>tc</sub></small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#687a82"><b>H</b><small>NorSand plastic hardening modulus &mdash; how fast the yield surface grows/shrinks per unit strain</small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#687a82"><b>I<sub>r</sub></b><small>elastic rigidity index, G/p′ (shear modulus over mean stress)</small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#687a82"><b>p<sub>i</sub></b><small>NorSand "image" mean stress &mdash; the internal variable that sets the current yield surface size</small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#687a82"><b>ψ<sub>i</sub>, M<sub>i</sub>, χ<sub>i</sub></b><small>ψ, M and χ evaluated at the "image" condition (p′=p<sub>i</sub>) rather than the current stress</small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#687a82"><b>e<sub>0</sub>, p′<sub>0</sub>, ψ<sub>0</sub></b><small>value of e, p′, ψ at the <i>start</i> of a test, before shearing begins</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>N</b><small>NorSand volumetric coupling coefficient (Table 3.1) &mdash; scales how far the image stress ratio M<sub>i</sub> departs from M<sub>tc</sub></small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>H</b><small>NorSand plastic hardening modulus &mdash; how fast the yield surface grows/shrinks per unit strain</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>I<sub>r</sub></b><small>elastic rigidity index, G/p′ (shear modulus over mean stress)</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>p<sub>i</sub></b><small>NorSand "image" mean stress &mdash; the internal variable that sets the current yield surface size</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>ψ<sub>i</sub>, M<sub>i</sub>, χ<sub>i</sub></b><small>ψ, M and χ evaluated at the "image" condition (p′=p<sub>i</sub>) rather than the current stress</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>e<sub>0</sub>, p′<sub>0</sub>, ψ<sub>0</sub></b><small>value of e, p′, ψ at the <i>start</i> of a test, before shearing begins</small></button>
 </div>
 </details>
 </div>
@@ -450,7 +450,7 @@ body{padding-bottom:54px}
 </div><div id="cslExperimentStatus" class="experiment-status" aria-live="polite">Select a case to begin.</div></div>
 <div class="ns-layout" style="margin-top:10px">
 <div>
-<label style="font-size:12.5px;font-weight:700">Sand / tailings (real properties, Table 2.1)</label><br>
+<label for="sandSelect" style="font-size:12.5px;font-weight:700">Sand / tailings (real properties, Table 2.1)</label><br>
 <select id="sandSelect"></select>
 <div class="slider-block" style="margin-top:10px">
 <label for="eSlide">Void ratio, e <span class="readout" id="eOut">0.70</span></label>
@@ -492,7 +492,7 @@ body{padding-bottom:54px}
 <div class="s2-lab" id="s2IndependentLab">
 <h3 style="margin-top:0">Interactive stress–dilatancy sandbox</h3>
 <p class="explain">This sandbox is independent of Section 1. Change one quantity at a time and follow the calculation from state to predicted peak strength. The values are illustrative but the displayed relationships are the same ones described above.</p>
-<div class="s2-presets"><button data-s2preset="dense">Dense state</button><button data-s2preset="critical">Critical state</button><button data-s2preset="loose">Loose state</button><button data-s2preset="sensitive">High χ soil</button></div>
+<div class="s2-presets"><button type="button" data-s2preset="dense">Dense state</button><button type="button" data-s2preset="critical">Critical state</button><button type="button" data-s2preset="loose">Loose state</button><button type="button" data-s2preset="sensitive">High χ soil</button></div>
 <div class="s2-lab-grid"><div>
 <div class="slider-block"><label for="s2Psi">State parameter, ψ <span class="readout" id="s2PsiOut">−0.100</span></label><input id="s2Psi" type="range" min="-0.25" max="0.15" step="0.005" value="-0.10"><div class="hint">Move through dense-of-critical, critical, and loose-of-critical states.</div></div>
 <div class="slider-block"><label for="s2Chi"><span>State–dilatancy property, χ<sub>tc</sub></span> <span class="readout" id="s2ChiOut">3.5</span></label><input id="s2Chi" type="range" min="1.5" max="6" step="0.1" value="3.5"><div class="hint">Controls how strongly a given ψ changes peak dilation.</div></div>
@@ -511,13 +511,13 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:11px;margin:4px 0 0">At failure the Mohr circle is tangent to the strength envelope at &phi;&prime;. In terms of &eta;=q/p&prime;, that condition is exactly sin&phi;&prime; = 3&eta;/(6+&eta;). <b style="color:#7653a6">Purple arc: your current &phi;&prime;<sub>peak</sub> = <span id="s2ChartPhi">39.4</span>&deg;</b> &mdash; the circle's size is illustrative, but this angle is exact.</p>
 </div>
 </div>
-<div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button data-s2answer="right">It approaches critical strength</button><button data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback" aria-live="polite">Predict first, then move the ψ slider to test your answer.</div></div>
+<div class="s2-challenge"><p><b>Prediction challenge:</b> If ψ moves from −0.10 toward zero while χ and M stay fixed, what happens to peak strength?</p><button type="button" data-s2answer="wrong" data-s2exp="Not quite. Peak strength is η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;. As ψ→0, D&lt;sub&gt;min&lt;/sub&gt;=χψ shrinks toward zero too, so η&lt;sub&gt;max&lt;/sub&gt; falls toward M&lt;sub&gt;tc&lt;/sub&gt;, not away from it. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; and η&lt;sub&gt;max&lt;/sub&gt; both shrink together.">It rises</button><button type="button" data-s2answer="right">It approaches critical strength</button><button type="button" data-s2answer="wrong" data-s2exp="Not quite. η&lt;sub&gt;max&lt;/sub&gt; = M&lt;sub&gt;tc&lt;/sub&gt; − D&lt;sub&gt;min&lt;/sub&gt;, and D&lt;sub&gt;min&lt;/sub&gt;=χψ depends directly on ψ. Since ψ is moving (toward zero), D&lt;sub&gt;min&lt;/sub&gt; moves with it, so η&lt;sub&gt;max&lt;/sub&gt; can't stay fixed. Move the ψ slider toward zero and watch D&lt;sub&gt;min&lt;/sub&gt; shrink.">It is unchanged</button><div id="s2Feedback" class="feedback" aria-live="polite">Predict first, then move the ψ slider to test your answer.</div></div>
 </div></div></div>
 
 <div class="grid2">
 <div>
 <div class="statgrid n3" id="dilStats"></div>
-<h3>Same soil, same stress ratio — different friction angle depending only on state</h3>
+<h3>Same soil, different state — different peak friction angle</h3>
 <p class="explain" style="font-size:12px">The bars compare this sand's critical-state friction angle &phi;&prime;<sub>cv</sub> (from M<sub>tc</sub> alone, state-independent) against the peak &phi;&prime; predicted for the current &psi;.</p>
 <div class="chart-host"><canvas id="phiBar" style="height:150px" role="img" aria-label="Bar chart comparing the critical-state friction angle to the peak friction angle predicted for the current state."></canvas><div class="chart-tip" id="phiBarTip"></div></div>
 </div>
@@ -527,7 +527,7 @@ body{padding-bottom:54px}
 </div>
 </div>
 
-<div class="micro-challenge"><h3>Section 2 transfer challenge</h3><p class="explain">Two samples have the same M<sub>tc</sub>. Sample A has ψ = −0.12 and Sample B has ψ = −0.03. Which should mobilize the larger peak friction angle in this simplified framework?</p><div class="micro-options" id="s2Transfer"><button data-ok="yes">Sample A</button><button data-ok="no">Sample B</button><button data-ok="no">They are identical</button></div><div id="s2TransferFeedback" class="micro-feedback">Use D<sub>min</sub> = χψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub>.</div></div>
+<div class="micro-challenge"><h3>Section 2 transfer challenge</h3><p class="explain">Two samples have the same M<sub>tc</sub>. Sample A has ψ = −0.12 and Sample B has ψ = −0.03. Which should mobilize the larger peak friction angle in this simplified framework?</p><div class="micro-options" id="s2Transfer"><button type="button" data-ok="yes">Sample A</button><button type="button" data-ok="no">Sample B</button><button type="button" data-ok="no">They are identical</button></div><div id="s2TransferFeedback" class="micro-feedback">Use D<sub>min</sub> = χψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub>.</div></div>
 
 </div>
 </div>
@@ -581,7 +581,7 @@ body{padding-bottom:54px}
 <div><canvas id="stressDilChart" role="img" aria-label="Stress-dilatancy chart: dilatancy versus stress ratio for the noisy test data, with a fitted line used to read off M-tc at the point where dilatancy is zero."></canvas>
 <div class="legend"><span><i style="background:#9aa9ae"></i>(D, &eta;) at each strain increment of this one test</span><span><i style="background:var(--red)"></i>line fit</span><span><i style="background:var(--navy)"></i>this sand's real M<sub>tc</sub></span></div></div>
 <div>
-<div class="explain" style="font-size:12px"><p>Rowe/Nova's stress&ndash;dilatancy rule in its full form is &eta; = M<sub>i</sub> &minus; (1&minus;N)&middot;D<sup>p</sup> (NorSand's Eq. 3.31) &mdash; a straight line of slope <b>N&minus;1</b> on a D&ndash;&eta; plot, not exactly &minus;1. This is genuinely the method Fig. 2.30 uses on real Erksak data: the book's own trend line there is explicitly labeled with slope N&minus;1, so that single plot calibrates both M<sub>tc</sub> (the intercept) <i>and</i> N (the slope) together. At the special point D=0 (no volume change &mdash; the soil is momentarily at critical state <i>locally</i>, even mid-test), the &eta;-intercept <i>is</i> M<sub>tc</sub> regardless of the slope, since the (1&minus;N)&middot;D term vanishes &mdash; that part of the logic is unaffected by which form you use. The simpler D=M&minus;&eta; form used elsewhere on this page (slope exactly &minus;1, i.e. N=0) is a common first-order simplification: exact at D=0, but not the book's own full relationship away from that point.</p></div>
+<div class="explain" style="font-size:12px"><p>Rowe/Nova's stress&ndash;dilatancy rule in its full form is &eta; = M<sub>i</sub> &minus; (1&minus;N)&middot;D<sup>p</sup> (NorSand's Eq. 3.31) &mdash; a straight line of slope <b>N&minus;1</b> on a D&ndash;&eta; plot, not exactly &minus;1. This is genuinely the method Fig. 2.30 uses on real Erksak data: the book's own trend line there is explicitly labeled with slope N&minus;1, so that single plot calibrates both M<sub>tc</sub> (the intercept) <i>and</i> N (the slope) together. At the special point D=0 (no volume change), the &eta;-intercept <i>is</i> M<sub>tc</sub> regardless of the slope, since the (1&minus;N)&middot;D term vanishes &mdash; that part of the logic is unaffected by which form you use. This single instant isn't itself critical state (which needs continued deformation at constant stress <i>and</i> constant void ratio, not just one point of zero dilation); it's simply the stress ratio momentarily matching the value M<sub>tc</sub> that critical state settles at, which is exactly why D=0 is the intercept used to read M<sub>tc</sub> off this plot. The simpler D=M&minus;&eta; form used elsewhere on this page (slope exactly &minus;1, i.e. N=0) is a common first-order simplification: exact at D=0, but not the book's own full relationship away from that point.</p></div>
 <div class="statgrid n2" id="pipelineStats"></div>
 <div class="callout" id="pipelineNote" style="margin-top:8px" aria-live="polite"></div>
 </div>
@@ -621,7 +621,7 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="fitN">N <span class="readout" id="fitNOut">0.30</span></label><input id="fitN" type="range" min="0.15" max="0.55" step="0.01" value="0.30"></div>
 <div class="slider-block"><label for="fitH">H <span class="readout" id="fitHOut">300</span></label><input id="fitH" type="range" min="25" max="500" step="5" value="300"></div>
 <div class="statgrid n2"><div class="stat"><small>fit quality (lower = better)</small><strong id="fitRMSE">&ndash;</strong></div></div>
-<button id="fitReveal" class="alt" style="background:#687a82;margin-top:8px">Reveal the values used to generate the data</button>
+<button type="button" id="fitReveal" class="alt" style="background:#647680;margin-top:8px">Reveal the values used to generate the data</button>
 <span class="badge" id="fitTrueVals" style="display:none"></span>
 </div>
 <div>
@@ -693,8 +693,8 @@ body{padding-bottom:54px}
 
 <div class="ns-layout">
 <div class="ns-controls">
-<div class="guided-panel"><h3 style="margin-top:0">One-variable-at-a-time NorSand experiments</h3><p class="explain" style="font-size:12px">Each experiment resets the model, changes one control, runs it, and highlights what to compare.</p><div class="interaction-bar"><button data-nsexp="loose">Make ψ<sub>0</sub> positive</button><button data-nsexp="dense">Make ψ<sub>0</sub> negative</button><button data-nsexp="soft">Lower H</button><button data-nsexp="sharp">Raise H</button><button data-nsexp="highchi">Raise χ<sub>tc</sub></button><button id="nsResetGuided" class="ghost">Reset Erksak</button></div><div id="nsExperimentStatus" class="experiment-status" aria-live="polite">Choose an experiment, then compare peak η, strain at peak, and the void-ratio path.</div></div>
-<label style="font-size:12.5px;font-weight:700">Parameter set</label><br>
+<div class="guided-panel"><h3 style="margin-top:0">One-variable-at-a-time NorSand experiments</h3><p class="explain" style="font-size:12px">Each experiment resets the model, changes one control, runs it, and highlights what to compare.</p><div class="interaction-bar"><button type="button" data-nsexp="loose">Make ψ<sub>0</sub> positive</button><button type="button" data-nsexp="dense">Make ψ<sub>0</sub> negative</button><button type="button" data-nsexp="soft">Lower H</button><button type="button" data-nsexp="sharp">Raise H</button><button type="button" data-nsexp="highchi">Raise χ<sub>tc</sub></button><button type="button" id="nsResetGuided" class="ghost">Reset Erksak</button></div><div id="nsExperimentStatus" class="experiment-status" aria-live="polite">Choose an experiment, then compare peak η, strain at peak, and the void-ratio path.</div></div>
+<label for="nsPreset" style="font-size:12.5px;font-weight:700">Parameter set</label><br>
 <select id="nsPreset">
 <option value="erksak">Erksak 330/0.7 sand — the book's own Ch.3 calibration (&Gamma;=0.816, &lambda;<sub>10</sub>=0.031, M<sub>tc</sub>=1.26, &chi;<sub>tc</sub>=3.5)</option>
 <option value="custom">Custom (use sliders below)</option>
@@ -751,7 +751,7 @@ body{padding-bottom:54px}
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>5 &middot; The gap between "heading toward" and "is" becomes motion</small><div class="eq">D<sup>p</sup> = M<sub>i</sub> &minus; &eta;</div><p>This is the actual plastic dilation rate for this increment &mdash; the same D = M − &eta; rule from Section 2, now evaluated with the image values. It's what moves e.</p></div>
 <div class="eq-arrow">↓</div>
-<div class="eq-step"><small>6 &middot; Where p<sub>i</sub> itself is drifting toward</small><div class="eq">p<sub>i,max</sub> = p&prime;&middot;exp(&minus;&chi;<sub>i</sub>&psi;<sub>i</sub>/M<sub>i</sub>)</div><p>M<sub>i</sub> and &psi;<sub>i</sub> also set the size the yield surface is trying to grow (or shrink) toward.</p></div>
+<div class="eq-step"><small>6 &middot; Where p<sub>i</sub> itself is drifting toward</small><div class="eq">p<sub>i,max</sub> = p&prime;&middot;exp(&minus;&chi;<sub>i</sub>&psi;<sub>i</sub>/M<sub>tc</sub>)</div><p>&psi;<sub>i</sub> sets the size the yield surface is trying to grow (or shrink) toward. This step uses the fixed M<sub>tc</sub>, not the evolving M<sub>i</sub> from step 3 &mdash; Eq. 3.38/Table 3.1's difference-form hardening law is written with the reference M<sub>itc</sub>, which equals M<sub>tc</sub> for the triaxial-compression path this tool models. Using the evolving M<sub>i</sub> here would make p<sub>i,max</sub> circularly depend on itself through &psi;<sub>i</sub>.</p></div>
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>7 &middot; How fast it actually gets there &mdash; then repeat from step 1</small><div class="eq">&Delta;p<sub>i</sub> = H&middot;(p<sub>i,max</sub> &minus; p<sub>i</sub>)&middot;&Delta;&epsilon;<sub>q</sub></div><p>H sets how quickly p<sub>i</sub> catches up to p<sub>i,max</sub> each increment. Advance p<sub>i</sub> by this amount, then go back to step 1 for the next slice of strain.</p></div>
 </div>
@@ -770,7 +770,7 @@ body{padding-bottom:54px}
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 100 answered (blocks A&ndash;I above, plus J below)</div>
 <div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotJ">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotJ">Hide questions</button></div>
 <div id="quizSlotJ"></div>
-<div class="quiz-actions"><button id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
+<div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
 
 <div class="callout" style="margin-top:14px"><b>Back to where you started.</b> The opening "Walk through reading a state" chain asked you to read the point, read the CSL, subtract, and predict. You now know how each of those arrows is actually computed: <b>read the point</b> is e and p′ off the state plane; <b>read the CSL</b> is e<sub>c</sub> = Γ − λ<sub>10</sub>·log<sub>10</sub>(p′), calibrated in Section 3; <b>subtract</b> is ψ = e − e<sub>c</sub>; and <b>predict</b> now has real machinery behind it &mdash; D<sub>min</sub> = χ<sub>tc</sub>ψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> for a first-order estimate, or the full NorSand loop in Section 4 for the entire stress&ndash;strain curve. Module 2 picks up from here: how ψ is actually measured in the field, from a CPT.</div>
 
@@ -912,7 +912,7 @@ function drawCSL(ctx,W,H,sand,e,p){
   ctx.textAlign="right";
   [0.3,0.5,0.7,0.9,1.1].forEach(function(ev){ var y=Y(ev); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.fillText(ev.toFixed(1),ml-8,y+3); });
   ctx.textAlign="left";
-  [1,10,100,1000].forEach(function(pv){ ctx.fillText(pv>=1000?"2000":String(pv), X(pv)-8, mt+ph+14); });
+  [1,10,100,1000,2000].forEach(function(pv){ ctx.fillText(String(pv), X(pv)-8, mt+ph+14); });
   drawXTitle(ctx,"p' (kPa, log scale)", ml+pw/2, H-4);
   drawYTitle(ctx,"void ratio, e", 14, mt+ph/2);
   // CSL curve (λ10/log10 form, used throughout this page)
@@ -927,7 +927,7 @@ function drawCSL(ctx,W,H,sand,e,p){
   // ψ = 0 is a genuine third state — neither dilative nor contractive (the book is
   // explicit about this) — so it gets its own neutral color, not lumped into "contractive."
   var psiPt=e-ecAt(sand,p);
-  ctx.fillStyle= Math.abs(psiPt)<0.002 ? "#687a82" : (psiPt<0 ? "#2d8b65" : "#c64852");
+  ctx.fillStyle= Math.abs(psiPt)<0.002 ? "#647680" : (psiPt<0 ? "#2d8b65" : "#c64852");
   ctx.beginPath(); ctx.arc(x0,y0,5.5,0,7); ctx.fill();
   // vertical connector to CSL at same p'
   var yc=Y(ecAt(sand,p));
@@ -969,11 +969,15 @@ function drawPhiBar(ctx,W,H,phiCv,phiPeak){
     ctx.fillStyle="#20343d"; ctx.font="11.5px 'Segoe UI',Arial,sans-serif"; fillLabel(ctx,label,4,y+barH/2+4);
     ctx.fillText(val.toFixed(1)+"°",ml+pw*frac+6,y+barH/2+4);
   }
-  bar(mt, "φ'~cv~", phiCv, "#687a82");
+  bar(mt, "φ'~cv~", phiCv, "#647680");
   bar(mt+barH+18, "φ'~peak~", phiPeak, phiPeak>=phiCv?"#2d8b65":"#c64852");
   ctx.canvas._geom = {mt:mt,barH:barH,rows:[{y0:mt,y1:mt+barH,label:"φ′cv (critical-state friction angle)",val:phiCv},{y0:mt+barH+18,y1:mt+barH+18+barH,label:"φ′peak (predicted peak friction angle at current ψ)",val:phiPeak}]};
 }
 
+// Shared 3-way state classification — psi this close to zero is genuinely critical, not
+// dense or loose, and every live badge on the page should agree on that, not just the one
+// stat panel that happened to check for it.
+function psiStateWord(psi){ return Math.abs(psi)<0.002 ? "critical" : (psi<0 ? "dilative" : "contractive"); }
 function updateAll(){
   var sand=currentSand();
   var e = +eSlide.value;
@@ -1009,7 +1013,7 @@ function updateAll(){
   if(flowCurrent){
     flowCurrent.innerHTML = "Current state<small>e="+e.toFixed(3)+", p&prime;="+p.toFixed(0)+" kPa</small>";
     flowRef.innerHTML = "Reference state<small>e<sub>c</sub>="+ec.toFixed(3)+" (&Gamma;="+sand.Gamma.toFixed(3)+", &lambda;<sub>10</sub>="+sand.lambda10.toFixed(3)+")</small>";
-    flowPsi.innerHTML = "Distance, &psi;<small>"+(psi>=0?"+":"")+psi.toFixed(3)+" — "+(psi<0?"dilative":"contractive")+"</small>";
+    flowPsi.innerHTML = "Distance, &psi;<small>"+(psi>=0?"+":"")+psi.toFixed(3)+" — "+psiStateWord(psi)+"</small>";
     flowResponse.innerHTML = "Response<small>D<sub>min</sub>="+dmin.toFixed(3)+", &eta;<sub>max</sub>="+etamax.toFixed(3)+"</small>";
   }
 
@@ -1197,6 +1201,11 @@ function pulseNsSync(){
   _nsPulseTimer=setTimeout(function(){ badge.classList.remove("just-synced"); },350);
 }
 function runNorSand(){
+  // Sliders can only fire input events while their page is visible, so this guard only
+  // ever skips work when called blind by a page-transition redraw for a different page —
+  // it reruns correctly once the user actually navigates to this section.
+  var nsSection=document.getElementById('norsand-section');
+  if(nsSection && nsSection.style.display==='none') return;
   pulseNsSync();
   var Gamma = +nsG.value;
   var lambda10 = +nsL.value;
@@ -1205,7 +1214,7 @@ function runNorSand(){
 
   var ec0 = Gamma - lambda10*Math.log10(p0);
   var psi0 = e0 - ec0;
-  document.getElementById("nsPsi0").textContent = "ψ0 = " + (psi0>=0?"+":"") + psi0.toFixed(3) + (psi0<0?" (dense of critical)":" (loose of critical)");
+  document.getElementById("nsPsi0").textContent = "ψ0 = " + (psi0>=0?"+":"") + psi0.toFixed(3) + (Math.abs(psi0)<0.002?" (critical)":(psi0<0?" (dense of critical)":" (loose of critical)"));
 
   var sim = simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0);
   var Q=sim.eta, E=sim.e, EC=sim.ec, dEq=0.0003;
@@ -1316,7 +1325,7 @@ function drawCSLFit(id, sand, points, fit){
   ctx.strokeStyle="#c64852"; ctx.lineWidth=2; ctx.setLineDash([5,3]); ctx.beginPath();
   for(var pv2=pmin; pv2<=pmax; pv2*=1.05){ var ee2=fit.a+fit.b*Math.log10(pv2); var x2=X(pv2),y2=Y(ee2); if(pv2===pmin) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2); }
   ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle="#687a82";
+  ctx.fillStyle="#647680";
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.p),Y(pt.e),4.5,0,7); ctx.fill(); });
 }
 
@@ -1339,7 +1348,7 @@ function drawChiFit(id, sand, points, slope){
   drawYTitle(ctx,"dilatancy, D~min", 14, mt+ph/2);
   ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(X(xmin),Y(sand.chitc*xmin)); ctx.lineTo(X(xmax),Y(sand.chitc*xmax)); ctx.stroke();
   ctx.strokeStyle="#c64852"; ctx.lineWidth=2; ctx.setLineDash([5,3]); ctx.beginPath(); ctx.moveTo(X(xmin),Y(slope*xmin)); ctx.lineTo(X(xmax),Y(slope*xmax)); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle="#687a82";
+  ctx.fillStyle="#647680";
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.psi),Y(pt.dmin),4.5,0,7); ctx.fill(); });
 }
 
@@ -1607,7 +1616,7 @@ function drawNHFit(id, points, modelSim){
   ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
   modelSim.strain.forEach(function(sv,i){ var x=X(sv),y=Y(modelSim.eta[i]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
   ctx.stroke();
-  ctx.fillStyle="#687a82";
+  ctx.fillStyle="#647680";
   points.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.strain),Y(pt.eta),4.5,0,7); ctx.fill(); });
 }
 function updateNHFit(){
@@ -1654,16 +1663,18 @@ var SELECTED_TEST_IDX = 3;
 function renderSampleTestTable(sand){
   var rows=genSampleTests(sand);
   document.getElementById("sampleTestBody").innerHTML = rows.map(function(r,i){
-    return `<tr data-idx="${i}" class="${i===SELECTED_TEST_IDX?"selected-row":""}" style="cursor:pointer">
+    return `<tr data-idx="${i}" tabindex="0" aria-selected="${i===SELECTED_TEST_IDX}" class="${i===SELECTED_TEST_IDX?"selected-row":""}" style="cursor:pointer">
       <td>${r.id}</td><td>CIDC</td><td>${r.sig3}</td><td>${r.e0.toFixed(3)}</td><td>${r.psi0>=0?"+":""}${r.psi0.toFixed(3)}</td><td>${r.etaPeak.toFixed(2)}</td><td>${r.phiPeak.toFixed(1)}</td><td>${r.dmin.toFixed(2)}</td><td>${r.state}</td></tr>`;
   }).join("");
   Array.from(document.querySelectorAll("#sampleTestBody tr")).forEach(function(tr){
-    tr.addEventListener("click", function(){
+    function selectThisRow(){
       SELECTED_TEST_IDX = +tr.getAttribute("data-idx");
-      Array.from(document.querySelectorAll("#sampleTestBody tr")).forEach(r=>r.classList.remove("selected-row"));
-      tr.classList.add("selected-row");
+      Array.from(document.querySelectorAll("#sampleTestBody tr")).forEach(function(r){ r.classList.remove("selected-row"); r.setAttribute("aria-selected","false"); });
+      tr.classList.add("selected-row"); tr.setAttribute("aria-selected","true");
       updatePipeline(currentSand());
-    });
+    }
+    tr.addEventListener("click", selectThisRow);
+    tr.addEventListener("keydown", function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); selectThisRow(); } });
   });
 }
 
@@ -1696,7 +1707,7 @@ function drawRawChart(id, strainSamp, trueX, trueStrain, noisyVals, color, xlab,
   ctx.strokeStyle=color; ctx.lineWidth=1.8; ctx.beginPath();
   trueStrain.forEach(function(sv,i){ var x=X(sv),y=Y(trueX[i]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
   ctx.stroke();
-  ctx.fillStyle="#687a82";
+  ctx.fillStyle="#647680";
   strainSamp.forEach(function(sv,i){ ctx.beginPath(); ctx.arc(X(sv),Y(noisyVals[i]),4,0,7); ctx.fill(); });
 }
 
@@ -1771,7 +1782,7 @@ function drawStressDilChart(Dpts, etaPts, fit, realMtc){
   ctx.strokeStyle="#9aa9ae"; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(ml,Y(realMtc)); ctx.lineTo(ml+pw,Y(realMtc)); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#9aa9ae"; ctx.fillText("real Mtc",ml+4,Y(realMtc)-4);
   // scatter
-  ctx.fillStyle="#687a82";
+  ctx.fillStyle="#647680";
   Dpts.forEach(function(d,i){ ctx.beginPath(); ctx.arc(X(d),Y(etaPts[i]),4,0,7); ctx.fill(); });
   // fit line
   ctx.strokeStyle="#c64852"; ctx.lineWidth=2.2; ctx.beginPath();
@@ -1781,6 +1792,12 @@ function drawStressDilChart(Dpts, etaPts, fit, realMtc){
 }
 
 function updateConstructionPanels(){
+  // Runs several full NorSand simulations (calibration convergence + N/H fits), so skip
+  // it while its own page is hidden — a page-transition redraw calls this blind for every
+  // page, but it reruns correctly once the user actually navigates to Calibration. Not yet
+  // paginated at initial page load (no inline display style set), so the first call through.
+  var calSection=document.getElementById('calibration-section');
+  if(calSection && calSection.style.display==='none') return;
   var sand=currentSand(), idx=+sandSel.value;
   document.getElementById("s3SandName").textContent=sand.name;
 
@@ -1874,7 +1891,31 @@ updateConstructionPanels();
       cslLine.setAttribute('y2', y0+(y1-y0)*1.6);
     }
   }
-  document.querySelectorAll('.lesson-tabs button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.lesson-tabs button').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});document.querySelectorAll('.lesson-pane').forEach(x=>x.classList.remove('on'));b.classList.add('on');b.setAttribute('aria-selected','true');document.getElementById(b.dataset.pane).classList.add('on');updateWhatChangesDiagram(b.dataset.pane);});});
+  // Standard ARIA tabs keyboard pattern: roving tabindex (only the active tab is in the
+  // Tab sequence) plus Left/Right/Home/End to move between tabs, matching what role="tab"
+  // implies rather than just being clickable buttons that happen to carry that role.
+  (function(){
+    var tabs=Array.from(document.querySelectorAll('.lesson-tabs button'));
+    function activate(b){
+      tabs.forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-selected','false'); x.setAttribute('tabindex','-1'); });
+      document.querySelectorAll('.lesson-pane').forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on'); b.setAttribute('aria-selected','true'); b.setAttribute('tabindex','0');
+      document.getElementById(b.dataset.pane).classList.add('on');
+      updateWhatChangesDiagram(b.dataset.pane);
+    }
+    tabs.forEach(function(b){
+      b.setAttribute('tabindex', b.classList.contains('on') ? '0' : '-1');
+      b.addEventListener('click',function(){ activate(b); });
+      b.addEventListener('keydown',function(e){
+        var i=tabs.indexOf(b), next=null;
+        if(e.key==='ArrowRight') next=tabs[(i+1)%tabs.length];
+        else if(e.key==='ArrowLeft') next=tabs[(i-1+tabs.length)%tabs.length];
+        else if(e.key==='Home') next=tabs[0];
+        else if(e.key==='End') next=tabs[tabs.length-1];
+        if(next){ e.preventDefault(); next.focus(); activate(next); }
+      });
+    });
+  })();
   updateWhatChangesDiagram('pane-e');
   document.querySelectorAll('#predictionChoices button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#predictionChoices button').forEach(x=>x.classList.remove('correct','wrong'));var ok=b.dataset.answer==='correct';b.classList.add(ok?'correct':'wrong');document.getElementById('predictionFeedback').innerHTML=ok?'<b>Correct.</b> Above the CSL means e &gt; e<sub>c</sub>, so ψ is positive and the first-order tendency is contraction.':'<b>Not quite.</b> Compare the current void ratio with e<sub>c</sub> at the same p′. Above the CSL, e − e<sub>c</sub> is positive.';});});
   function progress(){var d=document.documentElement,b=document.body;var top=d.scrollTop||b.scrollTop;var h=(d.scrollHeight||b.scrollHeight)-d.clientHeight;var pct=h?100*top/h:0;var f=document.getElementById('readingProgress');if(f)f.style.width=pct+'%';}
@@ -1933,7 +1974,7 @@ updateConstructionPanels();
   backBtn.addEventListener('click',function(){
     var last=navStack.pop();
     if(last){
-      if(window.showPage && typeof last.page==='number') window.showPage(last.page,{noScroll:true, noFocus:true});
+      if(window.showPage && typeof last.page==='number') window.showPage(last.page,{noScroll:true, noFocus:true, noHistory:true});
       var smooth = window.prefersReducedMotion && window.prefersReducedMotion() ? 'auto' : 'smooth';
       window.scrollTo({top:last.y,behavior:smooth});
       if(last.el) window.focusElement(last.el);
@@ -1943,6 +1984,8 @@ updateConstructionPanels();
 
   // ---- animated "walk through it" for the 4-step concept line ----
   var walkBtn=document.getElementById('walkThroughBtn');
+  var _walkTimer=null;
+  window.cancelConceptWalkthrough=function(){ clearTimeout(_walkTimer); if(walkBtn) walkBtn.disabled=false; };
   if(walkBtn){
     walkBtn.addEventListener('click',function(){
       walkBtn.disabled=true;
@@ -1955,7 +1998,7 @@ updateConstructionPanels();
         steps[i].classList.add('walking');
         steps[i].scrollIntoView({behavior:'smooth',block:'nearest'});
         i++;
-        setTimeout(next,1100);
+        _walkTimer=setTimeout(next,1100);
       }
       next();
     });
@@ -2042,7 +2085,7 @@ updateConstructionPanels();
       ctx.strokeStyle="#9aa9ae"; ctx.setLineDash([3,4]); ctx.beginPath();
       if(isDrained){ ctx.moveTo(x0,mt); ctx.lineTo(x0,mt+ph); } else { ctx.moveTo(ml,y0); ctx.lineTo(ml+pw,y0); }
       ctx.stroke(); ctx.setLineDash([]);
-      ctx.strokeStyle="#687a82"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x0,y0,6,0,7); ctx.stroke();
+      ctx.strokeStyle="#647680"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x0,y0,6,0,7); ctx.stroke();
       ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.5; ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(xN,yN); ctx.stroke();
       ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(xN,yN,6,0,7); ctx.fill();
     }
@@ -2130,7 +2173,7 @@ updateConstructionPanels();
       ctx.stroke();
       var x0=X(p0()), y0=Y(0);
       var xN=X(currentP(strain)), yN=Y(currentQ(strain));
-      ctx.strokeStyle="#687a82"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x0,y0,6,0,7); ctx.stroke();
+      ctx.strokeStyle="#647680"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(x0,y0,6,0,7); ctx.stroke();
       ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(xN,yN,6,0,7); ctx.fill();
     }
     var etaSlide=document.getElementById('introEta'), etaOut=document.getElementById('introEtaOut');
@@ -2444,20 +2487,24 @@ function gradeBlock(idx){
   var blockQs=qs.slice(idx*10, idx*10+10);
   var scoreEl=document.querySelector('[data-blockscore="'+idx+'"]');
   var resultEl=document.querySelector('[data-blockresult="'+idx+'"]');
+  // Same rule as the overall grader below: only an answered question reveals its
+  // explanation, so skipping ahead within a block still has a real cost.
   var score=0, unanswered=0;
   blockQs.forEach(function(q){
     var pick=q.querySelector('input:checked');
-    q.classList.remove('unanswered');
-    q.classList.add('review');
+    q.classList.remove('unanswered','review');
     if(!pick){ unanswered++; q.classList.add('unanswered'); q.style.background='#fff8e8'; }
-    else if(pick.value===q.dataset.correct){ score++; q.style.background='#e9f6ef'; }
-    else{ q.style.background='#fdeee9'; }
+    else{
+      q.classList.add('review');
+      if(pick.value===q.dataset.correct){ score++; q.style.background='#e9f6ef'; }
+      else{ q.style.background='#fdeee9'; }
+    }
   });
   scoreEl.textContent=score+'/10';
   scoreEl.style.background=score===10?'#c9ecd8':score>=7?'#eef8fc':'#fdeee9';
   scoreEl.style.display='inline-block';
   resultEl.textContent = unanswered
-    ? unanswered+' question(s) in this block are still unanswered ('+score+'/10 correct so far).'
+    ? unanswered+' question(s) in this block are still unanswered ('+score+'/10 correct so far) — their explanations stay hidden until answered.'
     : (score===10?'Perfect block — all 10 correct.':score>=7?'Solid — '+score+'/10 correct. Check the red ones below.':'Worth a second pass — '+score+'/10 correct. Read the explanations below, then revisit the relevant section.');
   resultEl.style.display='block';
 }
@@ -2727,7 +2774,7 @@ function update(){
   document.getElementById('ysEtaOut').textContent=(+ysEta.value).toFixed(3);
 
   var ec0=Gamma-lambda10*Math.log10(p0), psi0=e0-ec0;
-  document.getElementById('ysPsi0Display').textContent=(psi0>=0?'+':'')+psi0.toFixed(3)+(psi0<0?' (dense)':' (loose)');
+  document.getElementById('ysPsi0Display').textContent=(psi0>=0?'+':'')+psi0.toFixed(3)+(Math.abs(psi0)<0.002?' (critical)':(psi0<0?' (dense)':' (loose)'));
   document.getElementById('ysPiDisplay').textContent=pi.toFixed(1);
   document.getElementById('ysMiDisplay').textContent=Mi.toFixed(3);
   // convergence: how far Mi has closed the gap to Mtc, relative to the gap it started with —
@@ -2790,7 +2837,7 @@ Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);i
 // get a note pointing at a button that isn't there.
 document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors and line styles identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
 // Section 1 cases
-var status=document.getElementById('cslExperimentStatus');var _shearTimer=null;if(status){document.querySelectorAll('[data-cslcase]').forEach(function(b){b.addEventListener('click',function(){clearInterval(_shearTimer);document.querySelectorAll('[data-cslcase]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false');});b.classList.add('active');b.setAttribute('aria-pressed','true');var c=b.dataset.cslcase,s=currentSand(),p=100,e=ecAt(s,p),msg='';if(c==='critical'){p=100;e=ecAt(s,p);msg='ψ is approximately zero. The state point lies on the CSL.';}if(c==='dense'){p=100;e=ecAt(s,p)-.08;msg='ψ = −0.08. The point is below the CSL and the response is dilative.';}if(c==='loose'){p=100;e=ecAt(s,p)+.08;msg='ψ = +0.08. The point is above the CSL and the response is contractive.';}if(c==='stress'){p=1000;e=ecAt(s,100)+.01;msg='Void ratio is held near its 100 kPa critical value, but p′ rises to 1000 kPa. Because the CSL drops, ψ becomes more positive.';}if(c==='shear'){p=100;var eStart=ecAt(s,p)+.08,ecTarget=ecAt(s,p),steps=0,maxSteps=45;eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,eStart));pSlide.value=pToSlider(p);updateAll();status.innerHTML='<b>Observation:</b> Starting loose (ψ = +0.08) at fixed p′ = 100 kPa. Applying shear strain now — watch e fall as the sample contracts toward the line.';_shearTimer=setInterval(function(){steps++;var frac=1-Math.exp(-steps/12);var eNow=eStart+(ecTarget-eStart)*frac;eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,eNow));updateAll();if(steps>=maxSteps){clearInterval(_shearTimer);status.innerHTML='<b>Observation:</b> After enough strain, e has converged onto the CSL (ψ ≈ 0) — this is what "critical state" means: the destination continued shearing leads to, regardless of the starting density. Stress level alone never changed here; strain did the work.';}},60);return;}eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,e));pSlide.value=pToSlider(p);updateAll();status.innerHTML='<b>Observation:</b> '+msg;document.getElementById('cslChart').classList.add('pulse-target');setTimeout(()=>document.getElementById('cslChart').classList.remove('pulse-target'),2600);});});}
+var status=document.getElementById('cslExperimentStatus');var _shearTimer=null;window.cancelCslShearTimer=function(){ clearInterval(_shearTimer); };if(status){document.querySelectorAll('[data-cslcase]').forEach(function(b){b.addEventListener('click',function(){clearInterval(_shearTimer);document.querySelectorAll('[data-cslcase]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false');});b.classList.add('active');b.setAttribute('aria-pressed','true');var c=b.dataset.cslcase,s=currentSand(),p=100,e=ecAt(s,p),msg='';if(c==='critical'){p=100;e=ecAt(s,p);msg='ψ is approximately zero. The state point lies on the CSL.';}if(c==='dense'){p=100;e=ecAt(s,p)-.08;msg='ψ = −0.08. The point is below the CSL and the response is dilative.';}if(c==='loose'){p=100;e=ecAt(s,p)+.08;msg='ψ = +0.08. The point is above the CSL and the response is contractive.';}if(c==='stress'){p=1000;e=ecAt(s,100)+.01;msg='Void ratio is held near its 100 kPa critical value, but p′ rises to 1000 kPa. Because the CSL drops, ψ becomes more positive.';}if(c==='shear'){p=100;var eStart=ecAt(s,p)+.08,ecTarget=ecAt(s,p),steps=0,maxSteps=45;eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,eStart));pSlide.value=pToSlider(p);updateAll();status.innerHTML='<b>Observation:</b> Starting loose (ψ = +0.08) at fixed p′ = 100 kPa. Applying shear strain now — watch e fall as the sample contracts toward the line.';_shearTimer=setInterval(function(){steps++;var frac=1-Math.exp(-steps/12);var eNow=eStart+(ecTarget-eStart)*frac;eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,eNow));updateAll();if(steps>=maxSteps){clearInterval(_shearTimer);status.innerHTML='<b>Observation:</b> After enough strain, e has converged onto the CSL (ψ ≈ 0) — this is what "critical state" means: the destination continued shearing leads to, regardless of the starting density. Stress level alone never changed here; strain did the work.';}},60);return;}eSlide.value=Math.max(+eSlide.min,Math.min(+eSlide.max,e));pSlide.value=pToSlider(p);updateAll();status.innerHTML='<b>Observation:</b> '+msg;document.getElementById('cslChart').classList.add('pulse-target');setTimeout(()=>document.getElementById('cslChart').classList.remove('pulse-target'),2600);});});}
 // parameter cards
 var role={csl:'<b>Γ and λ10:</b> inspect the CSL-fit panel. Use multiple large-strain endpoints over a useful stress range. Γ controls altitude; λ10 controls stress sensitivity.',mtc:'<b>Mtc:</b> inspect both the D–η intercept and the convergence plot. Mtc should be independent of initial density at critical state.',chi:'<b>χtc:</b> inspect Dmin versus ψ. Fit the slope through the origin using consistent test definitions and sign convention.',nh:'<b>N and H:</b> inspect the complete stress–strain curve. These are calibrated through iterative forward modelling, not a single intercept.'};document.querySelectorAll('[data-param]').forEach(function(c){c.addEventListener('click',function(){document.querySelectorAll('[data-param]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false');});c.classList.add('active');c.setAttribute('aria-pressed','true');document.getElementById('parameterRoleText').innerHTML=role[c.dataset.param];});});
 
@@ -2824,7 +2871,7 @@ var role={csl:'<b>Γ and λ10:</b> inspect the CSL-fit panel. Use multiple large
   // N and H: a stress-strain curve rising to a peak then softening slightly
   var n=setup('miniNH');
   if(n){ var ctx=n.ctx,W=n.W,H=n.H,ml=10,mb=8; axes(ctx,W,H,ml,mb);
-    ctx.strokeStyle="#687a82"; ctx.lineWidth=2; ctx.beginPath();
+    ctx.strokeStyle="#647680"; ctx.lineWidth=2; ctx.beginPath();
     for(var i=0;i<=24;i++){ var t=i/24; var x=ml+3+(W-ml-8)*t; var yy=(H-mb-4)-(H-mb-14)*(1-Math.exp(-t*5))*(1-0.12*Math.max(0,t-0.4)); if(i===0)ctx.moveTo(x,yy); else ctx.lineTo(x,yy); }
     ctx.stroke();
   }
@@ -2853,6 +2900,9 @@ var NS_TOUR = [
 var nsTourRunning=false, nsTourCancel=false;
 function tweenNsSlider(step,duration,cb){
   var startVal=+step.slider.value, endVal=step.target, startTime=null;
+  if(window.prefersReducedMotion && window.prefersReducedMotion()){
+    step.slider.value=endVal; syncNsOuts(); runNorSand(); cb(false); return;
+  }
   function frame(ts){
     if(nsTourCancel){ cb(true); return; }
     if(!startTime) startTime=ts;
@@ -2962,7 +3012,7 @@ document.addEventListener('keydown', function(e){
     return null;
   }
 
-  var navLinks=Array.from(document.querySelectorAll('.sticky-nav a[href^="#"]'));
+  var navLinks=Array.from(document.querySelectorAll('.sticky-nav a[href^="#"], .module-link.current[href^="#"]'));
   var stepper=document.createElement('nav'); stepper.className='page-stepper'; stepper.setAttribute('aria-label','Module page navigation');
   var prevBtn=document.createElement('button'); prevBtn.type='button'; prevBtn.className='page-stepper-nav';
   var nextBtn=document.createElement('button'); nextBtn.type='button'; nextBtn.className='page-stepper-nav';
@@ -2999,17 +3049,17 @@ document.addEventListener('keydown', function(e){
     });
   }
 
-  // Charts on Section 1/2 and Calibration are already wired to redraw on window
-  // 'resize' (see the existing window resize handler earlier in the file); a canvas
-  // hidden by pagination reports clientWidth 0, so if a resize fires while its page is
-  // hidden it falls back to a fixed width and looks wrong once revealed. Re-firing that
-  // same redraw path — plus NorSand's own redraw, which isn't resize-driven — on every
-  // page change is a cheap, simple fix: whichever page is now visible ends up correctly
-  // sized, at the cost of redrawing a few charts nobody's currently looking at.
+  // Charts on Section 1/2, Calibration and NorSand are already wired to redraw on window
+  // 'resize' (see the existing window resize handler earlier in the file, and runNorSand());
+  // a canvas hidden by pagination reports clientWidth 0, so if a resize fires while its page
+  // is hidden it falls back to a fixed width and looks wrong once revealed. Re-firing that
+  // same redraw path on every page change keeps whichever page is now visible correctly
+  // sized. updateConstructionPanels() and runNorSand() are each expensive (several full
+  // NorSand simulations) and guard themselves against running while their own page is
+  // hidden, so this no longer reruns them for every page — only the one just revealed.
   function redrawVisibleCharts(){
-    try{ window.dispatchEvent(new Event('resize')); }catch(e){}
-    if(typeof window.runNorSand==='function'){ try{ window.runNorSand(); }catch(e){} }
-    if(typeof window.updateYieldSurfaceExplorer==='function'){ try{ window.updateYieldSurfaceExplorer(); }catch(e){} }
+    try{ window.dispatchEvent(new Event('resize')); }catch(e){ console.error('redrawVisibleCharts: resize dispatch failed', e); }
+    if(typeof window.runNorSand==='function'){ try{ window.runNorSand(); }catch(e){ console.error('redrawVisibleCharts: runNorSand failed', e); } }
   }
 
   function focusPageHeading(idx){
@@ -3025,6 +3075,8 @@ document.addEventListener('keydown', function(e){
     // stop the NorSand slider tour if we're navigating away from its page — otherwise
     // it keeps animating hidden sliders and pulsing a hidden chart in the background
     if(prevIdx!==idx && window.cancelNsTour) window.cancelNsTour();
+    if(prevIdx!==idx && window.cancelCslShearTimer) window.cancelCslShearTimer();
+    if(prevIdx!==idx && window.cancelConceptWalkthrough) window.cancelConceptWalkthrough();
     PAGES.forEach(function(p,i){
       p.ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display=(i===idx)?'':'none'; });
     });
@@ -3037,7 +3089,7 @@ document.addEventListener('keydown', function(e){
     if(!(opts&&opts.noScroll)) window.scrollTo({top:0,behavior:(reduced||(opts&&opts.instant))?'auto':'smooth'});
     if(announcer && prevIdx!==idx) announcer.textContent='Page '+(idx+1)+' of '+PAGES.length+': '+PAGES[idx].label+'.';
     if(!(opts&&opts.noFocus) && prevIdx!==idx) focusPageHeading(idx);
-    if(!(opts&&opts.noHistory)){
+    if(!(opts&&opts.noHistory) && changed){
       var url='#'+PAGES[idx].ids[0];
       if(historyReady) history.pushState({page:idx},'',url);
       else history.replaceState({page:idx},'',url);
