@@ -262,7 +262,7 @@ body{padding-bottom:54px}
 </div></header>
 <div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">Start here</a><a href="#mental-model">Mental model</a><a href="#notation">Notation</a><a href="#csl-section">CSL & ψ</a><a href="#dilatancy-section">Dilatancy</a><a href="#calibration-section">Calibration</a><a href="#norsand-section">NorSand</a><a href="#knowledge-check">Check learning</a>
+<a href="#start">Start here</a><a href="#mental-model">Mental model</a><a href="#notation">Notation</a><a href="#csl-section">CSL & ψ</a><a href="#dilatancy-section">Dilatancy</a><a href="#calibration-section">NorSand calibration</a><a href="#norsand-section">NorSand parameters</a><a href="#knowledge-check">Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -294,8 +294,8 @@ body{padding-bottom:54px}
 <button type="button" class="goal" data-gotopage="notation"><span class="goal-num">3</span><b>Notation</b>Every symbol used in this module, grouped by what it describes.</button>
 <button type="button" class="goal" data-gotopage="csl-section"><span class="goal-num">4</span><b>CSL &amp; ψ</b>The critical state line, the state parameter, and why it beats relative density.</button>
 <button type="button" class="goal" data-gotopage="dilatancy-section"><span class="goal-num">5</span><b>Dilatancy</b>How ψ converts to D<sub>min</sub>, peak strength, and friction angle.</button>
-<button type="button" class="goal" data-gotopage="calibration-section"><span class="goal-num">6</span><b>Calibration</b>Where Γ, λ<sub>10</sub>, M<sub>tc</sub>, χ<sub>tc</sub>, N and H actually come from — real test data, not a lookup table.</button>
-<button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">7</span><b>NorSand</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
+<button type="button" class="goal" data-gotopage="calibration-section"><span class="goal-num">6</span><b>NorSand calibration</b>Where Γ, λ<sub>10</sub>, M<sub>tc</sub>, χ<sub>tc</sub>, N and H actually come from — real test data, not a lookup table.</button>
+<button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">7</span><b>NorSand parameters</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
 <button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">8</span><b>Check learning</b>100 questions, split into checkpoints you'll already have met along the way.</button>
 </div>
 </section>
@@ -1892,7 +1892,7 @@ updateConstructionPanels();
   // slot, so a chain of jumps (card -> card -> card) still unwinds one step at a time.
   var navStack=[];
   var backBtn=document.getElementById('backToPrevious');
-  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'Calibration','norsand-section':'NorSand','knowledge-check':'Check learning'};
+  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning'};
   function navOriginLabel(el){
     var idEl=el.closest('[id]');
     return (idEl && SECTION_LABELS[idEl.id]) || 'where you were';
@@ -2937,8 +2937,8 @@ document.addEventListener('keydown', function(e){
     {label:'Notation', ids:['notation']},
     {label:'CSL & ψ', ids:['csl-section','quizCheckABC']},
     {label:'Dilatancy', ids:['dilatancy-section','quizCheckDE']},
-    {label:'Calibration', ids:['calibration-section','quizCheckFGH']},
-    {label:'NorSand', ids:['norsand-section','quizCheckI']},
+    {label:'NorSand calibration', ids:['calibration-section','quizCheckFGH']},
+    {label:'NorSand parameters', ids:['norsand-section','quizCheckI']},
     {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']}
   ];
   // The pinned "mental model chain" recap box (flowSticky) only means anything on the pages
