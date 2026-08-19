@@ -363,17 +363,20 @@ body{padding-bottom:54px}
 </div></div>
 <div class="visual-panel"><h3>Guided “what changes?” explorer</h3>
 <p class="explain" style="font-size:11.5px;margin-top:0">Two of the tabs below ask you to change &Gamma; and &lambda; — properties of the line itself, not of any one sample. Here's what they mean on the curve, before you use them:</p>
-<svg viewBox="0 0 280 150" style="width:100%;max-width:280px;display:block;margin:0 auto 4px" role="img" aria-label="Diagram of the critical state line in void ratio versus log mean effective stress, showing Gamma as the intercept at p prime equals 1 kPa and lambda as the slope per decade of stress.">
+<svg id="whatChangesDiagram" viewBox="0 0 280 150" style="width:100%;max-width:280px;display:block;margin:0 auto 4px" role="img" aria-label="Diagram of the critical state line in void ratio versus log mean effective stress, showing Gamma as the intercept at p prime equals 1 kPa, lambda as the slope per decade of stress, and how the line or state point shifts for the selected tab below.">
 <line x1="40" y1="15" x2="40" y2="120" stroke="#61737b" stroke-width="1"/>
 <line x1="40" y1="120" x2="265" y2="120" stroke="#61737b" stroke-width="1"/>
 <text x="14" y="20" font-size="10.5" fill="#61737b">e</text>
 <text x="225" y="134" font-size="10.5" fill="#61737b">log p′</text>
 <text x="40" y="133" font-size="9" fill="#61737b" text-anchor="middle">p′=1</text>
-<line x1="40" y1="32.5" x2="265" y2="85" stroke="#123b4a" stroke-width="2.2"/>
-<circle cx="40" cy="32.5" r="3.8" fill="#1479b8"/>
-<path d="M 115 50 L 190 50 L 190 67.5" fill="none" stroke="#7653a6" stroke-width="1.6" stroke-dasharray="3,2"/>
+<line id="wcGhostLine" x1="40" y1="32.5" x2="265" y2="85" stroke="#c3ced1" stroke-width="1.6" stroke-dasharray="4,3" style="display:none"/>
+<line id="wcCslLine" x1="40" y1="32.5" x2="265" y2="85" stroke="#123b4a" stroke-width="2.2"/>
+<circle id="wcGammaDot" cx="40" cy="32.5" r="3.8" fill="#1479b8"/>
+<path id="wcLambdaBracket" d="M 115 50 L 190 50 L 190 67.5" fill="none" stroke="#7653a6" stroke-width="1.6" stroke-dasharray="3,2"/>
+<line id="wcConnector" x1="152" y1="50" x2="152" y2="50" stroke="#c64852" stroke-width="1.3" stroke-dasharray="2,2" style="display:none"/>
+<circle id="wcStateDot" cx="152" cy="50" r="4" fill="#c64852" style="display:none"/>
 </svg>
-<div class="legend" style="font-size:10.5px;justify-content:center"><span><i style="background:#1479b8"></i>Γ &mdash; e at p′=1 kPa (blue dot)</span><span><i style="background:#7653a6"></i>λ &mdash; drop in e per decade of p′ (purple bracket)</span></div>
+<div class="legend" style="font-size:10.5px;justify-content:center"><span><i style="background:#1479b8"></i>Γ &mdash; e at p′=1 kPa (blue dot)</span><span><i style="background:#7653a6"></i>λ &mdash; drop in e per decade of p′ (purple bracket)</span><span><i style="background:#c64852"></i>state point (red)</span></div>
 <div class="lesson-tabs" role="tablist" aria-label="What changes?"><button role="tab" id="tab-pane-e" aria-controls="pane-e" aria-selected="true" class="on" data-pane="pane-e">Increase e</button><button role="tab" id="tab-pane-p" aria-controls="pane-p" aria-selected="false" data-pane="pane-p">Increase p′</button><button role="tab" id="tab-pane-g" aria-controls="pane-g" aria-selected="false" data-pane="pane-g">Increase Γ</button><button role="tab" id="tab-pane-l" aria-controls="pane-l" aria-selected="false" data-pane="pane-l">Increase λ</button></div>
 <div id="pane-e" class="lesson-pane on callout" role="tabpanel" aria-labelledby="tab-pane-e"><b>Increase e at fixed p′:</b> the state point moves upward, ψ becomes more positive, and the response becomes more contractive.</div>
 <div id="pane-p" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-p"><b>Increase p′ at fixed e:</b> the CSL moves downward at the new stress. ψ becomes more positive. This is why the same relative density can behave differently at different stress levels.</div>
@@ -1842,7 +1845,37 @@ updateConstructionPanels();
 (function(){
   function addParticles(id, dense){var el=document.getElementById(id);if(!el)return;var pts=dense?[[5,7],[28,4],[51,8],[74,4],[16,29],[40,27],[64,31],[86,27],[4,52],[28,50],[52,54],[76,49],[89,58]]:[[5,8],[42,4],[78,13],[20,36],[63,39],[88,48],[8,65],[43,66],[75,70]];pts.forEach(function(p,i){var g=document.createElement('span');g.className='grain v'+((i%4)+1);g.style.left=p[0]+'%';g.style.top=p[1]+'px';var sz=15+((i*7)%8);g.style.width=sz+'px';g.style.height=sz+'px';g.style.transform='rotate('+((i*53)%360)+'deg)';el.appendChild(g);});}
   addParticles('denseParticles',true);addParticles('looseParticles',false);
-  document.querySelectorAll('.lesson-tabs button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.lesson-tabs button').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});document.querySelectorAll('.lesson-pane').forEach(x=>x.classList.remove('on'));b.classList.add('on');b.setAttribute('aria-selected','true');document.getElementById(b.dataset.pane).classList.add('on');});});
+  // Base CSL line in the "what changes?" diagram, in SVG px: Γ sits at (x0,y0) — p′=1 —
+  // and the line runs to (x1,y1) three decades out, at the same 75px/decade scale as the
+  // λ bracket already drawn on it. Each tab moves either the line or a state dot off this
+  // baseline so the diagram actually shows what its own caption describes.
+  function updateWhatChangesDiagram(pane){
+    var cslLine=document.getElementById('wcCslLine'), ghostLine=document.getElementById('wcGhostLine');
+    var gammaDot=document.getElementById('wcGammaDot'), connector=document.getElementById('wcConnector'), stateDot=document.getElementById('wcStateDot');
+    if(!cslLine) return;
+    var x0=40,y0=32.5,x1=265,y1=85;
+    ghostLine.style.display='none'; connector.style.display='none'; stateDot.style.display='none';
+    cslLine.setAttribute('x1',x0); cslLine.setAttribute('y1',y0); cslLine.setAttribute('x2',x1); cslLine.setAttribute('y2',y1);
+    gammaDot.setAttribute('cx',x0); gammaDot.setAttribute('cy',y0);
+    function yOnLine(x){ return y0+(y1-y0)*(x-x0)/(x1-x0); }
+    if(pane==='pane-e'){
+      var sx=152, sy=yOnLine(sx);
+      connector.setAttribute('x1',sx); connector.setAttribute('y1',sy); connector.setAttribute('x2',sx); connector.setAttribute('y2',sy-24);
+      connector.style.display=''; stateDot.setAttribute('cx',sx); stateDot.setAttribute('cy',sy-24); stateDot.style.display='';
+    } else if(pane==='pane-p'){
+      var sx0=95, sy0=yOnLine(sx0), sx1=215;
+      connector.setAttribute('x1',sx0); connector.setAttribute('y1',sy0); connector.setAttribute('x2',sx1); connector.setAttribute('y2',sy0);
+      connector.style.display=''; stateDot.setAttribute('cx',sx1); stateDot.setAttribute('cy',sy0); stateDot.style.display='';
+    } else if(pane==='pane-g'){
+      ghostLine.setAttribute('x1',x0); ghostLine.setAttribute('y1',y0); ghostLine.setAttribute('x2',x1); ghostLine.setAttribute('y2',y1); ghostLine.style.display='';
+      var dy=-16; cslLine.setAttribute('y1',y0+dy); cslLine.setAttribute('y2',y1+dy); gammaDot.setAttribute('cy',y0+dy);
+    } else if(pane==='pane-l'){
+      ghostLine.setAttribute('x1',x0); ghostLine.setAttribute('y1',y0); ghostLine.setAttribute('x2',x1); ghostLine.setAttribute('y2',y1); ghostLine.style.display='';
+      cslLine.setAttribute('y2', y0+(y1-y0)*1.6);
+    }
+  }
+  document.querySelectorAll('.lesson-tabs button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.lesson-tabs button').forEach(x=>{x.classList.remove('on');x.setAttribute('aria-selected','false');});document.querySelectorAll('.lesson-pane').forEach(x=>x.classList.remove('on'));b.classList.add('on');b.setAttribute('aria-selected','true');document.getElementById(b.dataset.pane).classList.add('on');updateWhatChangesDiagram(b.dataset.pane);});});
+  updateWhatChangesDiagram('pane-e');
   document.querySelectorAll('#predictionChoices button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#predictionChoices button').forEach(x=>x.classList.remove('correct','wrong'));var ok=b.dataset.answer==='correct';b.classList.add(ok?'correct':'wrong');document.getElementById('predictionFeedback').innerHTML=ok?'<b>Correct.</b> Above the CSL means e &gt; e<sub>c</sub>, so ψ is positive and the first-order tendency is contraction.':'<b>Not quite.</b> Compare the current void ratio with e<sub>c</sub> at the same p′. Above the CSL, e − e<sub>c</sub> is positive.';});});
   function progress(){var d=document.documentElement,b=document.body;var top=d.scrollTop||b.scrollTop;var h=(d.scrollHeight||b.scrollHeight)-d.clientHeight;var pct=h?100*top/h:0;var f=document.getElementById('readingProgress');if(f)f.style.width=pct+'%';}
   window.addEventListener('scroll',progress,{passive:true});progress();
