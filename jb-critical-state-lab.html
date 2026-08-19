@@ -420,8 +420,8 @@ body{padding-bottom:54px}
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>N</b><small>NorSand volumetric coupling coefficient (Table 3.1) &mdash; scales how far the image stress ratio M<sub>i</sub> departs from M<sub>tc</sub></small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>H</b><small>NorSand plastic hardening modulus &mdash; how fast the yield surface grows/shrinks per unit strain</small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>I<sub>r</sub></b><small>elastic rigidity index, G/p′ (shear modulus over mean stress)</small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>p<sub>i</sub></b><small>NorSand "image" mean stress &mdash; the internal variable that sets the current yield surface size</small></button>
-<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>ψ<sub>i</sub>, M<sub>i</sub>, χ<sub>i</sub></b><small>ψ, M and χ evaluated at the "image" condition (p′=p<sub>i</sub>) rather than the current stress</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>p<sub>i</sub></b><small>evolving image mean pressure that controls the current size of the outer NorSand yield locus &mdash; an internal variable, not a fixed soil property</small></button>
+<button type="button" class="notation-card" data-goto="norsand-section" style="border-left-color:#647680"><b>ψ<sub>i</sub>, M<sub>i</sub>, χ<sub>i</sub></b><small>ψ, M and χ evaluated at the "image" condition (p′=p<sub>i</sub>) rather than the current stress. M<sub>i</sub> is calculated from the current image condition each step &mdash; it's not entered as a constant material property.</small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>e<sub>0</sub>, p′<sub>0</sub>, ψ<sub>0</sub></b><small>value of e, p′, ψ at the <i>start</i> of a test, before shearing begins</small></button>
 </div>
 </details>
@@ -649,7 +649,7 @@ body{padding-bottom:54px}
 <h3 style="margin-top:0">Try it: what a yield surface actually is</h3>
 <p class="explain" style="font-size:12.5px;background:#eef8fc;border-radius:8px;padding:8px 10px;margin-top:0"><b>Purpose, in one line:</b> this one boundary is what lets NorSand predict a whole stress&ndash;strain curve instead of just a peak number. Every strain increment, the boundary grows a little, and the model simply reads &eta; off wherever the state now sits on the bigger boundary. That's it &mdash; everything below just makes that one idea concrete.</p>
 <p class="explain" style="font-size:12px;margin:6px 0">Inside the boundary, the soil only responds elastically &mdash; nothing permanently deforms. Push the state up against it and the soil yields: it deforms permanently, and the boundary itself grows to keep up. That growth is exactly what H controls, strain by strain, in the simulation further down.</p>
-<p class="explain" style="font-size:11.5px;margin:0 0 4px">Same controls as the consolidate-then-shear tool above: drag <b>&eta;</b> OR <b>strain</b> below &mdash; whichever you move becomes the control, the other the computed response. p&prime;<sub>0</sub> and M<sub>tc</sub> here are the exact same sliders as further down (moving either copy moves both). Formally, this boundary is &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)), step 4 of the equation chain further down.</p>
+<p class="explain" style="font-size:11.5px;margin:0 0 4px">Same controls as the consolidate-then-shear tool above: drag <b>&eta;</b> OR <b>strain</b> below &mdash; whichever you move becomes the control, the other the computed response. p&prime;<sub>0</sub> and M<sub>tc</sub> here are the exact same sliders as further down (moving either copy moves both). Formally, this boundary is the outer NorSand yield locus in triaxial p&prime;&ndash;q space, &eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)), step 4 of the equation chain further down.</p>
 <div class="ys-sliders">
 <div class="slider-block"><label for="ysP0"><span>Consolidation stress, p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="ysP0Out">200</span></label><input id="ysP0" type="range" min="10" max="1500" step="10" value="200">
 <div class="hint">Fixed for the whole test (constant-p&prime; idealization) &mdash; same slider as p&prime;<sub>0</sub> further down. Mostly rescales everything together, so it's <b>less</b> sensitive at high values &mdash; expected, not a bug. <b>Strain moves the dot</b>; this doesn't.</div></div>
@@ -675,7 +675,7 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:10px;margin:3px 0 0"><b style="color:#c64852">Red dot:</b> p&prime;=<span id="ysCurrentP">120</span> kPa, &eta;=<span id="ysCurrentEta">&ndash;</span><span id="ysBeyondNote"></span> &middot; <b style="color:#2d8b65">M<sub>tc</sub>=<span id="ysCritMtc">1.26</span></b></p>
 </div>
 <div>
-<canvas id="yieldSurfaceQPChart" style="height:130px" role="img" aria-label="Chart of deviator stress q versus mean effective stress p prime, showing the yield surface as a closed bullet shape that starts and ends at q equals zero, a straight critical state line through the origin, the image condition point, and the current stress state."></canvas>
+<canvas id="yieldSurfaceQPChart" style="height:130px" role="img" aria-label="Chart of deviator stress q versus mean effective stress p prime, showing the outer NorSand yield locus as a closed bullet shape that starts and ends at q equals zero, plus two fainter reference loci at a smaller and a larger image pressure p i for comparison, a straight critical state line through the origin, the image condition point, and the current stress state."></canvas>
 </div>
 <div>
 <canvas id="yieldSurfaceEvolutionChart" style="height:140px" role="img" aria-label="Chart showing five nested yield surfaces of increasing size, snapshotted at five different points in the same test, growing from small and light at zero strain to large and dark navy at the strain currently selected, with dots marking the actual stress state at the fixed consolidation stress on each snapshot surface."></canvas>
@@ -712,11 +712,11 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="nsN">N (volumetric coupling) <span class="readout" id="nsNOut">0.30</span></label><input id="nsN" type="range" min="0.15" max="0.55" step="0.01" value="0.30">
 <div class="hint">Scales how far the image stress ratio M<sub>i</sub> departs from M<sub>tc</sub> for a given &psi;<sub>i</sub> (Table 3.1) &mdash; a secondary shaping term on top of &chi;<sub>tc</sub>.</div></div>
 <div class="slider-block"><label for="nsH">H (plastic hardening modulus) <span class="readout" id="nsHOut">300</span></label><input id="nsH" type="range" min="25" max="500" step="5" value="300">
-<div class="hint">How fast the yield surface grows or shrinks toward its image size per unit strain &mdash; low H gives a slow, ductile approach to peak; high H gives a sharp, early peak.</div></div>
+<div class="hint">How fast the outer yield locus grows or shrinks toward its image size (p<sub>i</sub> toward p<sub>i,max</sub>) per unit plastic shear strain &mdash; low H gives a slow, ductile approach to peak; high H gives a sharp, early peak.</div></div>
 <div class="slider-block"><label for="nsE0"><span>Initial void ratio, e<sub>0</sub></span> <span class="readout" id="nsE0Out">0.60</span></label><input id="nsE0" type="range" min="0.45" max="0.85" step="0.002" value="0.60">
 <div class="hint">Together with p&prime;<sub>0</sub> and the CSL above, this sets &psi;<sub>0</sub> &mdash; the single number that determines whether the test contracts or dilates.</div></div>
 <div class="slider-block"><label for="nsP0"><span>Initial p&prime;<sub>0</sub> (kPa)</span> <span class="readout" id="nsP0Out">200</span></label><input id="nsP0" type="range" min="10" max="1500" step="10" value="200">
-<div class="hint">Starting confining stress. Raising it alone moves the sample toward denser-of-critical (&psi;<sub>0</sub> more negative) since the CSL itself drops with stress.</div></div>
+<div class="hint">Starting confining stress. Raising it alone, at fixed e<sub>0</sub>, lowers e<sub>c</sub>(p&prime;<sub>0</sub>) since the CSL drops with stress &mdash; so &psi;<sub>0</sub>=e<sub>0</sub>&minus;e<sub>c</sub>(p&prime;<sub>0</sub>) becomes <b>more positive</b>, moving the sample toward looser-of-critical, more contractive.</div></div>
 </div>
 <button type="button" id="nsTour" class="alt">▶ Step through each slider</button>
 <span class="badge" id="nsSyncBadge">● live — reruns automatically as you move any slider above</span>
@@ -730,7 +730,7 @@ body{padding-bottom:54px}
 </div>
 
 <h3>The seventh (and eighth) properties: elasticity, I<sub>r</sub> and &nu;</h3>
-<div class="explain"><p>NorSand needs seven properties in total &mdash; the six above plus a Poisson's ratio &nu;. Elasticity itself is set by a single dimensionless number, the <b>rigidity index I<sub>r</sub> = G/p&prime;</b> (elastic shear modulus over mean stress, Table 3.2's typical range 100&ndash;600 for sands): high I<sub>r</sub> means the soil is very stiff relative to how hard it's being confined (dense, heavily overconsolidated), low I<sub>r</sub> means it's compliant relative to its confinement (loose, lightly stressed). This simulator neglects elastic strains entirely (disclosed below), so I<sub>r</sub> plays no role in the curves above &mdash; but you can still see what it represents:</p></div>
+<div class="explain"><p>NorSand needs seven properties in total &mdash; the six above plus a Poisson's ratio &nu;. Elasticity itself is set by a single dimensionless number, the <b>rigidity index I<sub>r</sub> = G/p&prime;</b> (elastic shear modulus over mean stress, Table 3.2's typical range 100&ndash;600 for sands): high I<sub>r</sub> means the soil is very stiff relative to how hard it's being confined (dense, heavily overconsolidated), low I<sub>r</sub> means it's compliant relative to its confinement (loose, lightly stressed). A complete implementation uses I<sub>r</sub> and &nu; to compute an elastic response inside the yield surface, before any plastic correction; this simulator neglects elastic strains entirely instead (see "What this simulator actually does" below the governing equations), so I<sub>r</sub> plays no role in the curves above &mdash; but you can still see what it represents:</p></div>
 <div class="grid2">
 <div class="slider-block"><label for="irG">Elastic shear modulus, G (MPa) <span class="readout" id="irGOut">40</span></label><input id="irG" type="range" min="5" max="200" step="1" value="40"></div>
 <div class="slider-block"><label for="irP">Mean effective stress, p&prime; (kPa) <span class="readout" id="irPOut">100</span></label><input id="irP" type="range" min="10" max="1000" step="5" value="100"></div>
@@ -747,7 +747,7 @@ body{padding-bottom:54px}
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>3 &middot; The model's evolving target</small><div class="eq">M<sub>i</sub> = M<sub>tc</sub> &minus; &chi;<sub>i</sub>N|&psi;<sub>i</sub>|</div><p>&chi;<sub>i</sub> and the <i>current</i> &psi;<sub>i</sub> from step 1 combine to set the image stress ratio &mdash; how far the yield surface's target currently sits from M<sub>tc</sub>.</p></div>
 <div class="eq-arrow">↓</div>
-<div class="eq-step"><small>4 &middot; Where the model actually is right now</small><div class="eq">&eta; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>))</div><p>At the current p<sub>i</sub> and p&prime;, this is the stress ratio the yield surface predicts this instant.</p></div>
+<div class="eq-step"><small>4 &middot; The outer NorSand yield locus in triaxial p&prime;&ndash;q space</small><div class="eq">&eta; = q/p&prime; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &nbsp;&hArr;&nbsp; q = M<sub>i</sub>&middot;p&prime;&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>))</div><p>At the current p<sub>i</sub> and p&prime;, this is the stress ratio this locus predicts this instant. Two landmarks on the curve: at the <b>image condition</b> p&prime;=p<sub>i</sub>, ln(p&prime;/p<sub>i</sub>)=0 so &eta;=M<sub>i</sub> exactly (q=M<sub>i</sub>&middot;p<sub>i</sub>) &mdash; not the same thing as critical state, which needs continued plastic shearing with no further change in stress ratio or void ratio, and M<sub>i</sub> is generally still moving toward M<sub>tc</sub> at that point. At the <b>isotropic intercept</b> q=0, ln(p&prime;/p<sub>i</sub>)=1 so p&prime;=exp(1)&middot;p<sub>i</sub> (&asymp;2.718&middot;p<sub>i</sub> &mdash; Euler's number, not void ratio e). This is the triaxial-compression meridional section of NorSand's yield surface; the full three-dimensional surface also depends on the Lode angle through the applicable critical stress ratio (footnote 4 above).</p></div>
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>5 &middot; The gap between "heading toward" and "is" becomes motion</small><div class="eq">D<sup>p</sup> = M<sub>i</sub> &minus; &eta;</div><p>This is the actual plastic dilation rate for this increment &mdash; the same D = M − &eta; rule from Section 2, now evaluated with the image values. It's what moves e.</p></div>
 <div class="eq-arrow">↓</div>
@@ -755,6 +755,8 @@ body{padding-bottom:54px}
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>7 &middot; How fast it actually gets there &mdash; then repeat from step 1</small><div class="eq">&Delta;p<sub>i</sub> = H&middot;(p<sub>i,max</sub> &minus; p<sub>i</sub>)&middot;&Delta;&epsilon;<sub>q</sub></div><p>H sets how quickly p<sub>i</sub> catches up to p<sub>i,max</sub> each increment. Advance p<sub>i</sub> by this amount, then go back to step 1 for the next slice of strain.</p></div>
 </div>
+<div class="callout" style="font-size:11.5px;margin:10px 0"><b>Yield locus vs. stress path:</b> the yield locus (step 4) is the boundary of stress states the <i>current</i> internal variables p<sub>i</sub> and M<sub>i</sub> allow without further plastic strain &mdash; a snapshot of how big the surface is right now. The stress path is the route the actual (p&prime;,&eta;) point follows as strain accumulates. Hardening or softening doesn't move the stress point off some fixed shape; it changes the locus itself, strain by strain, as p<sub>i</sub> and M<sub>i</sub> evolve through steps 1&ndash;3 and 6&ndash;7. A single stress state sitting on the locus is a <i>yield point</i>; the locus is every combination that would activate plastic loading.</div>
+<div class="warning"><b>What this simulator actually does, precisely.</b> It initializes the isotropic starting stress (q=0, p&prime;=p&prime;<sub>0</sub>) directly on the outer yield locus &mdash; since p&prime;<sub>0</sub>=exp(1)&middot;p<sub>i0</sub> is exactly that locus's own isotropic intercept (step 4), this is a property of where the starting point happens to land, not a general-purpose NorSand initialization procedure for arbitrary stress histories. From there it neglects elastic strains, treats the imposed shear-strain increment as if it were entirely plastic, and evolves p<sub>i</sub> directly through the simplified hardening law above (steps 6&ndash;7) &mdash; without computing the elastic trial stress and plastic return-mapping step a complete implementation performs every increment once the trial stress reaches the surface: inside the locus a stress increment is elastic; once a trial stress reaches or exceeds it, plastic correction and hardening take over. Real NorSand loading doesn't generally begin directly on the yield surface the way this simulator's idealized path does. In short, this is a <b>plastic-on-surface educational integration</b> &mdash; useful for building intuition about what each parameter does to the shape of the curve, not a full elastoplastic stress integration, and its curves should be read as conceptual demonstrations of plastic state evolution under one idealized stress path. A production implementation &mdash; for example in FLAC3D &mdash; additionally carries stress-dependent elastic shear and bulk moduli, a genuine elastic-predictor/plastic-corrector stress return, an internal cap, and general three-dimensional stress states. Use this tool to understand parameter roles and qualitative trends; it isn't a substitute for a verified constitutive-model implementation or engineering analysis.</div>
 </div>
 
 <div class="quiz-checkpoint" id="quizCheckI">
@@ -1139,7 +1141,7 @@ function applyPreset(){
   if(nsPreset.value==="erksak"){
     nsG.value=ERKSAK.Gamma; nsL.value=ERKSAK.lambda10;
     nsM.value=ERKSAK.Mtc; nsX.value=ERKSAK.chitc;
-    var lam = ERKSAK.lambda10/2.303;
+    var lam = ERKSAK.lambda10/Math.LN10;
     nsH.value = Math.max(25,Math.min(500, Math.round(4/lam)));
     nsE0.value = 0.60; nsP0.value=200; nsN.value=0.30;
   }
@@ -1160,9 +1162,13 @@ nsPreset.addEventListener("change",applyPreset);
 
 function simulateNorSand(Gamma,lambda10,Mtc,chitc,N,H,e0,p0,steps,dEq){
   steps = steps||1000; dEq = dEq||0.0003;
-  var lambda = lambda10/2.303;
+  var lambda = lambda10/Math.LN10;
   var chii = chitc/(1-chitc*lambda/Mtc);
-  var p = p0, e = e0, pi = p0/Math.E; // freshly isotropically consolidated: eta=0 at start
+  // Places the isotropic starting state (q=0, p'=p0) exactly on the outer yield locus's own
+  // isotropic intercept (locus eq: p'=exp(1)*pi at q=0), since eta=0 there needs no other
+  // justification — this is a property of that specific starting point, not a general
+  // NorSand initialization rule for an arbitrary prior stress history.
+  var p = p0, e = e0, pi = p0/Math.E;
   var Q=[], E=[], EC=[], STRAIN=[], DIL=[], EV=[], PI=[], MIARR=[];
   var etaPeak=0, epsAtPeak=0, evCum=0;
   for(var i=0;i<=steps;i++){
@@ -1452,26 +1458,37 @@ function drawYieldSurfaceEvolutionChart(sim, currentStrainPct, p0, Mtc, pMax){
   });
   return snaps;
 }
+// Builds one outer-yield-locus bullet curve q(p') for a given (Mi, pi) pair, clipped to
+// [0, pMax] — shared by the current locus and the two faint smaller/larger-pi references
+// drawn alongside it so learners can see pi controlling size in isolation, holding Mi fixed.
+function yieldLocusPoints(Mi, pi, pMax, steps){
+  var pEnd=pi*Math.E, pts=[];
+  for(var i=0;i<=steps;i++){
+    var pv=pMax*i/steps;
+    var eta = pv<=0 ? 0 : (pv>=pEnd ? 0 : Mi*(1-Math.log(pv/pi)));
+    eta=Math.max(0,eta);
+    pts.push([pv,eta*pv]);
+  }
+  return pts;
+}
 function drawYieldSurfaceQPChart(Mi, pi, p, Mtc, pMax){
   var cv=document.getElementById('yieldSurfaceQPChart'); if(!cv) return;
   var W=cv.clientWidth||400,H=130; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
   var ml=48,mr=16,mt=14,mb=30,pw=W-ml-mr,ph=H-mt-mb;
   var pEnd=pi*Math.E;
-  var steps=160, bulletPts=[], qPeak=0;
-  for(var i=0;i<=steps;i++){
-    var pv=pMax*i/steps;
-    var eta = pv<=0 ? 0 : (pv>=pEnd ? 0 : Mi*(1-Math.log(pv/pi)));
-    eta=Math.max(0,eta);
-    var qv=eta*pv;
-    if(qv>qPeak) qPeak=qv;
-    bulletPts.push([pv,qv]);
-  }
+  var steps=160, bulletPts=yieldLocusPoints(Mi,pi,pMax,steps), qPeak=0;
+  bulletPts.forEach(function(pt){ if(pt[1]>qPeak) qPeak=pt[1]; });
+  // Two faint reference loci at a smaller and a larger pi (Mi held fixed) so "pi controls
+  // size" is visible directly, without waiting for the strain slider to change it.
+  var smallerPts=yieldLocusPoints(Mi, pi*0.55, pMax, steps);
+  var largerPts=yieldLocusPoints(Mi, pi*1.8, pMax, steps);
+  var refPeak=0; smallerPts.concat(largerPts).forEach(function(pt){ if(pt[1]>refPeak) refPeak=pt[1]; });
   var qCSLAtPmax=Mtc*pMax;
   var curEtaLocal = p<=0 ? 0 : (p>=pEnd ? 0 : Mi*(1-Math.log(p/pi)));
   curEtaLocal=Math.max(0,curEtaLocal);
   var curQ=curEtaLocal*p, imgQ=Mi*pi;
-  var qMax=Math.max(qPeak, qCSLAtPmax, curQ, imgQ)*1.15;
+  var qMax=Math.max(qPeak, refPeak, qCSLAtPmax, curQ, imgQ)*1.15;
   function X(v){ return ml+pw*Math.max(0,Math.min(1,v/pMax)); }
   function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/qMax))); }
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.beginPath();
@@ -1480,16 +1497,23 @@ function drawYieldSurfaceQPChart(Mi, pi, p, Mtc, pMax){
   drawYTitle(ctx,"q  (deviator stress, kPa)", 12, mt+ph/2, "600 10.5px 'Segoe UI',Arial,sans-serif");
   ctx.fillStyle="#61737b"; ctx.font="9px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="right";
   ctx.fillText("0",ml-4,mt+ph+3);
+  function strokeLocus(pts,color,dash,width){
+    ctx.strokeStyle=color; ctx.lineWidth=width; if(dash) ctx.setLineDash(dash); ctx.beginPath();
+    pts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  strokeLocus(smallerPts,"#a8cddf",[3,2],1.3);
+  strokeLocus(largerPts,"#a8cddf",[3,2],1.3);
   ctx.fillStyle="rgba(20,121,184,0.08)"; ctx.beginPath();
   bulletPts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
   ctx.closePath(); ctx.fill();
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.2; ctx.beginPath();
-  bulletPts.forEach(function(pt,i){ var x=X(pt[0]),y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
-  ctx.stroke();
+  strokeLocus(bulletPts,"#123b4a",null,2.2);
   ctx.strokeStyle="#2d8b65"; ctx.setLineDash([6,3]); ctx.lineWidth=1.6; ctx.beginPath();
   ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(pMax),Y(Mtc*pMax)); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle="#9aa9ae"; ctx.beginPath(); ctx.arc(X(pi),Y(imgQ),3,0,7); ctx.fill();
   ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(p),Y(curQ),3.5,0,7); ctx.fill();
+  ctx.fillStyle="#7ba7bd"; ctx.font="8.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign="left";
+  ctx.fillText("smaller pᵢ ↔ larger pᵢ", ml+4, mt+9);
 }
 function drawYieldSurfaceChart(Mi, pi, p, pMax){
   var cv=document.getElementById('yieldSurfaceChart'); if(!cv) return null;
@@ -1716,7 +1740,7 @@ function updatePipeline(sand){
   var test=rows[SELECTED_TEST_IDX];
   document.getElementById("pipelineTestBadge").textContent=test.id;
 
-  var lamE=sand.lambda10/2.303;
+  var lamE=sand.lambda10/Math.LN10;
   var Hrep=Math.max(25,Math.min(500,Math.round(4/lamE)));
   var sim=simulateNorSand(sand.Gamma,sand.lambda10,sand.Mtc,sand.chitc,0.30,Hrep,test.e0,test.sig3,1000,0.0003);
   var trueQ = sim.eta.map(function(v){ return v*test.sig3; });
@@ -1818,7 +1842,7 @@ function updateConstructionPanels(){
     <div class="stat hi"><small>fitted &chi;<sub>tc</sub> (real: ${sand.chitc.toFixed(2)})</small><strong>${chiSlope.toFixed(2)}</strong></div>
     <div class="stat"><small>trend</small><strong>D<sub>min</sub> = ${chiSlope.toFixed(2)}&middot;&psi;</strong></div>`;
 
-  var lamE=sand.lambda10/2.303;
+  var lamE=sand.lambda10/Math.LN10;
   var Hrep=Math.max(25,Math.min(500,Math.round(4/lamE)));
   var p0m=200, ec0m=sand.Gamma-sand.lambda10*Math.log10(p0m);
   var targets=[{psi:-0.10,color:"#c64852",label:"dense"},{psi:0.0,color:"#e38a22",label:"near-critical"},{psi:0.08,color:"#1479b8",label:"loose"}];
@@ -2795,7 +2819,7 @@ function update(){
   var etaEl=document.getElementById('ysCurrentEta'), noteEl=document.getElementById('ysBeyondNote');
   if(curEta<0){
     etaEl.textContent='0 (off this branch)';
-    noteEl.textContent=' — p′ has gone past the surface’s compression vertex (p′ > pi·e ≈ '+(pi*Math.E).toFixed(0)+' kPa), so this equation no longer gives a valid η here.';
+    noteEl.textContent=' — p′ has gone past the locus’s isotropic intercept (p′ > pi·exp(1) ≈ '+(pi*Math.E).toFixed(0)+' kPa), so this equation no longer gives a valid η here.';
   } else {
     etaEl.textContent=curEta.toFixed(3);
     noteEl.textContent='';
@@ -2828,9 +2852,9 @@ var figureInfo={
 'nsQChart':['NorSand stress-ratio response','Blue curve: η = q/p′ versus shear strain. The statistics below report peak, strain at peak, final η, and target Mtc.','Read peak height, strain at peak, softening or hardening direction, and the approach toward Mtc.'],
 'nsEChart':['NorSand state evolution','Green curve: current void ratio. Gray dashed curve: critical void ratio at current p′. Their vertical separation is current ψ.','Watch whether the two curves converge. That convergence represents evolution toward critical state.'],
 'yieldSurfaceEPChart':['For scale: the compression plane','Navy line: this sand\'s own CSL, from the Γ and λ10 sliders. Red dashed vertical: p′. Grey dashed vertical: pi.','This explorer does not track void ratio directly — these are reference lines only, anchoring the pressures being dragged elsewhere against the same compression plane the whole module is built around, not a new state point.'],
-'yieldSurfaceChart':['The interactive view — η vs p′','Shaded region: elastic, where the soil only responds without permanently deforming. The navy line is the yield surface itself, where it starts to yield. At p′=pi (grey dashed), η=Mi exactly — the image condition the model is named for. Green dashed: critical state, η=Mtc, flat because it is a material constant independent of p′ or pi.','If the curve sits above the green line (whenever p′ is less than pi at the current strain), that is not a flaw — it is exactly how NorSand predicts peak strength above critical strength for dense sand. Mi itself is always at or below Mtc, by construction of the equation.'],
-'yieldSurfaceQPChart':['The classic view — q vs p′','Shaded bullet: the same surface, plotted as q=η·p′ instead of η alone — it closes back to q=0 both as p′ approaches 0 and at p′=pi·e. Green line: critical state, q=Mtc·p′, straight through the origin. Grey dot: image condition. Red dot: current state.','Compare directly against the η–p′ view alongside it: same surface, same numbers, just a different projection of the exact same equation.'],
-'yieldSurfaceEvolutionChart':['Watch it actually grow: five snapshots of this test','Five snapshots of one test\'s boundary, not five different tests — same Mtc, same p′0, only the strain each was taken at differs, from 0% (palest) up to the current strain (red, boldest). As strain increases, pi grows via H, so each surface is both bigger and shifted right, which is why the lines fan out on the right instead of stacking on top of each other. p′ itself never moves (dotted vertical): the dot on each layer is the real (p′,q) at that snapshot.','Notice the dot never sits on the steep rising part of any curve, only the declining half between each surface\'s own vertex and its peak — pi starts at exactly p′ divided by e (the vertex itself) and only grows toward p′ as strain proceeds. The faint red line joining the five dots is that real path, vertical by construction since p′ never moves in this idealization.']};
+'yieldSurfaceChart':['The interactive view — η vs p′','Shaded region: elastic, where the soil only responds without permanently deforming. The navy line is the outer yield locus itself — its triaxial p′–q meridional section, not the full three-dimensional surface — where it starts to yield. At p′=pi (grey dashed), η=Mi exactly — the image condition the model is named for, not the same thing as critical state. Green dashed: critical state, η=Mtc, flat because it is a material constant independent of p′ or pi.','If the curve sits above the green line (whenever p′ is less than pi at the current strain), that is not a flaw — it is exactly how NorSand predicts peak strength above critical strength for dense sand. Mi itself is always at or below Mtc, by construction of the equation. Reaching the image condition (η=Mi) during a test is not the same as reaching critical state: critical state needs continued plastic shearing with no further change in stress ratio or void ratio, and Mi is still moving toward Mtc when the image condition is first reached.'],
+'yieldSurfaceQPChart':['The classic view — q vs p′','Shaded bullet: the same outer yield locus, plotted as q=η·p′ instead of η alone — it closes back to q=0 both as p′ approaches 0 and at p′=pi·exp(1) (&asymp;2.718&middot;pi), its isotropic intercept. Green line: critical state, q=Mtc·p′, straight through the origin. Grey dot: image condition, p′=pi, q=Mi·pi. Red dot: current state. Faint dashed loci: the same locus at a smaller and a larger pi, for comparison — pi controls the locus\'s size, Mi its stress-ratio scale.','Compare directly against the η–p′ view alongside it: same locus, same numbers, just a different projection of the exact same equation. This is NorSand\'s outer yield locus in the triaxial p′–q plane specifically — the full three-dimensional yield surface also depends on the Lode angle (see footnote 4 near the equation chain).'],
+'yieldSurfaceEvolutionChart':['Watch it actually grow: five snapshots of this test','Five snapshots of one test\'s outer yield locus, not five different tests — same Mtc, same p′0, only the strain each was taken at differs, from 0% (palest) up to the current strain (red, boldest). As strain increases, pi grows via H, so each locus is both bigger and shifted right, which is why the lines fan out on the right instead of stacking on top of each other. p′ itself never moves (dotted vertical): the dot on each layer is the real (p′,q) at that snapshot.','Notice the dot never sits on the steep rising part of any curve, only the declining half between each locus\'s own isotropic intercept and its peak — pi starts at exactly p′ divided by exp(1) (Euler\'s number, &asymp;2.718 — not void ratio e) and only grows toward p′ as strain proceeds. The faint red line joining the five dots is that real path, vertical by construction since p′ never moves in this idealization.']};
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);tools.querySelector('button').addEventListener('click',function(){help.classList.toggle('open');this.setAttribute('aria-expanded',help.classList.contains('open'));parent.classList.toggle('chart-reading-mode');});});
 // Ensure every legend that actually HAS a figure-reading button states its purpose —
 // scoped to .figure-shell so legends without one (e.g. plain explanatory diagrams) don't
@@ -2895,7 +2919,7 @@ var NS_TOUR = [
   {slider:nsN, target:0.50, label:'N (volumetric coupling)', note:'A secondary shaping term on top of χtc — expect a subtler change than the others.'},
   {slider:nsH, target:480, label:'H (plastic hardening modulus)', note:'High H gives a sharp, early peak instead of a slow, ductile approach.'},
   {slider:nsE0, target:0.76, label:'Initial void ratio, e0', note:'Raising e0 alone pushes ψ0 positive — watch the response shift from dilative toward contractive.'},
-  {slider:nsP0, target:700, label:'Initial p′0 (kPa)', note:'Raising p′0 alone moves the sample toward denser-of-critical, since the CSL itself drops with stress.'}
+  {slider:nsP0, target:700, label:'Initial p′0 (kPa)', note:'Raising p′0 alone, at fixed e0, lowers ec(p′0) since the CSL drops with stress — so ψ0 becomes more positive, moving the sample toward looser-of-critical, more contractive.'}
 ];
 var nsTourRunning=false, nsTourCancel=false;
 function tweenNsSlider(step,duration,cb){
