@@ -3798,16 +3798,23 @@ function niceAxis(ctx,W,H,ml,mr,mt,mb,xlab,ylab,xlo,xhi,ylo,yhi){
   ctx.textAlign="center"; ctx.textBaseline="top";
   xt.ticks.forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); ctx.fillText(fmtTick(v,xt.step), x, mt+ph+8); });
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw,ph);
+  // drawXTitle/drawYTitle don't set their own textBaseline, so they inherit whatever the tick
+  // labels above left behind ("top") -- reset to the canvas default (text sits ON the given y,
+  // extending upward) before calling them, or the title renders below its intended position.
+  ctx.textBaseline="alphabetic";
   // titles pushed well clear of the tick-value row below/left of them, rather than crowding it
-  drawXTitle(ctx, xlab, ml+pw/2, H-3);
+  drawXTitle(ctx, xlab, ml+pw/2, H-9);
   drawYTitle(ctx, ylab, 13, mt+ph/2);
   return {pw:pw, ph:ph, X:X, Y:Y};
 }
 function plotXY(cv, dataX, dataY, dataMarkX, dataMarkY, modelX, modelY, modelMarkX, modelMarkY, opts){
   opts = opts || {};
-  var W=cv.clientWidth||300, H=260; cv.width=W; cv.height=H;
+  // match .bayes-chart-box canvas's actual CSS height (230px) exactly -- drawing at a taller
+  // raster than the box displays at scaled everything down, squeezing the x-axis title
+  // (placed near the bottom) so close to the edge it was barely legible.
+  var W=cv.clientWidth||300, H=230; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ml=62,mr=16,mt=16,mb=40;
+  var ml=62,mr=16,mt=16,mb=44;
   function range(arrs){
     var lo=Infinity, hi=-Infinity;
     arrs.forEach(function(a){ if(!a) return; a.forEach(function(v){ if(isFinite(v)){ if(v<lo)lo=v; if(v>hi)hi=v; } }); });
@@ -4193,9 +4200,9 @@ function initMcmcUI(ctx){
   });
 }
 function drawBandChart(cv, xs, yMean, yLo, yHi, xlab, ylab, dataXMarks){
-  var W=cv.clientWidth||400, H=260; cv.width=W; cv.height=H;
+  var W=cv.clientWidth||400, H=230; cv.width=W; cv.height=H; // matches .bayes-chart-box canvas's CSS height exactly
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ml=62,mr=16,mt=16,mb=40;
+  var ml=62,mr=16,mt=16,mb=44;
   var xlo=Math.min.apply(null,xs), xhi=Math.max.apply(null,xs);
   var ylo=Math.min.apply(null,yLo), yhi=Math.max.apply(null,yHi);
   var ypad=(yhi-ylo)*0.06;
