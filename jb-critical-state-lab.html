@@ -262,7 +262,7 @@ body{padding-bottom:54px}
 </div></header>
 <div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">Start here</a><a href="#mental-model">Mental model</a><a href="#notation">Notation</a><a href="#csl-section">CSL & ψ</a><a href="#dilatancy-section">Dilatancy</a><a href="#calibration-section">NorSand calibration</a><a href="#norsand-section">NorSand parameters</a><a href="#knowledge-check">Check learning</a><a href="#special-revisions">Special revisions</a>
+<a href="#start">Start here</a><a href="#mental-model">Mental model</a><a href="#notation">Notation</a><a href="#csl-section">CSL & ψ</a><a href="#dilatancy-section">Dilatancy</a><a href="#calibration-section">NorSand calibration</a><a href="#norsand-section">NorSand parameters</a><a href="#knowledge-check">Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -791,6 +791,7 @@ body{padding-bottom:54px}
 <div id="commentsSection"></div>
 </div>
 
+<!-- HIDDEN FROM PUBLIC (per request) -- content preserved below, uncomment to restore.
 <div class="card" id="special-revisions">
 <h2>Special revisions</h2>
 <p class="explain" style="font-size:12px">This page compiles a specific piece of technical feedback received on this module after publication, and how it's addressed &mdash; without editing any of the pages above. Most readers working through the module for the first time can skip it.</p>
@@ -819,6 +820,7 @@ body{padding-bottom:54px}
 <p class="sources"><b>Paper:</b> Contreras, L.F., Rojas-Huaroto, H., Halliday, A. &amp; Llano-Serna, M. (2025). <em>Bayesian Calibration of NorSand Model Parameters Using Triaxial Test Data.</em> Australian Geomechanics, Volume 60, No. 4, December 2025. <a href="https://doi.org/10.56295/AGJ6041" target="_blank" rel="noopener">https://doi.org/10.56295/AGJ6041</a></p>
 <p class="sources"><b>Code and data</b> (Python/Jupyter Notebooks, MCMC calibration, Fraser River sand triaxial dataset, GPLv2): <a href="https://github.com/LF-Contreras/Bayesian-calibration-NorSand-model" target="_blank" rel="noopener">github.com/LF-Contreras/Bayesian-calibration-NorSand-model</a></p>
 </div>
+-->
 
 
 <script>
@@ -1993,7 +1995,7 @@ updateConstructionPanels();
   // slot, so a chain of jumps (card -> card -> card) still unwinds one step at a time.
   var navStack=[];
   var backBtn=document.getElementById('backToPrevious');
-  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning','special-revisions':'Special revisions'};
+  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning'};
   function navOriginLabel(el){
     var idEl=el.closest('[id]');
     return (idEl && SECTION_LABELS[idEl.id]) || 'where you were';
@@ -2894,8 +2896,7 @@ var figureInfo={
 'yieldSurfaceEPChart':['For scale: the compression plane','Navy line: this sand\'s own CSL, from the Γ and λ10 sliders. Red dashed vertical: p′. Grey dashed vertical: pi.','This explorer does not track void ratio directly — these are reference lines only, anchoring the pressures being dragged elsewhere against the same compression plane the whole module is built around, not a new state point.'],
 'yieldSurfaceChart':['The interactive view — η vs p′','Shaded region: elastic, where the soil only responds without permanently deforming. The navy line is the outer yield locus itself — its triaxial p′–q meridional section, not the full three-dimensional surface — where it starts to yield. At p′=pi (grey dashed), η=Mi exactly — the image condition the model is named for, not the same thing as critical state. Green dashed: critical state, η=Mtc, flat because it is a material constant independent of p′ or pi.','If the curve sits above the green line (whenever p′ is less than pi at the current strain), that is not a flaw — it is exactly how NorSand predicts peak strength above critical strength for dense sand. Mi itself is always at or below Mtc, by construction of the equation. Reaching the image condition (η=Mi) during a test is not the same as reaching critical state: critical state needs continued plastic shearing with no further change in stress ratio or void ratio, and Mi is still moving toward Mtc when the image condition is first reached.'],
 'yieldSurfaceQPChart':['The classic view — q vs p′','Shaded bullet: the same outer yield locus, plotted as q=η·p′ instead of η alone — it closes back to q=0 both as p′ approaches 0 and at p′=pi·exp(1) (&asymp;2.718&middot;pi), its isotropic intercept. Green line: critical state, q=Mtc·p′, straight through the origin. Grey dot: image condition, p′=pi, q=Mi·pi. Red dot: current state. Faint dashed loci: the same locus at a smaller and a larger pi, for comparison — pi controls the locus\'s size, Mi its stress-ratio scale.','Compare directly against the η–p′ view alongside it: same locus, same numbers, just a different projection of the exact same equation. This is NorSand\'s outer yield locus in the triaxial p′–q plane specifically — the full three-dimensional yield surface also depends on the Lode angle (see footnote 4 near the equation chain).'],
-'yieldSurfaceEvolutionChart':['Watch it actually grow: five snapshots of this test','Five snapshots of one test\'s outer yield locus, not five different tests — same Mtc, same p′0, only the strain each was taken at differs, from 0% (palest) up to the current strain (red, boldest). As strain increases, pi grows via H, so each locus is both bigger and shifted right, which is why the lines fan out on the right instead of stacking on top of each other. p′ itself never moves (dotted vertical): the dot on each layer is the real (p′,q) at that snapshot.','Notice the dot never sits on the steep rising part of any curve, only the declining half between each locus\'s own isotropic intercept and its peak — pi starts at exactly p′ divided by exp(1) (Euler\'s number, &asymp;2.718 — not void ratio e) and only grows toward p′ as strain proceeds. The faint red line joining the five dots is that real path, vertical by construction since p′ never moves in this idealization.'],
-'cidCurvatureChart':['Idealized path (this module) vs. a real CID test','Grey dashed vertical: the constant-p′ path this module\'s simulator idealizes every test as. Red solid curve: the actual (p′,q) path of a real CID-D400 test on dense Fraser River sand — 28 points sampled directly from the published dataset, rising with early slope 3 (elastic loading), then curving through a peak and softening back down. Green dashed: critical state, q=Mtc·p′.','Compare the two red-vs-grey shapes directly: the real path keeps climbing in p′ the whole time, curving noticeably near its peak, while this module\'s idealization holds p′ fixed throughout. Both reach a comparable peak q from the same starting p′ — the idealization is a simplification of the destination, not a claim about the route.']};
+'yieldSurfaceEvolutionChart':['Watch it actually grow: five snapshots of this test','Five snapshots of one test\'s outer yield locus, not five different tests — same Mtc, same p′0, only the strain each was taken at differs, from 0% (palest) up to the current strain (red, boldest). As strain increases, pi grows via H, so each locus is both bigger and shifted right, which is why the lines fan out on the right instead of stacking on top of each other. p′ itself never moves (dotted vertical): the dot on each layer is the real (p′,q) at that snapshot.','Notice the dot never sits on the steep rising part of any curve, only the declining half between each locus\'s own isotropic intercept and its peak — pi starts at exactly p′ divided by exp(1) (Euler\'s number, &asymp;2.718 — not void ratio e) and only grows toward p′ as strain proceeds. The faint red line joining the five dots is that real path, vertical by construction since p′ never moves in this idealization.']};
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);tools.querySelector('button').addEventListener('click',function(){help.classList.toggle('open');this.setAttribute('aria-expanded',help.classList.contains('open'));parent.classList.toggle('chart-reading-mode');});});
 // Ensure every legend that actually HAS a figure-reading button states its purpose —
 // scoped to .figure-shell so legends without one (e.g. plain explanatory diagrams) don't
@@ -2906,6 +2907,8 @@ var status=document.getElementById('cslExperimentStatus');var _shearTimer=null;w
 // parameter cards
 var role={csl:'<b>Γ and λ10:</b> inspect the CSL-fit panel. Use multiple large-strain endpoints over a useful stress range. Γ controls altitude; λ10 controls stress sensitivity.',mtc:'<b>Mtc:</b> inspect both the D–η intercept and the convergence plot. Mtc should be independent of initial density at critical state.',chi:'<b>χtc:</b> inspect Dmin versus ψ. Fit the slope through the origin using consistent test definitions and sign convention.',nh:'<b>N and H:</b> inspect the complete stress–strain curve. These are calibrated through iterative forward modelling, not a single intercept.'};document.querySelectorAll('[data-param]').forEach(function(c){c.addEventListener('click',function(){document.querySelectorAll('[data-param]').forEach(x=>{x.classList.remove('active');x.setAttribute('aria-pressed','false');});c.classList.add('active');c.setAttribute('aria-pressed','true');document.getElementById('parameterRoleText').innerHTML=role[c.dataset.param];});});
 
+// HIDDEN FROM PUBLIC (per request) -- preserved below, commented out, uncomment to restore.
+/*
 // --- special-revisions page: idealized-vs-real stress path chart ---
 // Real (p', q) points sampled from the actual CID-D400 test (dense Fraser River sand),
 // 28 points evenly sampled across the test's full strain range from the raw dataset
@@ -2944,6 +2947,7 @@ function drawCidCurvatureChart(){
 }
 window.addEventListener('resize', drawCidCurvatureChart);
 drawCidCurvatureChart();
+*/
 
 // ---- parameter-role mini preview charts ----
 (function(){
@@ -3093,8 +3097,7 @@ document.addEventListener('keydown', function(e){
     {label:'Dilatancy', ids:['dilatancy-section','quizCheckDE']},
     {label:'NorSand calibration', ids:['calibration-section','quizCheckFGH']},
     {label:'NorSand parameters', ids:['norsand-section','quizCheckI']},
-    {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']},
-    {label:'Special revisions', ids:['special-revisions']}
+    {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']}
   ];
   // The pinned "mental model chain" recap box (flowSticky) only means anything on the pages
   // where its driving controls (the e/p′ sliders in CSL, whose psi flows into Dilatancy's
