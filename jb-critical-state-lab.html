@@ -961,8 +961,15 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="guided-panel">
-<h3 style="margin-top:0">Part 1 &middot; Test comparison (the forward model)</h3>
-<p class="explain" style="font-size:12px;margin-top:0">Showing the model at: <b id="bc2-whichParamsLabel">the paper's default parameters</b> <button type="button" class="ghost" id="bc2-useExampleBtn" style="margin-left:8px;font-size:11px;padding:5px 10px">Use default parameters</button> <button type="button" class="ghost" id="bc2-useBayesBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use Bayesian result</button></p>
+<h3 style="margin-top:0">9b.1 &middot; Conventional calibration</h3>
+<p class="explain" style="font-size:12px;margin-top:0">The same one-parameter-(or one-test)-at-a-time methods an engineer would use by hand, automated here as a deterministic point estimate &mdash; no priors, no posterior, just least-squares curve-fitting. M<sub>tc</sub>, C<sub>a</sub>, C<sub>b</sub> and &chi;<sub>tc</sub> are the same section-6 fits already used to fill in the parameter form above. G<sub>ref</sub> and m come from regressing each test's initial (small-strain) secant modulus against its p&prime;<sub>0</sub>. H<sub>0</sub> and H<sub>&psi;</sub> come from fitting a single constant H per test (least-squares against that test's whole q&ndash;&epsilon;1 curve, holding G<sub>ref</sub>/m/&nu; fixed) and then regressing those per-test H values against &psi;<sub>0</sub>, the same H-vs-&psi;0 relationship 9a/9b.2's trend chart shows. &nu; and N have no reliable closed-form estimate from this kind of data (N is conventionally obtained by iterative forward-modelling, as section 6's interactive tool demonstrates) &mdash; both are left at typical published values unless you edit the form above.</p>
+<table class="results-table" id="bc2-convTable"><thead><tr><th>Parameter</th><th>Conventional estimate</th><th>Method</th></tr></thead><tbody></tbody></table>
+<p id="bc2-convNote" class="explain" style="font-size:11px;color:var(--muted);margin:6px 0 0"></p>
+</div>
+
+<div class="guided-panel">
+<h3 style="margin-top:0">Test comparison (the forward model)</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Showing the model at: <b id="bc2-whichParamsLabel">the paper's default parameters</b> <button type="button" class="ghost" id="bc2-useExampleBtn" style="margin-left:8px;font-size:11px;padding:5px 10px">Use default parameters</button> <button type="button" class="ghost" id="bc2-useConventionalBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use conventional result (9b.1)</button> <button type="button" class="ghost" id="bc2-useBayesBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use Bayesian result (9b.2)</button></p>
 <div class="test-select" id="bc2-testSelect"></div>
 <h4 id="bc2-testTitle" style="margin:10px 0 2px;color:var(--navy)"></h4>
 <p class="explain" style="font-size:11px;color:var(--muted);margin:0 0 4px" id="bc2-testMeta"></p>
@@ -980,8 +987,8 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="guided-panel">
-<h3 style="margin-top:0">Part 2 &middot; Bayesian calibration (MCMC)</h3>
-<p class="explain" style="font-size:12px;margin-top:0">Same priors, same likelihood, same affine-invariant ensemble sampler as 9a &mdash; run here against your own tests.</p>
+<h3 style="margin-top:0">9b.2 &middot; Bayesian calibration (MCMC)</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Same priors, same likelihood, same affine-invariant ensemble sampler as 9a &mdash; run here against your own tests. Compare its results against 9b.1's conventional point estimates above.</p>
 <h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Priors</h4>
 <table class="params" id="bc2-priorsTable"></table>
 
@@ -4429,6 +4436,92 @@ function fillImmediateTable(ds, NSprops1b){
     tbody.appendChild(tr);
   });
 }
+// 9b.1 — conventional (deterministic, non-Bayesian) point-estimate calibration of the 5
+// parameters the MCMC in 9b.2 otherwise infers: Gref, m from an initial-modulus-vs-p0'
+// regression (standard practice), H0/H_psi from fitting one constant H per test by least
+// squares against that whole test's q-e1 curve (holding Gref/m/nu fixed, HPsi=0 so H really
+// is constant for that single run) and then regressing those per-test H's against psi0 --
+// the same H-vs-psi0 relationship the trend chart already visualises for the Bayesian result.
+function estimateConventional(grouped, NSprops1b, fixedFit){
+  var nu = 0.2; // no reliable closed-form estimate from q-e1-ev/u data alone; a typical sand value
+  // ---- Gref, m: log-log regression of each test's initial secant modulus vs p0 ----
+  var modPts = grouped.map(function(t){
+    var p1 = t.pts.length>1 ? t.pts[1] : null;
+    if(!p1 || p1.e1<=0) return null;
+    var G = p1.q / (3*(p1.e1/100)); // q = 3*G*eps_q, small-strain secant
+    return (G>0) ? {x:Math.log(t.p0/NSprops1b[0]), y:Math.log(G)} : null;
+  }).filter(function(v){return v!==null;});
+  var Gref=null, m=null;
+  if(modPts.length>=2){
+    var n=modPts.length, sx=0,sy=0,sxx=0,sxy=0;
+    modPts.forEach(function(p){ sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; });
+    var denom=(n*sxx-sx*sx);
+    if(Math.abs(denom)>1e-9){
+      m = (n*sxy-sx*sy)/denom;
+      Gref = Math.exp((sy-m*sx)/n);
+    }
+  } else if(modPts.length===1){
+    m = 0.5; Gref = Math.exp(modPts[0].y - m*modPts[0].x); // can't separate slope from 1 point -- assume a typical m
+  }
+
+  // ---- H0, H_psi: per-test constant-H least-squares fit, then regress H vs psi0 ----
+  var HbyTest = [];
+  if(Gref!==null){
+    grouped.forEach(function(t){
+      var psi0 = t.e0 - (NSprops1b[1] - NSprops1b[2]*Math.pow(t.p0/NSprops1b[0], NSprops1b[3]));
+      var dataE1 = t.pts.map(function(p){return p.e1;}), dataQ = t.pts.map(function(p){return p.q;});
+      var qScale = Math.max.apply(null, dataQ.map(Math.abs)) || 1;
+      function sse(H){
+        var sim = nsModelCurvedCSL(NSprops1b, [psi0,0,t.drained?2:1,t.p0], [Gref,m,nu,H,0], t.strmx, Math.min(2000,Math.max(20,Math.round(4000*t.strmx))));
+        var modelQ = interpAt(sim.e1, sim.q, dataE1);
+        var s=0; for(var i=0;i<dataQ.length;i++){ var d=(dataQ[i]-modelQ[i])/qScale; s+=d*d; }
+        return s;
+      }
+      var lo=5, hi=900, bestH=lo, bestS=Infinity;
+      for(var g=0; g<24; g++){ var H=lo+(hi-lo)*g/23; var s=sse(H); if(s<bestS){bestS=s; bestH=H;} }
+      var lo2=Math.max(5,bestH-(hi-lo)/23), hi2=Math.min(hi,bestH+(hi-lo)/23);
+      for(var g2=0; g2<14; g2++){ var H2=lo2+(hi2-lo2)*g2/13; var s2=sse(H2); if(s2<bestS){bestS=s2; bestH=H2;} }
+      // if the least-squares optimum sits right at the search edge, the SSE landscape never
+      // turned over within a physically sane range for this test -- flag it as unreliable
+      // rather than silently feeding a meaningless value into the H0/Hpsi regression below.
+      var atBound = (bestH-lo)<(hi-lo)*0.02 || (hi-bestH)<(hi-lo)*0.02;
+      HbyTest.push({psi0:psi0, H:bestH, atBound:atBound});
+    });
+  }
+  var H0=null, Hpsi=null;
+  var reliableH = HbyTest.filter(function(p){ return !p.atBound; });
+  if(reliableH.length>=2){
+    var n2=reliableH.length, sx2=0,sy2=0,sxx2=0,sxy2=0;
+    reliableH.forEach(function(p){ sx2+=p.psi0; sy2+=p.H; sxx2+=p.psi0*p.psi0; sxy2+=p.psi0*p.H; });
+    var denom2=(n2*sxx2-sx2*sx2);
+    if(Math.abs(denom2)>1e-9){
+      var slope=(n2*sxy2-sx2*sy2)/denom2; // H = intercept + slope*psi0 = H0 - Hpsi*psi0
+      Hpsi = -slope; H0 = (sy2-slope*sx2)/n2;
+    }
+  } else if(reliableH.length===1){
+    H0 = reliableH[0].H; Hpsi = 0;
+  }
+  return {Gref:Gref, m:m, nu:nu, H0:H0, Hpsi:Hpsi, perTestH:HbyTest, nUnreliable:HbyTest.length-reliableH.length};
+}
+function fillConventionalTable(conv, fixedFit){
+  var tbody = document.querySelector('#bc2-convTable tbody');
+  tbody.innerHTML='';
+  function row(name, val, method){
+    var tr=document.createElement('tr');
+    tr.innerHTML = '<td>'+name+'</td><td>'+(val===null||val===undefined||!isFinite(val)?'—':val.toFixed(3))+'</td><td>'+method+'</td>';
+    tbody.appendChild(tr);
+  }
+  row('Mtc', fixedFit.Mtc, 'peak stress ratio, averaged across tests');
+  row('Ca', fixedFit.a, "CSL end-point regression (e vs (p'/pref)^Cc)");
+  row('Cb', fixedFit.b, "CSL end-point regression");
+  row('χtc', fixedFit.chitc!==null?Math.abs(fixedFit.chitc):null, 'Dmin vs ψ0 trend across drained tests');
+  row('N', null, 'not fit — conventionally needs iterative forward-modelling (see section 6)');
+  row('Gref', conv.Gref, 'log-log regression of initial secant modulus vs p′0');
+  row('m', conv.m, 'log-log regression of initial secant modulus vs p′0');
+  row('ν', conv.nu, 'no closed-form estimate from this data — typical sand value');
+  row('H0', conv.H0, 'per-test constant-H least-squares fit, regressed vs ψ0');
+  row('Hψ', conv.Hpsi, 'per-test constant-H least-squares fit, regressed vs ψ0');
+}
 function downloadTextFile(filename, text){
   var blob = new Blob([text], {type:'text/csv'});
   var url = URL.createObjectURL(blob);
@@ -4455,6 +4548,14 @@ function readNSprops1FromForm(){
 }
 
 var ctxUser = null;
+// 9b-only button (ctxPaper's DOM has no equivalent), so wired directly here rather than
+// inside the shared initMcmcUI.
+document.getElementById('bc2-useConventionalBtn').addEventListener('click', function(){
+  if(!ctxUser || !ctxUser.conventionalParams) return;
+  ctxUser.currentCalibParams = ctxUser.conventionalParams.slice();
+  document.getElementById('bc2-whichParamsLabel').textContent = "9b.1's conventional (least-squares) result";
+  renderTest(ctxUser, ctxUser.currentTestIdx);
+});
 document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   var fileInput = document.getElementById('bc2-csvFile');
   var status = document.getElementById('bc2-uploadStatus');
@@ -4489,13 +4590,33 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
       ctxUser = makeCalibContext('bc2-', NSprops1b, ds.TEST_IDS, ds.PROP2, ds.STRMX, ds.STEPS, ds.FRS_PLOT, ds.BAYES_DATA, defaultParams, null);
       ctxUser.NSprops3_example = defaultParams;
       ctxUser.exampleLabel = 'a generic starting guess (not fit to your data)';
+      document.getElementById('bc2-useConventionalBtn').disabled = true;
+      document.getElementById('bc2-useBayesBtn').disabled = true;
       initTestViewer(ctxUser);
       initMcmcUI(ctxUser);
       document.getElementById('bc2-whichParamsLabel').textContent = ctxUser.exampleLabel;
 
       document.getElementById('bc2-results').style.display = '';
-      status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Scroll down for the immediate read-off, the test viewer, and the Bayesian calibration.';
+      status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Running conventional (9b.1) calibration…';
       status.style.color = '#268160';
+
+      // deferred so the status message above actually paints before this runs (it's a
+      // few dozen synchronous forward-model evaluations, not instant for many tests)
+      setTimeout(function(){
+        var conv = estimateConventional(grouped, NSprops1b, fit);
+        fillConventionalTable(conv, fit);
+        var convNote = document.getElementById('bc2-convNote');
+        if(conv.Gref!==null && conv.H0!==null){
+          var hList = conv.perTestH.map(function(p){ return p.H.toFixed(1) + (p.atBound?'*':''); }).join(', ');
+          convNote.textContent = 'Per-test H values (one per test, in upload order): ' + hList + '.'
+            + (conv.nUnreliable>0 ? ' * = that test\'s least-squares optimum sat at the search boundary (no clear minimum found) — excluded from the H0/Hψ regression as unreliable.' : '');
+          ctxUser.conventionalParams = [conv.Gref, conv.m, conv.nu, conv.H0, conv.Hpsi];
+          document.getElementById('bc2-useConventionalBtn').disabled = false;
+        } else {
+          convNote.textContent = 'Not enough tests to fit Gref/m/H0/Hψ conventionally (need ≥1 test for Gref/m, ≥2 at different ψ0 for H0/Hψ).';
+        }
+        status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Scroll down for 9b.1 (conventional), the test viewer, and 9b.2 (Bayesian).';
+      }, 30);
     } catch(err){
       status.textContent = 'Could not parse this file: ' + err.message;
       status.style.color = '#c64852';
