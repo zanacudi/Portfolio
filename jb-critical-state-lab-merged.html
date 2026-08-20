@@ -829,6 +829,9 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <p class="sources"><b>Code and data</b> (Python/Jupyter Notebook, MCMC calibration, Fraser River sand triaxial dataset, GPLv2): <a href="https://github.com/LF-Contreras/Bayesian-calibration-NorSand-model" target="_blank" rel="noopener">github.com/LF-Contreras/Bayesian-calibration-NorSand-model</a></p>
 <p class="explain" style="font-size:12px">Their notebook, and the two sections below, break into the same two parts: <b>Part 1</b> runs the NorSand forward model against a chosen test and set of parameters; <b>Part 2</b> takes that same model and calibrates it against all 12 tests at once with Bayesian MCMC. Part 2 is the one this comment thread was actually about — Part 1 is included because Part 2 depends on it and because it's what lets you see what a given posterior sample actually predicts.</p>
 
+<h3 style="margin:18px 0 2px;color:var(--navy);font-size:15px;border-top:2px solid #e5edf1;padding-top:14px">9a &middot; Based on the paper</h3>
+<p class="explain" style="font-size:11.5px;margin-top:2px;color:var(--muted)">The fixed Fraser River sand dataset and worked example from Contreras et al. (2025), below. For your own triaxial data, skip to <a href="#bc2-your-data">9b</a>.</p>
+
 <div class="guided-panel">
 <h3 style="margin-top:0">The model: a fuller NorSand than Section 7's</h3>
 <p class="explain" style="font-size:12.5px">Their implementation is a genuine consistent-tangent elastoplastic integration: a real elastic region before first yield, the actual constant-cell-pressure stress path a CID test follows (not an idealized constant-p&prime; shortcut), and a curved (Li &amp; Wang 1998) critical state line fitted directly to this dataset instead of the straight-line form used throughout the rest of this module.</p>
@@ -852,9 +855,9 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div class="bayes-chart-box"><canvas id="bc-chPsi"></canvas></div>
 </div>
 <div class="legend" style="justify-content:center">
-<span><i style="background:#1479b8"></i>NS_model &mdash; model point</span>
-<span><i style="background:#c64852"></i>test data (real, Contreras et al.) &mdash; data point</span>
-<span><i style="background:#2d8b65"></i>CSL (p&ndash;q panel only)</span>
+<span><svg width="28" height="14" viewBox="0 0 28 14" aria-hidden="true"><line x1="1" y1="7" x2="27" y2="7" stroke="#1479b8" stroke-width="1.6"/><circle cx="14" cy="7" r="2.6" fill="#fff" stroke="#1479b8" stroke-width="1.3"/></svg>NS_model &mdash; model point</span>
+<span><svg width="28" height="14" viewBox="0 0 28 14" aria-hidden="true"><line x1="1" y1="7" x2="27" y2="7" stroke="#c64852" stroke-width="1.6"/><circle cx="14" cy="7" r="2.6" fill="#fff" stroke="#c64852" stroke-width="1.3"/></svg>test data (real, Contreras et al.) &mdash; data point</span>
+<span><svg width="28" height="14" viewBox="0 0 28 14" aria-hidden="true"><line x1="1" y1="7" x2="27" y2="7" stroke="#2d8b65" stroke-width="1.6"/></svg>CSL (p&ndash;q panel only)</span>
 </div>
 </div>
 
@@ -901,6 +904,120 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="warning" style="margin-top:14px"><b>Independent verification.</b> Running the model port against the real data: the CID-D400 test's peak lands at q=1606 kPa, 5.3% strain against the real test's 1633 kPa at 6.0%; CIU-L300's peak lands at q=167.6 kPa against 166.8 kPa real, with final excess pore pressure 291 kPa against 293 kPa real. Running the MCMC port for just 300 of the paper's full 2,000 steps, every soil parameter had already converged to within a few percent of the published values (G<sub>ref</sub>=15,718 vs. 16,338; m=0.813 vs. 0.78; &nu;=0.158 vs. 0.15, its 95% interval's lower edge landing right at the prior's 0.15 floor exactly as the paper notes), and the samples show a Pearson correlation of &minus;0.68 between G<sub>ref</sub> and m &mdash; a real, measured negative correlation reproducing the paper's own finding (visible in their Figure 9 corner plot), not just a repetition of their claim of one.</div>
+
+<h3 id="bc2-your-data" style="margin:22px 0 2px;color:var(--navy);font-size:15px;border-top:2px solid #e5edf1;padding-top:14px">9b &middot; Your data</h3>
+<p class="explain" style="font-size:12px;margin-top:2px">Everything above runs against Contreras et al.'s own 12 tests. This section runs the exact same forward model and MCMC engine &mdash; not a simplified copy &mdash; against your own CID/CIU triaxial data, entirely in this page. Nothing you upload leaves your browser.</p>
+
+<div class="guided-panel">
+<h3 style="margin-top:0">Upload your triaxial data</h3>
+<details open style="margin:6px 0 10px;font-size:12px;color:var(--ink)"><summary style="cursor:pointer;color:var(--navy);font-weight:700">CSV format &mdash; read this first</summary>
+<div style="margin-top:8px">
+<p class="explain" style="font-size:12px;margin:0 0 6px">One row per data point (long format), one file for all your tests. Columns (header row required, any order, case-insensitive):</p>
+<table class="params" style="font-size:11px">
+<tr><th>Column</th><th>Meaning</th><th>Required</th></tr>
+<tr><td>test_id</td><td>any label, e.g. "CID-01"</td><td>yes</td></tr>
+<tr><td>type</td><td>CID or CIU (drained/undrained)</td><td>yes</td></tr>
+<tr><td>e0</td><td>initial void ratio (same value every row of that test)</td><td>yes</td></tr>
+<tr><td>p0</td><td>initial mean effective stress, kPa (same value every row)</td><td>yes</td></tr>
+<tr><td>e1</td><td>axial strain, % (increasing down each test)</td><td>yes</td></tr>
+<tr><td>q</td><td>deviator stress, kPa</td><td>yes</td></tr>
+<tr><td>ev</td><td>volumetric strain, % &mdash; CID rows only</td><td>CID only</td></tr>
+<tr><td>u</td><td>excess pore pressure, kPa &mdash; CIU rows only</td><td>CIU only</td></tr>
+<tr><td>p</td><td>mean effective stress, kPa</td><td>optional &mdash; derived from p0, q (and u) if omitted</td></tr>
+</table>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:6px 0 0">ψ<sub>0</sub> isn't a column &mdash; it's computed from e0, p0 and the CSL parameters you set below (the same curved CSL the model uses), so you don't need to have fit it separately first.</p>
+<button type="button" class="ghost" id="bc2-downloadTemplateBtn" style="margin-top:8px;font-size:11px;padding:6px 10px">Download example CSV</button>
+</div>
+</details>
+<div class="mcmc-controls" style="align-items:center">
+<label style="flex-direction:row;align-items:center;gap:8px"><input type="file" id="bc2-csvFile" accept=".csv,text/csv"></label>
+<button type="button" id="bc2-parseBtn">Load &amp; calibrate</button>
+</div>
+<p id="bc2-uploadStatus" class="explain" style="font-size:12px;margin:8px 0 0"></p>
+
+<div id="bc2-paramsPanel" style="margin-top:14px">
+<h4 style="margin:8px 0 4px;color:var(--navy);font-size:12.5px">Fixed NorSand / CSL parameters (edit if you know them &mdash; defaults are the paper's FRS values)</h4>
+<div class="mcmc-controls">
+<label>p&prime;<sub>ref</sub><input type="number" id="bc2-p-pref" value="101.3" step="0.1"></label>
+<label>C<sub>a</sub><input type="number" id="bc2-p-a" value="1.010" step="0.001"></label>
+<label>C<sub>b</sub><input type="number" id="bc2-p-b" value="0.087" step="0.001"></label>
+<label>C<sub>c</sub><input type="number" id="bc2-p-c" value="0.380" step="0.001"></label>
+<label>M<sub>tc</sub><input type="number" id="bc2-p-M" value="1.45" step="0.01"></label>
+<label>N<input type="number" id="bc2-p-N" value="0.45" step="0.01"></label>
+<label>&chi;<sub>tc</sub><input type="number" id="bc2-p-xtc" value="5.3" step="0.1"></label>
+<label>R (OCR)<input type="number" id="bc2-p-R" value="1.1" step="0.05"></label>
+</div>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:4px 0 0">ec(p&prime;) = C<sub>a</sub> &minus; C<sub>b</sub>&middot;(p&prime;/p&prime;<sub>ref</sub>)<sup>Cc</sup> (Li &amp; Wang 1998). These 8 are held fixed during calibration below, exactly as in 9a &mdash; only G<sub>ref</sub>, m, &nu;, H<sub>0</sub>, H<sub>&psi;</sub> are inferred.</p>
+</div>
+</div>
+
+<div id="bc2-results" style="display:none">
+
+<div class="guided-panel">
+<h3 style="margin-top:0">Immediate parameterization (per test, no fitting)</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Read straight off your data the moment it's parsed: peak strength, where it occurs, &psi;<sub>0</sub>, and the stress ratio at peak &mdash; a first, immediate estimate of M<sub>tc</sub> per test, before any joint calibration.</p>
+<table class="results-table" id="bc2-immediateTable"><thead><tr><th>Test</th><th>Type</th><th>&psi;0</th><th>q peak [kPa]</th><th>&epsilon;1 @ peak [%]</th><th>&eta; @ peak (&asymp; M<sub>tc</sub>)</th></tr></thead><tbody></tbody></table>
+</div>
+
+<div class="guided-panel">
+<h3 style="margin-top:0">Part 1 &middot; Test comparison (the forward model)</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Showing the model at: <b id="bc2-whichParamsLabel">the paper's default parameters</b> <button type="button" class="ghost" id="bc2-useExampleBtn" style="margin-left:8px;font-size:11px;padding:5px 10px">Use default parameters</button> <button type="button" class="ghost" id="bc2-useBayesBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use Bayesian result</button></p>
+<div class="test-select" id="bc2-testSelect"></div>
+<h4 id="bc2-testTitle" style="margin:10px 0 2px;color:var(--navy)"></h4>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:0 0 4px" id="bc2-testMeta"></p>
+<div class="bayes-grid2">
+<div class="bayes-chart-box"><canvas id="bc2-chQ1"></canvas></div>
+<div class="bayes-chart-box"><canvas id="bc2-chPQ"></canvas></div>
+<div class="bayes-chart-box"><canvas id="bc2-chVol"></canvas></div>
+<div class="bayes-chart-box"><canvas id="bc2-chPsi"></canvas></div>
+</div>
+<div class="legend" style="justify-content:center">
+<span><svg width="28" height="14" viewBox="0 0 28 14" aria-hidden="true"><line x1="1" y1="7" x2="27" y2="7" stroke="#1479b8" stroke-width="1.6"/><circle cx="14" cy="7" r="2.6" fill="#fff" stroke="#1479b8" stroke-width="1.3"/></svg>NS_model &mdash; model point</span>
+<span><svg width="28" height="14" viewBox="0 0 28 14" aria-hidden="true"><line x1="1" y1="7" x2="27" y2="7" stroke="#c64852" stroke-width="1.6"/><circle cx="14" cy="7" r="2.6" fill="#fff" stroke="#c64852" stroke-width="1.3"/></svg>your test data &mdash; data point</span>
+<span><svg width="28" height="14" viewBox="0 0 28 14" aria-hidden="true"><line x1="1" y1="7" x2="27" y2="7" stroke="#2d8b65" stroke-width="1.6"/></svg>CSL (p&ndash;q panel only)</span>
+</div>
+</div>
+
+<div class="guided-panel">
+<h3 style="margin-top:0">Part 2 &middot; Bayesian calibration (MCMC)</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Same priors, same likelihood, same affine-invariant ensemble sampler as 9a &mdash; run here against your own tests.</p>
+<h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Priors</h4>
+<table class="params" id="bc2-priorsTable"></table>
+
+<h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Sampler settings</h4>
+<div class="mcmc-controls">
+<label>Walkers<input type="number" id="bc2-cfgWalkers" value="50" min="10" step="2"></label>
+<label>Steps<input type="number" id="bc2-cfgSteps" value="2000" min="10"></label>
+<label>Burn-in<input type="number" id="bc2-cfgBurn" value="1000" min="0"></label>
+<button type="button" id="bc2-startMcmcBtn">Start MCMC</button>
+<button type="button" class="ghost" id="bc2-stopMcmcBtn" disabled>Stop &amp; keep samples so far</button>
+</div>
+<div class="mcmc-progress-outer"><div class="mcmc-progress-inner" id="bc2-mcmcProgress"></div></div>
+<div class="mcmc-stats">
+<div><small>Step</small><b id="bc2-statStep">0 / 0</b></div>
+<div><small>Elapsed</small><b id="bc2-statElapsed">0:00</b></div>
+<div><small>Est. remaining</small><b id="bc2-statRemaining">—</b></div>
+<div><small>Mean acceptance fraction</small><b id="bc2-statAccept">—</b></div>
+<div><small>Post-burn-in samples</small><b id="bc2-statSamples">0</b></div>
+</div>
+
+<h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Live trace plots</h4>
+<div class="trace-grid" id="bc2-traceGrid"></div>
+
+<h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Results &mdash; your Bayesian-calibrated NorSand parameters (mean / median / 95% HDI / stdev)</h4>
+<table class="results-table" id="bc2-resultsTable"><thead><tr><th>Parameter</th><th>Mean</th><th>Median</th><th>HDI95 low</th><th>HDI95 high</th><th>Stdev</th></tr></thead><tbody></tbody></table>
+
+<h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Reduced corner plot (H<sub>0</sub>, H<sub>&psi;</sub>, G<sub>ref</sub>, m, &nu;)</h4>
+<div class="corner-grid" id="bc2-cornerGrid"></div>
+
+<h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Calibrated trends with 95% credible bands</h4>
+<div class="bayes-grid2">
+<div class="bayes-chart-box"><canvas id="bc2-chHtrend"></canvas></div>
+<div class="bayes-chart-box"><canvas id="bc2-chGtrend"></canvas></div>
+</div>
+</div>
+
+</div>
 
 <h3>What "one point of zero dilation" doesn't mean</h3>
 <div class="explain">
@@ -3647,15 +3764,6 @@ document.getElementById('bc-pv-N').textContent = NSprops1[5].toFixed(2);
 document.getElementById('bc-pv-xtc').textContent = NSprops1[6].toFixed(2);
 document.getElementById('bc-pv-R').textContent = NSprops1[7].toFixed(2);
 
-// ---- priors table ----
-(function(){
-  var t = document.getElementById('bc-priorsTable');
-  var hdr = '<tr><th>Bound</th>' + PRIOR_NAMES.map(function(n){return '<th>'+n+'</th>';}).join('') + '</tr>';
-  var lo = '<tr><td>lower</td>' + PRIOR_BOUNDS.map(function(b){return '<td>'+b[0]+'</td>';}).join('') + '</tr>';
-  var hi = '<tr><td>upper</td>' + PRIOR_BOUNDS.map(function(b){return '<td>'+b[1]+'</td>';}).join('') + '</tr>';
-  t.innerHTML = hdr+lo+hi;
-})();
-
 // ============================================================================
 // Test-comparison viewer (Part 1)
 // ============================================================================
@@ -3685,19 +3793,20 @@ function niceAxis(ctx,W,H,ml,mr,mt,mb,xlab,ylab,xlo,xhi,ylo,yhi){
   ctx.font="11.5px 'Segoe UI',Arial,sans-serif";
   ctx.strokeStyle="#e5edf1"; ctx.lineWidth=1;
   ctx.fillStyle="#61737b"; ctx.textAlign="right"; ctx.textBaseline="middle";
-  yt.ticks.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.fillText(fmtTick(v,yt.step), ml-7, y); });
+  yt.ticks.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.fillText(fmtTick(v,yt.step), ml-10, y); });
   ctx.textAlign="center"; ctx.textBaseline="top";
-  xt.ticks.forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); ctx.fillText(fmtTick(v,xt.step), x, mt+ph+6); });
+  xt.ticks.forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); ctx.fillText(fmtTick(v,xt.step), x, mt+ph+8); });
   ctx.strokeStyle="#61737b"; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw,ph);
-  drawXTitle(ctx, xlab, ml+pw/2, H-2);
-  drawYTitle(ctx, ylab, 12, mt+ph/2);
+  // titles pushed well clear of the tick-value row below/left of them, rather than crowding it
+  drawXTitle(ctx, xlab, ml+pw/2, H-3);
+  drawYTitle(ctx, ylab, 13, mt+ph/2);
   return {pw:pw, ph:ph, X:X, Y:Y};
 }
 function plotXY(cv, dataX, dataY, dataMarkX, dataMarkY, modelX, modelY, modelMarkX, modelMarkY, opts){
   opts = opts || {};
   var W=cv.clientWidth||300, H=260; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ml=52,mr=14,mt=12,mb=34;
+  var ml=62,mr=16,mt=16,mb=40;
   function range(arrs){
     var lo=Infinity, hi=-Infinity;
     arrs.forEach(function(a){ if(!a) return; a.forEach(function(v){ if(isFinite(v)){ if(v<lo)lo=v; if(v>hi)hi=v; } }); });
@@ -3710,6 +3819,9 @@ function plotXY(cv, dataX, dataY, dataMarkX, dataMarkY, modelX, modelY, modelMar
   var xlo=xr[0]-xpad, xhi=xr[1]+xpad, ylo=Math.min(0,yr[0]-ypad), yhi=yr[1]+ypad;
   var axes = niceAxis(ctx,W,H,ml,mr,mt,mb,opts.xlab||'',opts.ylab||'',xlo,xhi,ylo,yhi);
   var X=axes.X, Y=axes.Y;
+  // clip everything plotted to the axis box so no line/marker can render outside the frame
+  ctx.save();
+  ctx.beginPath(); ctx.rect(ml,mt,axes.pw,axes.ph); ctx.clip();
   if(opts.cslLine){
     ctx.strokeStyle="#2d8b65"; ctx.lineWidth=1.6; ctx.beginPath();
     ctx.moveTo(X(0), Y(0)); ctx.lineTo(X(xhi), Y(opts.cslLine*xhi)); ctx.stroke();
@@ -3728,83 +3840,83 @@ function plotXY(cv, dataX, dataY, dataMarkX, dataMarkY, modelX, modelY, modelMar
   drawLine(dataX,dataY,"#c64852");
   if(modelMarkX) drawPts(modelMarkX,modelMarkY,"#1479b8");
   if(dataMarkX) drawPts(dataMarkX,dataMarkY,"#c64852");
+  ctx.restore();
 }
 
-var currentTestIdx = 2; // default: CID-D400, matching the paper's own Figure 7 example
-var currentCalibParams = NSprops3_example.slice();
+// ============================================================================
+// Everything below is written against a "ctx" object rather than hardcoded globals,
+// so the exact same test-viewer + MCMC engine can drive both 9a (the paper's fixed
+// 12-test dataset) and 9b (a reader's own uploaded CSV) without duplicating logic.
+// ============================================================================
+function makeCalibContext(prefix, NSprops1_, TEST_IDS_, PROP2_, STRMX_, STEPS_, FRS_PLOT_, BAYES_DATA_, defaultParams, xrangeMax){
+  return {
+    prefix: prefix,
+    NSprops1: NSprops1_, TEST_IDS: TEST_IDS_, PROP2: PROP2_, STRMX: STRMX_, STEPS: STEPS_,
+    FRS_PLOT: FRS_PLOT_, BAYES_DATA: BAYES_DATA_, xrangeMax: xrangeMax||null,
+    currentTestIdx: 0, currentCalibParams: defaultParams.slice(),
+    traceCanvases: {}, mcmcWorker: null, mcmcRunning: false, mcmcStartTime: 0,
+    lastResultsSamples: null, bayesMeanParams: null
+  };
+}
+function el(ctx, id){ return document.getElementById(ctx.prefix+id); }
 
-function renderTest(idx){
-  currentTestIdx = idx;
-  document.querySelectorAll('#bc-testSelect button').forEach(function(b,i){ b.classList.toggle('on', i===idx); });
+function renderTest(ctx, idx){
+  ctx.currentTestIdx = idx;
+  document.querySelectorAll('#'+ctx.prefix+'testSelect button').forEach(function(b,i){ b.classList.toggle('on', i===idx); });
 
-  var tid = TEST_IDS[idx];
-  var prop2 = PROP2[idx];
-  var strmx = STRMX[idx];
-  var steps = STEPS[idx];
+  var tid = ctx.TEST_IDS[idx];
+  var prop2 = ctx.PROP2[idx];
+  var strmx = ctx.STRMX[idx];
+  var steps = ctx.STEPS[idx];
   var drained = prop2[2]===2;
 
-  var sim = nsModelCurvedCSL(NSprops1, prop2, currentCalibParams, strmx, steps);
-  var real = FRS_PLOT[tid];
+  var sim = nsModelCurvedCSL(ctx.NSprops1, prop2, ctx.currentCalibParams, strmx, steps);
+  var real = ctx.FRS_PLOT[tid];
+  var xr = ctx.xrangeMax ? [0,ctx.xrangeMax] : undefined;
 
-  document.getElementById('bc-testTitle').textContent = 'Test ' + tid;
-  document.getElementById('bc-testMeta').textContent = (drained?'Drained (CID)':'Undrained (CIU)') + ' — ψ0=' + prop2[0].toFixed(3) + ', p′0=' + prop2[3].toFixed(1) + ' kPa, steps=' + steps + ' (Δε1=0.01%)';
+  el(ctx,'testTitle').textContent = 'Test ' + tid;
+  el(ctx,'testMeta').textContent = (drained?'Drained (CID)':'Undrained (CIU)') + ' — ψ0=' + prop2[0].toFixed(3) + ', p′0=' + prop2[3].toFixed(1) + ' kPa, steps=' + steps + ' (Δε1=0.01%)';
 
   // marker positions/density follow BAYES_DATA (their own cell 8-9 reduction), which lands at
   // roughly the same number of points per test as the paper's own "data point"/"model point" figures
-  var bd = BAYES_DATA[idx];
+  var bd = ctx.BAYES_DATA[idx];
   var modelMark_q = interpAt(sim.e1, sim.q, bd.e1);
   var modelMark_p = interpAt(sim.e1, sim.p, bd.e1);
   var modelMark_ev = interpAt(sim.e1, sim.ev, bd.e1);
   var modelMark_u = interpAt(sim.e1, sim.u, bd.e1);
   var modelMark_psi = interpAt(sim.e1, sim.psi, bd.e1);
-  var realPsi = real.e.map(function(ev,i){ var pv=real.p[i]; return ev - (NSprops1[1]-NSprops1[2]*Math.pow(pv/NSprops1[0],NSprops1[3])); });
-  var bdPsi = bd.e.map(function(ev,i){ var pv=bd.p[i]; return ev - (NSprops1[1]-NSprops1[2]*Math.pow(pv/NSprops1[0],NSprops1[3])); });
+  var realPsi = real.e.map(function(ev,i){ var pv=real.p[i]; return ev - (ctx.NSprops1[1]-ctx.NSprops1[2]*Math.pow(pv/ctx.NSprops1[0],ctx.NSprops1[3])); });
+  var bdPsi = bd.e.map(function(ev,i){ var pv=bd.p[i]; return ev - (ctx.NSprops1[1]-ctx.NSprops1[2]*Math.pow(pv/ctx.NSprops1[0],ctx.NSprops1[3])); });
 
-  plotXY(document.getElementById('bc-chQ1'), real.e1, real.q, bd.e1, bd.q, sim.e1, sim.q, bd.e1, modelMark_q, {xlab:"ε1 [%]", ylab:"q [kPa]", xrange:[0,30]});
-  plotXY(document.getElementById('bc-chPQ'), real.p, real.q, bd.p, bd.q, sim.p, sim.q, modelMark_p, modelMark_q, {xlab:"p′ [kPa]", ylab:"q [kPa]", cslLine:NSprops1[4]});
+  plotXY(el(ctx,'chQ1'), real.e1, real.q, bd.e1, bd.q, sim.e1, sim.q, bd.e1, modelMark_q, {xlab:"ε1 [%]", ylab:"q [kPa]", xrange:xr});
+  plotXY(el(ctx,'chPQ'), real.p, real.q, bd.p, bd.q, sim.p, sim.q, modelMark_p, modelMark_q, {xlab:"p′ [kPa]", ylab:"q [kPa]", cslLine:ctx.NSprops1[4]});
   if(drained){
-    plotXY(document.getElementById('bc-chVol'), real.e1, real.ev, bd.e1, bd.ev, sim.e1, sim.ev, bd.e1, modelMark_ev, {xlab:"ε1 [%]", ylab:"εv [%]", xrange:[0,30]});
+    plotXY(el(ctx,'chVol'), real.e1, real.ev, bd.e1, bd.ev, sim.e1, sim.ev, bd.e1, modelMark_ev, {xlab:"ε1 [%]", ylab:"εv [%]", xrange:xr});
   } else {
-    plotXY(document.getElementById('bc-chVol'), real.e1, real.u, bd.e1, bd.u, sim.e1, sim.u, bd.e1, modelMark_u, {xlab:"ε1 [%]", ylab:"u [kPa]", xrange:[0,30]});
+    plotXY(el(ctx,'chVol'), real.e1, real.u, bd.e1, bd.u, sim.e1, sim.u, bd.e1, modelMark_u, {xlab:"ε1 [%]", ylab:"u [kPa]", xrange:xr});
   }
-  plotXY(document.getElementById('bc-chPsi'), real.e1, realPsi, bd.e1, bdPsi, sim.e1, sim.psi, bd.e1, modelMark_psi, {xlab:"ε1 [%]", ylab:"ψ", xrange:[0,30]});
+  plotXY(el(ctx,'chPsi'), real.e1, realPsi, bd.e1, bdPsi, sim.e1, sim.psi, bd.e1, modelMark_psi, {xlab:"ε1 [%]", ylab:"ψ", xrange:xr});
 }
 
-var selEl = document.getElementById('bc-testSelect');
-TEST_IDS.forEach(function(tid,i){
-  var b=document.createElement('button'); b.type='button';
-  b.innerHTML = tid + '<span class="badge2">'+(PROP2[i][2]===2?'CID':'CIU')+'</span>';
-  b.addEventListener('click', function(){ renderTest(i); });
-  selEl.appendChild(b);
-});
-document.getElementById('bc-useExampleBtn').addEventListener('click', function(){
-  currentCalibParams = NSprops3_example.slice();
-  document.getElementById('bc-whichParamsLabel').textContent = "the paper's published example calibration";
-  renderTest(currentTestIdx);
-});
-document.getElementById('bc-useBayesBtn').addEventListener('click', function(){
-  if(!window._bcBayesMeanParams) return;
-  currentCalibParams = window._bcBayesMeanParams.slice();
-  document.getElementById('bc-whichParamsLabel').textContent = "this browser's own MCMC result (mean)";
-  renderTest(currentTestIdx);
-});
-window.addEventListener('resize', function(){ renderTest(currentTestIdx); });
-renderTest(currentTestIdx);
+// (re)builds the test-selector buttons and wires the parameter-source toggle buttons +
+// resize handler for one context. Safe to call again (e.g. after a fresh CSV upload)
+// since it clears the selector first.
+function initTestViewer(ctx){
+  var selEl = el(ctx,'testSelect');
+  selEl.innerHTML = '';
+  ctx.TEST_IDS.forEach(function(tid,i){
+    var b=document.createElement('button'); b.type='button';
+    b.innerHTML = tid + '<span class="badge2">'+(ctx.PROP2[i][2]===2?'CID':'CIU')+'</span>';
+    b.addEventListener('click', function(){ renderTest(ctx, i); });
+    selEl.appendChild(b);
+  });
+  window.addEventListener('resize', function(){ renderTest(ctx, ctx.currentTestIdx); });
+  renderTest(ctx, ctx.currentTestIdx);
+}
 
 // ============================================================================
-// Part 2 — MCMC control (runs the sampler in a Web Worker)
+// Part 2 — MCMC control (runs the sampler in a Web Worker). Also ctx-driven.
 // ============================================================================
-var traceCanvases = {};
-(function(){
-  var g = document.getElementById('bc-traceGrid');
-  PRIOR_NAMES.forEach(function(name){
-    var box=document.createElement('div'); box.className='bayes-chart-box'; box.style.padding='4px 6px';
-    var lbl=document.createElement('div'); lbl.style.fontSize='10.5px'; lbl.style.color='#61737b'; lbl.style.textAlign='center'; lbl.textContent=name;
-    var cv=document.createElement('canvas'); cv.id='bc-trace-'+name;
-    box.appendChild(lbl); box.appendChild(cv); g.appendChild(box);
-    traceCanvases[name]=cv;
-  });
-})();
 function drawTrace(cv, chains, paramIdx, nStepsDone){ // chains: Float32Array[nwalkers][nsteps][ndim] as flat array access fn
   var W=cv.clientWidth||200, H=90; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
@@ -3821,8 +3933,6 @@ function drawTrace(cv, chains, paramIdx, nStepsDone){ // chains: Float32Array[nw
     ctx.stroke();
   }
 }
-
-var mcmcWorker=null, mcmcRunning=false, mcmcStartTime=0;
 
 function buildWorker(){
   var src = [
@@ -3884,61 +3994,102 @@ function fmtTime(sec){
   return m+':'+(s<10?'0':'')+s;
 }
 
-function startMcmc(){
-  var nwalkers = +document.getElementById('bc-cfgWalkers').value;
-  var nsteps = +document.getElementById('bc-cfgSteps').value;
-  var nburn = +document.getElementById('bc-cfgBurn').value;
+function startMcmc(ctx){
+  var nwalkers = +el(ctx,'cfgWalkers').value;
+  var nsteps = +el(ctx,'cfgSteps').value;
+  var nburn = +el(ctx,'cfgBurn').value;
   if(nwalkers%2!==0){ alert('Walkers must be even (split-update requires two equal halves).'); return; }
   if(nburn>=nsteps){ alert('Burn-in must be less than total steps.'); return; }
 
-  mcmcRunning=true; mcmcStartTime=performance.now();
-  document.getElementById('bc-startMcmcBtn').disabled=true;
-  document.getElementById('bc-stopMcmcBtn').disabled=false;
-  document.getElementById('bc-cfgWalkers').disabled=true; document.getElementById('bc-cfgSteps').disabled=true; document.getElementById('bc-cfgBurn').disabled=true;
+  ctx.mcmcRunning=true; ctx.mcmcStartTime=performance.now();
+  el(ctx,'startMcmcBtn').disabled=true;
+  el(ctx,'stopMcmcBtn').disabled=false;
+  el(ctx,'cfgWalkers').disabled=true; el(ctx,'cfgSteps').disabled=true; el(ctx,'cfgBurn').disabled=true;
 
-  mcmcWorker = buildWorker();
-  mcmcWorker.postMessage({
+  ctx.mcmcWorker = buildWorker();
+  ctx.mcmcWorker.postMessage({
     nwalkers:nwalkers, nsteps:nsteps, seed:0,
-    bayesData:BAYES_DATA, NSprops1:NSprops1, prop2:PROP2, strmx:STRMX, steps:STEPS
+    bayesData:ctx.BAYES_DATA, NSprops1:ctx.NSprops1, prop2:ctx.PROP2, strmx:ctx.STRMX, steps:ctx.STEPS
   });
-  mcmcWorker.onmessage = function(ev){
+  ctx.mcmcWorker.onmessage = function(ev){
     var d = ev.data;
-    var elapsed = (performance.now()-mcmcStartTime)/1000;
-    document.getElementById('bc-statStep').textContent = d.step ? (d.step+' / '+d.nsteps) : (nsteps+' / '+nsteps);
-    document.getElementById('bc-statElapsed').textContent = fmtTime(elapsed);
-    document.getElementById('bc-statAccept').textContent = (d.acceptFrac*100).toFixed(1)+'%';
+    var elapsed = (performance.now()-ctx.mcmcStartTime)/1000;
+    el(ctx,'statStep').textContent = d.step ? (d.step+' / '+d.nsteps) : (nsteps+' / '+nsteps);
+    el(ctx,'statElapsed').textContent = fmtTime(elapsed);
+    el(ctx,'statAccept').textContent = (d.acceptFrac*100).toFixed(1)+'%';
     var frac = d.step ? d.step/d.nsteps : 1;
-    document.getElementById('bc-mcmcProgress').style.width = (frac*100).toFixed(1)+'%';
+    el(ctx,'mcmcProgress').style.width = (frac*100).toFixed(1)+'%';
     if(frac>0 && frac<1){
       var remaining = elapsed*(1-frac)/frac;
-      document.getElementById('bc-statRemaining').textContent = fmtTime(remaining);
+      el(ctx,'statRemaining').textContent = fmtTime(remaining);
     }
-    PRIOR_NAMES.forEach(function(name,pi){ drawTrace(traceCanvases[name], d.chains, pi, d.chains[0].length); });
+    PRIOR_NAMES.forEach(function(name,pi){ drawTrace(ctx.traceCanvases[name], d.chains, pi, d.chains[0].length); });
 
     if(d.type==='done' || (d.step && d.step>=nburn)){
       // compute results continuously once we're past burn-in, so partial stops still work
-      finalizeResults(d.chains, nburn, nsteps);
+      finalizeResults(ctx, d.chains, nburn, nsteps);
     }
     if(d.type==='done'){
-      mcmcFinished();
+      mcmcFinished(ctx);
     }
   };
 }
-function mcmcFinished(){
-  mcmcRunning=false;
-  document.getElementById('bc-startMcmcBtn').disabled=false;
-  document.getElementById('bc-stopMcmcBtn').disabled=true;
-  document.getElementById('bc-cfgWalkers').disabled=false; document.getElementById('bc-cfgSteps').disabled=false; document.getElementById('bc-cfgBurn').disabled=false;
-  document.getElementById('bc-useBayesBtn').disabled=false;
+function mcmcFinished(ctx){
+  ctx.mcmcRunning=false;
+  el(ctx,'startMcmcBtn').disabled=false;
+  el(ctx,'stopMcmcBtn').disabled=true;
+  el(ctx,'cfgWalkers').disabled=false; el(ctx,'cfgSteps').disabled=false; el(ctx,'cfgBurn').disabled=false;
+  el(ctx,'useBayesBtn').disabled=false;
 }
-document.getElementById('bc-startMcmcBtn').addEventListener('click', startMcmc);
-document.getElementById('bc-stopMcmcBtn').addEventListener('click', function(){
-  if(mcmcWorker){ mcmcWorker.terminate(); }
-  mcmcFinished();
-});
 
-var lastResultsSamples=null;
-function finalizeResults(chainStore, nburn, nsteps){
+// ---- reduced 5-parameter corner plot: pairwise scatter (lower triangle) + histograms (diagonal) ----
+function drawCorner(ctx, perParam){
+  var names=['Ho','Hy','Gref','m','ν'];
+  var idxMap=[0,1,2,3,4]; // indices into PRIOR_NAMES/perParam
+  var g = el(ctx,'cornerGrid');
+  g.innerHTML='';
+  g.style.gridTemplateColumns = 'repeat(5, 1fr)';
+  var n = idxMap.length;
+  // subsample for scatter rendering performance (corner plot doesn't need all 50k pts to look right)
+  var N = perParam[0].length;
+  var maxPts = 1500;
+  var stride = Math.max(1, Math.floor(N/maxPts));
+  for(var row=0; row<n; row++){
+    for(var col=0; col<n; col++){
+      var cv = document.createElement('canvas'); cv.style.width='100%'; cv.style.height='90px'; cv.width=140; cv.height=90;
+      var cctx = cv.getContext('2d');
+      if(col>row){ g.appendChild(cv); continue; } // upper triangle blank
+      var W=140,H=90, ml=6,mr=4,mt=4,mb=4, pw=W-ml-mr, ph=H-mt-mb;
+      if(row===col){
+        var arr = perParam[idxMap[row]];
+        var lo=Math.min.apply(null,arr), hi=Math.max.apply(null,arr);
+        var bins=18, counts=new Array(bins).fill(0);
+        arr.forEach(function(v){ var b=Math.min(bins-1,Math.floor((v-lo)/(hi-lo+1e-12)*bins)); counts[b]++; });
+        var maxC = Math.max.apply(null,counts);
+        cctx.fillStyle="#1479b8";
+        for(var bi=0; bi<bins; bi++){
+          var bw=pw/bins, bh=ph*(counts[bi]/maxC);
+          cctx.fillRect(ml+bi*bw, mt+ph-bh, bw-0.5, bh);
+        }
+      } else {
+        var xs=perParam[idxMap[col]], ys=perParam[idxMap[row]];
+        var xlo=Math.min.apply(null,xs), xhi=Math.max.apply(null,xs);
+        var ylo=Math.min.apply(null,ys), yhi=Math.max.apply(null,ys);
+        cctx.fillStyle="rgba(20,121,184,0.25)";
+        for(var pI=0; pI<xs.length; pI+=stride){
+          var px = ml+pw*(xs[pI]-xlo)/(xhi-xlo+1e-12);
+          var py = mt+ph*(1-(ys[pI]-ylo)/(yhi-ylo+1e-12));
+          cctx.fillRect(px-1,py-1,2,2);
+        }
+      }
+      if(row===n-1){ cctx.fillStyle="#61737b"; cctx.font="9px Arial"; cctx.textAlign="center"; cctx.fillText(names[col], W/2, H-1); }
+      if(col===0){ cctx.save(); cctx.fillStyle="#61737b"; cctx.font="9px Arial"; cctx.textAlign="center"; cctx.translate(8,H/2); cctx.rotate(-Math.PI/2); cctx.fillText(names[row],0,0); cctx.restore(); }
+      g.appendChild(cv);
+    }
+  }
+}
+
+function finalizeResults(ctx, chainStore, nburn, nsteps){
   var nwalkers = chainStore.length;
   var nStepsDone = chainStore[0].length; // includes step 0 (initial), so index 0..nStepsDone-1
   var burnEnd = Math.min(nburn, nStepsDone-1);
@@ -3949,10 +4100,10 @@ function finalizeResults(chainStore, nburn, nsteps){
       for(var p=0;p<10;p++) perParam[p].push(theta[p]);
     }
   }
-  lastResultsSamples = perParam;
-  document.getElementById('bc-statSamples').textContent = perParam[0].length;
+  ctx.lastResultsSamples = perParam;
+  el(ctx,'statSamples').textContent = perParam[0].length;
 
-  var tbody = document.querySelector('#bc-resultsTable tbody');
+  var tbody = document.querySelector('#'+ctx.prefix+'resultsTable tbody');
   tbody.innerHTML='';
   var meanVals={};
   PRIOR_NAMES.forEach(function(name,i){
@@ -3964,66 +4115,22 @@ function finalizeResults(chainStore, nburn, nsteps){
     tbody.appendChild(tr);
   });
   // theta order: Ho,Hy,Gref,m,nu,... -> NSprops3 order is [Gref,m,v,Ho,Hy]
-  window._bcBayesMeanParams = [meanVals['Gref'], meanVals['m'], meanVals['ν'], meanVals['Ho'], meanVals['Hy']];
+  ctx.bayesMeanParams = [meanVals['Gref'], meanVals['m'], meanVals['ν'], meanVals['Ho'], meanVals['Hy']];
 
-  drawCorner(perParam);
-  drawTrendCharts(perParam);
-}
-
-// ---- reduced 5-parameter corner plot: pairwise scatter (lower triangle) + histograms (diagonal) ----
-function drawCorner(perParam){
-  var names=['Ho','Hy','Gref','m','ν'];
-  var idxMap=[0,1,2,3,4]; // indices into PRIOR_NAMES/perParam
-  var g = document.getElementById('bc-cornerGrid');
-  g.innerHTML='';
-  g.style.gridTemplateColumns = 'repeat(5, 1fr)';
-  var n = idxMap.length;
-  // subsample for scatter rendering performance (corner plot doesn't need all 50k pts to look right)
-  var N = perParam[0].length;
-  var maxPts = 1500;
-  var stride = Math.max(1, Math.floor(N/maxPts));
-  for(var row=0; row<n; row++){
-    for(var col=0; col<n; col++){
-      var cv = document.createElement('canvas'); cv.style.width='100%'; cv.style.height='90px'; cv.width=140; cv.height=90;
-      var ctx = cv.getContext('2d');
-      if(col>row){ g.appendChild(cv); continue; } // upper triangle blank
-      var W=140,H=90, ml=6,mr=4,mt=4,mb=4, pw=W-ml-mr, ph=H-mt-mb;
-      if(row===col){
-        var arr = perParam[idxMap[row]];
-        var lo=Math.min.apply(null,arr), hi=Math.max.apply(null,arr);
-        var bins=18, counts=new Array(bins).fill(0);
-        arr.forEach(function(v){ var b=Math.min(bins-1,Math.floor((v-lo)/(hi-lo+1e-12)*bins)); counts[b]++; });
-        var maxC = Math.max.apply(null,counts);
-        ctx.fillStyle="#1479b8";
-        for(var bi=0; bi<bins; bi++){
-          var bw=pw/bins, bh=ph*(counts[bi]/maxC);
-          ctx.fillRect(ml+bi*bw, mt+ph-bh, bw-0.5, bh);
-        }
-      } else {
-        var xs=perParam[idxMap[col]], ys=perParam[idxMap[row]];
-        var xlo=Math.min.apply(null,xs), xhi=Math.max.apply(null,xs);
-        var ylo=Math.min.apply(null,ys), yhi=Math.max.apply(null,ys);
-        ctx.fillStyle="rgba(20,121,184,0.25)";
-        for(var pI=0; pI<xs.length; pI+=stride){
-          var px = ml+pw*(xs[pI]-xlo)/(xhi-xlo+1e-12);
-          var py = mt+ph*(1-(ys[pI]-ylo)/(yhi-ylo+1e-12));
-          ctx.fillRect(px-1,py-1,2,2);
-        }
-      }
-      if(row===n-1){ ctx.fillStyle="#61737b"; ctx.font="9px Arial"; ctx.textAlign="center"; ctx.fillText(names[col], W/2, H-1); }
-      if(col===0){ ctx.save(); ctx.fillStyle="#61737b"; ctx.font="9px Arial"; ctx.textAlign="center"; ctx.translate(8,H/2); ctx.rotate(-Math.PI/2); ctx.fillText(names[row],0,0); ctx.restore(); }
-      g.appendChild(cv);
-    }
-  }
+  drawCorner(ctx, perParam);
+  drawTrendCharts(ctx, perParam);
 }
 
 // ---- H vs psi0 and G vs p'0 trends with 95% percentile credible bands (cell 25) ----
-function drawTrendCharts(perParam){
+function drawTrendCharts(ctx, perParam){
   var Ho=perParam[0], Hy=perParam[1], Gref=perParam[2], m=perParam[3];
   var H0m=mean(Ho), Hym=mean(Hy), Grefm=mean(Gref), mm=mean(m);
-  var pref=NSprops1[0];
+  var pref=ctx.NSprops1[0];
 
-  var xs=[]; for(var i=0;i<=100;i++) xs.push(-0.25+i*(0.40/100));
+  var psi0Range = ctx.PROP2.map(function(r){return r[0];});
+  var psLo=Math.min.apply(null,psi0Range), psHi=Math.max.apply(null,psi0Range);
+  var psPad=(psHi-psLo)*0.3 || 0.05;
+  var xs=[]; for(var i=0;i<=100;i++) xs.push((psLo-psPad)+i*((psHi-psLo+2*psPad)/100));
   var hLo=[], hHi=[], hMean=[];
   var N = Ho.length, sampleStride = Math.max(1, Math.floor(N/400));
   xs.forEach(function(x){
@@ -4033,29 +4140,69 @@ function drawTrendCharts(perParam){
     hLo.push(percentile(vals,2.5)); hHi.push(percentile(vals,97.5));
     hMean.push(H0m-Hym*x);
   });
-  drawBandChart(document.getElementById('bc-chHtrend'), xs, hMean, hLo, hHi, "ψ0", "H", PROP2.map(function(r){return r[0];}));
+  drawBandChart(el(ctx,'chHtrend'), xs, hMean, hLo, hHi, "ψ0", "H", psi0Range);
 
-  var xs2=[]; for(i=0;i<=100;i++) xs2.push(i*(700/100));
+  var p0Range = ctx.PROP2.map(function(r){return r[3];});
+  var p0Hi = Math.max.apply(null,p0Range);
+  var xs2=[]; for(i=0;i<=100;i++) xs2.push(i*((p0Hi*1.15)/100));
   var gLo=[], gHi=[], gMean=[];
   xs2.forEach(function(x){
     var vals=[];
-    for(var s=0;s<N;s+=sampleStride){ vals.push((Gref[s]/1000)*Math.pow(x/pref, m[s])); }
+    for(var s=0;s<N;s+=sampleStride){ vals.push((Gref[s]/1000)*Math.pow(Math.max(x,1e-6)/pref, m[s])); }
     vals.sort(function(a,b){return a-b;});
     gLo.push(percentile(vals,2.5)); gHi.push(percentile(vals,97.5));
-    gMean.push((Grefm/1000)*Math.pow(x/pref, mm));
+    gMean.push((Grefm/1000)*Math.pow(Math.max(x,1e-6)/pref, mm));
   });
-  drawBandChart(document.getElementById('bc-chGtrend'), xs2, gMean, gLo, gHi, "p′0 (kPa)", "G (MPa)", PROP2.map(function(r){return r[3];}));
+  drawBandChart(el(ctx,'chGtrend'), xs2, gMean, gLo, gHi, "p′0 (kPa)", "G (MPa)", p0Range);
+}
+
+// wires the Start/Stop/example/Bayesian-result buttons for one context and builds its
+// trace-plot grid. Call once per context, after its DOM elements exist.
+function initMcmcUI(ctx){
+  var g = el(ctx,'traceGrid');
+  g.innerHTML=''; ctx.traceCanvases = {};
+  PRIOR_NAMES.forEach(function(name){
+    var box=document.createElement('div'); box.className='bayes-chart-box'; box.style.padding='4px 6px';
+    var lbl=document.createElement('div'); lbl.style.fontSize='10.5px'; lbl.style.color='#61737b'; lbl.style.textAlign='center'; lbl.textContent=name;
+    var cv=document.createElement('canvas');
+    box.appendChild(lbl); box.appendChild(cv); g.appendChild(box);
+    ctx.traceCanvases[name]=cv;
+  });
+  var t = el(ctx,'priorsTable');
+  var hdr = '<tr><th>Bound</th>' + PRIOR_NAMES.map(function(n){return '<th>'+n+'</th>';}).join('') + '</tr>';
+  var lo = '<tr><td>lower</td>' + PRIOR_BOUNDS.map(function(b){return '<td>'+b[0]+'</td>';}).join('') + '</tr>';
+  var hi = '<tr><td>upper</td>' + PRIOR_BOUNDS.map(function(b){return '<td>'+b[1]+'</td>';}).join('') + '</tr>';
+  t.innerHTML = hdr+lo+hi;
+
+  el(ctx,'startMcmcBtn').addEventListener('click', function(){ startMcmc(ctx); });
+  el(ctx,'stopMcmcBtn').addEventListener('click', function(){
+    if(ctx.mcmcWorker){ ctx.mcmcWorker.terminate(); }
+    mcmcFinished(ctx);
+  });
+  el(ctx,'useExampleBtn').addEventListener('click', function(){
+    ctx.currentCalibParams = ctx.NSprops3_example.slice();
+    el(ctx,'whichParamsLabel').textContent = ctx.exampleLabel || "the example calibration";
+    renderTest(ctx, ctx.currentTestIdx);
+  });
+  el(ctx,'useBayesBtn').addEventListener('click', function(){
+    if(!ctx.bayesMeanParams) return;
+    ctx.currentCalibParams = ctx.bayesMeanParams.slice();
+    el(ctx,'whichParamsLabel').textContent = "this browser's own MCMC result (mean)";
+    renderTest(ctx, ctx.currentTestIdx);
+  });
 }
 function drawBandChart(cv, xs, yMean, yLo, yHi, xlab, ylab, dataXMarks){
   var W=cv.clientWidth||400, H=260; cv.width=W; cv.height=H;
   var ctx=cv.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var ml=52,mr=14,mt=12,mb=34;
+  var ml=62,mr=16,mt=16,mb=40;
   var xlo=Math.min.apply(null,xs), xhi=Math.max.apply(null,xs);
   var ylo=Math.min.apply(null,yLo), yhi=Math.max.apply(null,yHi);
   var ypad=(yhi-ylo)*0.06;
   ylo-=ypad; yhi+=ypad;
   var axes = niceAxis(ctx,W,H,ml,mr,mt,mb,xlab,ylab,xlo,xhi,ylo,yhi);
   var X=axes.X, Y=axes.Y;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(ml,mt,axes.pw,axes.ph); ctx.clip();
   ctx.fillStyle="rgba(20,121,184,0.15)"; ctx.beginPath();
   xs.forEach(function(x,i){ var p=[X(x),Y(yHi[i])]; if(i===0) ctx.moveTo(p[0],p[1]); else ctx.lineTo(p[0],p[1]); });
   for(var i2=xs.length-1;i2>=0;i2--){ ctx.lineTo(X(xs[i2]),Y(yLo[i2])); }
@@ -4067,7 +4214,195 @@ function drawBandChart(cv, xs, yMean, yLo, yHi, xlab, ylab, dataXMarks){
     ctx.strokeStyle="#c64852";
     dataXMarks.forEach(function(x){ if(x>=xlo&&x<=xhi){ ctx.beginPath(); ctx.moveTo(X(x),Y(ylo)); ctx.lineTo(X(x),Y(ylo)-6); ctx.stroke(); } });
   }
+  ctx.restore();
 }
+
+// ============================================================================
+// 9a — instantiate the paper's own fixed 12-test context and wire it up
+// ============================================================================
+var ctxPaper = makeCalibContext('bc-', NSprops1, TEST_IDS, PROP2, STRMX, STEPS, FRS_PLOT, BAYES_DATA, NSprops3_example, 30);
+ctxPaper.currentTestIdx = 2; // default: CID-D400, matching the paper's own Figure 7 example
+ctxPaper.NSprops3_example = NSprops3_example;
+ctxPaper.exampleLabel = "the paper's published example calibration";
+initTestViewer(ctxPaper);
+initMcmcUI(ctxPaper);
+window.ctxPaper = ctxPaper; // exposed for the self-test suite
+
+// ============================================================================
+// 9b — upload your own CID/CIU data and run the exact same engine against it
+// ============================================================================
+var HEADER_ALIASES = {
+  test_id:['testid','test','id','sample','specimen','name'],
+  type:['type','testtype','drainage','condition'],
+  e0:['e0','einitial','voidratio0','voidratioinitial','e_0'],
+  p0:['p0','pinitial','p0kpa','sigma0','p_0'],
+  e1:['e1','eps1','axialstrain','strain','e_1'],
+  q:['q','deviatorstress','devstress'],
+  ev:['ev','epsv','volstrain','volumetricstrain','e_v'],
+  u:['u','porepressure','excessporepressure','du'],
+  p:['p','pprime','meanstress','meaneffectivestress',"p'"]
+};
+function normHeader(h){ return String(h).toLowerCase().replace(/[^a-z0-9]/g,''); }
+function parseCsvText(text){
+  var lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(function(l){ return l.trim().length>0; });
+  if(lines.length<2) throw new Error('File has no data rows.');
+  var rawHeader = lines[0].split(',').map(function(h){ return h.trim(); });
+  var normed = rawHeader.map(normHeader);
+  var colIdx = {};
+  Object.keys(HEADER_ALIASES).forEach(function(key){
+    var idx = -1;
+    HEADER_ALIASES[key].forEach(function(alias){ var a=normHeader(alias); var i=normed.indexOf(a); if(i>=0) idx=i; });
+    colIdx[key] = idx;
+  });
+  ['test_id','type','e0','p0','e1','q'].forEach(function(req){
+    if(colIdx[req]<0) throw new Error('Missing required column: "'+req+'" (accepted headers: '+HEADER_ALIASES[req].join(', ')+').');
+  });
+  var rows = [];
+  for(var i=1;i<lines.length;i++){
+    var cells = lines[i].split(',').map(function(c){ return c.trim(); });
+    if(cells.length<2) continue;
+    function num(key){ var idx=colIdx[key]; if(idx<0) return null; var v=cells[idx]; if(v===undefined||v==='') return null; var n=parseFloat(v); return isFinite(n)?n:null; }
+    var typeRaw = (colIdx.type>=0 ? cells[colIdx.type] : '').toLowerCase();
+    var type = /ciu|undrain/.test(typeRaw) ? 'CIU' : (/cid|drain/.test(typeRaw) ? 'CID' : null);
+    rows.push({
+      test_id: cells[colIdx.test_id], type: type,
+      e0: num('e0'), p0: num('p0'), e1: num('e1'), q: num('q'), ev: num('ev'), u: num('u'), p: num('p')
+    });
+  }
+  return rows;
+}
+function buildUserDataset(rows, NSprops1b){
+  var pref=NSprops1b[0], Ca=NSprops1b[1], Cb=NSprops1b[2], Cc=NSprops1b[3];
+  var byTest = {}; var order = [];
+  rows.forEach(function(r){
+    if(!r.test_id || !r.type || r.e0===null || r.p0===null || r.e1===null || r.q===null) return; // skip malformed rows silently
+    if(!byTest[r.test_id]){ byTest[r.test_id]=[]; order.push(r.test_id); }
+    byTest[r.test_id].push(r);
+  });
+  if(order.length===0) throw new Error('No valid data rows found — check that test_id, type, e0, p0, e1 and q are all present on every row.');
+
+  var TEST_IDSb=[], PROP2b=[], STRMXb=[], STEPSb=[], FRS_RAWb={};
+  order.forEach(function(tid){
+    var rs = byTest[tid].slice().sort(function(a,b){ return a.e1-b.e1; });
+    var type = rs[0].type;
+    var e0 = rs[0].e0, p0 = rs[0].p0;
+    var drained = type==='CID';
+    var psi0 = e0 - (Ca - Cb*Math.pow(p0/pref, Cc));
+    var Sf = drained ? 0.0 : 1.0;
+    var testtyp = drained ? 2 : 1;
+
+    var e1=[], ev=[], p=[], q=[], e=[], u=[];
+    rs.forEach(function(r){
+      var evVal = drained ? (r.ev===null?0:r.ev) : 0;
+      var uVal = drained ? 0 : (r.u===null?0:r.u);
+      var pVal = (r.p!==null) ? r.p : (drained ? (p0 + r.q/3) : (p0 + r.q/3 - uVal));
+      var eVal = drained ? (e0 - (1+e0)*(evVal/100)) : e0;
+      e1.push(r.e1); ev.push(evVal); p.push(pVal); q.push(r.q); e.push(eVal); u.push(uVal);
+    });
+    if(e1[0]>0.001){ e1.unshift(0); ev.unshift(0); p.unshift(p0); q.unshift(0); e.unshift(e0); u.unshift(0); }
+
+    var strmx = Math.max.apply(null,e1)/100;
+    if(strmx<=0) return;
+    var steps = Math.min(8000, Math.max(20, Math.round(10000*strmx)));
+
+    TEST_IDSb.push(tid);
+    PROP2b.push([psi0, Sf, testtyp, p0]);
+    STRMXb.push(strmx);
+    STEPSb.push(steps);
+    FRS_RAWb[tid] = {e1:e1, ev:ev, p:p, q:q, e:e, u:u};
+  });
+  if(TEST_IDSb.length===0) throw new Error('No usable tests after validation — every test needs a strictly increasing e1 column reaching above 0.');
+
+  var FRS_PLOTb={}, BAYES_DATAb=[];
+  TEST_IDSb.forEach(function(tid,i){
+    var raw = FRS_RAWb[tid];
+    var n = raw.e1.length;
+    var perce = Math.min(1, 300/n);
+    var stage1 = applyMask(raw, spacedBooleanArray(n, perce));
+    FRS_PLOTb[tid] = stage1;
+    var targetCount = Math.max(4, 100*STRMXb[i]-3);
+    var n2 = stage1.e1.length;
+    var perce2 = Math.min(1, targetCount/n2);
+    var stage2 = applyMask(stage1, spacedBooleanArray(n2, perce2));
+    BAYES_DATAb.push(stage2);
+  });
+
+  return {TEST_IDS:TEST_IDSb, PROP2:PROP2b, STRMX:STRMXb, STEPS:STEPSb, FRS_PLOT:FRS_PLOTb, BAYES_DATA:BAYES_DATAb};
+}
+function fillImmediateTable(ds, NSprops1b){
+  var tbody = document.querySelector('#bc2-immediateTable tbody');
+  tbody.innerHTML='';
+  ds.TEST_IDS.forEach(function(tid,i){
+    var raw = ds.FRS_PLOT[tid];
+    var prop2 = ds.PROP2[i];
+    var qMax=-Infinity, qMaxIdx=0;
+    raw.q.forEach(function(v,k){ if(v>qMax){ qMax=v; qMaxIdx=k; } });
+    var pAtPeak = raw.p[qMaxIdx];
+    var eta = pAtPeak>0 ? qMax/pAtPeak : NaN;
+    var tr=document.createElement('tr');
+    tr.innerHTML = '<td>'+tid+'</td><td>'+(prop2[2]===2?'CID':'CIU')+'</td><td>'+prop2[0].toFixed(3)+'</td><td>'+qMax.toFixed(1)+'</td><td>'+raw.e1[qMaxIdx].toFixed(2)+'</td><td>'+(isFinite(eta)?eta.toFixed(3):'—')+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+function downloadTextFile(filename, text){
+  var blob = new Blob([text], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download=filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+document.getElementById('bc2-downloadTemplateBtn').addEventListener('click', function(){
+  var lines = ['test_id,type,e0,p0,e1,q,ev,u'];
+  var cid = [[0,0.20,0],[0.5,180,-0.05],[1,300,-0.1],[2,410,-0.05],[4,460,0.1],[8,470,0.4],[15,455,1.1],[25,440,2.0]];
+  cid.forEach(function(r){ lines.push('CID-EX,CID,0.62,200,'+r[0]+','+r[1]+','+r[2]+','); });
+  var ciu = [[0,0.30,0],[0.5,60,20],[1,95,40],[2,120,65],[4,140,90],[8,150,105],[15,152,112],[25,150,115]];
+  ciu.forEach(function(r){ lines.push('CIU-EX,CIU,0.72,200,'+r[0]+','+r[1]+',,'+r[2]); });
+  downloadTextFile('norsand-calibration-template.csv', lines.join('\n'));
+});
+
+function readNSprops1FromForm(){
+  return [
+    +document.getElementById('bc2-p-pref').value, +document.getElementById('bc2-p-a').value,
+    +document.getElementById('bc2-p-b').value, +document.getElementById('bc2-p-c').value,
+    +document.getElementById('bc2-p-M').value, +document.getElementById('bc2-p-N').value,
+    +document.getElementById('bc2-p-xtc').value, +document.getElementById('bc2-p-R').value
+  ];
+}
+
+var ctxUser = null;
+document.getElementById('bc2-parseBtn').addEventListener('click', function(){
+  var fileInput = document.getElementById('bc2-csvFile');
+  var status = document.getElementById('bc2-uploadStatus');
+  if(!fileInput.files || !fileInput.files[0]){ status.textContent='Choose a .csv file first.'; status.style.color='#c64852'; return; }
+  status.textContent = 'Reading…'; status.style.color='';
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      var rows = parseCsvText(ev.target.result);
+      var NSprops1b = readNSprops1FromForm();
+      var ds = buildUserDataset(rows, NSprops1b);
+      fillImmediateTable(ds, NSprops1b);
+
+      var defaultParams = [16338, 0.78, 0.15, 96, 381]; // a generic starting point, not fit to your data
+      ctxUser = makeCalibContext('bc2-', NSprops1b, ds.TEST_IDS, ds.PROP2, ds.STRMX, ds.STEPS, ds.FRS_PLOT, ds.BAYES_DATA, defaultParams, null);
+      ctxUser.NSprops3_example = defaultParams;
+      ctxUser.exampleLabel = 'a generic starting guess (not fit to your data)';
+      initTestViewer(ctxUser);
+      initMcmcUI(ctxUser);
+      document.getElementById('bc2-whichParamsLabel').textContent = ctxUser.exampleLabel;
+
+      document.getElementById('bc2-results').style.display = '';
+      status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Scroll down for the immediate read-off, the test viewer, and the Bayesian calibration.';
+      status.style.color = '#268160';
+    } catch(err){
+      status.textContent = 'Could not parse this file: ' + err.message;
+      status.style.color = '#c64852';
+      document.getElementById('bc2-results').style.display = 'none';
+    }
+  };
+  reader.onerror = function(){ status.textContent='Could not read this file.'; status.style.color='#c64852'; };
+  reader.readAsText(fileInput.files[0]);
+});
 })();
 </script>
 
