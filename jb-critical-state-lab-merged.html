@@ -918,14 +918,14 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <tr><td>test_id</td><td>any label, e.g. "CID-01"</td><td>yes</td></tr>
 <tr><td>type</td><td>CID or CIU (drained/undrained)</td><td>yes</td></tr>
 <tr><td>e0</td><td>initial void ratio (same value every row of that test)</td><td>yes</td></tr>
-<tr><td>p0</td><td>initial mean effective stress, kPa (same value every row)</td><td>yes</td></tr>
+<tr><td>p0</td><td>initial mean <b>effective</b> stress p&prime;<sub>0</sub>, kPa &mdash; i.e. already pore-pressure-corrected, the isotropic consolidation stress (same value every row)</td><td>yes</td></tr>
 <tr><td>e1</td><td>axial strain, % (increasing down each test)</td><td>yes</td></tr>
-<tr><td>q</td><td>deviator stress, kPa</td><td>yes</td></tr>
+<tr><td>q</td><td>deviator stress, kPa (works out the same whether you compute it from total or effective stresses)</td><td>yes</td></tr>
 <tr><td>ev</td><td>volumetric strain, % &mdash; CID rows only</td><td>CID only</td></tr>
-<tr><td>u</td><td>excess pore pressure, kPa &mdash; CIU rows only</td><td>CIU only</td></tr>
-<tr><td>p</td><td>mean effective stress, kPa</td><td>optional &mdash; derived from p0, q (and u) if omitted</td></tr>
+<tr><td>u</td><td><b>excess</b> pore pressure above hydrostatic, kPa &mdash; CIU rows only</td><td>CIU only</td></tr>
+<tr><td>p</td><td>mean <b>effective</b> stress p&prime;, kPa &mdash; not total stress</td><td>optional &mdash; derived as p0+q/3 (CID) or p0+q/3&minus;u (CIU) if omitted, i.e. total mean stress minus pore pressure</td></tr>
 </table>
-<p class="explain" style="font-size:11px;color:var(--muted);margin:6px 0 0">ψ<sub>0</sub> isn't a column &mdash; it's computed from e0, p0 and the CSL parameters you set below (the same curved CSL the model uses), so you don't need to have fit it separately first.</p>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:6px 0 0">Everything here is effective-stress: p0 and p (whether you supply p or let it be derived) both mean p&prime;, matching critical-state soil mechanics convention and consistent with how the rest of this module and the paper's own model work. ψ<sub>0</sub> isn't a column &mdash; it's computed from e0, p0 and the CSL parameters below (the same curved CSL the model uses), so you don't need to have fit it separately first.</p>
 <button type="button" class="ghost" id="bc2-downloadTemplateBtn" style="margin-top:8px;font-size:11px;padding:6px 10px">Download example CSV</button>
 </div>
 </details>
@@ -947,7 +947,8 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <label>&chi;<sub>tc</sub><input type="number" id="bc2-p-xtc" value="5.3" step="0.1"></label>
 <label>R (OCR)<input type="number" id="bc2-p-R" value="1.1" step="0.05"></label>
 </div>
-<p class="explain" style="font-size:11px;color:var(--muted);margin:4px 0 0">ec(p&prime;) = C<sub>a</sub> &minus; C<sub>b</sub>&middot;(p&prime;/p&prime;<sub>ref</sub>)<sup>Cc</sup> (Li &amp; Wang 1998). These 8 are held fixed during calibration below, exactly as in 9a &mdash; only G<sub>ref</sub>, m, &nu;, H<sub>0</sub>, H<sub>&psi;</sub> are inferred.</p>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:4px 0 0">ec(p&prime;) = C<sub>a</sub> &minus; C<sub>b</sub>&middot;(p&prime;/p&prime;<sub>ref</sub>)<sup>Cc</sup> (Li &amp; Wang 1998). These 8 are held fixed during calibration below, exactly as in 9a &mdash; only G<sub>ref</sub>, m, &nu;, H<sub>0</sub>, H<sub>&psi;</sub> are inferred. M<sub>tc</sub>, C<sub>a</sub>, C<sub>b</sub> and &chi;<sub>tc</sub> above are auto-filled from your own data using the same methods as section 6 (peak stress ratio, CSL end points, the D<sub>min</sub>&ndash;&psi;0 trend) the moment it loads &mdash; edit any of the 8 afterward if you know better values.</p>
+<p id="bc2-fitCompare" class="explain" style="font-size:11.5px;margin:6px 0 0;font-style:italic;display:none"></p>
 </div>
 </div>
 
@@ -4228,6 +4229,30 @@ initTestViewer(ctxPaper);
 initMcmcUI(ctxPaper);
 window.ctxPaper = ctxPaper; // exposed for the self-test suite
 
+// The charts above are drawn at cv.clientWidth, but this page starts hidden (display:none,
+// it's not page 1) so that width reads 0 at load time and every chart bakes in a wrong,
+// too-narrow raster. Re-render once the page's own card actually becomes visible, and again
+// on every subsequent reveal (nav click, browser back/forward, popstate) so a later resize
+// of the surrounding layout doesn't leave stale charts either.
+(function(){
+  var pageEl = document.getElementById('bayesian-calibration');
+  if(!pageEl) return;
+  var wasHidden = pageEl.style.display === 'none';
+  function redrawAll(){
+    renderTest(ctxPaper, ctxPaper.currentTestIdx);
+    if(ctxPaper.lastResultsSamples){ drawCorner(ctxPaper, ctxPaper.lastResultsSamples); drawTrendCharts(ctxPaper, ctxPaper.lastResultsSamples); }
+    if(ctxUser){
+      renderTest(ctxUser, ctxUser.currentTestIdx);
+      if(ctxUser.lastResultsSamples){ drawCorner(ctxUser, ctxUser.lastResultsSamples); drawTrendCharts(ctxUser, ctxUser.lastResultsSamples); }
+    }
+  }
+  new MutationObserver(function(){
+    var hiddenNow = pageEl.style.display === 'none';
+    if(wasHidden && !hiddenNow) redrawAll();
+    wasHidden = hiddenNow;
+  }).observe(pageEl, {attributes:true, attributeFilter:['style']});
+})();
+
 // ============================================================================
 // 9b — upload your own CID/CIU data and run the exact same engine against it
 // ============================================================================
@@ -4271,8 +4296,10 @@ function parseCsvText(text){
   }
   return rows;
 }
-function buildUserDataset(rows, NSprops1b){
-  var pref=NSprops1b[0], Ca=NSprops1b[1], Cb=NSprops1b[2], Cc=NSprops1b[3];
+// groups raw CSV rows into per-test point arrays with p/ev/u/e already resolved (drainage-
+// dependent) — everything that does NOT depend on the CSL parameters, so this can run
+// once and feed both the auto-fit (below) and the final dataset build.
+function groupRows(rows){
   var byTest = {}; var order = [];
   rows.forEach(function(r){
     if(!r.test_id || !r.type || r.e0===null || r.p0===null || r.e1===null || r.q===null) return; // skip malformed rows silently
@@ -4280,38 +4307,89 @@ function buildUserDataset(rows, NSprops1b){
     byTest[r.test_id].push(r);
   });
   if(order.length===0) throw new Error('No valid data rows found — check that test_id, type, e0, p0, e1 and q are all present on every row.');
-
-  var TEST_IDSb=[], PROP2b=[], STRMXb=[], STEPSb=[], FRS_RAWb={};
+  var out = [];
   order.forEach(function(tid){
     var rs = byTest[tid].slice().sort(function(a,b){ return a.e1-b.e1; });
-    var type = rs[0].type;
-    var e0 = rs[0].e0, p0 = rs[0].p0;
-    var drained = type==='CID';
-    var psi0 = e0 - (Ca - Cb*Math.pow(p0/pref, Cc));
-    var Sf = drained ? 0.0 : 1.0;
-    var testtyp = drained ? 2 : 1;
-
-    var e1=[], ev=[], p=[], q=[], e=[], u=[];
-    rs.forEach(function(r){
+    var type = rs[0].type, e0 = rs[0].e0, p0 = rs[0].p0, drained = type==='CID';
+    var pts = rs.map(function(r){
       var evVal = drained ? (r.ev===null?0:r.ev) : 0;
       var uVal = drained ? 0 : (r.u===null?0:r.u);
-      var pVal = (r.p!==null) ? r.p : (drained ? (p0 + r.q/3) : (p0 + r.q/3 - uVal));
+      var pVal = (r.p!==null) ? r.p : (drained ? (p0 + r.q/3) : (p0 + r.q/3 - uVal)); // total-stress path minus u -> effective p'
       var eVal = drained ? (e0 - (1+e0)*(evVal/100)) : e0;
-      e1.push(r.e1); ev.push(evVal); p.push(pVal); q.push(r.q); e.push(eVal); u.push(uVal);
+      return {e1:r.e1, ev:evVal, u:uVal, p:pVal, q:r.q, e:eVal};
     });
-    if(e1[0]>0.001){ e1.unshift(0); ev.unshift(0); p.unshift(p0); q.unshift(0); e.unshift(e0); u.unshift(0); }
-
-    var strmx = Math.max.apply(null,e1)/100;
+    if(pts.length && pts[0].e1>0.001){ pts.unshift({e1:0, ev:0, u:0, p:p0, q:0, e:e0}); }
+    var strmx = pts.length ? Math.max.apply(null, pts.map(function(pt){return pt.e1;}))/100 : 0;
     if(strmx<=0) return;
-    var steps = Math.min(8000, Math.max(20, Math.round(10000*strmx)));
-
-    TEST_IDSb.push(tid);
-    PROP2b.push([psi0, Sf, testtyp, p0]);
-    STRMXb.push(strmx);
-    STEPSb.push(steps);
-    FRS_RAWb[tid] = {e1:e1, ev:ev, p:p, q:q, e:e, u:u};
+    out.push({test_id:tid, type:type, drained:drained, e0:e0, p0:p0, strmx:strmx, pts:pts});
   });
-  if(TEST_IDSb.length===0) throw new Error('No usable tests after validation — every test needs a strictly increasing e1 column reaching above 0.');
+  if(out.length===0) throw new Error('No usable tests after validation — every test needs a strictly increasing e1 column reaching above 0.');
+  return out;
+}
+
+// ---- auto-calibrate what can be reliably read off the tests themselves (the same methods
+// section 6 teaches: Mtc from the peak stress ratio, the CSL from tests' end points, chi_tc
+// from the Dmin-vs-psi0 trend) rather than defaulting silently to the paper's own FRS values.
+function estimateFit(grouped){
+  var etas = grouped.map(function(t){
+    var qMax=-Infinity, idx=0;
+    t.pts.forEach(function(pt,i){ if(pt.q>qMax){ qMax=pt.q; idx=i; } });
+    return t.pts[idx].p>0 ? qMax/t.pts[idx].p : null;
+  }).filter(function(v){ return v!==null && isFinite(v); });
+  var Mtc = etas.length ? etas.reduce(function(a,b){return a+b;},0)/etas.length : null;
+
+  var c=0.380, pref=101.3; // shape/reference held at the paper's typical values — only a,b are fit
+  var finalPts = grouped.map(function(t){ var last=t.pts[t.pts.length-1]; return {x:Math.pow(last.p/pref,c), e:last.e}; });
+  var a=null, b=null;
+  if(finalPts.length>=2){
+    var n=finalPts.length, sx=0,sy=0,sxx=0,sxy=0;
+    finalPts.forEach(function(p){ sx+=p.x; sy+=p.e; sxx+=p.x*p.x; sxy+=p.x*p.e; });
+    var denom=(n*sxx-sx*sx);
+    if(Math.abs(denom)>1e-9){
+      var slope=(n*sxy-sx*sy)/denom; // e = a + slope*x, with x=(p/pref)^c  ->  ec = a - b*x, b = -slope
+      b = -slope; a = (sy-slope*sx)/n;
+    }
+  }
+
+  var chitc=null;
+  if(a!==null && b!==null){
+    var drainedPts = grouped.filter(function(t){return t.drained;}).map(function(t){
+      var psi0 = t.e0 - (a - b*Math.pow(t.p0/pref,c));
+      var dmin=Infinity;
+      for(var i=1;i<t.pts.length;i++){
+        var de1=t.pts[i].e1-t.pts[i-1].e1; if(de1<=0) continue;
+        var D=(t.pts[i].ev-t.pts[i-1].ev)/de1;
+        if(D<dmin) dmin=D;
+      }
+      return {psi0:psi0, dmin:isFinite(dmin)?dmin:null};
+    }).filter(function(p){ return p.dmin!==null; });
+    if(drainedPts.length>=2){
+      var sxy2=0, sxx2=0;
+      drainedPts.forEach(function(p){ sxy2+=p.dmin*p.psi0; sxx2+=p.psi0*p.psi0; });
+      if(sxx2>1e-9) chitc = sxy2/sxx2;
+    }
+  }
+  return {Mtc:Mtc, a:a, b:b, c:c, pref:pref, chitc:chitc};
+}
+
+function buildUserDataset(grouped, NSprops1b){
+  var pref=NSprops1b[0], Ca=NSprops1b[1], Cb=NSprops1b[2], Cc=NSprops1b[3];
+  var TEST_IDSb=[], PROP2b=[], STRMXb=[], STEPSb=[], FRS_RAWb={};
+  grouped.forEach(function(t){
+    var psi0 = t.e0 - (Ca - Cb*Math.pow(t.p0/pref, Cc));
+    var Sf = t.drained ? 0.0 : 1.0;
+    var testtyp = t.drained ? 2 : 1;
+    var steps = Math.min(8000, Math.max(20, Math.round(10000*t.strmx)));
+    TEST_IDSb.push(t.test_id);
+    PROP2b.push([psi0, Sf, testtyp, t.p0]);
+    STRMXb.push(t.strmx);
+    STEPSb.push(steps);
+    FRS_RAWb[t.test_id] = {
+      e1: t.pts.map(function(pt){return pt.e1;}), ev: t.pts.map(function(pt){return pt.ev;}),
+      p: t.pts.map(function(pt){return pt.p;}), q: t.pts.map(function(pt){return pt.q;}),
+      e: t.pts.map(function(pt){return pt.e;}), u: t.pts.map(function(pt){return pt.u;})
+    };
+  });
 
   var FRS_PLOTb={}, BAYES_DATAb=[];
   TEST_IDSb.forEach(function(tid,i){
@@ -4379,8 +4457,25 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   reader.onload = function(ev){
     try{
       var rows = parseCsvText(ev.target.result);
+      var grouped = groupRows(rows);
+      var fit = estimateFit(grouped);
+
+      var paper = {Mtc:1.45, a:1.010, b:0.087, chitc:5.3};
+      document.getElementById('bc2-p-pref').value = fit.pref.toFixed(1);
+      document.getElementById('bc2-p-c').value = fit.c.toFixed(3);
+      var compareParts = [];
+      if(fit.Mtc!==null){ document.getElementById('bc2-p-M').value = fit.Mtc.toFixed(3); compareParts.push('Mtc='+fit.Mtc.toFixed(3)+' (paper '+paper.Mtc+')'); }
+      if(fit.a!==null){ document.getElementById('bc2-p-a').value = fit.a.toFixed(3); compareParts.push('a='+fit.a.toFixed(3)+' (paper '+paper.a+')'); }
+      if(fit.b!==null){ document.getElementById('bc2-p-b').value = fit.b.toFixed(3); compareParts.push('b='+fit.b.toFixed(3)+' (paper '+paper.b+')'); }
+      if(fit.chitc!==null){ document.getElementById('bc2-p-xtc').value = Math.abs(fit.chitc).toFixed(3); compareParts.push('χtc='+Math.abs(fit.chitc).toFixed(3)+' (paper '+paper.chitc+')'); }
+      var compareEl = document.getElementById('bc2-fitCompare');
+      compareEl.textContent = compareParts.length
+        ? 'Calibrated from your data (section 6 methods): ' + compareParts.join(', ') + '.'
+        : 'Not enough tests to auto-calibrate Mtc/CSL/χtc (need ≥2 tests spanning different p′0/ψ0) — left at the paper\'s FRS values below; edit them yourself if you know your sand\'s properties.';
+      compareEl.style.display = '';
+
       var NSprops1b = readNSprops1FromForm();
-      var ds = buildUserDataset(rows, NSprops1b);
+      var ds = buildUserDataset(grouped, NSprops1b);
       fillImmediateTable(ds, NSprops1b);
 
       var defaultParams = [16338, 0.78, 0.15, 96, 381]; // a generic starting point, not fit to your data
