@@ -1082,6 +1082,18 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <p class="explain" style="font-size:12px;margin-top:8px"><b>1 &middot; State vs the CSL.</b> The line's steepness <i>is</i> &lambda;<sub>10</sub> (compressibility). &psi; is the vertical gap from your point to the line. Below the line &rarr; dense &amp; strong; above &rarr; loose &amp; weak.</p>
 <p class="explain" style="font-size:12px" id="s10-cap2"><b>2 &middot; Strength follows &psi;.</b> Peak strength above critical = &minus;k&middot;&psi; (a straight line). Your point slides along it as &psi; changes &mdash; the pull &lambda;<sub>10</sub> and stress exert on strength runs entirely through &psi;.</p>
 
+<div class="guided-panel" style="margin-top:14px">
+<h3 style="margin-top:0">3 &middot; What &psi; does to the whole stress&ndash;strain curve, not just its endpoint</h3>
+<p class="explain" style="font-size:12.5px;margin-top:0">Plots 1 and 2 show a single point &mdash; peak strength at your current state. This one sketches the <i>path</i> a shear test takes to get there: a schematic shear stress&ndash;strain curve built from the same &psi;, using the M-family strength law (M<sub>peak</sub> = M&middot;e<sup>&minus;n&psi;</sup>) regardless of which mode is active above, so it stays consistent whichever you're viewing. Dense/dilative states (&psi;&lt;0) peak early and <b>strain-soften</b> back down toward the critical-state line; loose/contractive states (&psi;&ge;0) simply harden up to it with no peak at all. <b>This curve is illustrative &mdash; a schematic built directly from &psi; and the strength law above, not a constitutive simulation</b> (section 7's NorSand tool is the real one); its purpose is to make brittleness itself, not any specific numeric prediction, visible as you move the sliders.</p>
+<div class="bayes-chart-box"><canvas id="s10-cv3"></canvas></div>
+<div class="grid2" style="gap:8px 14px;margin-top:10px">
+<div class="stat"><div class="n" id="s10-ib" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">brittleness index, I<sub>B</sub> = (q<sub>peak</sub> &minus; q<sub>cs</sub>)/q<sub>peak</sub></div></div>
+<div class="stat"><div class="n" id="s10-qpeak" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">peak shear stress, q<sub>peak</sub></div></div>
+<div class="stat"><div class="n" id="s10-qcs" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">critical-state shear stress, q<sub>cs</sub></div></div>
+<div class="stat"><div class="n" id="s10-brittleword" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">in plain terms</div></div>
+</div>
+</div>
+
 <div class="guided-panel" style="margin-top:16px">
 <h3 style="margin-top:0">From a point estimate to a probability: propagating parameter uncertainty</h3>
 <p class="explain" style="font-size:12.5px;margin-top:0">Section 9 runs Bayesian calibration <i>backward</i> &mdash; inferring a parameter distribution from test data. Here it runs <i>forward</i>: you almost never know &lambda;<sub>10</sub>, e<sub>&Gamma;</sub>, e, or p&prime; exactly &mdash; each carries measurement and estimation uncertainty. Give each one a spread instead of a single value, and the same equation turns your one &psi; into a <i>distribution</i> of possible &psi; &mdash; showing not just what you'd expect, but how likely the sample is to actually land loose of critical.</p>
@@ -4956,6 +4968,83 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=c; ctx.stroke();
   }
 
+  // ================= PLOT 3: schematic shear stress-strain curve =================
+  // Illustrative only (disclosed as such in the caption): a closed-form curve shape built
+  // directly from Mpeak/Mcs (the same M-family law plot 2 uses), NOT a constitutive
+  // integration like section 7's real NorSand simulator. Dense/dilative states get a peak
+  // followed by an exponential decay toward the critical-state stress ratio (strain
+  // softening, rate scaling with how far above critical the peak sits); loose/contractive
+  // states just harden monotonically up to it with no peak at all.
+  var cv3=$("cv3"), cx3=cv3.getContext("2d");
+  function buildEtaCurve(Mpeak, Mcs){
+    var epsMax=20, N=220, epsP=3;
+    var dilative = Mpeak > Mcs*1.01;
+    var lambda = 0.20 + 2.4*Math.max(0,(Mpeak-Mcs)/Mcs);
+    var eps=new Array(N+1), eta=new Array(N+1);
+    for(var i=0;i<=N;i++){
+      var e=epsMax*i/N, h;
+      if(dilative){
+        if(e<=epsP){ var r=e/epsP; h = Mpeak*r*(2-r); }
+        else { h = Mcs + (Mpeak-Mcs)*Math.exp(-lambda*(e-epsP)); }
+      } else {
+        var eps50=epsP*0.6; h = Mcs*e/(e+eps50);
+      }
+      eps[i]=e; eta[i]=h;
+    }
+    return {eps:eps, eta:eta, epsPeak:epsP, dilative:dilative, Mpeak:Mpeak, Mcs:Mcs};
+  }
+  var EPS3_MAX=20;
+  function drawStressStrainPlot(){
+    var d=derive(cur), c=col(d.psi);
+    var curPp=Math.pow(10,cur.lp);
+    var M=Mcs(params.phics), Mp=M*Math.exp(-params.n*d.psi);
+    var curve=buildEtaCurve(Mp, M);
+    var qCurve=curve.eta.map(function(h){return h*curPp;});
+    var qMax=Math.max.apply(null,qCurve.concat([M*curPp*1.05]));
+
+    var dim=fitCanvas(cv3,cx3,260), w=dim.w, h=dim.h, ctx=cx3;
+    var m={l:62,r:16,t:16,b:38};
+    var X=function(e){ return m.l+(e/EPS3_MAX)*(w-m.l-m.r); };
+    var Y=function(q){ return m.t+(1-q/qMax)*(h-m.t-m.b); };
+    ctx.clearRect(0,0,w,h);
+
+    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.lineWidth=1; ctx.font=fontStr(11);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    [0,5,10,15,20].forEach(function(e){ var x=X(e); ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,h-m.b);ctx.stroke(); ctx.fillText(e,x,h-m.b+8); });
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    var yTickStep = qMax>500?200:(qMax>200?50:(qMax>50?20:5));
+    for(var yv=0; yv<=qMax; yv+=yTickStep){ var y=Y(yv); ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke(); ctx.fillText(Math.round(yv),m.l-10,y); }
+    ctx.strokeStyle=getCss('--muted'); ctx.strokeRect(m.l+0.5,m.t+0.5,w-m.l-m.r,h-m.t-m.b);
+    ctx.textBaseline='alphabetic';
+    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.fillText("shear strain εq (%)",(m.l+w-m.r)/2,h-9);
+    ctx.save(); ctx.translate(16,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("shear stress q (kPa)",0,0); ctx.restore();
+
+    // critical-state reference line
+    ctx.save(); ctx.setLineDash([6,4]); ctx.strokeStyle=COL_LAW(); ctx.globalAlpha=.75; ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.moveTo(m.l,Y(M*curPp)); ctx.lineTo(w-m.r,Y(M*curPp)); ctx.stroke(); ctx.restore();
+    ctx.fillStyle=COL_LAW(); ctx.font=fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom';
+    ctx.fillText("critical state (q_cs)", m.l+6, Y(M*curPp)-4);
+
+    ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
+    ctx.strokeStyle=c; ctx.lineWidth=2.4; ctx.beginPath();
+    curve.eps.forEach(function(e,i){ var x=X(e), y=Y(qCurve[i]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke();
+    if(curve.dilative){
+      var px=X(curve.epsPeak), py=Y(curve.Mpeak*curPp);
+      ctx.beginPath(); ctx.arc(px,py,4.5,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=2.2; ctx.strokeStyle=c; ctx.stroke();
+      ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("peak", px+6, py-3);
+    }
+    ctx.restore();
+
+    var IB = curve.dilative ? (curve.Mpeak-curve.Mcs)/curve.Mpeak : 0;
+    var qPeak = (curve.dilative?curve.Mpeak:curve.Mcs)*curPp, qCs = curve.Mcs*curPp;
+    $("ib").textContent = fmt(IB,2); $("ib").style.color = c;
+    $("qpeak").textContent = Math.round(qPeak)+" kPa";
+    $("qcs").textContent = Math.round(qCs)+" kPa";
+    var word = IB>0.5 ? "very brittle" : IB>0.2 ? "moderately brittle" : IB>0.03 ? "mildly brittle" : "ductile, no softening";
+    $("brittleword").textContent = word; $("brittleword").style.color = c;
+  }
+
   // ================= Monte Carlo uncertainty propagation =================
   var uncEnabled=false, mcSamples=null;
   var mc_rng_state = 12345;
@@ -5023,9 +5112,9 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     var tgtLp=Math.log10(params.pp); var f=reduceMotion?1:0.22;
     cur.lam=lerp(cur.lam,params.lam,f); cur.eG=lerp(cur.eG,params.eG,f); cur.e=lerp(cur.e,params.e,f);
     cur.lp=lerp(cur.lp,tgtLp,f); cur.k=lerp(cur.k,params.k,f);
-    drawCSLplot(); drawStrengthPlot();
+    drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot();
     var done = Math.abs(cur.lam-params.lam)<1e-4 && Math.abs(cur.eG-params.eG)<1e-4 && Math.abs(cur.e-params.e)<1e-4 && Math.abs(cur.lp-tgtLp)<1e-4 && Math.abs(cur.k-params.k)<1e-3;
-    if(done){ cur.lam=params.lam;cur.eG=params.eG;cur.e=params.e;cur.lp=tgtLp;cur.k=params.k; drawCSLplot();drawStrengthPlot(); raf=null; }
+    if(done){ cur.lam=params.lam;cur.eG=params.eG;cur.e=params.e;cur.lp=tgtLp;cur.k=params.k; drawCSLplot();drawStrengthPlot();drawStressStrainPlot(); raf=null; }
     else raf=requestAnimationFrame(tick);
   }
   function kick(){ if(raf===null) raf=requestAnimationFrame(tick); }
@@ -5050,7 +5139,7 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     eqEl.innerHTML = isM
       ? "M<sub>peak</sub> = [ 6&middot;sin&phi;&prime;<sub>cs</sub> / (3 &minus; sin&phi;&prime;<sub>cs</sub>) ] &middot; exp( &minus;n&middot;( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) ) )"
       : "&phi;&prime;<sub>peak</sub> &minus; &phi;&prime;<sub>cs</sub> = &minus;k &middot; ( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) )";
-    updateText(); drawCSLplot(); drawStrengthPlot();
+    updateText(); drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot();
   }
   mode_phi.addEventListener("click",function(){setMode('phi');});
   mode_M.addEventListener("click",function(){setMode('M');});
@@ -5067,19 +5156,19 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   $("u-e").addEventListener('input', function(){ $("u-eOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
   $("u-pp").addEventListener('input', function(){ $("u-ppOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
 
-  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); if(uncEnabled&&mcSamples) drawHistogram(mcSamples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;})); });
+  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot(); if(uncEnabled&&mcSamples) drawHistogram(mcSamples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;})); });
 
   // redraw once this page's card actually becomes visible (same fix as section 9's charts)
   (function(){
     var wasHidden = root.style.display === 'none';
     new MutationObserver(function(){
       var hiddenNow = root.style.display === 'none';
-      if(wasHidden && !hiddenNow){ drawCSLplot(); drawStrengthPlot(); }
+      if(wasHidden && !hiddenNow){ drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot(); }
       wasHidden = hiddenNow;
     }).observe(root, {attributes:true, attributeFilter:['style']});
   })();
 
-  readInputs(); updateText(); drawCSLplot(); drawStrengthPlot();
+  readInputs(); updateText(); drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot();
 })();
 </script>
 </body></html>
