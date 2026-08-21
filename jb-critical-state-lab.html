@@ -4861,6 +4861,11 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.fillStyle=COL_LAW(); ctx.font="600 "+fontStr(11.5); ctx.textAlign='left'; ctx.textBaseline='bottom';
     ctx.fillText("CSL (slope = λ10)", X(LP_MIN+0.12), Y(ecsAt(LP_MIN+0.12))-4);
 
+    ctx.font="600 "+fontStr(11); ctx.fillStyle=COL_DENSE(); ctx.textAlign='left'; ctx.textBaseline='bottom';
+    ctx.fillText("DILATIVE (below CSL)", m.l+8, h-m.b-7);
+    ctx.fillStyle=COL_LOOSE(); ctx.textAlign='right'; ctx.textBaseline='top';
+    ctx.fillText("CONTRACTIVE (above CSL)", w-m.r-8, m.t+7);
+
     // Monte Carlo sample cloud (drawn under the main point)
     if(uncEnabled && mcSamples){
       ctx.fillStyle=hexA(getCss('--blue'),0.35);
@@ -4907,8 +4912,12 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.textBaseline='alphabetic';
     ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.fillText("state parameter ψ",(m.l+w-m.r)/2,h-9);
     ctx.save(); ctx.translate(14,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("φ′peak − φ′cs (°)",0,0); ctx.restore();
-    ctx.font="600 "+fontStr(11); ctx.fillStyle=COL_DENSE(); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText("ψ<0 · dense · STRONG",m.l+6,m.t+5);
-    ctx.fillStyle=COL_LOOSE(); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText("ψ>0 · loose · WEAK",w-m.r-6,h-m.b-5);
+    ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillStyle=COL_DENSE();
+    ctx.font="700 "+fontStr(12); ctx.fillText("DILATIVE",m.l+6,m.t+5);
+    ctx.font=fontStr(10.5); ctx.fillText("ψ<0 · dense · strong",m.l+6,m.t+20);
+    ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillStyle=COL_LOOSE();
+    ctx.font="700 "+fontStr(12); ctx.fillText("CONTRACTIVE",w-m.r-6,h-m.b-19);
+    ctx.font=fontStr(10.5); ctx.fillText("ψ>0 · loose · weak",w-m.r-6,h-m.b-5);
 
     ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
     ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.4; ctx.beginPath();
@@ -4950,8 +4959,12 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.textBaseline='alphabetic';
     ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.fillText("state parameter ψ",(m.l+w-m.r)/2,h-9);
     ctx.save(); ctx.translate(14,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("stress ratio η = q/p′",0,0); ctx.restore();
-    ctx.font=fontStr(11); ctx.fillStyle=COL_DENSE(); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText("ψ<0 · Mpeak > M · STRONG",m.l+6,m.t+5);
-    ctx.fillStyle=COL_LOOSE(); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText("ψ>0 · Mpeak < M · WEAK",w-m.r-6,h-m.b-6);
+    ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillStyle=COL_DENSE();
+    ctx.font="700 "+fontStr(12); ctx.fillText("DILATIVE",m.l+6,m.t+5);
+    ctx.font=fontStr(10.5); ctx.fillText("ψ<0 · Mpeak > M · strong",m.l+6,m.t+20);
+    ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillStyle=COL_LOOSE();
+    ctx.font="700 "+fontStr(12); ctx.fillText("CONTRACTIVE",w-m.r-6,h-m.b-19);
+    ctx.font=fontStr(10.5); ctx.fillText("ψ>0 · Mpeak < M · weak",w-m.r-6,h-m.b-5);
 
     ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
     ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.4; ctx.beginPath();
@@ -5025,14 +5038,34 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.fillStyle=COL_LAW(); ctx.font=fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom';
     ctx.fillText("critical state (q_cs)", m.l+6, Y(M*curPp)-4);
 
+    // behavior badge, top-right — the one label this plot is really about
+    ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillStyle=c;
+    ctx.font="700 "+fontStr(12.5); ctx.fillText(curve.dilative?"DILATIVE":"CONTRACTIVE", w-m.r-6, m.t+5);
+    ctx.font=fontStr(10.5); ctx.fillText(curve.dilative?"strain-softening expected":"strain-hardening, no peak", w-m.r-6, m.t+21);
+
     ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
     ctx.strokeStyle=c; ctx.lineWidth=2.4; ctx.beginPath();
     curve.eps.forEach(function(e,i){ var x=X(e), y=Y(qCurve[i]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); });
     ctx.stroke();
+    function etaAtEps(eTarget){ var idx=Math.round(eTarget/EPS3_MAX*(curve.eps.length-1)); return curve.eta[Math.max(0,Math.min(curve.eta.length-1,idx))]; }
     if(curve.dilative){
       var px=X(curve.epsPeak), py=Y(curve.Mpeak*curPp);
       ctx.beginPath(); ctx.arc(px,py,4.5,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=2.2; ctx.strokeStyle=c; ctx.stroke();
       ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("peak", px+6, py-3);
+      // label along the post-peak decay, angled to roughly follow the curve's downward slope
+      var eA=curve.epsPeak+(EPS3_MAX-curve.epsPeak)*0.4, eB=eA+1.5;
+      var xA=X(eA), yA=Y(etaAtEps(eA)*curPp), xB=X(eB), yB=Y(etaAtEps(eB)*curPp);
+      var ang=Math.atan2(yB-yA,xB-xA);
+      ctx.save(); ctx.translate(xA,yA); ctx.rotate(ang);
+      ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("strain softening", 4, -4);
+      ctx.restore();
+    } else {
+      var eA2=EPS3_MAX*0.28, eB2=eA2+1.5;
+      var xA2=X(eA2), yA2=Y(etaAtEps(eA2)*curPp), xB2=X(eB2), yB2=Y(etaAtEps(eB2)*curPp);
+      var ang2=Math.atan2(yB2-yA2,xB2-xA2);
+      ctx.save(); ctx.translate(xA2,yA2); ctx.rotate(ang2);
+      ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("strain hardening", 4, -4);
+      ctx.restore();
     }
     ctx.restore();
 
