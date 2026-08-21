@@ -290,7 +290,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div></header>
 <div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#csl-section">4. CSL & ψ</a><a href="#dilatancy-section">5. Dilatancy</a><a href="#calibration-section">6. NorSand calibration</a><a href="#norsand-section">7. NorSand parameters</a><a href="#knowledge-check">8. Check learning</a><a href="#bayesian-calibration">9. Bayesian calibration</a>
+<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#csl-section">4. CSL & ψ</a><a href="#dilatancy-section">5. Dilatancy</a><a href="#calibration-section">6. NorSand calibration</a><a href="#norsand-section">7. NorSand parameters</a><a href="#knowledge-check">8. Check learning</a><a href="#bayesian-calibration">9. Bayesian calibration</a><a href="#state-parameter-lab">10. State-parameter lab</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -315,7 +315,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div class="callout"><b>Recommended route:</b> first use the visual mental model, then the guided CSL tool, then stress–dilatancy, and only then open the NorSand simulator.</div></div>
 <div class="big-idea"><div class="eyebrow" style="color:#aee7f7">The big idea</div><div class="formula">ψ = e − e<sub>c</sub>(p′)</div><p>Void ratio alone is not enough. Stress alone is not enough. ψ combines both by measuring vertical distance from the critical state line.</p></div>
 </div>
-<p class="explain" style="font-size:11.5px;margin-top:10px">This module is 9 short pages, in this order — jump to any of them, or just use the Next button below to go straight through.</p>
+<p class="explain" style="font-size:11.5px;margin-top:10px">This module is 10 short pages, in this order — jump to any of them, or just use the Next button below to go straight through.</p>
 <div class="goal-grid">
 <button type="button" class="goal" data-gotopage="start"><span class="goal-num">1</span><b>Start here</b>Why ψ organizes everything in this book, and where to jump in.</button>
 <button type="button" class="goal" data-gotopage="mental-model"><span class="goal-num">2</span><b>Mental model</b>See dilation and contraction happen before touching any equations.</button>
@@ -326,6 +326,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">7</span><b>NorSand parameters</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
 <button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">8</span><b>Check learning</b>100 questions, split into checkpoints you'll already have met along the way.</button>
 <button type="button" class="goal" data-gotopage="bayesian-calibration"><span class="goal-num">9</span><b>Bayesian calibration</b>A real MCMC calibration of NorSand against triaxial data, ported and run live in this page.</button>
+<button type="button" class="goal" data-gotopage="state-parameter-lab"><span class="goal-num">10</span><b>State-parameter lab</b>How &lambda;<sub>10</sub>, e, and p&prime; build &psi; and set strength &mdash; plus a Monte Carlo uncertainty view.</button>
 </div>
 </section>
 
@@ -1034,6 +1035,88 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 
 <div id="bc-commentsSection"></div>
 </div>
+</div>
+
+<div class="card" id="state-parameter-lab">
+<h2>10. How &lambda;<sub>10</sub> and state build the state parameter &psi; &mdash; and set strength</h2>
+<div class="explain">
+<p>One equation governs it all. Compressibility (&lambda;<sub>10</sub>), how tightly the soil is packed (e), and how hard it is squeezed (p&prime;) combine into the state parameter &psi; &mdash; the soil's distance from the critical state line. That distance, not &lambda;<sub>10</sub> alone, decides whether the soil is strong or weak. Move the sliders and watch it happen.</p>
+</div>
+<p class="sources">Prompted by <b>Zana Karimi, PhD, PE</b> &mdash; with thanks for bringing up this discussion.</p>
+
+<div class="eq" style="white-space:normal;text-align:center;font-size:16px;padding:14px 16px">
+<div id="s10-eq">&phi;&prime;<sub>peak</sub> &minus; &phi;&prime;<sub>cs</sub> = &minus;k &middot; ( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) )</div>
+<div id="s10-numline" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+</div>
+
+<div style="margin:12px 0" role="tablist" aria-label="Strength representation">
+<button type="button" class="ghost" id="s10-mode-phi" role="tab" aria-selected="true" style="font-weight:700">Friction angle (&phi;&prime;)</button>
+<button type="button" class="ghost" id="s10-mode-M" role="tab" aria-selected="false" style="margin-left:6px">Stress ratio (M)</button>
+</div>
+
+<div class="grid2">
+<div>
+<div class="slider-block"><label for="s10-lam"><span>&lambda;<sub>10</sub> &mdash; compressibility (slope of the CSL)</span> <span class="readout" id="s10-lamOut">0.30</span></label><input id="s10-lam" type="range" min="0.02" max="1.20" step="0.01" value="0.30"></div>
+<div class="slider-block"><label for="s10-eG"><span>e<sub>&Gamma;</sub> &mdash; CSL position (void ratio at 100 kPa)</span> <span class="readout" id="s10-eGOut">1.00</span></label><input id="s10-eG" type="range" min="0.60" max="1.80" step="0.01" value="1.00"></div>
+<div class="slider-block"><label for="s10-e"><span>e &mdash; current void ratio (how packed)</span> <span class="readout" id="s10-eOut">0.90</span></label><input id="s10-e" type="range" min="0.30" max="2.00" step="0.01" value="0.90"></div>
+<div class="slider-block"><label for="s10-pp"><span>p&prime; &mdash; mean effective stress</span> <span class="readout" id="s10-ppOut">100 kPa</span></label><input id="s10-pp" type="range" min="0.699" max="3.301" step="0.002" value="2.000"></div>
+<div class="slider-block" id="s10-ctrl-k"><label for="s10-k"><span>k &mdash; state &rarr; strength coupling</span> <span class="readout" id="s10-kOut">40&deg;</span></label><input id="s10-k" type="range" min="10" max="60" step="1" value="40"></div>
+<div class="slider-block" id="s10-ctrl-phics" hidden><label for="s10-phics"><span>&phi;&prime;<sub>cs</sub> &mdash; critical-state friction angle &rarr; M</span> <span class="readout" id="s10-phicsOut">32.0&deg;</span></label><input id="s10-phics" type="range" min="26" max="40" step="0.5" value="32"></div>
+<div class="slider-block" id="s10-ctrl-n" hidden><label for="s10-n"><span>n &mdash; coupling in M<sub>peak</sub> = M&middot;e<sup>&minus;n&psi;</sup></span> <span class="readout" id="s10-nOut">2.0</span></label><input id="s10-n" type="range" min="0.5" max="4" step="0.1" value="2.0"></div>
+</div>
+
+<div class="guided-panel">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+<span style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em">&psi; =</span>
+<span id="s10-psi" style="font-size:28px;font-weight:800;font-family:Georgia,serif"></span>
+<span class="badge" id="s10-badge" style="font-size:11px"></span>
+</div>
+<p class="explain" id="s10-interp" style="min-height:2.6em;margin:8px 0 12px"></p>
+<div class="grid2" style="gap:8px 14px">
+<div class="stat"><div class="n" id="s10-ecs" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">e<sub>cs</sub> at this p&prime; (on CSL)</div></div>
+<div class="stat"><div class="n" id="s10-dphi" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-modestat">peak strength above critical</div></div>
+<div class="stat"><div class="n" id="s10-cross" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">crossover p&prime; (&psi; = 0)</div></div>
+<div class="stat"><div class="n" id="s10-cc" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">compressibility: &Delta;e per &times;10 stress</div></div>
+</div>
+</div>
+</div>
+
+<div class="bayes-grid2" style="margin-top:14px">
+<div class="bayes-chart-box"><canvas id="s10-cv1"></canvas></div>
+<div class="bayes-chart-box"><canvas id="s10-cv2"></canvas></div>
+</div>
+<p class="explain" style="font-size:12px;margin-top:8px"><b>1 &middot; State vs the CSL.</b> The line's steepness <i>is</i> &lambda;<sub>10</sub> (compressibility). &psi; is the vertical gap from your point to the line. Below the line &rarr; dense &amp; strong; above &rarr; loose &amp; weak.</p>
+<p class="explain" style="font-size:12px" id="s10-cap2"><b>2 &middot; Strength follows &psi;.</b> Peak strength above critical = &minus;k&middot;&psi; (a straight line). Your point slides along it as &psi; changes &mdash; the pull &lambda;<sub>10</sub> and stress exert on strength runs entirely through &psi;.</p>
+
+<div class="guided-panel" style="margin-top:16px">
+<h3 style="margin-top:0">From a point estimate to a probability: propagating parameter uncertainty</h3>
+<p class="explain" style="font-size:12.5px;margin-top:0">Section 9 runs Bayesian calibration <i>backward</i> &mdash; inferring a parameter distribution from test data. Here it runs <i>forward</i>: you almost never know &lambda;<sub>10</sub>, e<sub>&Gamma;</sub>, e, or p&prime; exactly &mdash; each carries measurement and estimation uncertainty. Give each one a spread instead of a single value, and the same equation turns your one &psi; into a <i>distribution</i> of possible &psi; &mdash; showing not just what you'd expect, but how likely the sample is to actually land loose of critical.</p>
+<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" id="s10-uncEnable">Enable parameter uncertainty (Monte Carlo, 800 samples)</label>
+
+<div id="s10-uncPanel" style="display:none;margin-top:12px">
+<div class="grid2">
+<div class="slider-block"><label for="s10-u-lam"><span>&plusmn; &lambda;<sub>10</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-lamOut">15%</span></label><input id="s10-u-lam" type="range" min="0" max="40" step="1" value="15"></div>
+<div class="slider-block"><label for="s10-u-eG"><span>&plusmn; e<sub>&Gamma;</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eGOut">5%</span></label><input id="s10-u-eG" type="range" min="0" max="20" step="1" value="5"></div>
+<div class="slider-block"><label for="s10-u-e"><span>&plusmn; e uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eOut">5%</span></label><input id="s10-u-e" type="range" min="0" max="20" step="1" value="5"></div>
+<div class="slider-block"><label for="s10-u-pp"><span>&plusmn; p&prime; uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-ppOut">20%</span></label><input id="s10-u-pp" type="range" min="0" max="50" step="1" value="20"></div>
+</div>
+<div class="bayes-grid2" style="margin-top:10px">
+<div class="bayes-chart-box"><canvas id="s10-cvHist"></canvas></div>
+<div class="guided-panel" style="margin:0">
+<h4 style="margin:0 0 8px;color:var(--navy);font-size:12.5px">What the spread means</h4>
+<div class="grid2" style="gap:8px 14px">
+<div class="stat"><div class="n" id="s10-u-mean" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">mean &psi; (Monte Carlo)</div></div>
+<div class="stat"><div class="n" id="s10-u-sd" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">&psi; standard deviation</div></div>
+<div class="stat"><div class="n" id="s10-u-p95" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">95% interval on &psi;</div></div>
+<div class="stat"><div class="n" id="s10-u-ploose" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-u-plooseLabel">P(&psi; &gt; 0) &mdash; loose of critical</div></div>
+</div>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:10px 0 0">Each sample is drawn independently (truncated Gaussian, clipped to each slider's range) and pushed through the exact same &psi; and strength formulas above &mdash; the faint dots on the two plots are the individual samples.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="s10-commentsSection"></div>
 </div>
 
 <!-- HIDDEN FROM PUBLIC (per request) -- content preserved below, uncomment to restore.
@@ -2240,7 +2323,7 @@ updateConstructionPanels();
   // slot, so a chain of jumps (card -> card -> card) still unwinds one step at a time.
   var navStack=[];
   var backBtn=document.getElementById('backToPrevious');
-  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning','bayesian-calibration':'Bayesian calibration'};
+  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning','bayesian-calibration':'Bayesian calibration','state-parameter-lab':'State-parameter lab'};
   function navOriginLabel(el){
     var idEl=el.closest('[id]');
     return (idEl && SECTION_LABELS[idEl.id]) || 'where you were';
@@ -3343,7 +3426,8 @@ document.addEventListener('keydown', function(e){
     {label:'NorSand calibration', ids:['calibration-section','quizCheckFGH']},
     {label:'NorSand parameters', ids:['norsand-section','quizCheckI']},
     {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']},
-    {label:'Bayesian calibration', ids:['bayesian-calibration']}
+    {label:'Bayesian calibration', ids:['bayesian-calibration']},
+    {label:'State-parameter lab', ids:['state-parameter-lab']}
   ];
   // The pinned "mental model chain" recap box (flowSticky) only means anything on the pages
   // where its driving controls (the e/p′ sliders in CSL, whose psi flows into Dilatancy's
@@ -4630,16 +4714,20 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
 </script>
 
 <script>
-// Second mount of the same "Questions & comments" system (comments.js) so it's reachable
-// from this page too, without editing that shared, site-wide file. Same backend/page id as
-// the original mount, so it's genuinely the same thread — just a second place to reach it.
+// A third-ish mount of the same "Questions & comments" system (comments.js) — this one
+// generalized to serve any number of extra mount points (bc-commentsSection AND
+// s10-commentsSection) on this page without duplicating ~150 lines per section or editing
+// the shared, site-wide comments.js. Internal wiring is scoped by class within each mount
+// element rather than global ids, so multiple mounts can coexist safely. Same backend/page
+// id as the original mount, so every mount on this page is genuinely the same thread.
 (function () {
   var WEB_APP_URL = "https://script.google.com/macros/s/AKfycby38uL5lpcQpH5UqXq8DzUc_NXy48r3V_e94eMx20LgoEE5D1af3GsYBlKeYAXqQOvZ/exec";
   var APPROVED_SHEET_ID = "1H_stbO-l5k_dKvjjY0j6xfVPxkmAnvE6Oo0e3wcUHaA";
   var APPROVED_SHEET_NAME = "Approved";
 
-  var mount = document.getElementById("bc-commentsSection");
-  if (!mount) return;
+  var mountIds = ["bc-commentsSection", "s10-commentsSection"];
+  var mounts = mountIds.map(function(id){ return document.getElementById(id); }).filter(Boolean);
+  if (!mounts.length) return;
 
   var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") !== 0 && APPROVED_SHEET_ID.indexOf("PASTE_YOUR") !== 0;
   var pageId = (location.pathname.split("/").pop() || "index.html");
@@ -4679,87 +4767,91 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     document.head.appendChild(style);
   }
 
-  if (!isConfigured) {
-    mount.innerHTML = '<div class="cmt-card"><h2 class="cmt-h2">Questions &amp; comments</h2><p class="cmt-note">Comments aren’t set up on this page yet.</p></div>';
-    return;
-  }
+  mounts.forEach(function(mount){ initOneMount(mount); });
 
-  mount.innerHTML =
-    '<div class="cmt-card">' +
-    '<h2 class="cmt-h2">Questions &amp; comments</h2>' +
-    '<p class="cmt-intro">Spotted something confusing, incorrect, or worth adding — about this page specifically, or the module as a whole? Leave a note below. Everything is reviewed before it appears publicly, so don’t expect it to show up immediately — your email is never shown to anyone.</p>' +
-    '<form id="bc-cmtForm" class="cmt-form">' +
-    '  <div class="cmt-row2">' +
-    '    <div class="cmt-field"><label for="bc-cmtName">Name</label><input id="bc-cmtName" type="text" maxlength="120" required></div>' +
-    '    <div class="cmt-field"><label for="bc-cmtEmail">Email <span class="cmt-hint">(private, never shown)</span></label><input id="bc-cmtEmail" type="email" maxlength="200" required></div>' +
-    "  </div>" +
-    '  <div class="cmt-field"><label for="bc-cmtType">This is a…</label><select id="bc-cmtType">' +
-    TYPES.map(function (t) { return '<option value="' + t + '">' + t + "</option>"; }).join("") +
-    "  </select></div>" +
-    '  <div class="cmt-field"><label for="bc-cmtMessage">Message</label><textarea id="bc-cmtMessage" rows="4" maxlength="3000" required></textarea></div>' +
-    '  <input type="text" id="bc-cmtHp" name="bc-cmtHp" class="cmt-hp" tabindex="-1" autocomplete="off">' +
-    '  <div class="cmt-form-foot"><button type="submit" id="bc-cmtSubmit" class="cmt-btn">Submit for review</button><span id="bc-cmtStatus" class="cmt-status" aria-live="polite"></span></div>' +
-    "</form>" +
-    '<div id="bc-cmtList" class="cmt-list"><p class="cmt-note">Loading comments…</p></div>' +
-    "</div>";
+  function initOneMount(mount){
+    if (!isConfigured) {
+      mount.innerHTML = '<div class="cmt-card"><h2 class="cmt-h2">Questions &amp; comments</h2><p class="cmt-note">Comments aren’t set up on this page yet.</p></div>';
+      return;
+    }
 
-  var form = document.getElementById("bc-cmtForm");
-  var submitting = false;
-  form.addEventListener("submit", function (ev) {
-    ev.preventDefault();
-    if (submitting) return;
-    var btn = document.getElementById("bc-cmtSubmit");
-    var status = document.getElementById("bc-cmtStatus");
-    var name = document.getElementById("bc-cmtName").value.trim();
-    var email = document.getElementById("bc-cmtEmail").value.trim();
-    var type = document.getElementById("bc-cmtType").value;
-    var message = document.getElementById("bc-cmtMessage").value.trim();
-    var hp = document.getElementById("bc-cmtHp").value;
-    if (!name || !email || !message) return;
+    mount.innerHTML =
+      '<div class="cmt-card">' +
+      '<h2 class="cmt-h2">Questions &amp; comments</h2>' +
+      '<p class="cmt-intro">Spotted something confusing, incorrect, or worth adding — about this page specifically, or the module as a whole? Leave a note below. Everything is reviewed before it appears publicly, so don’t expect it to show up immediately — your email is never shown to anyone.</p>' +
+      '<form class="cmtForm cmt-form">' +
+      '  <div class="cmt-row2">' +
+      '    <div class="cmt-field"><label>Name<input class="cmtName" type="text" maxlength="120" required></label></div>' +
+      '    <div class="cmt-field"><label>Email <span class="cmt-hint">(private, never shown)</span><input class="cmtEmail" type="email" maxlength="200" required></label></div>' +
+      "  </div>" +
+      '  <div class="cmt-field"><label>This is a…<select class="cmtType">' +
+      TYPES.map(function (t) { return '<option value="' + t + '">' + t + "</option>"; }).join("") +
+      "  </select></label></div>" +
+      '  <div class="cmt-field"><label>Message<textarea class="cmtMessage" rows="4" maxlength="3000" required></textarea></label></div>' +
+      '  <input type="text" class="cmtHp" class="cmt-hp" tabindex="-1" autocomplete="off">' +
+      '  <div class="cmt-form-foot"><button type="submit" class="cmtSubmit cmt-btn">Submit for review</button><span class="cmtStatus cmt-status" aria-live="polite"></span></div>' +
+      "</form>" +
+      '<div class="cmtList cmt-list"><p class="cmt-note">Loading comments…</p></div>' +
+      "</div>";
 
-    submitting = true; btn.disabled = true; status.textContent = "Sending…"; status.className = "cmt-status";
-    fetch(WEB_APP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ page: pageId, name: name, email: email, type: type, message: message, hp: hp })
-    })
-      .then(function (r) { return r.json(); })
-      .then(function (res) {
-        if (res && res.ok) {
-          form.reset();
-          status.textContent = "Thanks — your " + type.toLowerCase() + " has been submitted and will appear here once reviewed.";
-          status.className = "cmt-status cmt-status-ok";
-        } else {
-          status.textContent = "Something went wrong — please try again in a moment.";
-          status.className = "cmt-status cmt-status-err";
-        }
+    var form = mount.querySelector(".cmtForm");
+    var submitting = false;
+    form.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      if (submitting) return;
+      var btn = mount.querySelector(".cmtSubmit");
+      var status = mount.querySelector(".cmtStatus");
+      var name = mount.querySelector(".cmtName").value.trim();
+      var email = mount.querySelector(".cmtEmail").value.trim();
+      var type = mount.querySelector(".cmtType").value;
+      var message = mount.querySelector(".cmtMessage").value.trim();
+      var hp = mount.querySelector(".cmtHp").value;
+      if (!name || !email || !message) return;
+
+      submitting = true; btn.disabled = true; status.textContent = "Sending…"; status.className = "cmtStatus cmt-status";
+      fetch(WEB_APP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ page: pageId, name: name, email: email, type: type, message: message, hp: hp })
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (res && res.ok) {
+            form.reset();
+            status.textContent = "Thanks — your " + type.toLowerCase() + " has been submitted and will appear here once reviewed.";
+            status.className = "cmtStatus cmt-status cmt-status-ok";
+          } else {
+            status.textContent = "Something went wrong — please try again in a moment.";
+            status.className = "cmtStatus cmt-status cmt-status-err";
+          }
+        })
+        .catch(function () {
+          status.textContent = "Couldn’t reach the server — please try again in a moment.";
+          status.className = "cmtStatus cmt-status cmt-status-err";
+        })
+        .finally(function () { submitting = false; btn.disabled = false; });
+    });
+
+    var url = "https://docs.google.com/spreadsheets/d/" + APPROVED_SHEET_ID + "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent(APPROVED_SHEET_NAME);
+    fetch(url)
+      .then(function (r) { if (!r.ok) throw new Error("Request failed: " + r.status); return r.text(); })
+      .then(function (text) {
+        var json = parseGviz(text);
+        if (!json) throw new Error("Unexpected response format");
+        var rows = (json && json.table && json.table.rows) || [];
+        var comments = rows
+          .map(function (row) {
+            var c = row.c || [];
+            return { timestamp: cellVal(c[0]), page: cellVal(c[1]), name: cellVal(c[2]), type: cellVal(c[3]) || "Comment", message: cellVal(c[4]), reply: cellVal(c[5]) };
+          })
+          .filter(function (item) { return item.page === pageId && item.message; })
+          .sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
+        renderList(mount, comments);
       })
       .catch(function () {
-        status.textContent = "Couldn’t reach the server — please try again in a moment.";
-        status.className = "cmt-status cmt-status-err";
-      })
-      .finally(function () { submitting = false; btn.disabled = false; });
-  });
-
-  var url = "https://docs.google.com/spreadsheets/d/" + APPROVED_SHEET_ID + "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent(APPROVED_SHEET_NAME);
-  fetch(url)
-    .then(function (r) { if (!r.ok) throw new Error("Request failed: " + r.status); return r.text(); })
-    .then(function (text) {
-      var json = parseGviz(text);
-      if (!json) throw new Error("Unexpected response format");
-      var rows = (json && json.table && json.table.rows) || [];
-      var comments = rows
-        .map(function (row) {
-          var c = row.c || [];
-          return { timestamp: cellVal(c[0]), page: cellVal(c[1]), name: cellVal(c[2]), type: cellVal(c[3]) || "Comment", message: cellVal(c[4]), reply: cellVal(c[5]) };
-        })
-        .filter(function (item) { return item.page === pageId && item.message; })
-        .sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
-      renderList(comments);
-    })
-    .catch(function () {
-      document.getElementById("bc-cmtList").innerHTML = '<p class="cmt-note">Comments couldn’t be loaded right now.</p>';
-    });
+        mount.querySelector(".cmtList").innerHTML = '<p class="cmt-note">Comments couldn’t be loaded right now.</p>';
+      });
+  }
 
   function cellVal(cell) { return cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : ""; }
   function parseGviz(text) {
@@ -4767,8 +4859,8 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     if (start === -1 || end === -1 || end <= start) return null;
     try { return JSON.parse(text.slice(start, end + 1)); } catch (e) { return null; }
   }
-  function renderList(comments) {
-    var list = document.getElementById("bc-cmtList");
+  function renderList(mount, comments) {
+    var list = mount.querySelector(".cmtList");
     if (!comments.length) { list.innerHTML = '<p class="cmt-note">No comments yet — be the first to ask a question or leave feedback.</p>'; return; }
     list.innerHTML =
       '<div class="cmt-count">' + comments.length + (comments.length === 1 ? " comment" : " comments") + "</div>" +
@@ -4784,6 +4876,382 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   }
   function formatDate(iso) { var d = new Date(iso); if (isNaN(d.getTime())) return ""; return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
   function escapeHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
+})();
+</script>
+
+<script>
+// ============================================================================
+// Section 10 — reskinned/ported from the reader's own standalone "state parameter
+// lab" (lambda10/psi/strength explorer), plus a new forward Monte Carlo uncertainty
+// panel. Self-contained IIFE; no external dependencies (KaTeX dropped in favor of
+// this module's existing .eq convention, for consistency with every other page).
+// ============================================================================
+(function(){
+  "use strict";
+  var P_REF = 100;
+  var reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var root = document.getElementById('state-parameter-lab');
+  if(!root) return;
+
+  var params = {lam:0.30, eG:1.00, e:0.90, pp:100, k:40, mode:'phi', phics:32, n:2.0};
+  var cur = {lam:0.30, eG:1.00, e:0.90, lp:2.0, k:40};
+
+  function $(id){ return document.getElementById('s10-'+id); }
+  var s_lam=$("lam"), s_eG=$("eG"), s_e=$("e"), s_pp=$("pp"), s_k=$("k"), s_phics=$("phics"), s_n=$("n");
+
+  function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  var COL_DENSE = function(){ return getCss('--green'); };   // ψ<0, dilative/strong — matches this module's convention elsewhere
+  var COL_LOOSE = function(){ return getCss('--red'); };     // ψ>0, contractive/weak
+  var COL_NEUTRAL = function(){ return getCss('--muted'); };
+  var COL_LAW = function(){ return getCss('--navy'); };
+  var COL_GRID = function(){ return getCss('--line'); };
+
+  function Mcs(phiDeg){ var s=Math.sin(phiDeg*Math.PI/180); return 6*s/(3-s); }
+
+  function readInputs(){
+    params.lam = +s_lam.value; params.eG = +s_eG.value; params.e = +s_e.value;
+    params.pp = Math.pow(10, +s_pp.value); params.k = +s_k.value;
+    params.phics = +s_phics.value; params.n = +s_n.value;
+  }
+  function derive(o){
+    var lp = ('lp' in o) ? o.lp : Math.log10(o.pp);
+    var e_cs = o.eG - o.lam*(lp - Math.log10(P_REF));
+    var psi = o.e - e_cs;
+    return {lp:lp, e_cs:e_cs, psi:psi, dphi:-o.k*psi};
+  }
+
+  var fmt=function(x,n){return x.toFixed(n);};
+  function col(psi){ return psi < -0.001 ? COL_DENSE() : (psi > 0.001 ? COL_LOOSE() : COL_NEUTRAL()); }
+  function hexA(hex,a){ hex=hex.replace('#',''); if(hex.length===3)hex=hex.split('').map(function(x){return x+x;}).join(''); var n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+
+  function classify(psi){
+    if(psi < -0.03) return {word:"DENSE OF CRITICAL", c:COL_DENSE(), txt:"Below the CSL → dilative, strain-hardening. Develops a peak above the critical-state strength — the stronger regime."};
+    if(psi > 0.05)  return {word:"LOOSE · LIQUEFIABLE", c:COL_LOOSE(), txt:"Well above the CSL → strongly contractive, strain-softening. Little to no peak and prone to flow/liquefaction — the weak regime."};
+    if(psi > 0.03)  return {word:"LOOSE OF CRITICAL", c:COL_LOOSE(), txt:"Above the CSL → contractive, strain-softening. Strength sits at or below critical — the weaker regime."};
+    return {word:"NEAR CRITICAL", c:COL_NEUTRAL(), txt:"Essentially on the CSL → no dilation. Strength equals the critical-state value; the boundary between strong and weak."};
+  }
+
+  function updateText(){
+    var d = derive(params); var isM = params.mode==='M';
+    $("lamOut").textContent = fmt(params.lam,2);
+    $("eGOut").textContent  = fmt(params.eG,2);
+    $("eOut").textContent   = fmt(params.e,2);
+    $("ppOut").textContent  = Math.round(params.pp)+" kPa";
+    $("kOut").textContent   = params.k+"°";
+    $("phicsOut").textContent = fmt(params.phics,1)+"°";
+    $("nOut").textContent   = fmt(params.n,1);
+
+    var c = col(d.psi);
+    $("psi").textContent = (d.psi>=0?"+":"")+fmt(d.psi,3);
+    $("psi").style.color = c;
+    var cl = classify(d.psi);
+    var b=$("badge"); b.textContent=cl.word; b.style.color=cl.c; b.style.borderColor=cl.c;
+    $("interp").textContent = cl.txt;
+
+    $("ecs").textContent = fmt(d.e_cs,3);
+    var pstar = Math.pow(10, Math.log10(P_REF) + (params.eG-params.e)/params.lam);
+    $("cross").textContent = (pstar>0.5 && pstar<1e6) ? Math.round(pstar)+" kPa" : "—";
+    $("cc").textContent = fmt(params.lam,2);
+
+    var M = Mcs(params.phics), Mp = M*Math.exp(-params.n*d.psi);
+    if(isM){ $("dphi").textContent = fmt(M,2)+" → "+fmt(Mp,2); $("modestat").textContent = "M → M_peak (stress ratio)"; }
+    else { $("dphi").textContent = (d.dphi>=0?"+":"")+fmt(d.dphi,1)+"°"; $("modestat").textContent = "peak strength above critical"; }
+    $("dphi").style.color = c;
+
+    var psiChip = "<span style='padding:1px 7px;border-radius:6px;font-weight:700;background:"+hexA(c,0.14)+";color:"+c+"'>ψ="+(d.psi>=0?"+":"")+fmt(d.psi,3)+"</span>";
+    if(isM){
+      $("numline").innerHTML = "M<sub>peak</sub> = "+fmt(M,2)+" · exp( −"+fmt(params.n,1)+"·"+psiChip+" ) = "+fmt(M,2)+" · "+fmt(Math.exp(-params.n*d.psi),2)+" = <b style='color:"+c+"'>"+fmt(Mp,2)+"</b>";
+    } else {
+      $("numline").innerHTML = "= −"+params.k+" · ( "+fmt(params.e,2)+" − "+fmt(params.eG,2)+" + "+fmt(params.lam,2)+"·log₁₀("+Math.round(params.pp)+"/100) ) = −"+params.k+"·("+psiChip+") = <b style='color:"+c+"'>"+(d.dphi>=0?"+":"")+fmt(d.dphi,1)+"°</b>";
+    }
+    if(uncEnabled) runMonteCarlo();
+  }
+
+  // ================= CANVAS PLOTS =================
+  var cv1=$("cv1"), cx1=cv1.getContext("2d");
+  var cv2=$("cv2"), cx2=cv2.getContext("2d");
+
+  function fitCanvas(cv,ctx,cssH){
+    var w=cv.clientWidth||300, h=cssH; cv.width=w; cv.height=h;
+    return {w:w,h:h};
+  }
+  function fontStr(px){ return px+"px 'Segoe UI',Arial,sans-serif"; }
+
+  var P_TICKS=[5,10,20,50,100,200,500,1000,2000];
+  var LP_MIN=Math.log10(5), LP_MAX=Math.log10(2000);
+  var E_MIN=0.2, E_MAX=2.2;
+
+  function drawCSLplot(){
+    var dim=fitCanvas(cv1,cx1,230), w=dim.w, h=dim.h, ctx=cx1;
+    var m={l:56,r:14,t:14,b:38};
+    var X=function(lp){ return m.l+(lp-LP_MIN)/(LP_MAX-LP_MIN)*(w-m.l-m.r); };
+    var Y=function(e){ return m.t+(E_MAX-e)/(E_MAX-E_MIN)*(h-m.t-m.b); };
+    ctx.clearRect(0,0,w,h);
+    var d=derive(cur);
+    var ecsAt=function(lp){ return cur.eG - cur.lam*(lp-Math.log10(P_REF)); };
+
+    ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
+    ctx.beginPath(); ctx.moveTo(X(LP_MIN),Y(ecsAt(LP_MIN))); ctx.lineTo(X(LP_MAX),Y(ecsAt(LP_MAX))); ctx.lineTo(X(LP_MAX),m.t); ctx.lineTo(X(LP_MIN),m.t); ctx.closePath();
+    ctx.fillStyle=hexA(COL_LOOSE(),0.09); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(X(LP_MIN),Y(ecsAt(LP_MIN))); ctx.lineTo(X(LP_MAX),Y(ecsAt(LP_MAX))); ctx.lineTo(X(LP_MAX),h-m.b); ctx.lineTo(X(LP_MIN),h-m.b); ctx.closePath();
+    ctx.fillStyle=hexA(COL_DENSE(),0.09); ctx.fill();
+    ctx.restore();
+
+    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.lineWidth=1; ctx.font=fontStr(11);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    P_TICKS.forEach(function(p){ var x=X(Math.log10(p)); ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,h-m.b);ctx.stroke(); ctx.fillText(p,x,h-m.b+8); });
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    [0.4,0.8,1.2,1.6,2.0].forEach(function(e){ var y=Y(e); ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke(); ctx.fillText(e.toFixed(1),m.l-10,y); });
+    ctx.strokeStyle=getCss('--muted'); ctx.strokeRect(m.l+0.5,m.t+0.5,w-m.l-m.r,h-m.t-m.b);
+    ctx.textBaseline='alphabetic';
+    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center';
+    ctx.fillText("mean effective stress p′ (kPa, log)",(m.l+w-m.r)/2,h-9);
+    ctx.save(); ctx.translate(13,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("void ratio e",0,0); ctx.restore();
+
+    var pstar=Math.pow(10, Math.log10(P_REF)+(cur.eG-cur.e)/cur.lam), lpStar=Math.log10(pstar);
+    if(lpStar>LP_MIN && lpStar<LP_MAX){
+      ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle=getCss('--muted'); ctx.globalAlpha=.7;
+      ctx.beginPath();ctx.moveTo(X(lpStar),m.t);ctx.lineTo(X(lpStar),h-m.b);ctx.stroke(); ctx.restore();
+      ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText("ψ=0",X(lpStar),m.t+3);
+    }
+
+    ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
+    ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(X(LP_MIN),Y(ecsAt(LP_MIN))); ctx.lineTo(X(LP_MAX),Y(ecsAt(LP_MAX))); ctx.stroke();
+    ctx.fillStyle=COL_LAW(); ctx.font="600 "+fontStr(11.5); ctx.textAlign='left'; ctx.textBaseline='bottom';
+    ctx.fillText("CSL (slope = λ10)", X(LP_MIN+0.12), Y(ecsAt(LP_MIN+0.12))-4);
+
+    // Monte Carlo sample cloud (drawn under the main point)
+    if(uncEnabled && mcSamples){
+      ctx.fillStyle=hexA(getCss('--blue'),0.35);
+      mcSamples.forEach(function(s){ var x=X(Math.log10(s.pp)), y=Y(s.e); if(x>=m.l&&x<=w-m.r&&y>=m.t&&y<=h-m.b){ ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); } });
+    }
+    ctx.restore();
+
+    var px=X(cur.lp), py=Y(cur.e), pcs=Y(ecsAt(cur.lp));
+    var pcsC=Math.max(m.t,Math.min(h-m.b,pcs)); var c=col(d.psi);
+    if(cur.e<=E_MAX && cur.e>=E_MIN){
+      ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
+      ctx.strokeStyle=c; ctx.lineWidth=2.5;
+      ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,pcs);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(px-4,pcsC);ctx.lineTo(px+4,pcsC);ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle=c; ctx.font="600 "+fontStr(12); ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText("ψ", px+7, (py+pcsC)/2);
+      ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=c; ctx.stroke();
+    }
+  }
+
+  var PSI_MIN=-0.4, PSI_MAX=0.4, DPHI_MIN=-15, DPHI_MAX=20, M_MIN=0, M_MAX=3.0;
+  function drawStrengthPlot(){ if(params.mode==='M') drawStrengthM(); else drawStrengthPhi(); }
+
+  function drawStrengthPhi(){
+    var dim=fitCanvas(cv2,cx2,230), w=dim.w, h=dim.h, ctx=cx2;
+    var m={l:58,r:16,t:14,b:38};
+    var X=function(p){ return m.l+(p-PSI_MIN)/(PSI_MAX-PSI_MIN)*(w-m.l-m.r); };
+    var Y=function(d){ return m.t+(DPHI_MAX-d)/(DPHI_MAX-DPHI_MIN)*(h-m.t-m.b); };
+    ctx.clearRect(0,0,w,h);
+    var d=derive(cur), c=col(d.psi);
+
+    ctx.fillStyle=hexA(COL_DENSE(),0.09); ctx.fillRect(X(PSI_MIN),m.t, X(0)-X(PSI_MIN), h-m.t-m.b);
+    ctx.fillStyle=hexA(COL_LOOSE(),0.09); ctx.fillRect(X(0),m.t, X(PSI_MAX)-X(0), h-m.t-m.b);
+
+    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.lineWidth=1; ctx.font=fontStr(11);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    [-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4].forEach(function(p){ var x=X(p); ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,h-m.b);ctx.stroke(); ctx.fillText(p===0?"0":p.toFixed(1),x,h-m.b+8); });
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    [-15,-10,-5,0,5,10,15,20].forEach(function(v){ var y=Y(v); ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke(); ctx.fillText(v,m.l-10,y); });
+    ctx.strokeStyle=getCss('--muted'); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(m.l,Y(0)); ctx.lineTo(w-m.r,Y(0)); ctx.stroke();
+    ctx.save(); ctx.setLineDash([4,4]); ctx.beginPath(); ctx.moveTo(X(0),m.t); ctx.lineTo(X(0),h-m.b); ctx.stroke(); ctx.restore();
+    ctx.strokeRect(m.l+0.5,m.t+0.5,w-m.l-m.r,h-m.t-m.b);
+    ctx.textBaseline='alphabetic';
+    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.fillText("state parameter ψ",(m.l+w-m.r)/2,h-9);
+    ctx.save(); ctx.translate(14,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("φ′peak − φ′cs (°)",0,0); ctx.restore();
+    ctx.font="600 "+fontStr(11); ctx.fillStyle=COL_DENSE(); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText("ψ<0 · dense · STRONG",m.l+6,m.t+5);
+    ctx.fillStyle=COL_LOOSE(); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText("ψ>0 · loose · WEAK",w-m.r-6,h-m.b-5);
+
+    ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
+    ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.4; ctx.beginPath();
+    ctx.moveTo(X(PSI_MIN),Y(-cur.k*PSI_MIN)); ctx.lineTo(X(PSI_MAX),Y(-cur.k*PSI_MAX)); ctx.stroke();
+    if(uncEnabled && mcSamples){
+      ctx.fillStyle=hexA(getCss('--blue'),0.35);
+      mcSamples.forEach(function(s){ var x=X(s.psi), y=Y(s.dphi); if(x>=m.l&&x<=w-m.r&&y>=m.t&&y<=h-m.b){ ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); } });
+    }
+    ctx.restore();
+
+    var px=Math.max(m.l,Math.min(w-m.r,X(d.psi))), py=Math.max(m.t,Math.min(h-m.b,Y(d.dphi)));
+    ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=c; ctx.stroke();
+  }
+
+  function drawStrengthM(){
+    var dim=fitCanvas(cv2,cx2,230), w=dim.w, h=dim.h, ctx=cx2;
+    var m={l:58,r:16,t:14,b:38};
+    var X=function(p){ return m.l+(p-PSI_MIN)/(PSI_MAX-PSI_MIN)*(w-m.l-m.r); };
+    var Y=function(v){ return m.t+(M_MAX-v)/(M_MAX-M_MIN)*(h-m.t-m.b); };
+    ctx.clearRect(0,0,w,h);
+    var d=derive(cur), c=col(d.psi), M=Mcs(params.phics), n=params.n;
+    var Mpk=function(v){ return M*Math.exp(-n*v); };
+
+    ctx.fillStyle=hexA(COL_DENSE(),0.09); ctx.fillRect(X(PSI_MIN),m.t, X(0)-X(PSI_MIN), h-m.t-m.b);
+    ctx.fillStyle=hexA(COL_LOOSE(),0.09); ctx.fillRect(X(0),m.t, X(PSI_MAX)-X(0), h-m.t-m.b);
+
+    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.lineWidth=1; ctx.font=fontStr(11);
+    ctx.textAlign='center'; ctx.textBaseline='top';
+    [-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4].forEach(function(p){ var x=X(p); ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,h-m.b);ctx.stroke(); ctx.fillText(p===0?"0":p.toFixed(1),x,h-m.b+8); });
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    [0,0.5,1.0,1.5,2.0,2.5,3.0].forEach(function(v){ var y=Y(v); ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke(); ctx.fillText(v.toFixed(1),m.l-10,y); });
+    ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle=getCss('--muted'); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(X(0),m.t); ctx.lineTo(X(0),h-m.b); ctx.stroke(); ctx.restore();
+    if(M<=M_MAX){
+      ctx.save(); ctx.setLineDash([6,4]); ctx.strokeStyle=COL_LAW(); ctx.globalAlpha=.85; ctx.lineWidth=1.6;
+      ctx.beginPath(); ctx.moveTo(m.l,Y(M)); ctx.lineTo(w-m.r,Y(M)); ctx.stroke(); ctx.restore();
+      ctx.fillStyle=COL_LAW(); ctx.font=fontStr(10.5); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText("M (critical) = "+M.toFixed(2), w-m.r-6, Y(M)-5);
+    }
+    ctx.strokeStyle=getCss('--muted'); ctx.lineWidth=1; ctx.strokeRect(m.l+0.5,m.t+0.5,w-m.l-m.r,h-m.t-m.b);
+    ctx.textBaseline='alphabetic';
+    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.fillText("state parameter ψ",(m.l+w-m.r)/2,h-9);
+    ctx.save(); ctx.translate(14,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("stress ratio η = q/p′",0,0); ctx.restore();
+    ctx.font=fontStr(11); ctx.fillStyle=COL_DENSE(); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText("ψ<0 · Mpeak > M · STRONG",m.l+6,m.t+5);
+    ctx.fillStyle=COL_LOOSE(); ctx.textAlign='right'; ctx.textBaseline='bottom'; ctx.fillText("ψ>0 · Mpeak < M · WEAK",w-m.r-6,h-m.b-6);
+
+    ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
+    ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.4; ctx.beginPath();
+    for(var i=0;i<=140;i++){ var ps=PSI_MIN+(PSI_MAX-PSI_MIN)*i/140, xx=X(ps), yy=Y(Mpk(ps)); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+    ctx.stroke();
+    if(uncEnabled && mcSamples){
+      ctx.fillStyle=hexA(getCss('--blue'),0.35);
+      mcSamples.forEach(function(s){ var Mp=Mpk(s.psi); var x=X(s.psi), y=Y(Mp); if(x>=m.l&&x<=w-m.r&&y>=m.t&&y<=h-m.b){ ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); } });
+    }
+    ctx.restore();
+    ctx.fillStyle=COL_LAW(); ctx.font="600 "+fontStr(11.5); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText("Mpeak = M·e−nψ",m.l+6,m.t+24);
+
+    var Mp=Mpk(d.psi), px=Math.max(m.l,Math.min(w-m.r,X(d.psi))), py=Math.max(m.t,Math.min(h-m.b,Y(Mp)));
+    ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=c; ctx.stroke();
+  }
+
+  // ================= Monte Carlo uncertainty propagation =================
+  var uncEnabled=false, mcSamples=null;
+  var mc_rng_state = 12345;
+  function mcRandom(){ mc_rng_state = (mc_rng_state*1103515245+12345)&0x7fffffff; return mc_rng_state/0x7fffffff; }
+  function gaussian(){ var u1=Math.max(1e-9,mcRandom()), u2=mcRandom(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
+  function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+
+  function runMonteCarlo(){
+    var N=800;
+    var pLam=+$("u-lam").value/100, pEG=+$("u-eG").value/100, pE=+$("u-e").value/100, pPP=+$("u-pp").value/100;
+    var lamLo=+s_lam.min, lamHi=+s_lam.max, eGLo=+s_eG.min, eGHi=+s_eG.max, eLo=+s_e.min, eHi=+s_e.max;
+    var samples=[];
+    for(var i=0;i<N;i++){
+      var lam=clamp(params.lam*(1+pLam*gaussian()), lamLo, lamHi);
+      var eG=clamp(params.eG*(1+pEG*gaussian()), eGLo, eGHi);
+      var e=clamp(params.e*(1+pE*gaussian()), eLo, eHi);
+      var pp=Math.max(1,params.pp*(1+pPP*gaussian()));
+      var d=derive({lam:lam,eG:eG,e:e,pp:pp});
+      samples.push({lam:lam,eG:eG,e:e,pp:pp,psi:d.psi,dphi:d.dphi});
+    }
+    mcSamples = samples;
+    var psis = samples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;});
+    var mean = psis.reduce(function(a,b){return a+b;},0)/psis.length;
+    var sd = Math.sqrt(psis.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/psis.length);
+    var p025 = psis[Math.floor(0.025*psis.length)], p975 = psis[Math.floor(0.975*psis.length)];
+    var pLoose = psis.filter(function(v){return v>0;}).length/psis.length;
+    $("u-mean").textContent = (mean>=0?"+":"")+fmt(mean,3);
+    $("u-sd").textContent = "±"+fmt(sd,3);
+    $("u-p95").textContent = fmt(p025,3)+" to "+(p975>=0?"+":"")+fmt(p975,3);
+    $("u-ploose").textContent = (pLoose*100).toFixed(0)+"%";
+    $("u-ploose").style.color = pLoose>0.5 ? COL_LOOSE() : COL_DENSE();
+    drawHistogram(psis);
+    drawCSLplot(); drawStrengthPlot();
+  }
+  function drawHistogram(psis){
+    var cv=$("cvHist"), ctx=cv.getContext('2d');
+    var dim=fitCanvas(cv,ctx,230), w=dim.w, h=dim.h;
+    var m={l:44,r:14,t:14,b:38};
+    ctx.clearRect(0,0,w,h);
+    var lo=Math.min(PSI_MIN,psis[0]), hi=Math.max(PSI_MAX,psis[psis.length-1]);
+    var bins=28, counts=new Array(bins).fill(0);
+    psis.forEach(function(v){ var b=clamp(Math.floor((v-lo)/(hi-lo+1e-9)*bins),0,bins-1); counts[b]++; });
+    var maxC=Math.max.apply(null,counts);
+    var X=function(v){ return m.l+(v-lo)/(hi-lo)*(w-m.l-m.r); };
+    var pw=w-m.l-m.r, ph=h-m.t-m.b;
+    for(var bi=0; bi<bins; bi++){
+      var x0=m.l+pw*bi/bins, bw=pw/bins, bh=ph*(counts[bi]/maxC);
+      var binCenter=lo+(hi-lo)*(bi+0.5)/bins;
+      ctx.fillStyle=hexA(binCenter<0?COL_DENSE():COL_LOOSE(), 0.55);
+      ctx.fillRect(x0, m.t+ph-bh, Math.max(1,bw-1), bh);
+    }
+    ctx.strokeStyle=getCss('--muted'); ctx.lineWidth=1.4; ctx.save(); ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(X(0),m.t); ctx.lineTo(X(0),m.t+ph); ctx.stroke(); ctx.restore();
+    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.font=fontStr(10.5); ctx.textAlign='center'; ctx.textBaseline='top';
+    [-0.3,-0.2,-0.1,0,0.1,0.2,0.3].forEach(function(v){ if(v>=lo&&v<=hi){ ctx.fillText(v===0?"0":v.toFixed(1), X(v), m.t+ph+8); } });
+    ctx.strokeStyle=getCss('--muted'); ctx.strokeRect(m.l+0.5,m.t+0.5,pw,ph);
+    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText("ψ (800 Monte Carlo samples)",(m.l+w-m.r)/2,h-9);
+  }
+
+  // ---- animation loop ----
+  var raf=null;
+  function lerp(a,b,t){return a+(b-a)*t;}
+  function tick(){
+    var tgtLp=Math.log10(params.pp); var f=reduceMotion?1:0.22;
+    cur.lam=lerp(cur.lam,params.lam,f); cur.eG=lerp(cur.eG,params.eG,f); cur.e=lerp(cur.e,params.e,f);
+    cur.lp=lerp(cur.lp,tgtLp,f); cur.k=lerp(cur.k,params.k,f);
+    drawCSLplot(); drawStrengthPlot();
+    var done = Math.abs(cur.lam-params.lam)<1e-4 && Math.abs(cur.eG-params.eG)<1e-4 && Math.abs(cur.e-params.e)<1e-4 && Math.abs(cur.lp-tgtLp)<1e-4 && Math.abs(cur.k-params.k)<1e-3;
+    if(done){ cur.lam=params.lam;cur.eG=params.eG;cur.e=params.e;cur.lp=tgtLp;cur.k=params.k; drawCSLplot();drawStrengthPlot(); raf=null; }
+    else raf=requestAnimationFrame(tick);
+  }
+  function kick(){ if(raf===null) raf=requestAnimationFrame(tick); }
+  function onInput(){ readInputs(); updateText(); kick(); }
+  [s_lam,s_eG,s_e,s_pp,s_k,s_phics,s_n].forEach(function(s){ s.addEventListener("input",onInput); });
+
+  var mode_phi=$("mode-phi"), mode_M=$("mode-M");
+  var ctrl_k=$("ctrl-k"), ctrl_phics=$("ctrl-phics"), ctrl_n=$("ctrl-n");
+  var CAP2 = {
+    phi:"<b>2 · Strength follows ψ.</b> Peak strength above critical = −k·ψ (a straight line). Your point slides along it as ψ changes — the pull λ10 and stress exert on strength runs entirely through ψ.",
+    M:  "<b>2 · Same physics, stress-ratio form.</b> M<sub>peak</sub> = M·e<sup>−nψ</sup> curves above the critical ratio M when ψ&lt;0 (dense) and below it when ψ&gt;0 (loose). M itself comes from φ′cs."
+  };
+  function setMode(mode){
+    params.mode=mode; var isM = mode==='M';
+    mode_phi.classList.toggle('active',!isM); mode_M.classList.toggle('active',isM);
+    mode_phi.style.background = isM? '' : 'var(--navy)'; mode_phi.style.color = isM? '' : '#fff'; mode_phi.style.borderColor = isM? '' : 'var(--navy)';
+    mode_M.style.background = isM? 'var(--navy)' : ''; mode_M.style.color = isM? '#fff' : ''; mode_M.style.borderColor = isM? 'var(--navy)' : '';
+    mode_phi.setAttribute('aria-selected',String(!isM)); mode_M.setAttribute('aria-selected',String(isM));
+    ctrl_k.hidden=isM; ctrl_phics.hidden=!isM; ctrl_n.hidden=!isM;
+    $("cap2").innerHTML = CAP2[mode];
+    var eqEl = $("eq");
+    eqEl.innerHTML = isM
+      ? "M<sub>peak</sub> = [ 6&middot;sin&phi;&prime;<sub>cs</sub> / (3 &minus; sin&phi;&prime;<sub>cs</sub>) ] &middot; exp( &minus;n&middot;( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) ) )"
+      : "&phi;&prime;<sub>peak</sub> &minus; &phi;&prime;<sub>cs</sub> = &minus;k &middot; ( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) )";
+    updateText(); drawCSLplot(); drawStrengthPlot();
+  }
+  mode_phi.addEventListener("click",function(){setMode('phi');});
+  mode_M.addEventListener("click",function(){setMode('M');});
+  setMode('phi'); // establish initial active-button styling
+
+  var uncEnableEl=$("uncEnable"), uncPanel=$("uncPanel");
+  uncEnableEl.addEventListener('change', function(){
+    uncEnabled = uncEnableEl.checked;
+    uncPanel.style.display = uncEnabled ? '' : 'none';
+    if(uncEnabled) runMonteCarlo(); else { mcSamples=null; drawCSLplot(); drawStrengthPlot(); }
+  });
+  $("u-lam").addEventListener('input', function(){ $("u-lamOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  $("u-eG").addEventListener('input', function(){ $("u-eGOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  $("u-e").addEventListener('input', function(){ $("u-eOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  $("u-pp").addEventListener('input', function(){ $("u-ppOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+
+  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); if(uncEnabled&&mcSamples) drawHistogram(mcSamples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;})); });
+
+  // redraw once this page's card actually becomes visible (same fix as section 9's charts)
+  (function(){
+    var wasHidden = root.style.display === 'none';
+    new MutationObserver(function(){
+      var hiddenNow = root.style.display === 'none';
+      if(wasHidden && !hiddenNow){ drawCSLplot(); drawStrengthPlot(); }
+      wasHidden = hiddenNow;
+    }).observe(root, {attributes:true, attributeFilter:['style']});
+  })();
+
+  readInputs(); updateText(); drawCSLplot(); drawStrengthPlot();
 })();
 </script>
 </body></html>
