@@ -817,9 +817,6 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
 
-
-<div id="commentsSection"></div>
-
 <div class="card" id="bayesian-calibration">
 <h2>9. Calibrating NorSand properly: a Bayesian worked example</h2>
 <div class="explain">
@@ -1032,9 +1029,6 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div class="explain">
 <p>A related note from calibration practice, worth having alongside Section 6's stress&ndash;dilatancy fitting: the D=0 crossing used there to read off M<sub>tc</sub> is <i>an</i> intercept, not a claim that the sample has reached critical state at that instant. Critical state needs continued plastic shearing with no further change in stress ratio <i>or</i> void ratio &mdash; a single zero-dilatancy point mid-test can occur well before that, particularly for dense samples whose D crosses zero once on the way to a peak and passes through it again on the way back down.</p>
 </div>
-
-<div id="bc-commentsSection"></div>
-</div>
 </div>
 
 <div class="card" id="state-parameter-lab">
@@ -1116,7 +1110,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 </div>
 
-<div id="s10-commentsSection"></div>
+<div id="commentsSection"></div>
 </div>
 
 <!-- HIDDEN FROM PUBLIC (per request) -- content preserved below, uncomment to restore.
@@ -3425,7 +3419,7 @@ document.addEventListener('keydown', function(e){
     {label:'Dilatancy', ids:['dilatancy-section','quizCheckDE']},
     {label:'NorSand calibration', ids:['calibration-section','quizCheckFGH']},
     {label:'NorSand parameters', ids:['norsand-section','quizCheckI']},
-    {label:'Check learning', ids:['knowledge-check','about-tool','commentsSection']},
+    {label:'Check learning', ids:['knowledge-check','about-tool']},
     {label:'Bayesian calibration', ids:['bayesian-calibration']},
     {label:'State-parameter lab', ids:['state-parameter-lab']}
   ];
@@ -4710,172 +4704,6 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   reader.onerror = function(){ status.textContent='Could not read this file.'; status.style.color='#c64852'; };
   reader.readAsText(fileInput.files[0]);
 });
-})();
-</script>
-
-<script>
-// A third-ish mount of the same "Questions & comments" system (comments.js) — this one
-// generalized to serve any number of extra mount points (bc-commentsSection AND
-// s10-commentsSection) on this page without duplicating ~150 lines per section or editing
-// the shared, site-wide comments.js. Internal wiring is scoped by class within each mount
-// element rather than global ids, so multiple mounts can coexist safely. Same backend/page
-// id as the original mount, so every mount on this page is genuinely the same thread.
-(function () {
-  var WEB_APP_URL = "https://script.google.com/macros/s/AKfycby38uL5lpcQpH5UqXq8DzUc_NXy48r3V_e94eMx20LgoEE5D1af3GsYBlKeYAXqQOvZ/exec";
-  var APPROVED_SHEET_ID = "1H_stbO-l5k_dKvjjY0j6xfVPxkmAnvE6Oo0e3wcUHaA";
-  var APPROVED_SHEET_NAME = "Approved";
-
-  var mountIds = ["bc-commentsSection", "s10-commentsSection"];
-  var mounts = mountIds.map(function(id){ return document.getElementById(id); }).filter(Boolean);
-  if (!mounts.length) return;
-
-  var isConfigured = WEB_APP_URL.indexOf("PASTE_YOUR") !== 0 && APPROVED_SHEET_ID.indexOf("PASTE_YOUR") !== 0;
-  var pageId = (location.pathname.split("/").pop() || "index.html");
-
-  var TYPES = ["Question", "Comment", "Correction", "Suggestion", "Other"];
-  var TYPE_COLORS = { Question: "#1479b8", Comment: "#61737b", Correction: "#c64852", Suggestion: "#2d8b65", Other: "#7653a6" };
-
-  if (!document.getElementById("cmt-styles")) {
-    var style = document.createElement("style");
-    style.id = "cmt-styles";
-    style.textContent =
-      ".cmt-card{background:#fff;border:1px solid #d7e1e5;border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px;font-family:Arial,Helvetica,sans-serif;color:#20343d}" +
-      ".cmt-h2{font-size:17px;color:#123b4a;margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}" +
-      ".cmt-intro{font-size:12.5px;line-height:1.6;color:#61737b;margin:0 0 12px}" +
-      ".cmt-form{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}" +
-      ".cmt-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}" +
-      "@media(max-width:600px){.cmt-row2{grid-template-columns:1fr}}" +
-      ".cmt-field{display:flex;flex-direction:column;gap:4px}" +
-      ".cmt-field label{font-size:12px;font-weight:700;color:#123b4a}" +
-      ".cmt-hint{font-weight:400;color:#61737b}" +
-      ".cmt-field input,.cmt-field select,.cmt-field textarea{font:inherit;font-size:13px;border:1px solid #d7e1e5;border-radius:6px;padding:8px 10px;font-family:Arial,Helvetica,sans-serif}" +
-      ".cmt-field textarea{resize:vertical}" +
-      ".cmt-hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}" +
-      ".cmt-form-foot{display:flex;align-items:center;gap:12px;flex-wrap:wrap}" +
-      ".cmt-btn{background:#1479b8;color:#fff;border:0;border-radius:6px;padding:9px 16px;font-weight:700;font-size:13px;cursor:pointer}" +
-      ".cmt-btn:disabled{opacity:.6;cursor:default}" +
-      ".cmt-status{font-size:12px;color:#61737b}.cmt-status-ok{color:#2d8b65;font-weight:700}.cmt-status-err{color:#c64852;font-weight:700}" +
-      ".cmt-note{font-size:12.5px;color:#61737b}" +
-      ".cmt-count{font-size:11px;color:#61737b;text-transform:uppercase;letter-spacing:.03em;font-weight:700;margin-bottom:8px}" +
-      ".cmt-list{border-top:1px solid #e5edf1;padding-top:12px}" +
-      ".cmt-item{padding:10px 0;border-bottom:1px solid #eef2f4}.cmt-item:last-child{border-bottom:0}" +
-      ".cmt-item-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}" +
-      ".cmt-badge{font-size:10px;font-weight:700;border-radius:999px;padding:2px 9px;text-transform:uppercase;letter-spacing:.02em}" +
-      ".cmt-name{font-size:12.5px;font-weight:700;color:#20343d}.cmt-date{font-size:11px;color:#9aa9ae;margin-left:auto}" +
-      ".cmt-msg{font-size:13px;line-height:1.55;color:#20343d;white-space:pre-wrap}" +
-      ".cmt-reply{margin-top:6px;background:#f2f7f9;border-left:3px solid #1479b8;border-radius:0 6px 6px 0;padding:7px 10px;font-size:12.5px;line-height:1.5;color:#20343d;white-space:pre-wrap}";
-    document.head.appendChild(style);
-  }
-
-  mounts.forEach(function(mount){ initOneMount(mount); });
-
-  function initOneMount(mount){
-    if (!isConfigured) {
-      mount.innerHTML = '<div class="cmt-card"><h2 class="cmt-h2">Questions &amp; comments</h2><p class="cmt-note">Comments aren’t set up on this page yet.</p></div>';
-      return;
-    }
-
-    mount.innerHTML =
-      '<div class="cmt-card">' +
-      '<h2 class="cmt-h2">Questions &amp; comments</h2>' +
-      '<p class="cmt-intro">Spotted something confusing, incorrect, or worth adding — about this page specifically, or the module as a whole? Leave a note below. Everything is reviewed before it appears publicly, so don’t expect it to show up immediately — your email is never shown to anyone.</p>' +
-      '<form class="cmtForm cmt-form">' +
-      '  <div class="cmt-row2">' +
-      '    <div class="cmt-field"><label>Name<input class="cmtName" type="text" maxlength="120" required></label></div>' +
-      '    <div class="cmt-field"><label>Email <span class="cmt-hint">(private, never shown)</span><input class="cmtEmail" type="email" maxlength="200" required></label></div>' +
-      "  </div>" +
-      '  <div class="cmt-field"><label>This is a…<select class="cmtType">' +
-      TYPES.map(function (t) { return '<option value="' + t + '">' + t + "</option>"; }).join("") +
-      "  </select></label></div>" +
-      '  <div class="cmt-field"><label>Message<textarea class="cmtMessage" rows="4" maxlength="3000" required></textarea></label></div>' +
-      '  <input type="text" class="cmtHp" class="cmt-hp" tabindex="-1" autocomplete="off">' +
-      '  <div class="cmt-form-foot"><button type="submit" class="cmtSubmit cmt-btn">Submit for review</button><span class="cmtStatus cmt-status" aria-live="polite"></span></div>' +
-      "</form>" +
-      '<div class="cmtList cmt-list"><p class="cmt-note">Loading comments…</p></div>' +
-      "</div>";
-
-    var form = mount.querySelector(".cmtForm");
-    var submitting = false;
-    form.addEventListener("submit", function (ev) {
-      ev.preventDefault();
-      if (submitting) return;
-      var btn = mount.querySelector(".cmtSubmit");
-      var status = mount.querySelector(".cmtStatus");
-      var name = mount.querySelector(".cmtName").value.trim();
-      var email = mount.querySelector(".cmtEmail").value.trim();
-      var type = mount.querySelector(".cmtType").value;
-      var message = mount.querySelector(".cmtMessage").value.trim();
-      var hp = mount.querySelector(".cmtHp").value;
-      if (!name || !email || !message) return;
-
-      submitting = true; btn.disabled = true; status.textContent = "Sending…"; status.className = "cmtStatus cmt-status";
-      fetch(WEB_APP_URL, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ page: pageId, name: name, email: email, type: type, message: message, hp: hp })
-      })
-        .then(function (r) { return r.json(); })
-        .then(function (res) {
-          if (res && res.ok) {
-            form.reset();
-            status.textContent = "Thanks — your " + type.toLowerCase() + " has been submitted and will appear here once reviewed.";
-            status.className = "cmtStatus cmt-status cmt-status-ok";
-          } else {
-            status.textContent = "Something went wrong — please try again in a moment.";
-            status.className = "cmtStatus cmt-status cmt-status-err";
-          }
-        })
-        .catch(function () {
-          status.textContent = "Couldn’t reach the server — please try again in a moment.";
-          status.className = "cmtStatus cmt-status cmt-status-err";
-        })
-        .finally(function () { submitting = false; btn.disabled = false; });
-    });
-
-    var url = "https://docs.google.com/spreadsheets/d/" + APPROVED_SHEET_ID + "/gviz/tq?tqx=out:json&sheet=" + encodeURIComponent(APPROVED_SHEET_NAME);
-    fetch(url)
-      .then(function (r) { if (!r.ok) throw new Error("Request failed: " + r.status); return r.text(); })
-      .then(function (text) {
-        var json = parseGviz(text);
-        if (!json) throw new Error("Unexpected response format");
-        var rows = (json && json.table && json.table.rows) || [];
-        var comments = rows
-          .map(function (row) {
-            var c = row.c || [];
-            return { timestamp: cellVal(c[0]), page: cellVal(c[1]), name: cellVal(c[2]), type: cellVal(c[3]) || "Comment", message: cellVal(c[4]), reply: cellVal(c[5]) };
-          })
-          .filter(function (item) { return item.page === pageId && item.message; })
-          .sort(function (a, b) { return new Date(b.timestamp) - new Date(a.timestamp); });
-        renderList(mount, comments);
-      })
-      .catch(function () {
-        mount.querySelector(".cmtList").innerHTML = '<p class="cmt-note">Comments couldn’t be loaded right now.</p>';
-      });
-  }
-
-  function cellVal(cell) { return cell && cell.v !== null && cell.v !== undefined ? String(cell.v) : ""; }
-  function parseGviz(text) {
-    var start = text.indexOf("{"), end = text.lastIndexOf("}");
-    if (start === -1 || end === -1 || end <= start) return null;
-    try { return JSON.parse(text.slice(start, end + 1)); } catch (e) { return null; }
-  }
-  function renderList(mount, comments) {
-    var list = mount.querySelector(".cmtList");
-    if (!comments.length) { list.innerHTML = '<p class="cmt-note">No comments yet — be the first to ask a question or leave feedback.</p>'; return; }
-    list.innerHTML =
-      '<div class="cmt-count">' + comments.length + (comments.length === 1 ? " comment" : " comments") + "</div>" +
-      comments.map(function (item) {
-        var color = TYPE_COLORS[item.type] || TYPE_COLORS.Comment;
-        var reply = item.reply ? '<div class="cmt-reply"><b>Reply:</b> ' + escapeHtml(item.reply) + "</div>" : "";
-        return '<div class="cmt-item">' +
-          '<div class="cmt-item-head"><span class="cmt-badge" style="background:' + color + '22;color:' + color + '">' + escapeHtml(item.type) + "</span>" +
-          '<span class="cmt-name">' + escapeHtml(item.name) + "</span>" +
-          '<span class="cmt-date">' + formatDate(item.timestamp) + "</span></div>" +
-          '<div class="cmt-msg">' + escapeHtml(item.message) + "</div>" + reply + "</div>";
-      }).join("");
-  }
-  function formatDate(iso) { var d = new Date(iso); if (isNaN(d.getTime())) return ""; return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
-  function escapeHtml(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); }
 })();
 </script>
 
