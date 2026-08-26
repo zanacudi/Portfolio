@@ -229,7 +229,7 @@ body{padding-bottom:54px}
 @media(max-width:900px){.intro-shear-grid{grid-template-columns:1fr}}
 /* NorSand's 8 sliders used to sit in a full-width row above its 2 charts, pushing the
    response plots below the fold on most screens. Side-by-side (controls | charts), like
-   the intro tool and Section 4/5's sandboxes already do, keeps cause and effect visible
+   the intro tool and Section 4/6's sandboxes already do, keeps cause and effect visible
    together without scrolling. */
 .ns-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;margin-top:10px}
 .ns-layout>div{min-width:0}
@@ -290,7 +290,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div></header>
 <div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#csl-section">4. CSL & ψ</a><a href="#dilatancy-section">5. Dilatancy</a><a href="#calibration-section">6. NorSand calibration</a><a href="#norsand-section">7. NorSand parameters</a><a href="#knowledge-check">8. Check learning</a><a href="#bayesian-calibration">9. Bayesian calibration</a><a href="#state-parameter-lab">10. State-parameter lab</a>
+<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#csl-section">4. CSL & ψ</a><a href="#state-parameter-lab">5. Recap & uncertainty</a><a href="#dilatancy-section">6. Dilatancy</a><a href="#calibration-section">7. NorSand calibration</a><a href="#norsand-section">8. NorSand parameters</a><a href="#knowledge-check">9. Check learning</a><a href="#bayesian-calibration">10. Bayesian calibration</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -321,12 +321,12 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <button type="button" class="goal" data-gotopage="mental-model"><span class="goal-num">2</span><b>Mental model</b>See dilation and contraction happen before touching any equations.</button>
 <button type="button" class="goal" data-gotopage="notation"><span class="goal-num">3</span><b>Notation</b>Every symbol used in this module, grouped by what it describes.</button>
 <button type="button" class="goal" data-gotopage="csl-section"><span class="goal-num">4</span><b>CSL &amp; ψ</b>The critical state line, the state parameter, and why it beats relative density.</button>
-<button type="button" class="goal" data-gotopage="dilatancy-section"><span class="goal-num">5</span><b>Dilatancy</b>How ψ converts to D<sub>min</sub>, peak strength, and friction angle.</button>
-<button type="button" class="goal" data-gotopage="calibration-section"><span class="goal-num">6</span><b>NorSand calibration</b>Where Γ, λ<sub>10</sub>, M<sub>tc</sub>, χ<sub>tc</sub>, N and H actually come from — real test data, not a lookup table.</button>
-<button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">7</span><b>NorSand parameters</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
-<button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">8</span><b>Check learning</b>100 questions, split into checkpoints you'll already have met along the way.</button>
-<button type="button" class="goal" data-gotopage="bayesian-calibration"><span class="goal-num">9</span><b>Bayesian calibration</b>A real MCMC calibration of NorSand against triaxial data, ported and run live in this page.</button>
-<button type="button" class="goal" data-gotopage="state-parameter-lab"><span class="goal-num">10</span><b>State-parameter lab</b>How &lambda;<sub>10</sub>, e, and p&prime; build &psi; and set strength &mdash; plus a Monte Carlo uncertainty view.</button>
+<button type="button" class="goal" data-gotopage="state-parameter-lab"><span class="goal-num">5</span><b>Recap &amp; uncertainty</b>Interactive recap of &lambda;<sub>10</sub>/e/p&prime; building &psi;, plus a Monte Carlo view of what happens once those inputs are uncertain.</button>
+<button type="button" class="goal" data-gotopage="dilatancy-section"><span class="goal-num">6</span><b>Dilatancy</b>How ψ converts to D<sub>min</sub>, peak strength, and friction angle.</button>
+<button type="button" class="goal" data-gotopage="calibration-section"><span class="goal-num">7</span><b>NorSand calibration</b>Where Γ, λ<sub>10</sub>, M<sub>tc</sub>, χ<sub>tc</sub>, N and H actually come from — real test data, not a lookup table.</button>
+<button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">8</span><b>NorSand parameters</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
+<button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">9</span><b>Check learning</b>100 questions, split into checkpoints you'll already have met along the way.</button>
+<button type="button" class="goal" data-gotopage="bayesian-calibration"><span class="goal-num">10</span><b>Bayesian calibration</b>A real MCMC calibration of NorSand against triaxial data, ported and run live in this page.</button>
 </div>
 </section>
 
@@ -369,7 +369,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 <div><canvas id="introChart" role="img" aria-label="Chart of void ratio versus mean effective stress as strain is applied, showing whether the sample dilates toward or contracts toward the critical state line."></canvas><canvas id="introQPChart" style="margin-top:10px" role="img" aria-label="Chart of stress ratio versus mean effective stress during the consolidate-then-shear demonstration."></canvas></div>
 </div>
-<p class="explain" style="font-size:11px;margin-top:6px">Illustrative curve (a smooth approach to critical state), not a full NorSand integration &mdash; that's Section 7. <b>Drained:</b> volume can change freely, so e itself moves toward e<sub>c</sub> at the fixed consolidation stress &mdash; dense samples dilate (e rises), loose samples contract (e falls). This is the book's own Fig. 2.5 idealization. <b>Undrained:</b> volume <i>can't</i> change at all (e is frozen at its starting value), so instead p′ moves &mdash; dense samples generate negative excess pore pressure and p′ rises; loose samples generate positive excess pore pressure and p′ falls toward zero, which is exactly the flow-liquefaction mechanism Module 3 covers. Either way, applying strain is the loading; e or p′ is the response, and both converge toward the same critical state line.</p>
+<p class="explain" style="font-size:11px;margin-top:6px">Illustrative curve (a smooth approach to critical state), not a full NorSand integration &mdash; that's Section 8. <b>Drained:</b> volume can change freely, so e itself moves toward e<sub>c</sub> at the fixed consolidation stress &mdash; dense samples dilate (e rises), loose samples contract (e falls). This is the book's own Fig. 2.5 idealization. <b>Undrained:</b> volume <i>can't</i> change at all (e is frozen at its starting value), so instead p′ moves &mdash; dense samples generate negative excess pore pressure and p′ rises; loose samples generate positive excess pore pressure and p′ falls toward zero, which is exactly the flow-liquefaction mechanism Module 3 covers. Either way, applying strain is the loading; e or p′ is the response, and both converge toward the same critical state line.</p>
 </div>
 
 <h3>Walk through reading a state</h3>
@@ -445,7 +445,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 
 </div>
 <details class="disclosure">
-<summary>NorSand's own properties &amp; internal variables <small>not needed until Section 7 &mdash; open this when you get there</small></summary>
+<summary>NorSand's own properties &amp; internal variables <small>not needed until Section 8 &mdash; open this when you get there</small></summary>
 <div class="disclosure-body notation-grid">
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>N</b><small>NorSand volumetric coupling coefficient (Table 3.1) &mdash; scales how far the image stress ratio M<sub>i</sub> departs from M<sub>tc</sub></small></button>
 <button type="button" class="notation-card" data-goto="norsand-section" data-pulse="nsQChart" style="border-left-color:#647680"><b>H</b><small>NorSand plastic hardening modulus &mdash; how fast the yield surface grows/shrinks per unit strain</small></button>
@@ -511,11 +511,92 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div id="quizSlotABC"></div>
 </div>
 
+<div class="card" id="state-parameter-lab">
+<h2>5. Recap: &lambda;<sub>10</sub> and state building &psi; &mdash; and setting strength</h2>
+<div class="explain">
+<p>A hands-on recap of what Section 4 just covered, in one equation: Compressibility (&lambda;<sub>10</sub>), how tightly the soil is packed (e), and how hard it is squeezed (p&prime;) combine into the state parameter &psi; &mdash; the soil's distance from the critical state line. That distance, not &lambda;<sub>10</sub> alone, decides whether the soil is strong or weak. Move the sliders and watch it happen, then use the uncertainty panel below to see how &psi; itself becomes a distribution once you admit you don't know these inputs exactly. (Section 8's NorSand simulator, further ahead, is the full constitutive tool this page's strength law is a simplified stand-in for.)</p>
+</div>
+<p class="sources">Prompted by <b>Zana Karimi, PhD, PE</b> &mdash; with thanks for bringing up this discussion.</p>
+
+<div class="eq" style="white-space:normal;text-align:center;font-size:16px;padding:14px 16px">
+<div id="s10-eq">&phi;&prime;<sub>peak</sub> &minus; &phi;&prime;<sub>cs</sub> = &minus;k &middot; ( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) )</div>
+<div id="s10-numline" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
+</div>
+
+<div style="margin:12px 0" role="tablist" aria-label="Strength representation">
+<button type="button" class="ghost" id="s10-mode-phi" role="tab" aria-selected="true" style="font-weight:700">Friction angle (&phi;&prime;)</button>
+<button type="button" class="ghost" id="s10-mode-M" role="tab" aria-selected="false" style="margin-left:6px">Stress ratio (M)</button>
+</div>
+
+<div class="grid2">
+<div>
+<div class="slider-block"><label for="s10-lam"><span>&lambda;<sub>10</sub> &mdash; compressibility (slope of the CSL)</span> <span class="readout" id="s10-lamOut">0.30</span></label><input id="s10-lam" type="range" min="0.02" max="1.20" step="0.01" value="0.30"></div>
+<div class="slider-block"><label for="s10-eG"><span>e<sub>&Gamma;</sub> &mdash; CSL position (void ratio at 100 kPa)</span> <span class="readout" id="s10-eGOut">1.00</span></label><input id="s10-eG" type="range" min="0.60" max="1.80" step="0.01" value="1.00"></div>
+<div class="slider-block"><label for="s10-e"><span>e &mdash; current void ratio (how packed)</span> <span class="readout" id="s10-eOut">0.90</span></label><input id="s10-e" type="range" min="0.30" max="2.00" step="0.01" value="0.90"></div>
+<div class="slider-block"><label for="s10-pp"><span>p&prime; &mdash; mean effective stress</span> <span class="readout" id="s10-ppOut">100 kPa</span></label><input id="s10-pp" type="range" min="0.699" max="3.301" step="0.002" value="2.000"></div>
+<div class="slider-block" id="s10-ctrl-k"><label for="s10-k"><span>k &mdash; state &rarr; strength coupling</span> <span class="readout" id="s10-kOut">40&deg;</span></label><input id="s10-k" type="range" min="10" max="60" step="1" value="40"></div>
+<div class="slider-block" id="s10-ctrl-phics" hidden><label for="s10-phics"><span>&phi;&prime;<sub>cs</sub> &mdash; critical-state friction angle &rarr; M</span> <span class="readout" id="s10-phicsOut">32.0&deg;</span></label><input id="s10-phics" type="range" min="26" max="40" step="0.5" value="32"></div>
+<div class="slider-block" id="s10-ctrl-n" hidden><label for="s10-n"><span>n &mdash; coupling in M<sub>peak</sub> = M&middot;e<sup>&minus;n&psi;</sup></span> <span class="readout" id="s10-nOut">2.0</span></label><input id="s10-n" type="range" min="0.5" max="4" step="0.1" value="2.0"></div>
+</div>
+
+<div class="guided-panel">
+<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+<span style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em">&psi; =</span>
+<span id="s10-psi" style="font-size:28px;font-weight:800;font-family:Georgia,serif"></span>
+<span class="badge" id="s10-badge" style="font-size:11px"></span>
+</div>
+<p class="explain" id="s10-interp" style="min-height:2.6em;margin:8px 0 12px"></p>
+<div class="grid2" style="gap:8px 14px">
+<div class="stat"><div class="n" id="s10-ecs" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">e<sub>cs</sub> at this p&prime; (on CSL)</div></div>
+<div class="stat"><div class="n" id="s10-dphi" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-modestat">peak strength above critical</div></div>
+<div class="stat"><div class="n" id="s10-cross" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">crossover p&prime; (&psi; = 0)</div></div>
+<div class="stat"><div class="n" id="s10-cc" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">compressibility: &Delta;e per &times;10 stress</div></div>
+</div>
+</div>
+</div>
+
+<div class="bayes-grid2" style="margin-top:14px">
+<div class="bayes-chart-box"><canvas id="s10-cv1"></canvas></div>
+<div class="bayes-chart-box"><canvas id="s10-cv2"></canvas></div>
+</div>
+<p class="explain" style="font-size:12px;margin-top:8px"><b>1 &middot; State vs the CSL.</b> The line's steepness <i>is</i> &lambda;<sub>10</sub> (compressibility). &psi; is the vertical gap from your point to the line. Below the line &rarr; dense &amp; strong; above &rarr; loose &amp; weak.</p>
+<p class="explain" style="font-size:12px" id="s10-cap2"><b>2 &middot; Strength follows &psi;.</b> Peak strength above critical = &minus;k&middot;&psi; (a straight line). Your point slides along it as &psi; changes &mdash; the pull &lambda;<sub>10</sub> and stress exert on strength runs entirely through &psi;.</p>
+
+<div class="guided-panel" style="margin-top:16px">
+<h3 style="margin-top:0">From a point estimate to a probability: propagating parameter uncertainty</h3>
+<p class="explain" style="font-size:12.5px;margin-top:0">Section 10 runs Bayesian calibration <i>backward</i> &mdash; inferring a parameter distribution from test data. Here it runs <i>forward</i>: you almost never know &lambda;<sub>10</sub>, e<sub>&Gamma;</sub>, e, or p&prime; exactly &mdash; each carries measurement and estimation uncertainty. Give each one a spread instead of a single value, and the same equation turns your one &psi; into a <i>distribution</i> of possible &psi; &mdash; showing not just what you'd expect, but how likely the sample is to actually land loose of critical.</p>
+<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" id="s10-uncEnable">Enable parameter uncertainty (Monte Carlo, 800 samples)</label>
+
+<div id="s10-uncPanel" style="display:none;margin-top:12px">
+<div class="grid2">
+<div class="slider-block"><label for="s10-u-lam"><span>&plusmn; &lambda;<sub>10</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-lamOut">15%</span></label><input id="s10-u-lam" type="range" min="0" max="40" step="1" value="15"></div>
+<div class="slider-block"><label for="s10-u-eG"><span>&plusmn; e<sub>&Gamma;</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eGOut">5%</span></label><input id="s10-u-eG" type="range" min="0" max="20" step="1" value="5"></div>
+<div class="slider-block"><label for="s10-u-e"><span>&plusmn; e uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eOut">5%</span></label><input id="s10-u-e" type="range" min="0" max="20" step="1" value="5"></div>
+<div class="slider-block"><label for="s10-u-pp"><span>&plusmn; p&prime; uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-ppOut">20%</span></label><input id="s10-u-pp" type="range" min="0" max="50" step="1" value="20"></div>
+</div>
+<div class="bayes-grid2" style="margin-top:10px">
+<div class="bayes-chart-box"><canvas id="s10-cvHist"></canvas></div>
+<div class="guided-panel" style="margin:0">
+<h4 style="margin:0 0 8px;color:var(--navy);font-size:12.5px">What the spread means</h4>
+<div class="grid2" style="gap:8px 14px">
+<div class="stat"><div class="n" id="s10-u-mean" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">mean &psi; (Monte Carlo)</div></div>
+<div class="stat"><div class="n" id="s10-u-sd" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">&psi; standard deviation</div></div>
+<div class="stat"><div class="n" id="s10-u-p95" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">95% interval on &psi;</div></div>
+<div class="stat"><div class="n" id="s10-u-ploose" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-u-plooseLabel">P(&psi; &gt; 0) &mdash; loose of critical</div></div>
+</div>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:10px 0 0">Each sample is drawn independently (truncated Gaussian, clipped to each slider's range) and pushed through the exact same &psi; and strength formulas above &mdash; the faint dots on the two plots are the individual samples.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
 <div class="card" id="dilatancy-section">
-<h2>5. Stress&ndash;dilatancy: how &psi; sets strength</h2>
+<h2>6. Stress&ndash;dilatancy: how &psi; sets strength</h2>
 <div class="explain"><p><b>Dilatancy, D</b>, is the ratio of the volumetric strain increment to the shear (deviatoric) strain increment, D = d&epsilon;<sub>v</sub>/d&epsilon;<sub>q</sub> (Eq. 2.4) &mdash; how much a soil is bulking up or compacting for a given amount of shearing. Under the book's compression-positive sign convention, D is negative while a sample is dilating, so its most negative value during a test &mdash; usually reached at peak strength &mdash; is written D<sub>min</sub>. Dilation at peak strength scales linearly with &psi; through a soil property &chi;<sub>tc</sub> (fit from the same triaxial database):</p></div>
 <div class="eq">D<sub>min</sub> = &chi;<sub>tc</sub>&middot;&psi; &nbsp; (Eq. 2.11)</div>
-<div class="explain"><p>One more property is needed before going further: <b>M<sub>tc</sub></b>, the critical stress ratio &eta; = q/p&prime; a soil in triaxial compression heads toward at large strain &mdash; the same flat target every sample converges to eventually, whatever &psi; it started at (that's the whole point of "critical"). It's a property of the sand itself, not of its current density, and you'll see exactly how it's measured in Section 6. Rowe/Nova's stress&ndash;dilatancy rule<span class="fn" data-fn="2" tabindex="0" role="button" aria-expanded="false">2</span> (D = M &minus; &eta;) then converts dilation directly into a peak stress ratio above (or below) that critical value M<sub>tc</sub>, which converts to a peak friction angle via the standard triaxial Mohr&ndash;Coulomb relation sin&phi;&prime; = 3&eta;/(6+&eta;):</p></div>
+<div class="explain"><p>One more property is needed before going further: <b>M<sub>tc</sub></b>, the critical stress ratio &eta; = q/p&prime; a soil in triaxial compression heads toward at large strain &mdash; the same flat target every sample converges to eventually, whatever &psi; it started at (that's the whole point of "critical"). It's a property of the sand itself, not of its current density, and you'll see exactly how it's measured in Section 7. Rowe/Nova's stress&ndash;dilatancy rule<span class="fn" data-fn="2" tabindex="0" role="button" aria-expanded="false">2</span> (D = M &minus; &eta;) then converts dilation directly into a peak stress ratio above (or below) that critical value M<sub>tc</sub>, which converts to a peak friction angle via the standard triaxial Mohr&ndash;Coulomb relation sin&phi;&prime; = 3&eta;/(6+&eta;):</p></div>
 <div id="fnnote-2" class="fn-note"><b>2.</b> Rowe's 1962 original relates mobilized friction to dilation through a more elaborate ratio derived from a sliding-block energy analysis. Nova's rule, as first incorporated into NorSand (Eq. 3.31), is actually the <i>fuller</i> form with the (1&minus;N) term shown above &mdash; it's the simple D = M &minus; &eta; form used throughout most of this page (Eq. 3.32) that came later, from a further Dafalias-inspired revision, not from Nova's own simplification.</div>
 <div class="eq">&eta;<sub>max</sub> = M<sub>tc</sub> &minus; D<sub>min</sub> &nbsp;&nbsp; sin&phi;&prime;<sub>peak</sub> = 3&eta;<sub>max</sub> / (6 + &eta;<sub>max</sub>)</div>
 <p class="explain">The sandbox below includes two live diagrams that update as you move the sliders &mdash; watch them redraw to see exactly why each equation looks the way it does. Uses the same sand and &psi; from Section 4 above &mdash; move the sliders there and watch the numbers update here.</p>
@@ -534,7 +615,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div class="grid2" style="margin:10px 0">
 <div style="text-align:center">
 <canvas id="s2DEtaChart" style="height:205px" role="img" aria-label="Live diagram of dilatancy D versus stress ratio eta, showing the Rowe-Nova line D equals Mtc minus eta and where the current state's Dmin and eta max fall on it, with tick marks on both axes showing exactly how Dmin translates across to eta max."></canvas>
-<p class="explain" style="font-size:11px;margin:4px 0 0">A new kind of plot &mdash; horizontal is stress ratio &eta;=q/p&prime;, vertical is dilatancy D (Section 6 later uses this exact style of plot, fit to real test data, to calibrate M<sub>tc</sub>). The line is D=M<sub>tc</sub>&minus;&eta;. <b style="color:#1479b8">Blue dot: M<sub>tc</sub> = <span id="s2ChartMtc">1.26</span></b>, where the line crosses D=0. <b style="color:#c64852">Red dot: your current state</b> &mdash; D<sub>min</sub> = <span id="s2ChartDmin">&minus;0.35</span>, &eta;<sub>max</sub> = <span id="s2ChartEtaMax">1.61</span>.</p>
+<p class="explain" style="font-size:11px;margin:4px 0 0">A new kind of plot &mdash; horizontal is stress ratio &eta;=q/p&prime;, vertical is dilatancy D (Section 7 later uses this exact style of plot, fit to real test data, to calibrate M<sub>tc</sub>). The line is D=M<sub>tc</sub>&minus;&eta;. <b style="color:#1479b8">Blue dot: M<sub>tc</sub> = <span id="s2ChartMtc">1.26</span></b>, where the line crosses D=0. <b style="color:#c64852">Red dot: your current state</b> &mdash; D<sub>min</sub> = <span id="s2ChartDmin">&minus;0.35</span>, &eta;<sub>max</sub> = <span id="s2ChartEtaMax">1.61</span>.</p>
 </div>
 <div style="text-align:center">
 <canvas id="s2MohrChart" style="height:205px" role="img" aria-label="Live Mohr circle diagram tangent to a strength envelope at the current peak friction angle, with clearly labeled normal-stress and shear-stress axes."></canvas>
@@ -557,7 +638,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 </div>
 
-<div class="micro-challenge"><h3>Section 5 transfer challenge</h3><p class="explain">Two samples have the same M<sub>tc</sub>. Sample A has ψ = −0.12 and Sample B has ψ = −0.03. Which should mobilize the larger peak friction angle in this simplified framework?</p><div class="micro-options" id="s2Transfer"><button type="button" data-ok="yes">Sample A</button><button type="button" data-ok="no">Sample B</button><button type="button" data-ok="no">They are identical</button></div><div id="s2TransferFeedback" class="micro-feedback">Use D<sub>min</sub> = χψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub>.</div></div>
+<div class="micro-challenge"><h3>Section 6 transfer challenge</h3><p class="explain">Two samples have the same M<sub>tc</sub>. Sample A has ψ = −0.12 and Sample B has ψ = −0.03. Which should mobilize the larger peak friction angle in this simplified framework?</p><div class="micro-options" id="s2Transfer"><button type="button" data-ok="yes">Sample A</button><button type="button" data-ok="no">Sample B</button><button type="button" data-ok="no">They are identical</button></div><div id="s2TransferFeedback" class="micro-feedback">Use D<sub>min</sub> = χψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub>.</div></div>
 
 </div>
 </div>
@@ -570,7 +651,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="card" id="calibration-section">
-<h2>6. Where do &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N and H actually come from?</h2>
+<h2>7. Where do &Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N and H actually come from?</h2>
 <div class="explain">
 <p>NorSand's six soil properties aren't looked up in a table &mdash; every one of them is <i>fit to a plot of laboratory test results</i>. The panels below use the sand currently selected in Section 4 (<b id="s3SandName">Erksak 330/0.7 sand</b>) and show, for each parameter, an illustrative set of test points scattered around that sand's real published value, then fit a line or curve through them right in front of you &mdash; the same logic the book uses on real data (Sections 2.4, 2.6, 3.7). <b>The scatter points are synthetic (generated to plausibly resemble real test data), but the target value each one is built around is the real number from Table 2.1</b> &mdash; see the disclosure at the bottom of this page.</p>
 </div>
@@ -628,7 +709,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <h3>B. M<sub>tc</sub> — the one stress ratio every test heads toward</h3>
-<p class="explain" style="font-size:12.5px"><b>This is the actual determination method:</b> plot stress ratio &eta; = q/p&prime; against shear strain for several tests at different densities (below, three runs of Section 7's model at this sand's real properties). Loose samples harden up to it; dense samples overshoot and soften back down &mdash; but all three curves converge on the <i>same</i> &eta; at large strain, regardless of density. <b>Read straight off the plot, that common convergence value is M<sub>tc</sub></b> &mdash; with real lab data you'd read it the same way, off several tests' actual measured &eta;&ndash;strain curves.</p>
+<p class="explain" style="font-size:12.5px"><b>This is the actual determination method:</b> plot stress ratio &eta; = q/p&prime; against shear strain for several tests at different densities (below, three runs of Section 8's model at this sand's real properties). Loose samples harden up to it; dense samples overshoot and soften back down &mdash; but all three curves converge on the <i>same</i> &eta; at large strain, regardless of density. <b>Read straight off the plot, that common convergence value is M<sub>tc</sub></b> &mdash; with real lab data you'd read it the same way, off several tests' actual measured &eta;&ndash;strain curves.</p>
 <div class="grid2">
 <div><canvas id="mtcChart" role="img" aria-label="Chart of three NorSand simulations at different starting densities, all converging to the same critical stress ratio M-tc regardless of density."></canvas>
 <div class="legend"><span><i style="background:var(--red)"></i>dense (&psi;&lt;0)</span><span><i style="background:var(--orange)"></i>near-critical</span><span><i style="background:var(--blue)"></i>loose (&psi;&gt;0)</span><span><i style="background:#9aa9ae"></i>M<sub>tc</sub></span></div></div>
@@ -669,7 +750,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="card" id="norsand-section">
-<h2>7. NorSand: simulating a drained triaxial compression test</h2>
+<h2>8. NorSand: simulating a drained triaxial compression test</h2>
 <div class="explain">
 <p>Chapter 3 develops NorSand, the constitutive model that turns &psi; from a static index into an evolving internal state variable capable of predicting an entire stress&ndash;strain curve, not just its peak. The core idea is a <b>yield surface</b> &mdash; a boundary in stress space that separates the elastic and plastic response, whose current size is tracked by the internal variable p<sub>i</sub>. As the sample strains, this surface grows or shrinks toward an "image" condition set by how far the soil sits from critical state; that evolving size, not a fixed strength value, is what produces the whole stress&ndash;strain curve below. Below is a direct numerical integration of NorSand's own governing equations (Table 3.1) for a <b>drained triaxial compression test at constant mean effective stress</b> &mdash; the same idealized state path the book itself uses in Figure 2.5 to introduce &psi;. Two simplifications are made explicit in full below the results: elastic strains are neglected (the book notes this is standard practice when reducing stress&ndash;dilatancy data), and the simpler difference-form hardening law (Eq. 3.39) is used in place of its dimensionless reformulation (Eq. 3.40).</p>
 <p>Every soil property below is a free slider &mdash; drag any one on its own to build intuition for what it actually does to the curve, using illustrative (not necessarily real) combinations. "Erksak preset" just resets to the book's own Chapter 3 calibration as a sensible starting point.</p>
@@ -776,13 +857,13 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div class="eq-chain">
 <div class="eq-step"><small>1 &middot; How far the internal yield surface currently is from critical</small><div class="eq">&psi;<sub>i</sub> = &psi; &minus; &lambda;&middot;ln(p&prime;/p<sub>i</sub>)</div><p>Uses the internal variable p<sub>i</sub>, not p&prime; directly &mdash; this is what lets the yield surface evolve independently of the real stress path.</p></div>
 <div class="eq-arrow">↓</div>
-<div class="eq-step"><small>2 &middot; A fixed property of the sand, rescaled once (not every step)</small><div class="eq">&chi;<sub>i</sub> = &chi;<sub>tc</sub> / (1 &minus; &chi;<sub>tc</sub>&lambda;/M<sub>tc</sub>)</div><p>Converts &chi;<sub>tc</sub> (fit in Section 6) into its "image" form &mdash; a constant for this sand, computed once at the start.</p></div>
+<div class="eq-step"><small>2 &middot; A fixed property of the sand, rescaled once (not every step)</small><div class="eq">&chi;<sub>i</sub> = &chi;<sub>tc</sub> / (1 &minus; &chi;<sub>tc</sub>&lambda;/M<sub>tc</sub>)</div><p>Converts &chi;<sub>tc</sub> (fit in Section 7) into its "image" form &mdash; a constant for this sand, computed once at the start.</p></div>
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>3 &middot; The model's evolving target</small><div class="eq">M<sub>i</sub> = M<sub>tc</sub> &minus; &chi;<sub>i</sub>N|&psi;<sub>i</sub>|</div><p>&chi;<sub>i</sub> and the <i>current</i> &psi;<sub>i</sub> from step 1 combine to set the image stress ratio &mdash; how far the yield surface's target currently sits from M<sub>tc</sub>.</p></div>
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>4 &middot; The outer NorSand yield locus in triaxial p&prime;&ndash;q space</small><div class="eq">&eta; = q/p&prime; = M<sub>i</sub>&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>)) &nbsp;&hArr;&nbsp; q = M<sub>i</sub>&middot;p&prime;&middot;(1 &minus; ln(p&prime;/p<sub>i</sub>))</div><p>At the current p<sub>i</sub> and p&prime;, this is the stress ratio this locus predicts this instant. Two landmarks on the curve: at the <b>image condition</b> p&prime;=p<sub>i</sub>, ln(p&prime;/p<sub>i</sub>)=0 so &eta;=M<sub>i</sub> exactly (q=M<sub>i</sub>&middot;p<sub>i</sub>) &mdash; not the same thing as critical state, which needs continued plastic shearing with no further change in stress ratio or void ratio, and M<sub>i</sub> is generally still moving toward M<sub>tc</sub> at that point. At the <b>isotropic intercept</b> q=0, ln(p&prime;/p<sub>i</sub>)=1 so p&prime;=exp(1)&middot;p<sub>i</sub> (&asymp;2.718&middot;p<sub>i</sub> &mdash; Euler's number, not void ratio e). This is the triaxial-compression meridional section of NorSand's yield surface; the full three-dimensional surface also depends on the Lode angle through the applicable critical stress ratio (footnote 4 above).</p></div>
 <div class="eq-arrow">↓</div>
-<div class="eq-step"><small>5 &middot; The gap between "heading toward" and "is" becomes motion</small><div class="eq">D<sup>p</sup> = M<sub>i</sub> &minus; &eta;</div><p>This is the actual plastic dilation rate for this increment &mdash; the same D = M − &eta; rule from Section 5, now evaluated with the image values. It's what moves e.</p></div>
+<div class="eq-step"><small>5 &middot; The gap between "heading toward" and "is" becomes motion</small><div class="eq">D<sup>p</sup> = M<sub>i</sub> &minus; &eta;</div><p>This is the actual plastic dilation rate for this increment &mdash; the same D = M − &eta; rule from Section 6, now evaluated with the image values. It's what moves e.</p></div>
 <div class="eq-arrow">↓</div>
 <div class="eq-step"><small>6 &middot; Where p<sub>i</sub> itself is drifting toward</small><div class="eq">p<sub>i,max</sub> = p&prime;&middot;exp(&minus;&chi;<sub>i</sub>&psi;<sub>i</sub>/M<sub>tc</sub>)</div><p>&psi;<sub>i</sub> sets the size the yield surface is trying to grow (or shrink) toward. This step uses the fixed M<sub>tc</sub>, not the evolving M<sub>i</sub> from step 3 &mdash; Eq. 3.38/Table 3.1's difference-form hardening law is written with the reference M<sub>itc</sub>, which equals M<sub>tc</sub> for the triaxial-compression path this tool models. Using the evolving M<sub>i</sub> here would make p<sub>i,max</sub> circularly depend on itself through &psi;<sub>i</sub>.</p></div>
 <div class="eq-arrow">↓</div>
@@ -800,28 +881,28 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <section id="knowledge-check" class="card">
-<h2>8. Final synthesis check</h2>
+<h2>9. Final synthesis check</h2>
 <p class="explain">You've already met checkpoints A&ndash;I along the way, right after the section that taught them. This last block, J, ties the whole module together &mdash; the kind of "a colleague says…" applied reasoning that only makes sense once everything above is in place. <b>"Check my understanding" below grades J together with every earlier block you've answered</b>, wherever it appeared on the page, so it's fine to submit even if you skimmed or skipped some.</p>
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 100 answered (blocks A&ndash;I above, plus J below)</div>
 <div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotJ">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotJ">Hide questions</button></div>
 <div id="quizSlotJ"></div>
 <div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
 
-<div class="callout" style="margin-top:14px"><b>Back to where you started.</b> The opening "Walk through reading a state" chain asked you to read the point, read the CSL, subtract, and predict. You now know how each of those arrows is actually computed: <b>read the point</b> is e and p′ off the state plane; <b>read the CSL</b> is e<sub>c</sub> = Γ − λ<sub>10</sub>·log<sub>10</sub>(p′), calibrated in Section 6; <b>subtract</b> is ψ = e − e<sub>c</sub>; and <b>predict</b> now has real machinery behind it &mdash; D<sub>min</sub> = χ<sub>tc</sub>ψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> for a first-order estimate, or the full NorSand loop in Section 7 for the entire stress&ndash;strain curve. Module 2 picks up from here: how ψ is actually measured in the field, from a CPT.</div>
+<div class="callout" style="margin-top:14px"><b>Back to where you started.</b> The opening "Walk through reading a state" chain asked you to read the point, read the CSL, subtract, and predict. You now know how each of those arrows is actually computed: <b>read the point</b> is e and p′ off the state plane; <b>read the CSL</b> is e<sub>c</sub> = Γ − λ<sub>10</sub>·log<sub>10</sub>(p′), calibrated in Section 7; <b>subtract</b> is ψ = e − e<sub>c</sub>; and <b>predict</b> now has real machinery behind it &mdash; D<sub>min</sub> = χ<sub>tc</sub>ψ and η<sub>max</sub> = M<sub>tc</sub> − D<sub>min</sub> for a first-order estimate, or the full NorSand loop in Section 8 for the entire stress&ndash;strain curve. Module 2 picks up from here: how ψ is actually measured in the field, from a CPT.</div>
 
 <h3>Quick-reference glossary</h3><div class="glossary-grid">
 <div class="term"><b>Critical state</b>Continued deformation at constant stress and constant void ratio.</div><div class="term"><b>CSL</b>The locus of critical void ratio versus mean effective stress.</div><div class="term"><b>State parameter, ψ</b>Current void ratio minus critical void ratio at the same p′.</div><div class="term"><b>Dilatancy, D</b>Plastic or total volumetric strain increment divided by shear strain increment.</div><div class="term"><b>η = q/p′</b>Dimensionless stress ratio used to describe mobilized shear resistance.</div><div class="term"><b>M<sub>tc</sub></b>Critical η for triaxial compression.</div><div class="term"><b>Γ</b>CSL intercept at p′ = 1 kPa.</div><div class="term"><b>λ or λ<sub>10</sub></b>CSL slope using natural or base-10 logarithms.</div><div class="term"><b>NorSand</b>A state-parameter critical-state constitutive model with an evolving image state.</div></div></section>
 
 <div class="card" id="about-tool">
-<div class="warning"><b>About this tool.</b> Section 4's critical state line parameters (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>) for all 17 sands/tailings are transcribed directly from Table 2.1 of the book, with one deliberate exception: Erksak 330/0.7's M<sub>tc</sub> uses the Chapter 3 recalibration (1.26) rather than Table 2.1's own entry (1.27), for consistency with the "uniqueness of the CSL" discussion in Section 6 below, which relies on that specific Chapter 3 value. Section 5's formulas (Eq. 2.11, Rowe/Nova stress&ndash;dilatancy, and the standard triaxial sin&phi;&prime;=3&eta;/(6+&eta;) conversion) are exact. <b>Section 6's "sample triaxial test program" table is illustrative, not a real lab data sheet</b>: the confining stresses and target &psi;<sub>0</sub> values are chosen to give a representative spread from loose to dense, and every other column (e<sub>0</sub>, peak &eta;, &phi;&prime;<sub>peak</sub>, D<sub>min</sub>) is then computed exactly from this sand's real Table 2.1 properties using the same equations shown throughout this page &mdash; it's meant to show the shape and structure of real triaxial data, not to reproduce any specific test. <b>The "one test, start to finish" pipeline directly beneath the table works the same way</b>: the "raw" q and &epsilon;<sub>v</sub> curves are a NorSand simulation (this sand's real properties) with pseudo-random noise added at sparse sample points, and the stress&ndash;dilatancy plot's (D, &eta;) pairs are numerically differentiated from those <i>noisy</i> curves &mdash; not read off the smooth model directly &mdash; which is why the fitted M<sub>tc</sub> doesn't land exactly on the real value, and lands closer for some tests than others: differentiating noisy data amplifies scatter, and a test whose D range doesn't reach near zero needs a longer, less reliable extrapolation to the D=0 intercept. Both effects are real phenomena in actual stress&ndash;dilatancy data reduction, not artifacts of this tool. <b>The four panels' data points are similarly synthetic, not digitized from the book's actual figures</b> (the book's own real test data isn't available to reproduce here): each panel generates illustrative scatter by taking this sand's real, published Table 2.1 value (or, for panel D, an illustrative N/H pair) and adding deterministic pseudo-random noise, then fits a line back through the noisy points using ordinary least squares &mdash; so the "recovered" value you see should land close to, but not necessarily exactly on, the real one, exactly as happens with real scattered lab data. The underlying relationships used (Eq. 2.1 for the CSL, Eq. 2.11 for &chi;<sub>tc</sub>, and NorSand's own equations for the M<sub>tc</sub>-convergence and N/H panels) are all real and exact; only the "measured" points around them are constructed for illustration. Section 7's NorSand simulator implements the model's real governing equations (Table 3.1) but makes two disclosed simplifications for a browser-friendly explicit integration: (1) the stress path is idealized as constant mean effective stress p&prime; (the same idealization the book itself uses in Fig. 2.5, and directly imposed here rather than solved via full elastic&ndash;plastic coupling), and (2) elastic strains are neglected so that total shear strain is treated as plastic strain (a simplification the book explicitly endorses for stress&ndash;dilatancy data reduction in Section 2.1.3). The hardening law uses the simple difference form (Eq. 3.39) rather than its dimensionless reformulation (Eq. 3.40). N and H are not given for Erksak sand in the book's worked example, so the default N=0.30 and H&asymp;4/&lambda; (the book's own stated first-estimate rule, Table 3.2) are used as literature-typical values. All eight sliders (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub>) are freely adjustable and independent of Section 4's sand selector, so you can explore illustrative, made-up combinations &mdash; not just the book's own published sands &mdash; to build intuition for what each one individually does to the curve; the "Erksak preset" option is just a sensible starting point, not a constraint.</div>
+<div class="warning"><b>About this tool.</b> Section 4's critical state line parameters (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>) for all 17 sands/tailings are transcribed directly from Table 2.1 of the book, with one deliberate exception: Erksak 330/0.7's M<sub>tc</sub> uses the Chapter 3 recalibration (1.26) rather than Table 2.1's own entry (1.27), for consistency with the "uniqueness of the CSL" discussion in Section 7 below, which relies on that specific Chapter 3 value. Section 6's formulas (Eq. 2.11, Rowe/Nova stress&ndash;dilatancy, and the standard triaxial sin&phi;&prime;=3&eta;/(6+&eta;) conversion) are exact. <b>Section 7's "sample triaxial test program" table is illustrative, not a real lab data sheet</b>: the confining stresses and target &psi;<sub>0</sub> values are chosen to give a representative spread from loose to dense, and every other column (e<sub>0</sub>, peak &eta;, &phi;&prime;<sub>peak</sub>, D<sub>min</sub>) is then computed exactly from this sand's real Table 2.1 properties using the same equations shown throughout this page &mdash; it's meant to show the shape and structure of real triaxial data, not to reproduce any specific test. <b>The "one test, start to finish" pipeline directly beneath the table works the same way</b>: the "raw" q and &epsilon;<sub>v</sub> curves are a NorSand simulation (this sand's real properties) with pseudo-random noise added at sparse sample points, and the stress&ndash;dilatancy plot's (D, &eta;) pairs are numerically differentiated from those <i>noisy</i> curves &mdash; not read off the smooth model directly &mdash; which is why the fitted M<sub>tc</sub> doesn't land exactly on the real value, and lands closer for some tests than others: differentiating noisy data amplifies scatter, and a test whose D range doesn't reach near zero needs a longer, less reliable extrapolation to the D=0 intercept. Both effects are real phenomena in actual stress&ndash;dilatancy data reduction, not artifacts of this tool. <b>The four panels' data points are similarly synthetic, not digitized from the book's actual figures</b> (the book's own real test data isn't available to reproduce here): each panel generates illustrative scatter by taking this sand's real, published Table 2.1 value (or, for panel D, an illustrative N/H pair) and adding deterministic pseudo-random noise, then fits a line back through the noisy points using ordinary least squares &mdash; so the "recovered" value you see should land close to, but not necessarily exactly on, the real one, exactly as happens with real scattered lab data. The underlying relationships used (Eq. 2.1 for the CSL, Eq. 2.11 for &chi;<sub>tc</sub>, and NorSand's own equations for the M<sub>tc</sub>-convergence and N/H panels) are all real and exact; only the "measured" points around them are constructed for illustration. Section 8's NorSand simulator implements the model's real governing equations (Table 3.1) but makes two disclosed simplifications for a browser-friendly explicit integration: (1) the stress path is idealized as constant mean effective stress p&prime; (the same idealization the book itself uses in Fig. 2.5, and directly imposed here rather than solved via full elastic&ndash;plastic coupling), and (2) elastic strains are neglected so that total shear strain is treated as plastic strain (a simplification the book explicitly endorses for stress&ndash;dilatancy data reduction in Section 2.1.3). The hardening law uses the simple difference form (Eq. 3.39) rather than its dimensionless reformulation (Eq. 3.40). N and H are not given for Erksak sand in the book's worked example, so the default N=0.30 and H&asymp;4/&lambda; (the book's own stated first-estimate rule, Table 3.2) are used as literature-typical values. All eight sliders (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub>) are freely adjustable and independent of Section 4's sand selector, so you can explore illustrative, made-up combinations &mdash; not just the book's own published sands &mdash; to build intuition for what each one individually does to the curve; the "Erksak preset" option is just a sensible starting point, not a constraint.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
 
 <div class="card" id="bayesian-calibration">
-<h2>9. Calibrating NorSand properly: a Bayesian worked example</h2>
+<h2>10. Calibrating NorSand properly: a Bayesian worked example</h2>
 <div class="explain">
-<p>Section 7's "one-variable-at-a-time" sliders are built to isolate what a single NorSand parameter does to the equations &mdash; drag one, watch the curve change, everything else held fixed. That's genuinely useful for building intuition about the mathematics. It is <b>not</b> a model of how a real soil's parameters behave once calibrated: in a highly non-linear model like NorSand, parameters are frequently correlated, and treating them as independently adjustable can misinform a sensitivity study.</p>
-<p>This page works through the real alternative on real data: Contreras, Rojas-Huaroto, Halliday &amp; Llano-Serna (2025) published a Bayesian calibration of NorSand against Fraser River sand triaxial tests, with their full Python implementation and dataset released alongside the paper. Everything below is a from-scratch port of their actual code &mdash; the forward-Euler elastoplastic model (not the simplified constant-p&prime; idealization used in Section 7 above) and their real Markov Chain Monte Carlo calibration (<code>emcee</code>'s affine-invariant ensemble sampler), running entirely in this page.</p>
+<p>Section 8's "one-variable-at-a-time" sliders are built to isolate what a single NorSand parameter does to the equations &mdash; drag one, watch the curve change, everything else held fixed. That's genuinely useful for building intuition about the mathematics. It is <b>not</b> a model of how a real soil's parameters behave once calibrated: in a highly non-linear model like NorSand, parameters are frequently correlated, and treating them as independently adjustable can misinform a sensitivity study.</p>
+<p>This page works through the real alternative on real data: Contreras, Rojas-Huaroto, Halliday &amp; Llano-Serna (2025) published a Bayesian calibration of NorSand against Fraser River sand triaxial tests, with their full Python implementation and dataset released alongside the paper. Everything below is a from-scratch port of their actual code &mdash; the forward-Euler elastoplastic model (not the simplified constant-p&prime; idealization used in Section 8 above) and their real Markov Chain Monte Carlo calibration (<code>emcee</code>'s affine-invariant ensemble sampler), running entirely in this page.</p>
 </div>
 <p class="sources"><b>Paper:</b> Contreras, L.F., Rojas-Huaroto, H., Halliday, A. &amp; Llano-Serna, M. (2025). <em>Bayesian Calibration of NorSand Model Parameters Using Triaxial Test Data.</em> Australian Geomechanics, Volume 60, No. 4, December 2025. <a href="https://doi.org/10.56295/AGJ6041" target="_blank" rel="noopener">https://doi.org/10.56295/AGJ6041</a></p>
 <p class="sources"><b>Code and data</b> (Python/Jupyter Notebook, MCMC calibration, Fraser River sand triaxial dataset, GPLv2): <a href="https://github.com/LF-Contreras/Bayesian-calibration-NorSand-model" target="_blank" rel="noopener">github.com/LF-Contreras/Bayesian-calibration-NorSand-model</a></p>
@@ -831,7 +912,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <p class="explain" style="font-size:11.5px;margin-top:2px;color:var(--muted)">The fixed Fraser River sand dataset and worked example from Contreras et al. (2025), below. For your own triaxial data, skip to <a href="#bc2-your-data">9b</a>.</p>
 
 <div class="guided-panel">
-<h3 style="margin-top:0">The model: a fuller NorSand than Section 7's</h3>
+<h3 style="margin-top:0">The model: a fuller NorSand than Section 8's</h3>
 <p class="explain" style="font-size:12.5px">Their implementation is a genuine consistent-tangent elastoplastic integration: a real elastic region before first yield, the actual constant-cell-pressure stress path a CID test follows (not an idealized constant-p&prime; shortcut), and a curved (Li &amp; Wang 1998) critical state line fitted directly to this dataset instead of the straight-line form used throughout the rest of this module.</p>
 <table class="params">
 <tr><th>CSL (curved)</th><th>p&prime;<sub>ref</sub></th><th>C<sub>a</sub></th><th>C<sub>b</sub></th><th>C<sub>c</sub></th><th>M<sub>tc</sub></th><th>N</th><th>&chi;<sub>tc</sub></th><th>R (OCR)</th></tr>
@@ -1027,99 +1108,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 
 <h3>What "one point of zero dilation" doesn't mean</h3>
 <div class="explain">
-<p>A related note from calibration practice, worth having alongside Section 6's stress&ndash;dilatancy fitting: the D=0 crossing used there to read off M<sub>tc</sub> is <i>an</i> intercept, not a claim that the sample has reached critical state at that instant. Critical state needs continued plastic shearing with no further change in stress ratio <i>or</i> void ratio &mdash; a single zero-dilatancy point mid-test can occur well before that, particularly for dense samples whose D crosses zero once on the way to a peak and passes through it again on the way back down.</p>
-</div>
-</div>
-
-<div class="card" id="state-parameter-lab">
-<h2>10. How &lambda;<sub>10</sub> and state build the state parameter &psi; &mdash; and set strength</h2>
-<div class="explain">
-<p>One equation governs it all. Compressibility (&lambda;<sub>10</sub>), how tightly the soil is packed (e), and how hard it is squeezed (p&prime;) combine into the state parameter &psi; &mdash; the soil's distance from the critical state line. That distance, not &lambda;<sub>10</sub> alone, decides whether the soil is strong or weak. Move the sliders and watch it happen.</p>
-</div>
-<p class="sources">Prompted by <b>Zana Karimi, PhD, PE</b> &mdash; with thanks for bringing up this discussion.</p>
-
-<div class="eq" style="white-space:normal;text-align:center;font-size:16px;padding:14px 16px">
-<div id="s10-eq">&phi;&prime;<sub>peak</sub> &minus; &phi;&prime;<sub>cs</sub> = &minus;k &middot; ( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) )</div>
-<div id="s10-numline" style="margin-top:10px;font-size:13px;color:var(--muted)"></div>
-</div>
-
-<div style="margin:12px 0" role="tablist" aria-label="Strength representation">
-<button type="button" class="ghost" id="s10-mode-phi" role="tab" aria-selected="true" style="font-weight:700">Friction angle (&phi;&prime;)</button>
-<button type="button" class="ghost" id="s10-mode-M" role="tab" aria-selected="false" style="margin-left:6px">Stress ratio (M)</button>
-</div>
-
-<div class="grid2">
-<div>
-<div class="slider-block"><label for="s10-lam"><span>&lambda;<sub>10</sub> &mdash; compressibility (slope of the CSL)</span> <span class="readout" id="s10-lamOut">0.30</span></label><input id="s10-lam" type="range" min="0.02" max="1.20" step="0.01" value="0.30"></div>
-<div class="slider-block"><label for="s10-eG"><span>e<sub>&Gamma;</sub> &mdash; CSL position (void ratio at 100 kPa)</span> <span class="readout" id="s10-eGOut">1.00</span></label><input id="s10-eG" type="range" min="0.60" max="1.80" step="0.01" value="1.00"></div>
-<div class="slider-block"><label for="s10-e"><span>e &mdash; current void ratio (how packed)</span> <span class="readout" id="s10-eOut">0.90</span></label><input id="s10-e" type="range" min="0.30" max="2.00" step="0.01" value="0.90"></div>
-<div class="slider-block"><label for="s10-pp"><span>p&prime; &mdash; mean effective stress</span> <span class="readout" id="s10-ppOut">100 kPa</span></label><input id="s10-pp" type="range" min="0.699" max="3.301" step="0.002" value="2.000"></div>
-<div class="slider-block" id="s10-ctrl-k"><label for="s10-k"><span>k &mdash; state &rarr; strength coupling</span> <span class="readout" id="s10-kOut">40&deg;</span></label><input id="s10-k" type="range" min="10" max="60" step="1" value="40"></div>
-<div class="slider-block" id="s10-ctrl-phics" hidden><label for="s10-phics"><span>&phi;&prime;<sub>cs</sub> &mdash; critical-state friction angle &rarr; M</span> <span class="readout" id="s10-phicsOut">32.0&deg;</span></label><input id="s10-phics" type="range" min="26" max="40" step="0.5" value="32"></div>
-<div class="slider-block" id="s10-ctrl-n" hidden><label for="s10-n"><span>n &mdash; coupling in M<sub>peak</sub> = M&middot;e<sup>&minus;n&psi;</sup></span> <span class="readout" id="s10-nOut">2.0</span></label><input id="s10-n" type="range" min="0.5" max="4" step="0.1" value="2.0"></div>
-</div>
-
-<div class="guided-panel">
-<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-<span style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em">&psi; =</span>
-<span id="s10-psi" style="font-size:28px;font-weight:800;font-family:Georgia,serif"></span>
-<span class="badge" id="s10-badge" style="font-size:11px"></span>
-</div>
-<p class="explain" id="s10-interp" style="min-height:2.6em;margin:8px 0 12px"></p>
-<div class="grid2" style="gap:8px 14px">
-<div class="stat"><div class="n" id="s10-ecs" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">e<sub>cs</sub> at this p&prime; (on CSL)</div></div>
-<div class="stat"><div class="n" id="s10-dphi" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-modestat">peak strength above critical</div></div>
-<div class="stat"><div class="n" id="s10-cross" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">crossover p&prime; (&psi; = 0)</div></div>
-<div class="stat"><div class="n" id="s10-cc" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">compressibility: &Delta;e per &times;10 stress</div></div>
-</div>
-</div>
-</div>
-
-<div class="bayes-grid2" style="margin-top:14px">
-<div class="bayes-chart-box"><canvas id="s10-cv1"></canvas></div>
-<div class="bayes-chart-box"><canvas id="s10-cv2"></canvas></div>
-</div>
-<p class="explain" style="font-size:12px;margin-top:8px"><b>1 &middot; State vs the CSL.</b> The line's steepness <i>is</i> &lambda;<sub>10</sub> (compressibility). &psi; is the vertical gap from your point to the line. Below the line &rarr; dense &amp; strong; above &rarr; loose &amp; weak.</p>
-<p class="explain" style="font-size:12px" id="s10-cap2"><b>2 &middot; Strength follows &psi;.</b> Peak strength above critical = &minus;k&middot;&psi; (a straight line). Your point slides along it as &psi; changes &mdash; the pull &lambda;<sub>10</sub> and stress exert on strength runs entirely through &psi;.</p>
-
-<div class="guided-panel" style="margin-top:14px">
-<h3 style="margin-top:0">3 &middot; What &psi; does to the whole stress&ndash;strain curve, not just its endpoint</h3>
-<p class="explain" style="font-size:12.5px;margin-top:0">Plots 1 and 2 show a single point &mdash; peak strength at your current state. This one sketches the <i>path</i> a shear test takes to get there: a schematic shear stress&ndash;strain curve built from the same &psi;, using the M-family strength law (M<sub>peak</sub> = M&middot;e<sup>&minus;n&psi;</sup>) regardless of which mode is active above, so it stays consistent whichever you're viewing. Dense/dilative states (&psi;&lt;0) peak early and <b>strain-soften</b> back down toward the critical-state line; loose/contractive states (&psi;&ge;0) simply harden up to it with no peak at all. <b>This curve is illustrative &mdash; a schematic built directly from &psi; and the strength law above, not a constitutive simulation</b> (section 7's NorSand tool is the real one); its purpose is to make brittleness itself, not any specific numeric prediction, visible as you move the sliders.</p>
-<div class="bayes-chart-box"><canvas id="s10-cv3"></canvas></div>
-<div class="grid2" style="gap:8px 14px;margin-top:10px">
-<div class="stat"><div class="n" id="s10-ib" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">brittleness index, I<sub>B</sub> = (q<sub>peak</sub> &minus; q<sub>cs</sub>)/q<sub>peak</sub></div></div>
-<div class="stat"><div class="n" id="s10-qpeak" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">peak shear stress, q<sub>peak</sub></div></div>
-<div class="stat"><div class="n" id="s10-qcs" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">critical-state shear stress, q<sub>cs</sub></div></div>
-<div class="stat"><div class="n" id="s10-brittleword" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">in plain terms</div></div>
-</div>
-</div>
-
-<div class="guided-panel" style="margin-top:16px">
-<h3 style="margin-top:0">From a point estimate to a probability: propagating parameter uncertainty</h3>
-<p class="explain" style="font-size:12.5px;margin-top:0">Section 9 runs Bayesian calibration <i>backward</i> &mdash; inferring a parameter distribution from test data. Here it runs <i>forward</i>: you almost never know &lambda;<sub>10</sub>, e<sub>&Gamma;</sub>, e, or p&prime; exactly &mdash; each carries measurement and estimation uncertainty. Give each one a spread instead of a single value, and the same equation turns your one &psi; into a <i>distribution</i> of possible &psi; &mdash; showing not just what you'd expect, but how likely the sample is to actually land loose of critical.</p>
-<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" id="s10-uncEnable">Enable parameter uncertainty (Monte Carlo, 800 samples)</label>
-
-<div id="s10-uncPanel" style="display:none;margin-top:12px">
-<div class="grid2">
-<div class="slider-block"><label for="s10-u-lam"><span>&plusmn; &lambda;<sub>10</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-lamOut">15%</span></label><input id="s10-u-lam" type="range" min="0" max="40" step="1" value="15"></div>
-<div class="slider-block"><label for="s10-u-eG"><span>&plusmn; e<sub>&Gamma;</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eGOut">5%</span></label><input id="s10-u-eG" type="range" min="0" max="20" step="1" value="5"></div>
-<div class="slider-block"><label for="s10-u-e"><span>&plusmn; e uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eOut">5%</span></label><input id="s10-u-e" type="range" min="0" max="20" step="1" value="5"></div>
-<div class="slider-block"><label for="s10-u-pp"><span>&plusmn; p&prime; uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-ppOut">20%</span></label><input id="s10-u-pp" type="range" min="0" max="50" step="1" value="20"></div>
-</div>
-<div class="bayes-grid2" style="margin-top:10px">
-<div class="bayes-chart-box"><canvas id="s10-cvHist"></canvas></div>
-<div class="guided-panel" style="margin:0">
-<h4 style="margin:0 0 8px;color:var(--navy);font-size:12.5px">What the spread means</h4>
-<div class="grid2" style="gap:8px 14px">
-<div class="stat"><div class="n" id="s10-u-mean" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">mean &psi; (Monte Carlo)</div></div>
-<div class="stat"><div class="n" id="s10-u-sd" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">&psi; standard deviation</div></div>
-<div class="stat"><div class="n" id="s10-u-p95" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">95% interval on &psi;</div></div>
-<div class="stat"><div class="n" id="s10-u-ploose" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-u-plooseLabel">P(&psi; &gt; 0) &mdash; loose of critical</div></div>
-</div>
-<p class="explain" style="font-size:11px;color:var(--muted);margin:10px 0 0">Each sample is drawn independently (truncated Gaussian, clipped to each slider's range) and pushed through the exact same &psi; and strength formulas above &mdash; the faint dots on the two plots are the individual samples.</p>
-</div>
-</div>
-</div>
+<p>A related note from calibration practice, worth having alongside Section 7's stress&ndash;dilatancy fitting: the D=0 crossing used there to read off M<sub>tc</sub> is <i>an</i> intercept, not a claim that the sample has reached critical state at that instant. Critical state needs continued plastic shearing with no further change in stress ratio <i>or</i> void ratio &mdash; a single zero-dilatancy point mid-test can occur well before that, particularly for dense samples whose D crosses zero once on the way to a peak and passes through it again on the way back down.</p>
 </div>
 
 <div id="commentsSection"></div>
@@ -1132,15 +1121,15 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 
 <h3>1 &middot; Why one-at-a-time sliders can be dangerous</h3>
 <div class="explain">
-<p>The "One-variable-at-a-time NorSand experiments" panel and the eight independent sliders in Section 7 (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub>) are built to isolate what a single term does to the equations &mdash; drag one, watch the curve change, everything else held fixed. That's genuinely useful for building intuition about the mathematics. It is <b>not</b> a model of how a real soil's parameters actually behave once calibrated.</p>
+<p>The "One-variable-at-a-time NorSand experiments" panel and the eight independent sliders in Section 8 (&Gamma;, &lambda;<sub>10</sub>, M<sub>tc</sub>, &chi;<sub>tc</sub>, N, H, e<sub>0</sub>, p&prime;<sub>0</sub>) are built to isolate what a single term does to the equations &mdash; drag one, watch the curve change, everything else held fixed. That's genuinely useful for building intuition about the mathematics. It is <b>not</b> a model of how a real soil's parameters actually behave once calibrated.</p>
 <p>In a highly non-linear model like NorSand, parameters are frequently correlated: moving one away from its calibrated value while holding the others at some "typical" table value doesn't generally represent a physically consistent soil, because a real calibrated parameter set usually has to move together to keep matching the same test data. Contreras et al. (2025)<span class="fn" data-fn="5" tabindex="0" role="button" aria-expanded="false">5</span> demonstrate exactly this with a Bayesian (MCMC) calibration of NorSand against real Fraser River sand triaxial data: their posterior sampling reveals a <b>strong negative correlation between G<sub>ref</sub> and m</b>, the two elastic parameters &mdash; something a conventional test-by-test, one-parameter-at-a-time fit never surfaces, and could actively mislead a sensitivity study or fragility-curve analysis that treated the parameters as independent.</p>
-<p>So: use the sliders here to build a feel for each term's individual role in the equations. When you actually calibrate NorSand against real data, don't treat the resulting parameters as independently adjustable afterward &mdash; fit them jointly, ideally with a method that also reports the correlation and uncertainty between them, like the Bayesian approach in Section 6 below.</p>
+<p>So: use the sliders here to build a feel for each term's individual role in the equations. When you actually calibrate NorSand against real data, don't treat the resulting parameters as independently adjustable afterward &mdash; fit them jointly, ideally with a method that also reports the correlation and uncertainty between them, like the Bayesian approach in Section 7 below.</p>
 </div>
 <div id="fnnote-5" class="fn-note">5. Contreras, L.F., Rojas-Huaroto, H., Halliday, A. &amp; Llano-Serna, M. (2025). Bayesian Calibration of NorSand Model Parameters Using Triaxial Test Data. <em>Australian Geomechanics</em>, Volume 60, No. 4, December 2025.</div>
 
 <h3>2 &middot; The idealized stress path here isn't what a real CID test looks like</h3>
 <div class="explain">
-<p>Section 7's simulator idealizes every test as a <b>constant mean effective stress (p&prime;)</b> path &mdash; disclosed in the "About this tool" note above, and the same idealization the book itself uses in Fig. 2.5. It deliberately isolates the state-parameter physics from the stress path's own shape. A real drained (CID) triaxial compression test does not hold p&prime; constant, and its actual path has real curvature.</p>
+<p>Section 8's simulator idealizes every test as a <b>constant mean effective stress (p&prime;)</b> path &mdash; disclosed in the "About this tool" note above, and the same idealization the book itself uses in Fig. 2.5. It deliberately isolates the state-parameter physics from the stress path's own shape. A real drained (CID) triaxial compression test does not hold p&prime; constant, and its actual path has real curvature.</p>
 <p>The chart below plots that curvature directly, using an actual test rather than a made-up illustration: 28 points sampled from the real CID-D400 test on dense Fraser River sand, from the dataset published alongside Contreras et al. (2025).<span class="fn" data-fn="6" tabindex="0" role="button" aria-expanded="false">6</span> In a standard CID test with the cell pressure held constant, p&prime; climbs together with q from the start &mdash; elastic loading follows a straight line of slope 3 in q&ndash;p&prime; space &mdash; then bends as the sample approaches the yield surface and yields plastically, curving further as it nears peak and softens back toward critical state. Our idealized vertical line is a simplification for teaching, not a claim about what a real path looks like.</p>
 <p>The critical state line itself can be curved too. Every chart on this whole module draws the CSL as the straight line e<sub>c</sub> = &Gamma; &minus; &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;) (Eq. 2.1). Over a wide enough stress range, real CSLs are frequently curved instead &mdash; the same Contreras et al. dataset is fitted to a power-law CSL, e<sub>c</sub> = C<sub>a</sub> &minus; C<sub>b</sub>&middot;(p&prime;/p&prime;<sub>ref</sub>)<sup>C<sub>c</sub></sup> (Li and Wang, 1998), because the straight-line form doesn't fit their tests' full stress range well. This module keeps the straight-line CSL throughout &mdash; it's the book's own primary form and the right level of complexity for a first module &mdash; but treat it as a working approximation over a limited stress range, not a universal law.</p>
 <div class="chart-host"><canvas id="cidCurvatureChart" role="img" aria-label="Chart of deviator stress q versus mean effective stress p prime, comparing this module's idealized vertical constant p prime path against the real curved stress path of an actual CID test on dense Fraser River sand, alongside a straight critical state line."></canvas></div>
@@ -1149,7 +1138,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 
 <h3>3 &middot; Further reading: calibrating NorSand properly</h3>
 <div class="explain">
-<p>For a rigorous alternative to one-at-a-time calibration &mdash; one that jointly fits the parameter set and reports both the correlations between parameters and the uncertainty in each &mdash; see the paper and code below. Their Python implementation (forward-Euler NorSand integration plus an MCMC calibration using the <code>emcee</code> package) is the real-world version of the simplified simulator in Section 7 of this module.</p>
+<p>For a rigorous alternative to one-at-a-time calibration &mdash; one that jointly fits the parameter set and reports both the correlations between parameters and the uncertainty in each &mdash; see the paper and code below. Their Python implementation (forward-Euler NorSand integration plus an MCMC calibration using the <code>emcee</code> package) is the real-world version of the simplified simulator in Section 8 of this module.</p>
 </div>
 <p class="sources"><b>Paper:</b> Contreras, L.F., Rojas-Huaroto, H., Halliday, A. &amp; Llano-Serna, M. (2025). <em>Bayesian Calibration of NorSand Model Parameters Using Triaxial Test Data.</em> Australian Geomechanics, Volume 60, No. 4, December 2025. <a href="https://doi.org/10.56295/AGJ6041" target="_blank" rel="noopener">https://doi.org/10.56295/AGJ6041</a></p>
 <p class="sources"><b>Code and data</b> (Python/Jupyter Notebooks, MCMC calibration, Fraser River sand triaxial dataset, GPLv2): <a href="https://github.com/LF-Contreras/Bayesian-calibration-NorSand-model" target="_blank" rel="noopener">github.com/LF-Contreras/Bayesian-calibration-NorSand-model</a></p>
@@ -1461,7 +1450,7 @@ if(window.visualViewport){
   }
 })();
 
-// ---------------- Section 5 charts: hover tooltips ----------------
+// ---------------- Section 6 charts: hover tooltips ----------------
 function wireChartTooltip(canvasId, tipId, computeFn){
   var canvas=document.getElementById(canvasId), tip=document.getElementById(tipId);
   if(!canvas||!tip) return;
@@ -1494,7 +1483,7 @@ wireChartTooltip("phiBar","phiBarTip",function(g,mx,my){
   return "<b>"+row.val.toFixed(1)+"°</b><br>"+row.label;
 });
 
-// ---------------- Section 6: NorSand simulator ----------------
+// ---------------- Section 7: NorSand simulator ----------------
 var nsPreset=document.getElementById("nsPreset");
 var nsG=document.getElementById("nsG"), nsL=document.getElementById("nsL"),
     nsE0=document.getElementById("nsE0"), nsP0=document.getElementById("nsP0"), nsN=document.getElementById("nsN"),
@@ -1634,7 +1623,7 @@ function drawLineChart(id, pts, opt){
   line(pts, opt.color);
 }
 
-// ---------------- Section 6: where do the parameters come from ----------------
+// ---------------- Section 7: where do the parameters come from ----------------
 function mulberry32(seed){
   return function(){
     seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -2408,7 +2397,7 @@ updateConstructionPanels();
     var strainSlide=document.getElementById('introStrain'), strainOut=document.getElementById('introStrainOut'), status=document.getElementById('introStatus');
     var p0Slide=document.getElementById('introP0'), p0Out=document.getElementById('introP0Out');
     var stateBtns=document.querySelectorAll('[data-introstate]'), drainBtns=document.querySelectorAll('[data-introdrain]');
-    var INTRO_SAND={Gamma:0.816,lambda10:0.031,Mtc:1.26,chitc:3.5}; // Erksak 330/0.7, Chapter 3's recalibration (Table 2.1 itself lists Mtc=1.27 — see the "uniqueness of the CSL" note in Section 6)
+    var INTRO_SAND={Gamma:0.816,lambda10:0.031,Mtc:1.26,chitc:3.5}; // Erksak 330/0.7, Chapter 3's recalibration (Table 2.1 itself lists Mtc=1.27 — see the "uniqueness of the CSL" note in Section 7)
     var isDense=true, isDrained=true;
     function p0(){ return +p0Slide.value; }
     function ec0(){ return ecAt(INTRO_SAND,p0()); }
@@ -2447,7 +2436,7 @@ updateConstructionPanels();
     }
     // Shear stress ratio response: starts at 0 (freshly consolidated, isotropic —
     // q=0 before any shear), then rises quickly toward Mtc − χtc·ψ(strain) — the
-    // same Rowe/Nova relation (D=M−η) and Eq. 2.11 used in Section 5, just
+    // same Rowe/Nova relation (D=M−η) and Eq. 2.11 used in Section 6, just
     // evaluated continuously instead of only at peak. As ψ decays toward 0
     // (critical state) this settles to exactly Mtc: dense samples overshoot above
     // Mtc early then soften back down; loose samples rise toward it from below.
@@ -2778,8 +2767,8 @@ var QUIZ_100 = [
 {q:"Under this module's compression-positive sign convention, a sample that is actively dilating (bulking up) has:",opts:["Positive D","Negative D","D exactly equal to 1"],correct:"b",exp:"With compression (volume decrease) taken as positive εv, a volume increase (dilation) is a negative εv increment, so D is negative while dilating. This is the single most-missed sign convention in the module — some other soil mechanics texts use the opposite convention, which is exactly why it's called out explicitly here."},
 {q:"If a textbook instead used a dilation-positive sign convention, what would happen to the label 'Dmin'?",opts:["Nothing would change","It would logically become 'Dmax' instead, since the same physical extremum (strongest dilation) would now be the most positive value, not the most negative one","D would become undefined"],correct:"b",exp:"D's sign is a notational choice, not a law of nature. The physical event (strongest dilation) doesn't change — only whether we call its numerical extreme a minimum or a maximum depends on which convention was picked."},
 {q:"Why is it called 'Dmin' if it represents the point of strongest dilation, which is usually the most useful/important point in a test?",opts:["Because 'min' just means 'minor', a weaker synonym for peak","Because under this module's compression-positive convention, the strongest dilation is the most negative D value reached during the test — i.e. literally the minimum of the D(t) curve","It's a typo in the original book and should read 'Dmax'"],correct:"b",exp:"This naming trips people up constantly. It's not a weaker word for 'peak' — it's a literal description: D dips down to its most negative value at the point of strongest dilation, and 'min' just means the minimum of that curve."},
-{q:"In a typical drained triaxial test, around what point does Dmin (strongest dilation) tend to occur?",opts:["Right at the very start of shearing, before any plastic strain","Near peak strength","Only after the sample has failed completely and gone to residual"],correct:"b",exp:"Dmin and peak strength are closely linked in time — this is exactly why Dmin feeds directly into the peak-strength formula in Section 5 (ηmax = Mtc − Dmin)."},
-{q:"Can D be exactly zero at some point during a test, and if so what does that represent?",opts:["No, D is never exactly zero in a real test","Yes — it represents an instant where the current stress ratio locally equals the critical stress ratio, which is exactly the condition Section 2.4.3's stress-dilatancy method uses to read off Mtc","Yes, but it only happens at the very end of the test, at zero strain"],correct:"b",exp:"D = 0 mid-test is a real, useful, recurring event — not a failure of the test. It's the basis of the D-vs-η intercept method used throughout Section 6's calibration panels and the 'one test, start to finish' pipeline."},
+{q:"In a typical drained triaxial test, around what point does Dmin (strongest dilation) tend to occur?",opts:["Right at the very start of shearing, before any plastic strain","Near peak strength","Only after the sample has failed completely and gone to residual"],correct:"b",exp:"Dmin and peak strength are closely linked in time — this is exactly why Dmin feeds directly into the peak-strength formula in Section 6 (ηmax = Mtc − Dmin)."},
+{q:"Can D be exactly zero at some point during a test, and if so what does that represent?",opts:["No, D is never exactly zero in a real test","Yes — it represents an instant where the current stress ratio locally equals the critical stress ratio, which is exactly the condition Section 2.4.3's stress-dilatancy method uses to read off Mtc","Yes, but it only happens at the very end of the test, at zero strain"],correct:"b",exp:"D = 0 mid-test is a real, useful, recurring event — not a failure of the test. It's the basis of the D-vs-η intercept method used throughout Section 7's calibration panels and the 'one test, start to finish' pipeline."},
 {q:"A sand has χtc = 4.0. At ψ = −0.05, what is Dmin?",opts:["Dmin = −0.20","Dmin = +0.20","Dmin = −0.05"],correct:"a",exp:"Dmin = χtc·ψ = 4.0 × (−0.05) = −0.20."},
 {q:"A looser sample of the same sand has ψ = +0.10. What is its Dmin, and is it still meaningfully called 'dilatancy'?",opts:["Dmin = +0.40, and this positive value represents net contraction at the point identified as the extremum — 'Dmin' is a technical label for the curve's extremum here, not a claim that true dilation occurred","Dmin must always be negative by definition, so this case is impossible","Dmin = −0.40"],correct:"a",exp:"Dmin = 4.0 × 0.10 = +0.40. For a genuinely loose (ψ > 0) sample, the model predicts positive Dmin — i.e. no true dilation peak at all, just a point of least contraction. The label 'Dmin' still applies to whatever extremum the D(strain) curve reaches, even when that extremum is positive."},
 {q:"Is Dmin = χtc·ψ (Eq. 2.11) derived from first-principles mechanics, or is it an empirical curve fit?",opts:["A rigorous derivation from thermodynamics","An empirical linear fit to laboratory Dmin-vs-ψ data — a soil property (χtc) determined by regression, not predicted from theory","It's an exact identity that follows automatically from the definition of ψ"],correct:"b",exp:"χtc is explicitly a fitted soil property, obtained from a Dmin-vs-ψ plot through real test data — the relationship is empirical, even though it's used throughout the constitutive framework."},
@@ -2798,7 +2787,7 @@ var QUIZ_100 = [
 {q:"To determine Γ and λ10 from a testing program, what do you plot?",opts:["Peak deviator stress versus axial strain for a single test","Each test's critical-state end-point (e, p′) plotted against log10(p′), fitting a straight line through several tests","Void ratio versus time"],correct:"b",exp:"Γ and λ10 come from the CSL fit — the intercept and slope of a line through several tests' large-strain end-points — not from any single test's stress-strain curve."},
 {q:"Why must each test be sheared to genuinely large strain before its end-point is used in this fit?",opts:["It doesn't matter how far the test is sheared","If the test hasn't actually reached critical state yet, its 'end-point' isn't really on the CSL, and including it biases the fitted Γ/λ10","Because the CSL only exists after 50% axial strain by definition"],correct:"b",exp:"Using an under-sheared test's point as if it were a critical-state point contaminates the regression with a point that doesn't belong on the line at all."},
 {q:"In a fitted line of the form e = a + b·log10(p′), which coefficient corresponds to λ10, and what sign should it have?",opts:["a corresponds to λ10, and should be positive","b corresponds to λ10, but b itself should come out negative (since e decreases with p′) — λ10 is then reported as the positive magnitude of that slope, λ10 = −b","b corresponds to λ10, and should be reported as-is including its negative sign"],correct:"b",exp:"Regression naturally gives a negative slope b, since e falls as log10(p′) rises. λ10, as tabulated, is conventionally reported as a positive number — the magnitude of that negative slope. Losing track of this sign bookkeeping is an easy way to end up with a backwards CSL."},
-{q:"Why doesn't the raw q-versus-strain curve from a single test tell you Γ or λ10 directly?",opts:["It does — Γ and λ10 can be read directly off any single stress-strain curve","Γ and λ10 come from comparing MULTIPLE tests' end-states across a range of stress levels, not from any one test's stress-strain shape","Because q has no relationship to void ratio at all"],correct:"b",exp:"This distinguishes what different panels in Section 6 actually measure. A single test's curve shows how stress and strain evolve for THAT sample; the CSL comes from where several different tests all end up, compared against each other."},
+{q:"Why doesn't the raw q-versus-strain curve from a single test tell you Γ or λ10 directly?",opts:["It does — Γ and λ10 can be read directly off any single stress-strain curve","Γ and λ10 come from comparing MULTIPLE tests' end-states across a range of stress levels, not from any one test's stress-strain shape","Because q has no relationship to void ratio at all"],correct:"b",exp:"This distinguishes what different panels in Section 7 actually measure. A single test's curve shows how stress and strain evolve for THAT sample; the CSL comes from where several different tests all end up, compared against each other."},
 {q:"Two tests end at (p′ = 50 kPa, e = 0.82) and (p′ = 800 kPa, e = 0.68). Estimate λ10.",opts:["λ10 ≈ 0.12","λ10 ≈ 0.02","λ10 ≈ 0.75"],correct:"a",exp:"λ10 = Δe / Δlog10(p′) = (0.82 − 0.68) / (log10(800) − log10(50)) = 0.14 / (2.903 − 1.699) = 0.14/1.204 ≈ 0.116, i.e. about 0.12."},
 {q:"Using the same two points, estimate Γ (the intercept at p′ = 1 kPa).",opts:["Γ ≈ 0.68","Γ ≈ 1.02","Γ ≈ 0.14"],correct:"b",exp:"Extrapolating from either point with λ10 ≈ 0.116: Γ = 0.82 + 0.116·log10(50) ≈ 0.82 + 0.197 ≈ 1.02 (checks out from the other point too: 0.68 + 0.116·log10(800) ≈ 0.68 + 0.337 ≈ 1.02)."},
 {q:"If every test in your program happens to be run at very similar confining stresses (a narrow p′ range), what problem arises when fitting λ10?",opts:["No problem — λ10 is unaffected by the range of stresses tested","The slope becomes poorly constrained — small scatter in a narrow p′ range translates into large uncertainty in the fitted λ10, the same 'short baseline' problem seen elsewhere in this module's calibration panels","λ10 will always come out as exactly zero"],correct:"b",exp:"A narrow stress range gives the fit little to work with — the same 'unreliable extrapolation/interpolation from a short span' issue shows up repeatedly across this module's different calibration methods, not just here."},
@@ -2808,13 +2797,13 @@ var QUIZ_100 = [
 {q:"In the Mtc-convergence panel, why do dense, near-critical, and loose starting states all end up at the same η at large strain?",opts:["Coincidence specific to Erksak sand only","Because Mtc is by definition the state-independent value every state trends toward at large strain — that's exactly what 'critical' means","Because the simulator forces all curves to the same value regardless of input"],correct:"b",exp:"This convergence isn't a numerical artifact — it's the model correctly reproducing the definition of critical state: a common destination regardless of starting density."},
 {q:"In a stress-dilatancy (D vs. η) plot, why read Mtc off the D = 0 intercept rather than off the peak η value?",opts:["Peak η would be equally valid and give an identical answer","Because D = 0 is the definition-consistent local critical-state condition; peak η is a state-DEPENDENT quantity (it equals Mtc only when ψ happens to be exactly 0)","Because peak η cannot be measured in a real test"],correct:"b",exp:"Using peak η directly as 'Mtc' would only be correct for a test that happened to start exactly at ψ = 0 — for any other test it would give a biased estimate. The D = 0 intercept sidesteps that by using the mechanics (Rowe/Nova's rule) rather than an unadjusted raw peak."},
 {q:"In the module's raw-data pipeline, why does differentiating noisy εv data (to get D) tend to amplify scatter compared to the raw q and εv curves themselves?",opts:["It doesn't — differentiation always smooths data","Numerical differentiation of noisy data is inherently noise-amplifying — small point-to-point measurement scatter becomes large scatter in the computed slope (D)","Because D is computed from q, not εv, so this wouldn't actually happen"],correct:"b",exp:"This is a general data-analysis principle the module deliberately illustrates concretely: taking a derivative of already-noisy data makes the result noisier still, which is exactly why the fitted Mtc doesn't land exactly on the true value even from realistic-looking raw data."},
-{q:"Why does a test whose measured D range never actually reaches near zero give a less reliable Mtc estimate via the intercept method?",opts:["It doesn't matter how close the data gets to D = 0","Reading the D = 0 intercept then requires extrapolating beyond the measured range, and extrapolation is inherently less reliable than interpolating within data you actually have","Because Mtc can only be computed for D values below −0.5"],correct:"b",exp:"This is exactly the lesson demonstrated by clicking through different rows of the sample test table in Section 6 — tests whose dilation range doesn't bracket zero give a fitted Mtc further from the true value, because the fit has to reach beyond what was actually observed."},
+{q:"Why does a test whose measured D range never actually reaches near zero give a less reliable Mtc estimate via the intercept method?",opts:["It doesn't matter how close the data gets to D = 0","Reading the D = 0 intercept then requires extrapolating beyond the measured range, and extrapolation is inherently less reliable than interpolating within data you actually have","Because Mtc can only be computed for D values below −0.5"],correct:"b",exp:"This is exactly the lesson demonstrated by clicking through different rows of the sample test table in Section 7 — tests whose dilation range doesn't bracket zero give a fitted Mtc further from the true value, because the fit has to reach beyond what was actually observed."},
 {q:"To estimate χtc, what do you plot, and why should the fitted line pass through the origin?",opts:["Plot q versus strain; no origin constraint applies","Plot Dmin versus ψ; it should pass through the origin because Eq. 2.11 has no additive constant — the model predicts exactly Dmin = 0 when ψ = 0","Plot Mtc versus λ10; origin constraint is arbitrary"],correct:"b",exp:"Dmin = χtc·ψ is a pure proportionality with no offset term, so a correctly-fit line through real (ψ, Dmin) data should (approximately) pass through the origin — fitting a line WITH a free intercept instead would be inconsistent with the model being fit."},
 {q:"A set of (ψ, Dmin) data points, fit through the origin, gives a slope of 4.2. What is χtc?",opts:["χtc = 4.2","χtc = 1/4.2","χtc cannot be determined from a slope alone"],correct:"a",exp:"χtc IS that slope by definition (Dmin = χtc·ψ) — no further conversion needed."},
 {q:"If every Dmin value in a dataset were accidentally doubled (say, from a units error), what happens to the fitted ψ values, and what happens to the fitted χtc?",opts:["Both ψ and χtc double","ψ is unaffected (it comes from e and ec, independent of any Dmin measurement); the fitted χtc doubles, since χtc is the Dmin-vs-ψ slope","Neither is affected, since χtc is looked up from a table, not fitted"],correct:"b",exp:"This isolates where an error actually propagates. ψ's calculation has nothing to do with Dmin measurements at all — only the D-dependent fit (χtc) is corrupted by a Dmin error."},
 {q:"Why might a real test program deliberately include both strongly loose (ψ ≫ 0) and strongly dense (ψ ≪ 0) samples when trying to pin down χtc precisely?",opts:["It wouldn't matter — any cluster of ψ values gives an equally good slope estimate","A wide spread of ψ values gives a much better-constrained slope fit than a narrow cluster, for the same reason a wide stress range gives a better λ10 fit","Loose and dense samples require completely different formulas"],correct:"b",exp:"Same underlying statistical principle recurring in a new context: a regression's slope is much better determined when the independent variable (here, ψ) spans a wide range, rather than being bunched together."},
 {q:"Put these calibration steps in the order the book's own methodology generally follows: (i) χtc, (ii) Γ and λ10, (iii) Mtc, (iv) N and H.",opts:["(i), (ii), (iii), (iv)","(ii), (iii), (i), (iv)","(iv), (iii), (ii), (i)"],correct:"b",exp:"The CSL (Γ, λ10) has to come first, since you can't even compute ψ for any other fit without it. Mtc and χtc follow from data reduction methods that need ψ already defined. N and H come last, via forward-modelling that depends on having every other property already fixed."},
-{q:"Fig. 2.30's own trend line for Erksak sand is labeled with a slope of N−1, not exactly −1. What does that reveal, that the page's simplified D = M − η form (used for the peak-strength shortcut elsewhere) misses?",opts:["Nothing — N always equals 0, so the two forms are identical in practice","That single plot calibrates N (from the slope) at the same time as Mtc (from the intercept) — a joint calibration the simplified form throws away","That Mtc can no longer be read from that plot at all once N is considered"],correct:"b",exp:"The D=0 intercept still gives Mtc regardless of slope, since the (1−N)·D term vanishes at D=0 either way — but the trend line's slope is a second piece of information (N itself) that the simplified, N=0 form never captures. H, unlike N, genuinely can't be read off a single plot this way — it needs the iterative curve-fitting approach shown in Section 6's N/H exercise."},
+{q:"Fig. 2.30's own trend line for Erksak sand is labeled with a slope of N−1, not exactly −1. What does that reveal, that the page's simplified D = M − η form (used for the peak-strength shortcut elsewhere) misses?",opts:["Nothing — N always equals 0, so the two forms are identical in practice","That single plot calibrates N (from the slope) at the same time as Mtc (from the intercept) — a joint calibration the simplified form throws away","That Mtc can no longer be read from that plot at all once N is considered"],correct:"b",exp:"The D=0 intercept still gives Mtc regardless of slope, since the (1−N)·D term vanishes at D=0 either way — but the trend line's slope is a second piece of information (N itself) that the simplified, N=0 form never captures. H, unlike N, genuinely can't be read off a single plot this way — it needs the iterative curve-fitting approach shown in Section 7's N/H exercise."},
 {q:"In the N/H fitting exercise, what does a LOW H value tend to produce?",opts:["A slow, ductile approach to peak strength","A sharp, early peak","No change to the curve at all"],correct:"a",exp:"H is the plastic hardening modulus — low H means the yield surface grows slowly toward its target, producing a gradual, drawn-out approach to peak rather than a sharp one."},
 {q:"Per Table 3.1's Mi equation, what does N physically scale?",opts:["The CSL intercept, Γ","How far the image stress ratio Mi departs from Mtc for a given image-condition state ψi — a secondary shaping term layered on top of χtc","The elastic rigidity index, Ir"],correct:"b",exp:"N is a secondary sensitivity term in Mi = Mtc − χi·N·|ψi| — it modulates, alongside χi, exactly how strongly state affects the image stress ratio."},
 {q:"If a fitted model curve's peak occurs at noticeably MORE strain than the real measured data's peak, which parameter should you most likely adjust first?",opts:["Increase H, since H primarily controls how quickly the model hardens toward peak","Increase Γ, since Γ controls timing of the peak","Decrease Mtc, since a smaller Mtc always shifts the peak earlier"],correct:"a",exp:"H governs the rate of hardening — a late-occurring model peak relative to data is the classic symptom of H being too low, more directly than any of the CSL properties (which set the destination, not the pace)."},
@@ -2831,7 +2820,7 @@ var QUIZ_100 = [
 {q:"What does Ir = G/p′ represent, and why does it play NO role in the shape of this tool's simulated curves, despite having its own slider?",opts:["Ir represents peak friction angle, and it's excluded because friction angle isn't part of NorSand","Ir is the elastic rigidity index (stiffness relative to confinement); it has no effect here specifically because this simulator neglects elastic strains entirely, so no value of G could influence a model that has no elastic response built in","Ir has a large effect on the curves, contrary to what the page states"],correct:"b",exp:"These two facts only make sense together: the Ir slider is included to teach what the quantity means and its typical range, while being honest that — given the tool's own disclosed elastic-strain simplification — it can't actually influence the plotted results."},
 {q:"Does using the 'difference form' hardening law (Eq. 3.39) instead of its 'dimensionless reformulation' (Eq. 3.40) change the underlying physics being modelled?",opts:["Yes — they represent fundamentally different hardening mechanisms","No — they're different mathematical bookkeeping of the same hardening rule; the choice affects computational form, not the physics","Yes — Eq. 3.40 doesn't include hardening at all"],correct:"b",exp:"The module is explicit that this is a computational-convenience choice, not a change to what's physically being represented — worth recognizing that not every equation-form choice in a constitutive model reflects a different assumption about soil behavior."},
 {q:"According to the yield surface equation η = Mi·(1 − ln(p′/pi)), what value does η take when p′ exactly equals pi?",opts:["η = 0","η = Mi, since ln(1) = 0","η is undefined at that point"],correct:"b",exp:"ln(1) = 0, so the equation reduces to η = Mi exactly — this is precisely the 'image condition' the model is named for: the point where current stress state touches the image surface."},
-{q:"Is the 'Dp' computed internally each simulation step (Dp = Mi − η) the same kind of quantity as the lab-derived Dmin = χtc·ψ from Section 5?",opts:["Identical in every respect — same formula, same computation","Conceptually related (both represent a dilation tendency) but mechanically different: Dp is the model's continuously-updated internal quantity computed from evolving Mi and η at every step, while Dmin is a single empirical scalar fit from one test's observed peak","Completely unrelated concepts that happen to share a similar name by coincidence"],correct:"b",exp:"Section 5's Dmin = χtc·ψ is a simplified shortcut useful for hand calculation; Section 7's Dp is the full model's internal state-dependent quantity, recalculated at every strain increment as the simulation evolves. Recognizing they're related but not literally the same computation avoids a subtle conflation."},
+{q:"Is the 'Dp' computed internally each simulation step (Dp = Mi − η) the same kind of quantity as the lab-derived Dmin = χtc·ψ from Section 6?",opts:["Identical in every respect — same formula, same computation","Conceptually related (both represent a dilation tendency) but mechanically different: Dp is the model's continuously-updated internal quantity computed from evolving Mi and η at every step, while Dmin is a single empirical scalar fit from one test's observed peak","Completely unrelated concepts that happen to share a similar name by coincidence"],correct:"b",exp:"Section 6's Dmin = χtc·ψ is a simplified shortcut useful for hand calculation; Section 8's Dp is the full model's internal state-dependent quantity, recalculated at every strain increment as the simulation evolves. Recognizing they're related but not literally the same computation avoids a subtle conflation."},
 {q:"If you set N and H in the simulator to values not drawn from any real sand (fully invented), does it still produce a curve that looks physically plausible?",opts:["No, the simulator will refuse to run","Usually yes — which is exactly why a plausible-LOOKING curve is not, by itself, evidence of correct calibration; real validation requires comparison against actual measured data","Only if Γ and λ10 are also invented"],correct:"b",exp:"This is a caution about model validation in general: a constitutive model can produce a curve that 'looks like' reasonable soil behavior for almost any combination of internally-consistent parameters, without those parameters being correct for any real material."},
 {q:"Which of NorSand's governing quantities collapse to their simplest form specifically because this tool restricts itself to triaxial compression (no Lode-angle dependence)?",opts:["None — Lode angle dependence is irrelevant to NorSand entirely","M(θ), the general critical stress ratio for arbitrary stress states, which reduces exactly to the constant Mtc under triaxial compression","Only Γ is affected by this restriction"],correct:"b",exp:"The book's general form of M is Lode-angle dependent for 3D stress states; restricting to triaxial compression (as this tool does throughout) makes that dependence vanish, leaving the simpler M = Mtc used everywhere in this module."},
 {q:"Two sands share identical Γ, λ10, and Mtc, but have different χtc. For the same ψ, will they show the same peak-strength enhancement?",opts:["Yes, since Γ, λ10, and Mtc are identical","No — different χtc means different Dmin for the same ψ, and therefore different ηmax and φ′peak","Yes, because χtc has no effect on ηmax"],correct:"b",exp:"χtc is the one property in this scenario that differs, and it directly scales how much a given ψ translates into dilation — so the two sands' strength responses to the same state will diverge."},
@@ -2958,7 +2947,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){qs.forE
 })();
 </script>
 <script>
-// --- interactive Section 5 sandbox ---
+// --- interactive Section 6 sandbox ---
 (function(){
 var psi=document.getElementById('s2Psi'),chi=document.getElementById('s2Chi'),m=document.getElementById('s2M');
 if(!psi)return;
@@ -3318,7 +3307,7 @@ drawCidCurvatureChart();
     ctx.stroke();
   }
 })();
-// Section 5 transfer challenge
+// Section 6 transfer challenge
 document.querySelectorAll('#s2Transfer button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('#s2Transfer button').forEach(x=>x.classList.remove('good','bad'));var ok=b.dataset.ok==='yes';b.classList.add(ok?'good':'bad');document.getElementById('s2TransferFeedback').innerHTML=ok?'<b>Correct.</b> Sample A has the more negative ψ, hence more negative Dmin and a larger ηmax above Mtc.':'<b>Not quite.</b> More negative ψ creates more negative Dmin. Subtracting a negative Dmin raises ηmax.';});});
 // NorSand guided experiments
 function resetNs(){nsPreset.value='erksak';applyPreset();}
@@ -3428,19 +3417,22 @@ document.addEventListener('keydown', function(e){
     {label:'Mental model', ids:['mental-model']},
     {label:'Notation', ids:['notation']},
     {label:'CSL & ψ', ids:['csl-section','quizCheckABC']},
+    {label:'Recap & uncertainty', ids:['state-parameter-lab']},
     {label:'Dilatancy', ids:['dilatancy-section','quizCheckDE']},
     {label:'NorSand calibration', ids:['calibration-section','quizCheckFGH']},
     {label:'NorSand parameters', ids:['norsand-section','quizCheckI']},
     {label:'Check learning', ids:['knowledge-check','about-tool']},
-    {label:'Bayesian calibration', ids:['bayesian-calibration']},
-    {label:'State-parameter lab', ids:['state-parameter-lab']}
+    {label:'Bayesian calibration', ids:['bayesian-calibration']}
   ];
   // The pinned "mental model chain" recap box (flowSticky) only means anything on the pages
   // where its driving controls (the e/p′ sliders in CSL, whose psi flows into Dilatancy's
   // Dmin/etamax) are actually visible. Showing it on Mental model/Notation — reachable
   // directly via the TOC now — left numbers with no visible source and, on those shorter
   // pages, no scroll room to even notice it was "sticky" at all.
-  var STICKY_RANGE = [3,4];
+  // an explicit set, not a contiguous range: CSL (index 3, where the driving sliders live)
+  // and Dilatancy (now index 5, since the recap/uncertainty page sits between them at index
+  // 4 with its own independent slider system the sticky box has no connection to)
+  var STICKY_PAGES = [3,5];
   var currentPage = 0;
   var historyReady = false;
   var announcer = document.getElementById('pageAnnouncer');
@@ -3493,7 +3485,7 @@ document.addEventListener('keydown', function(e){
     });
   }
 
-  // Charts on Section 4/5, Calibration and NorSand are already wired to redraw on window
+  // Charts on Section 4/6, Calibration and NorSand are already wired to redraw on window
   // 'resize' (see the existing window resize handler earlier in the file, and runNorSand());
   // a canvas hidden by pagination reports clientWidth 0, so if a resize fires while its page
   // is hidden it falls back to a fixed width and looks wrong once revealed. Re-firing that
@@ -3525,7 +3517,7 @@ document.addEventListener('keydown', function(e){
       p.ids.forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display=(i===idx)?'':'none'; });
     });
     var fs=document.getElementById('flowSticky');
-    if(fs) fs.style.display=(idx>=STICKY_RANGE[0]&&idx<=STICKY_RANGE[1])?'':'none';
+    if(fs) fs.style.display=(STICKY_PAGES.indexOf(idx)>=0)?'':'none';
     currentPage=idx;
     updateStepper();
     redrawVisibleCharts();
@@ -4981,103 +4973,6 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=c; ctx.stroke();
   }
 
-  // ================= PLOT 3: schematic shear stress-strain curve =================
-  // Illustrative only (disclosed as such in the caption): a closed-form curve shape built
-  // directly from Mpeak/Mcs (the same M-family law plot 2 uses), NOT a constitutive
-  // integration like section 7's real NorSand simulator. Dense/dilative states get a peak
-  // followed by an exponential decay toward the critical-state stress ratio (strain
-  // softening, rate scaling with how far above critical the peak sits); loose/contractive
-  // states just harden monotonically up to it with no peak at all.
-  var cv3=$("cv3"), cx3=cv3.getContext("2d");
-  function buildEtaCurve(Mpeak, Mcs){
-    var epsMax=20, N=220, epsP=3;
-    var dilative = Mpeak > Mcs*1.01;
-    var lambda = 0.20 + 2.4*Math.max(0,(Mpeak-Mcs)/Mcs);
-    var eps=new Array(N+1), eta=new Array(N+1);
-    for(var i=0;i<=N;i++){
-      var e=epsMax*i/N, h;
-      if(dilative){
-        if(e<=epsP){ var r=e/epsP; h = Mpeak*r*(2-r); }
-        else { h = Mcs + (Mpeak-Mcs)*Math.exp(-lambda*(e-epsP)); }
-      } else {
-        var eps50=epsP*0.6; h = Mcs*e/(e+eps50);
-      }
-      eps[i]=e; eta[i]=h;
-    }
-    return {eps:eps, eta:eta, epsPeak:epsP, dilative:dilative, Mpeak:Mpeak, Mcs:Mcs};
-  }
-  var EPS3_MAX=20;
-  function drawStressStrainPlot(){
-    var d=derive(cur), c=col(d.psi);
-    var curPp=Math.pow(10,cur.lp);
-    var M=Mcs(params.phics), Mp=M*Math.exp(-params.n*d.psi);
-    var curve=buildEtaCurve(Mp, M);
-    var qCurve=curve.eta.map(function(h){return h*curPp;});
-    var qMax=Math.max.apply(null,qCurve.concat([M*curPp*1.05]));
-
-    var dim=fitCanvas(cv3,cx3,260), w=dim.w, h=dim.h, ctx=cx3;
-    var m={l:62,r:16,t:16,b:38};
-    var X=function(e){ return m.l+(e/EPS3_MAX)*(w-m.l-m.r); };
-    var Y=function(q){ return m.t+(1-q/qMax)*(h-m.t-m.b); };
-    ctx.clearRect(0,0,w,h);
-
-    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.lineWidth=1; ctx.font=fontStr(11);
-    ctx.textAlign='center'; ctx.textBaseline='top';
-    [0,5,10,15,20].forEach(function(e){ var x=X(e); ctx.beginPath();ctx.moveTo(x,m.t);ctx.lineTo(x,h-m.b);ctx.stroke(); ctx.fillText(e,x,h-m.b+8); });
-    ctx.textAlign='right'; ctx.textBaseline='middle';
-    var yTickStep = qMax>500?200:(qMax>200?50:(qMax>50?20:5));
-    for(var yv=0; yv<=qMax; yv+=yTickStep){ var y=Y(yv); ctx.beginPath();ctx.moveTo(m.l,y);ctx.lineTo(w-m.r,y);ctx.stroke(); ctx.fillText(Math.round(yv),m.l-10,y); }
-    ctx.strokeStyle=getCss('--muted'); ctx.strokeRect(m.l+0.5,m.t+0.5,w-m.l-m.r,h-m.t-m.b);
-    ctx.textBaseline='alphabetic';
-    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.fillText("shear strain εq (%)",(m.l+w-m.r)/2,h-9);
-    ctx.save(); ctx.translate(16,(m.t+h-m.b)/2); ctx.rotate(-Math.PI/2); ctx.fillText("shear stress q (kPa)",0,0); ctx.restore();
-
-    // critical-state reference line
-    ctx.save(); ctx.setLineDash([6,4]); ctx.strokeStyle=COL_LAW(); ctx.globalAlpha=.75; ctx.lineWidth=1.6;
-    ctx.beginPath(); ctx.moveTo(m.l,Y(M*curPp)); ctx.lineTo(w-m.r,Y(M*curPp)); ctx.stroke(); ctx.restore();
-    ctx.fillStyle=COL_LAW(); ctx.font=fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom';
-    ctx.fillText("critical state (q_cs)", m.l+6, Y(M*curPp)-4);
-
-    // behavior badge, top-right — the one label this plot is really about
-    ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillStyle=c;
-    ctx.font="700 "+fontStr(12.5); ctx.fillText(curve.dilative?"DILATIVE":"CONTRACTIVE", w-m.r-6, m.t+5);
-    ctx.font=fontStr(10.5); ctx.fillText(curve.dilative?"strain-softening expected":"strain-hardening, no peak", w-m.r-6, m.t+21);
-
-    ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
-    ctx.strokeStyle=c; ctx.lineWidth=2.4; ctx.beginPath();
-    curve.eps.forEach(function(e,i){ var x=X(e), y=Y(qCurve[i]); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); });
-    ctx.stroke();
-    function etaAtEps(eTarget){ var idx=Math.round(eTarget/EPS3_MAX*(curve.eps.length-1)); return curve.eta[Math.max(0,Math.min(curve.eta.length-1,idx))]; }
-    if(curve.dilative){
-      var px=X(curve.epsPeak), py=Y(curve.Mpeak*curPp);
-      ctx.beginPath(); ctx.arc(px,py,4.5,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=2.2; ctx.strokeStyle=c; ctx.stroke();
-      ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("peak", px+6, py-3);
-      // label along the post-peak decay, angled to roughly follow the curve's downward slope
-      var eA=curve.epsPeak+(EPS3_MAX-curve.epsPeak)*0.4, eB=eA+1.5;
-      var xA=X(eA), yA=Y(etaAtEps(eA)*curPp), xB=X(eB), yB=Y(etaAtEps(eB)*curPp);
-      var ang=Math.atan2(yB-yA,xB-xA);
-      ctx.save(); ctx.translate(xA,yA); ctx.rotate(ang);
-      ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("strain softening", 4, -4);
-      ctx.restore();
-    } else {
-      var eA2=EPS3_MAX*0.28, eB2=eA2+1.5;
-      var xA2=X(eA2), yA2=Y(etaAtEps(eA2)*curPp), xB2=X(eB2), yB2=Y(etaAtEps(eB2)*curPp);
-      var ang2=Math.atan2(yB2-yA2,xB2-xA2);
-      ctx.save(); ctx.translate(xA2,yA2); ctx.rotate(ang2);
-      ctx.fillStyle=c; ctx.font="600 "+fontStr(10.5); ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText("strain hardening", 4, -4);
-      ctx.restore();
-    }
-    ctx.restore();
-
-    var IB = curve.dilative ? (curve.Mpeak-curve.Mcs)/curve.Mpeak : 0;
-    var qPeak = (curve.dilative?curve.Mpeak:curve.Mcs)*curPp, qCs = curve.Mcs*curPp;
-    $("ib").textContent = fmt(IB,2); $("ib").style.color = c;
-    $("qpeak").textContent = Math.round(qPeak)+" kPa";
-    $("qcs").textContent = Math.round(qCs)+" kPa";
-    var word = IB>0.5 ? "very brittle" : IB>0.2 ? "moderately brittle" : IB>0.03 ? "mildly brittle" : "ductile, no softening";
-    $("brittleword").textContent = word; $("brittleword").style.color = c;
-  }
-
   // ================= Monte Carlo uncertainty propagation =================
   var uncEnabled=false, mcSamples=null;
   var mc_rng_state = 12345;
@@ -5145,9 +5040,9 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     var tgtLp=Math.log10(params.pp); var f=reduceMotion?1:0.22;
     cur.lam=lerp(cur.lam,params.lam,f); cur.eG=lerp(cur.eG,params.eG,f); cur.e=lerp(cur.e,params.e,f);
     cur.lp=lerp(cur.lp,tgtLp,f); cur.k=lerp(cur.k,params.k,f);
-    drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot();
+    drawCSLplot(); drawStrengthPlot();
     var done = Math.abs(cur.lam-params.lam)<1e-4 && Math.abs(cur.eG-params.eG)<1e-4 && Math.abs(cur.e-params.e)<1e-4 && Math.abs(cur.lp-tgtLp)<1e-4 && Math.abs(cur.k-params.k)<1e-3;
-    if(done){ cur.lam=params.lam;cur.eG=params.eG;cur.e=params.e;cur.lp=tgtLp;cur.k=params.k; drawCSLplot();drawStrengthPlot();drawStressStrainPlot(); raf=null; }
+    if(done){ cur.lam=params.lam;cur.eG=params.eG;cur.e=params.e;cur.lp=tgtLp;cur.k=params.k; drawCSLplot();drawStrengthPlot(); raf=null; }
     else raf=requestAnimationFrame(tick);
   }
   function kick(){ if(raf===null) raf=requestAnimationFrame(tick); }
@@ -5172,7 +5067,7 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     eqEl.innerHTML = isM
       ? "M<sub>peak</sub> = [ 6&middot;sin&phi;&prime;<sub>cs</sub> / (3 &minus; sin&phi;&prime;<sub>cs</sub>) ] &middot; exp( &minus;n&middot;( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) ) )"
       : "&phi;&prime;<sub>peak</sub> &minus; &phi;&prime;<sub>cs</sub> = &minus;k &middot; ( e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) )";
-    updateText(); drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot();
+    updateText(); drawCSLplot(); drawStrengthPlot();
   }
   mode_phi.addEventListener("click",function(){setMode('phi');});
   mode_M.addEventListener("click",function(){setMode('M');});
@@ -5189,19 +5084,19 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   $("u-e").addEventListener('input', function(){ $("u-eOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
   $("u-pp").addEventListener('input', function(){ $("u-ppOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
 
-  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot(); if(uncEnabled&&mcSamples) drawHistogram(mcSamples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;})); });
+  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); if(uncEnabled&&mcSamples) drawHistogram(mcSamples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;})); });
 
   // redraw once this page's card actually becomes visible (same fix as section 9's charts)
   (function(){
     var wasHidden = root.style.display === 'none';
     new MutationObserver(function(){
       var hiddenNow = root.style.display === 'none';
-      if(wasHidden && !hiddenNow){ drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot(); }
+      if(wasHidden && !hiddenNow){ drawCSLplot(); drawStrengthPlot(); }
       wasHidden = hiddenNow;
     }).observe(root, {attributes:true, attributeFilter:['style']});
   })();
 
-  readInputs(); updateText(); drawCSLplot(); drawStrengthPlot(); drawStressStrainPlot();
+  readInputs(); updateText(); drawCSLplot(); drawStrengthPlot();
 })();
 </script>
 </body></html>
