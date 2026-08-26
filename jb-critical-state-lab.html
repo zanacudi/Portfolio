@@ -843,6 +843,14 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 </div>
 
+<div class="guided-panel">
+<h3 style="margin-top:0">The stress path itself matters, not just the starting state</h3>
+<p class="explain" style="font-size:12.5px;margin-top:0">This simulator idealizes every test as a <b>vertical path</b> in p&prime;&ndash;q space &mdash; p&prime; held fixed, only q rising &mdash; the same idealization the book uses in Fig. 2.5. Two real tests starting from the exact same &psi;<sub>0</sub> don't actually travel that way: a real <b>CID</b> test (constant cell pressure) moves along a straight line of slope 3, and a real <b>CIU</b> test (undrained) curves as pore pressure develops, bending toward &mdash; and, once the sample is shearing enough, along &mdash; the critical state line rather than climbing straight up from p&prime;<sub>0</sub>. Same starting &psi;<sub>0</sub>, same soil, three different destinations for q at a given p&prime;. The curve below uses your current p&prime;<sub>0</sub>, &psi;<sub>0</sub>, and M<sub>tc</sub> from the sliders above; the CIU path is schematic (built directly from &psi;<sub>0</sub>'s sign, not integrated from pore-pressure equations) but the bend direction and destination are real: dense states arc toward the CSL from above, loose states arc in from below.</p>
+<canvas id="nsPathChart" style="height:280px" role="img" aria-label="Chart of deviator stress q versus mean effective stress p prime comparing three stress paths from the same starting state: this simulator's idealized vertical path at constant p prime, a real drained CID path along a straight line of slope 3, and a schematic curved undrained CIU path bending toward the critical state line, alongside the straight critical state line itself."></canvas>
+<div class="legend" id="nsPathLegend"></div>
+<p class="sources" style="margin-top:10px">Prompted by <b>Alfonso Cerna Diaz, PhD, PE</b> &mdash; with thanks for suggesting the role of different stress paths was worth exploring here.</p>
+</div>
+
 <h3>The seventh (and eighth) properties: elasticity, I<sub>r</sub> and &nu;</h3>
 <div class="explain"><p>NorSand needs seven properties in total &mdash; the six above plus a Poisson's ratio &nu;. Elasticity itself is set by a single dimensionless number, the <b>rigidity index I<sub>r</sub> = G/p&prime;</b> (elastic shear modulus over mean stress, Table 3.2's typical range 100&ndash;600 for sands): high I<sub>r</sub> means the soil is very stiff relative to how hard it's being confined (dense, heavily overconsolidated), low I<sub>r</sub> means it's compliant relative to its confinement (loose, lightly stressed). A complete implementation uses I<sub>r</sub> and &nu; to compute an elastic response inside the yield surface, before any plastic correction; this simulator neglects elastic strains entirely instead (see "What this simulator actually does" below the governing equations), so I<sub>r</sub> plays no role in the curves above &mdash; but you can still see what it represents:</p></div>
 <div class="grid2">
@@ -1583,12 +1591,18 @@ function runNorSand(){
   var Q=sim.eta, E=sim.e, EC=sim.ec, dEq=0.0003;
   var etaPeak=sim.etaPeak, epsAtPeak=sim.epsAtPeak;
   var etaFinal = Q[Q.length-1];
+  // Bishop's brittleness index, computed from THIS simulation's own peak vs its critical-state
+  // target Mtc -- since p' is held constant here, q_peak/q_cs collapses to eta_peak/Mtc exactly,
+  // so no separate q-tracking is needed. Real (not schematic) IB, unlike section 5's illustrative one.
+  var IB = etaPeak > Mtc*1.001 ? (etaPeak-Mtc)/etaPeak : 0;
 
   document.getElementById("nsStats").innerHTML = `
     <div class="stat"><small>peak &eta; (at &epsilon;<sub>q</sub>=${epsAtPeak.toFixed(1)}%)</small><strong>${etaPeak.toFixed(3)}</strong></div>
     <div class="stat"><small>peak &phi;&prime;</small><strong>${sinToPhi(etaPeak).toFixed(1)}&deg;</strong></div>
     <div class="stat"><small>&eta; at 30% strain</small><strong>${etaFinal.toFixed(3)}</strong></div>
-    <div class="stat hi"><small>M<sub>tc</sub> (target critical &eta;)</small><strong>${Mtc.toFixed(3)}</strong></div>`;
+    <div class="stat hi"><small>M<sub>tc</sub> (target critical &eta;)</small><strong>${Mtc.toFixed(3)}</strong></div>
+    <div class="stat hi" style="grid-column:1/-1"><small>brittleness index, I<sub>B</sub> = (&eta;<sub>peak</sub>&minus;M<sub>tc</sub>)/&eta;<sub>peak</sub> &mdash; ${IB>0.5?"very brittle":IB>0.2?"moderately brittle":IB>0.03?"mildly brittle":"ductile, no softening"}</small><strong>${IB.toFixed(2)}</strong></div>`;
+  if(document.getElementById('nsPathChart')) drawStressPathChart(p0, psi0, Mtc);
 
   drawLineChart("nsQChart", Q.map((v,i)=>[i*dEq*100,v]), {color:"#1479b8", xlab:"shear strain ε~q~ (%)", ylab:"η = q/p'", yfix:2});
   drawLineChart("nsEChart", E.map((v,i)=>[i*dEq*100,v]).concat([]), {color:"#2d8b65", xlab:"shear strain ε~q~ (%)", ylab:"void ratio", yfix:3, extra: EC.map((v,i)=>[i*dEq*100,v])});
@@ -1621,6 +1635,75 @@ function drawLineChart(id, pts, opt){
   }
   if(opt.extra) line(opt.extra,"#9aa9ae",[4,3]);
   line(pts, opt.color);
+}
+
+// Compares this simulator's own constant-p' idealization against two real stress paths from the
+// same starting (p0, psi0): a real CID test (straight line, slope 3 -- constant cell pressure) and
+// a schematic CIU test (curved, bending toward the CSL as pore pressure develops -- the bend
+// direction and destination are grounded in real dense/loose CIU behaviour; the exact curve shape
+// isn't integrated from pore-pressure equations, unlike the eta-vs-strain simulation above it).
+function drawStressPathChart(p0, psi0, Mtc){
+  var cv=document.getElementById('nsPathChart'); if(!cv) return;
+  var W=cv.clientWidth||520, H=280; cv.width=W; cv.height=H;
+  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
+  var ml=58,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
+
+  var qMax = Mtc*p0*1.35;
+  // idealized: vertical line at p0
+  var idealPts = [[p0,0],[p0,qMax]];
+  // real CID: straight line of slope 3 (dq/dp' = 3, constant cell pressure)
+  var cidPMax = p0 + qMax/3;
+  var cidPts = [[p0,0],[cidPMax,qMax]];
+  // schematic CIU: bends right (dense, negative pore pressure) or left (loose, positive pore
+  // pressure) toward its own destination on the CSL
+  var isDense = psi0<0;
+  var bendFrac = Math.min(0.6, Math.abs(psi0)*2);
+  var pEnd = p0*(isDense ? (1+bendFrac) : (1-bendFrac*0.7));
+  var qEnd = Mtc*pEnd;
+  var ciuPts=[]; var NPTS=60;
+  for(var i=0;i<=NPTS;i++){
+    var t=i/NPTS;
+    var q = qEnd*(1-Math.pow(1-t,1.5));
+    var pLin = p0+(pEnd-p0)*t;
+    var bulge = (isDense?1:-1)*Math.sin(Math.PI*t)*bendFrac*p0*(isDense?0.5:0.3);
+    ciuPts.push([pLin+bulge, q]);
+  }
+
+  var allP = idealPts.map(p=>p[0]).concat(cidPts.map(p=>p[0])).concat(ciuPts.map(p=>p[0])).concat([0]);
+  var allQ = [0,qMax];
+  var pmin=Math.min(...allP), pmax=Math.max(...allP)*1.05;
+  var qmin=0, qmax=Math.max(...allQ)*1.08;
+  function X(v){ return ml+pw*(v-pmin)/(pmax-pmin||1); }
+  function Y(v){ return mt+ph*(1-(v-qmin)/(qmax-qmin||1)); }
+
+  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="11.5px 'Segoe UI',Arial,sans-serif";
+  ctx.textAlign="right";
+  for(var k=0;k<=4;k++){ var yv=qmin+(qmax-qmin)*k/4; var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(0),ml-8,y+3); }
+  ctx.textAlign="left";
+  for(var k2=0;k2<=5;k2++){ var xv=pmin+(pmax-pmin)*k2/5; var x=X(xv); ctx.fillText(xv.toFixed(0),x-8,mt+ph+14); }
+  drawXTitle(ctx,"p' (kPa)", ml+pw/2, H-2);
+  drawYTitle(ctx,"q (kPa)", 14, mt+ph/2);
+  ctx.strokeStyle="#c7d3d8"; ctx.strokeRect(ml+0.5,mt+0.5,pw,ph);
+
+  function line(pts,color,dash,width){
+    ctx.strokeStyle=color; ctx.lineWidth=width||2.2; ctx.setLineDash(dash||[]); ctx.beginPath();
+    pts.forEach(function(p,i){ var x=X(p[0]),y=Y(p[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  // CSL reference line through the origin at slope Mtc
+  line([[0,0],[pmax,Mtc*pmax]], "#2d8b65", [6,4], 1.6);
+  line(idealPts, "#61737b", [3,3]);
+  line(cidPts, "#c64852");
+  line(ciuPts, "#1479b8");
+  // starting point marker
+  ctx.beginPath(); ctx.arc(X(p0),Y(0),4,0,7); ctx.fillStyle="#fff"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#123b4a"; ctx.stroke();
+
+  var legend=document.getElementById('nsPathLegend');
+  if(legend) legend.innerHTML =
+    '<span><i style="background:#61737b"></i>this simulator (idealized, constant p&prime;)</span>' +
+    '<span><i style="background:#c64852"></i>real CID (constant cell pressure)</span>' +
+    '<span><i style="background:#1479b8"></i>real CIU (schematic, undrained)</span>' +
+    '<span><i style="background:#2d8b65"></i>CSL (&eta; = M<sub>tc</sub>)</span>';
 }
 
 // ---------------- Section 7: where do the parameters come from ----------------
