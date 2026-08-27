@@ -290,7 +290,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div></header>
 <div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#csl-section">4. CSL & ψ</a><a href="#state-parameter-lab">5. Recap & uncertainty</a><a href="#dilatancy-section">6. Dilatancy</a><a href="#calibration-section">7. NorSand calibration</a><a href="#norsand-section">8. NorSand parameters</a><a href="#knowledge-check">9. Check learning</a><a href="#bayesian-calibration">10. Bayesian calibration</a>
+<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#csl-section">4. CSL & ψ</a><a href="#state-parameter-lab">5. Recap: ψ & strength</a><a href="#dilatancy-section">6. Dilatancy</a><a href="#calibration-section">7. NorSand calibration</a><a href="#norsand-section">8. NorSand parameters</a><a href="#knowledge-check">9. Check learning</a><a href="#bayesian-calibration">10. Bayesian calibration</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -321,7 +321,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <button type="button" class="goal" data-gotopage="mental-model"><span class="goal-num">2</span><b>Mental model</b>See dilation and contraction happen before touching any equations.</button>
 <button type="button" class="goal" data-gotopage="notation"><span class="goal-num">3</span><b>Notation</b>Every symbol used in this module, grouped by what it describes.</button>
 <button type="button" class="goal" data-gotopage="csl-section"><span class="goal-num">4</span><b>CSL &amp; ψ</b>The critical state line, the state parameter, and why it beats relative density.</button>
-<button type="button" class="goal" data-gotopage="state-parameter-lab"><span class="goal-num">5</span><b>Recap &amp; uncertainty</b>Interactive recap of &lambda;<sub>10</sub>/e/p&prime; building &psi;, plus a Monte Carlo view of what happens once those inputs are uncertain.</button>
+<button type="button" class="goal" data-gotopage="state-parameter-lab"><span class="goal-num">5</span><b>Recap: &psi; &amp; strength</b>Interactive recap of &lambda;<sub>10</sub>/e/p&prime; building &psi; and setting strength &mdash; the same equation from Section 4, in your own hands.</button>
 <button type="button" class="goal" data-gotopage="dilatancy-section"><span class="goal-num">6</span><b>Dilatancy</b>How ψ converts to D<sub>min</sub>, peak strength, and friction angle.</button>
 <button type="button" class="goal" data-gotopage="calibration-section"><span class="goal-num">7</span><b>NorSand calibration</b>Where Γ, λ<sub>10</sub>, M<sub>tc</sub>, χ<sub>tc</sub>, N and H actually come from — real test data, not a lookup table.</button>
 <button type="button" class="goal" data-gotopage="norsand-section"><span class="goal-num">8</span><b>NorSand parameters</b>A full constitutive model: simulate an entire stress–strain curve, not just its peak.</button>
@@ -514,7 +514,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <div class="card" id="state-parameter-lab">
 <h2>5. Recap: &lambda;<sub>10</sub> and state building &psi; &mdash; and setting strength</h2>
 <div class="explain">
-<p>A hands-on recap of what Section 4 just covered, in one equation: Compressibility (&lambda;<sub>10</sub>), how tightly the soil is packed (e), and how hard it is squeezed (p&prime;) combine into the state parameter &psi; &mdash; the soil's distance from the critical state line. That distance, not &lambda;<sub>10</sub> alone, decides whether the soil is strong or weak. Move the sliders and watch it happen, then use the uncertainty panel below to see how &psi; itself becomes a distribution once you admit you don't know these inputs exactly. (Section 8's NorSand simulator, further ahead, is the full constitutive tool this page's strength law is a simplified stand-in for.)</p>
+<p>A hands-on recap of what Section 4 just covered, in one equation: Compressibility (&lambda;<sub>10</sub>), how tightly the soil is packed (e), and how hard it is squeezed (p&prime;) combine into the state parameter &psi; &mdash; the soil's distance from the critical state line. That distance, not &lambda;<sub>10</sub> alone, decides whether the soil is strong or weak. Move the sliders and watch it happen. (Section 8's NorSand simulator, further ahead, is the full constitutive tool this page's strength law is a simplified stand-in for; Section 10 picks these same inputs back up to show what happens once you admit you don't know them exactly.)</p>
 </div>
 <p class="sources">Prompted by <b>Zana Karimi, PhD, PE</b> &mdash; with thanks for bringing up this discussion.</p>
 
@@ -561,34 +561,6 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 <p class="explain" style="font-size:12px;margin-top:8px"><b>1 &middot; State vs the CSL.</b> The line's steepness <i>is</i> &lambda;<sub>10</sub> (compressibility). &psi; is the vertical gap from your point to the line. Below the line &rarr; dense &amp; strong; above &rarr; loose &amp; weak.</p>
 <p class="explain" style="font-size:12px" id="s10-cap2"><b>2 &middot; Strength follows &psi;.</b> Peak strength above critical = &minus;k&middot;&psi; (a straight line). Your point slides along it as &psi; changes &mdash; the pull &lambda;<sub>10</sub> and stress exert on strength runs entirely through &psi;.</p>
-
-<div class="guided-panel" style="margin-top:16px">
-<h3 style="margin-top:0">From a point estimate to a probability: propagating parameter uncertainty</h3>
-<p class="explain" style="font-size:12.5px;margin-top:0">Section 10 runs Bayesian calibration <i>backward</i> &mdash; inferring a parameter distribution from test data. Here it runs <i>forward</i>: you almost never know &lambda;<sub>10</sub>, e<sub>&Gamma;</sub>, e, or p&prime; exactly &mdash; each carries measurement and estimation uncertainty. Give each one a spread instead of a single value, and the same equation turns your one &psi; into a <i>distribution</i> of possible &psi; &mdash; showing not just what you'd expect, but how likely the sample is to actually land loose of critical.</p>
-<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer"><input type="checkbox" id="s10-uncEnable">Enable parameter uncertainty (Monte Carlo, 800 samples)</label>
-
-<div id="s10-uncPanel" style="display:none;margin-top:12px">
-<div class="grid2">
-<div class="slider-block"><label for="s10-u-lam"><span>&plusmn; &lambda;<sub>10</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-lamOut">15%</span></label><input id="s10-u-lam" type="range" min="0" max="40" step="1" value="15"></div>
-<div class="slider-block"><label for="s10-u-eG"><span>&plusmn; e<sub>&Gamma;</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eGOut">5%</span></label><input id="s10-u-eG" type="range" min="0" max="20" step="1" value="5"></div>
-<div class="slider-block"><label for="s10-u-e"><span>&plusmn; e uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-eOut">5%</span></label><input id="s10-u-e" type="range" min="0" max="20" step="1" value="5"></div>
-<div class="slider-block"><label for="s10-u-pp"><span>&plusmn; p&prime; uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="s10-u-ppOut">20%</span></label><input id="s10-u-pp" type="range" min="0" max="50" step="1" value="20"></div>
-</div>
-<div class="bayes-grid2" style="margin-top:10px">
-<div class="bayes-chart-box"><canvas id="s10-cvHist"></canvas></div>
-<div class="guided-panel" style="margin:0">
-<h4 style="margin:0 0 8px;color:var(--navy);font-size:12.5px">What the spread means</h4>
-<div class="grid2" style="gap:8px 14px">
-<div class="stat"><div class="n" id="s10-u-mean" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">mean &psi; (Monte Carlo)</div></div>
-<div class="stat"><div class="n" id="s10-u-sd" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">&psi; standard deviation</div></div>
-<div class="stat"><div class="n" id="s10-u-p95" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">95% interval on &psi;</div></div>
-<div class="stat"><div class="n" id="s10-u-ploose" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="s10-u-plooseLabel">P(&psi; &gt; 0) &mdash; loose of critical</div></div>
-</div>
-<p class="explain" style="font-size:11px;color:var(--muted);margin:10px 0 0">Each sample is drawn independently (truncated Gaussian, clipped to each slider's range) and pushed through the exact same &psi; and strength formulas above &mdash; the faint dots on the two plots are the individual samples.</p>
-</div>
-</div>
-</div>
-</div>
 </div>
 
 
@@ -916,8 +888,43 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <p class="sources"><b>Code and data</b> (Python/Jupyter Notebook, MCMC calibration, Fraser River sand triaxial dataset, GPLv2): <a href="https://github.com/LF-Contreras/Bayesian-calibration-NorSand-model" target="_blank" rel="noopener">github.com/LF-Contreras/Bayesian-calibration-NorSand-model</a></p>
 <p class="explain" style="font-size:12px">Their notebook, and the two sections below, break into the same two parts: <b>Part 1</b> runs the NorSand forward model against a chosen test and set of parameters; <b>Part 2</b> takes that same model and calibrates it against all 12 tests at once with Bayesian MCMC. Part 2 is the one this comment thread was actually about — Part 1 is included because Part 2 depends on it and because it's what lets you see what a given posterior sample actually predicts.</p>
 
-<h3 style="margin:18px 0 2px;color:var(--navy);font-size:15px;border-top:2px solid #e5edf1;padding-top:14px">9a &middot; Based on the paper</h3>
-<p class="explain" style="font-size:11.5px;margin-top:2px;color:var(--muted)">The fixed Fraser River sand dataset and worked example from Contreras et al. (2025), below. For your own triaxial data, skip to <a href="#bc2-your-data">9b</a>.</p>
+<div class="guided-panel">
+<h3 style="margin-top:0">First, a warm-up: from a point estimate to a probability</h3>
+<p class="explain" style="font-size:12.5px;margin-top:0">The MCMC calibration below (10a/10b) infers a parameter distribution <i>backward</i> from real test data &mdash; the main event of this page. Before that, here's the same idea in its simplest possible form, running <i>forward</i>: you almost never know &lambda;<sub>10</sub>, e<sub>&Gamma;</sub>, e, or p&prime; exactly (recall Section 5's recap) &mdash; each carries measurement and estimation uncertainty. Give each one a spread instead of a single value, and the state-parameter equation turns one &psi; into a <i>distribution</i> of possible &psi; &mdash; the same shift from point estimate to probability that Bayesian calibration makes, just without any data or MCMC machinery yet.</p>
+<div class="grid2">
+<div class="slider-block"><label for="bcu-lam"><span>&lambda;<sub>10</sub> &mdash; base value</span> <span class="readout" id="bcu-lamOut">0.30</span></label><input id="bcu-lam" type="range" min="0.02" max="1.20" step="0.01" value="0.30"></div>
+<div class="slider-block"><label for="bcu-eG"><span>e<sub>&Gamma;</sub> &mdash; base value</span> <span class="readout" id="bcu-eGOut">1.00</span></label><input id="bcu-eG" type="range" min="0.60" max="1.80" step="0.01" value="1.00"></div>
+<div class="slider-block"><label for="bcu-e"><span>e &mdash; base value</span> <span class="readout" id="bcu-eOut">0.90</span></label><input id="bcu-e" type="range" min="0.30" max="2.00" step="0.01" value="0.90"></div>
+<div class="slider-block"><label for="bcu-pp"><span>p&prime; &mdash; base value (kPa)</span> <span class="readout" id="bcu-ppOut">100</span></label><input id="bcu-pp" type="range" min="5" max="2000" step="5" value="100"></div>
+</div>
+<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:8px"><input type="checkbox" id="bcu-uncEnable">Enable parameter uncertainty (Monte Carlo, 800 samples)</label>
+
+<div id="bcu-uncPanel" style="display:none;margin-top:12px">
+<div class="grid2">
+<div class="slider-block"><label for="bcu-u-lam"><span>&plusmn; &lambda;<sub>10</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="bcu-u-lamOut">15%</span></label><input id="bcu-u-lam" type="range" min="0" max="40" step="1" value="15"></div>
+<div class="slider-block"><label for="bcu-u-eG"><span>&plusmn; e<sub>&Gamma;</sub> uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="bcu-u-eGOut">5%</span></label><input id="bcu-u-eG" type="range" min="0" max="20" step="1" value="5"></div>
+<div class="slider-block"><label for="bcu-u-e"><span>&plusmn; e uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="bcu-u-eOut">5%</span></label><input id="bcu-u-e" type="range" min="0" max="20" step="1" value="5"></div>
+<div class="slider-block"><label for="bcu-u-pp"><span>&plusmn; p&prime; uncertainty (% of value, 1&sigma;)</span> <span class="readout" id="bcu-u-ppOut">20%</span></label><input id="bcu-u-pp" type="range" min="0" max="50" step="1" value="20"></div>
+</div>
+<div class="bayes-grid2" style="margin-top:10px">
+<div class="bayes-chart-box"><canvas id="bcu-cvHist"></canvas></div>
+<div class="guided-panel" style="margin:0">
+<h4 style="margin:0 0 8px;color:var(--navy);font-size:12.5px">What the spread means</h4>
+<div class="grid2" style="gap:8px 14px">
+<div class="stat"><div class="n" id="bcu-u-mean" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">mean &psi; (Monte Carlo)</div></div>
+<div class="stat"><div class="n" id="bcu-u-sd" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">&psi; standard deviation</div></div>
+<div class="stat"><div class="n" id="bcu-u-p95" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)">95% interval on &psi;</div></div>
+<div class="stat"><div class="n" id="bcu-u-ploose" style="font-weight:700"></div><div class="c" style="font-size:11px;color:var(--muted)" id="bcu-u-plooseLabel">P(&psi; &gt; 0) &mdash; loose of critical</div></div>
+</div>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:10px 0 0">Each sample is drawn independently (truncated Gaussian, clipped to each slider's range) and pushed through &psi; = e &minus; e<sub>&Gamma;</sub> + &lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p<sub>ref</sub>) &mdash; the exact equation from Section 5's recap.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+<h3 style="margin:18px 0 2px;color:var(--navy);font-size:15px;border-top:2px solid #e5edf1;padding-top:14px">10a &middot; Based on the paper</h3>
+<p class="explain" style="font-size:11.5px;margin-top:2px;color:var(--muted)">The fixed Fraser River sand dataset and worked example from Contreras et al. (2025), below. For your own triaxial data, skip to <a href="#bc2-your-data">10b</a>.</p>
 
 <div class="guided-panel">
 <h3 style="margin-top:0">The model: a fuller NorSand than Section 8's</h3>
@@ -992,7 +999,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 
 <div class="warning" style="margin-top:14px"><b>Independent verification.</b> Running the model port against the real data: the CID-D400 test's peak lands at q=1606 kPa, 5.3% strain against the real test's 1633 kPa at 6.0%; CIU-L300's peak lands at q=167.6 kPa against 166.8 kPa real, with final excess pore pressure 291 kPa against 293 kPa real. Running the MCMC port for just 300 of the paper's full 2,000 steps, every soil parameter had already converged to within a few percent of the published values (G<sub>ref</sub>=15,718 vs. 16,338; m=0.813 vs. 0.78; &nu;=0.158 vs. 0.15, its 95% interval's lower edge landing right at the prior's 0.15 floor exactly as the paper notes), and the samples show a Pearson correlation of &minus;0.68 between G<sub>ref</sub> and m &mdash; a real, measured negative correlation reproducing the paper's own finding (visible in their Figure 9 corner plot), not just a repetition of their claim of one.</div>
 
-<h3 id="bc2-your-data" style="margin:22px 0 2px;color:var(--navy);font-size:15px;border-top:2px solid #e5edf1;padding-top:14px">9b &middot; Your data</h3>
+<h3 id="bc2-your-data" style="margin:22px 0 2px;color:var(--navy);font-size:15px;border-top:2px solid #e5edf1;padding-top:14px">10b &middot; Your data</h3>
 <p class="explain" style="font-size:12px;margin-top:2px">Everything above runs against Contreras et al.'s own 12 tests. This section runs the exact same forward model and MCMC engine &mdash; not a simplified copy &mdash; against your own CID/CIU triaxial data, entirely in this page. Nothing you upload leaves your browser.</p>
 
 <div class="guided-panel">
@@ -1034,7 +1041,7 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 <label>&chi;<sub>tc</sub><input type="number" id="bc2-p-xtc" value="5.3" step="0.1"></label>
 <label>R (OCR)<input type="number" id="bc2-p-R" value="1.1" step="0.05"></label>
 </div>
-<p class="explain" style="font-size:11px;color:var(--muted);margin:4px 0 0">ec(p&prime;) = C<sub>a</sub> &minus; C<sub>b</sub>&middot;(p&prime;/p&prime;<sub>ref</sub>)<sup>Cc</sup> (Li &amp; Wang 1998). These 8 are held fixed during calibration below, exactly as in 9a &mdash; only G<sub>ref</sub>, m, &nu;, H<sub>0</sub>, H<sub>&psi;</sub> are inferred. M<sub>tc</sub>, C<sub>a</sub>, C<sub>b</sub> and &chi;<sub>tc</sub> above are auto-filled from your own data using the same methods as section 6 (peak stress ratio, CSL end points, the D<sub>min</sub>&ndash;&psi;0 trend) the moment it loads &mdash; edit any of the 8 afterward if you know better values.</p>
+<p class="explain" style="font-size:11px;color:var(--muted);margin:4px 0 0">ec(p&prime;) = C<sub>a</sub> &minus; C<sub>b</sub>&middot;(p&prime;/p&prime;<sub>ref</sub>)<sup>Cc</sup> (Li &amp; Wang 1998). These 8 are held fixed during calibration below, exactly as in 10a &mdash; only G<sub>ref</sub>, m, &nu;, H<sub>0</sub>, H<sub>&psi;</sub> are inferred. M<sub>tc</sub>, C<sub>a</sub>, C<sub>b</sub> and &chi;<sub>tc</sub> above are auto-filled from your own data using the same methods as section 6 (peak stress ratio, CSL end points, the D<sub>min</sub>&ndash;&psi;0 trend) the moment it loads &mdash; edit any of the 8 afterward if you know better values.</p>
 <p id="bc2-fitCompare" class="explain" style="font-size:11.5px;margin:6px 0 0;font-style:italic;display:none"></p>
 </div>
 </div>
@@ -1048,15 +1055,15 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="guided-panel">
-<h3 style="margin-top:0">9b.1 &middot; Conventional calibration</h3>
-<p class="explain" style="font-size:12px;margin-top:0">The same one-parameter-(or one-test)-at-a-time methods an engineer would use by hand, automated here as a deterministic point estimate &mdash; no priors, no posterior, just least-squares curve-fitting. M<sub>tc</sub>, C<sub>a</sub>, C<sub>b</sub> and &chi;<sub>tc</sub> are the same section-6 fits already used to fill in the parameter form above. G<sub>ref</sub> and m come from regressing each test's initial (small-strain) secant modulus against its p&prime;<sub>0</sub>. H<sub>0</sub> and H<sub>&psi;</sub> come from fitting a single constant H per test (least-squares against that test's whole q&ndash;&epsilon;1 curve, holding G<sub>ref</sub>/m/&nu; fixed) and then regressing those per-test H values against &psi;<sub>0</sub>, the same H-vs-&psi;0 relationship 9a/9b.2's trend chart shows. &nu; and N have no reliable closed-form estimate from this kind of data (N is conventionally obtained by iterative forward-modelling, as section 6's interactive tool demonstrates) &mdash; both are left at typical published values unless you edit the form above.</p>
+<h3 style="margin-top:0">10b.1 &middot; Conventional calibration</h3>
+<p class="explain" style="font-size:12px;margin-top:0">The same one-parameter-(or one-test)-at-a-time methods an engineer would use by hand, automated here as a deterministic point estimate &mdash; no priors, no posterior, just least-squares curve-fitting. M<sub>tc</sub>, C<sub>a</sub>, C<sub>b</sub> and &chi;<sub>tc</sub> are the same section-6 fits already used to fill in the parameter form above. G<sub>ref</sub> and m come from regressing each test's initial (small-strain) secant modulus against its p&prime;<sub>0</sub>. H<sub>0</sub> and H<sub>&psi;</sub> come from fitting a single constant H per test (least-squares against that test's whole q&ndash;&epsilon;1 curve, holding G<sub>ref</sub>/m/&nu; fixed) and then regressing those per-test H values against &psi;<sub>0</sub>, the same H-vs-&psi;0 relationship 10a/10b.2's trend chart shows. &nu; and N have no reliable closed-form estimate from this kind of data (N is conventionally obtained by iterative forward-modelling, as section 6's interactive tool demonstrates) &mdash; both are left at typical published values unless you edit the form above.</p>
 <table class="results-table" id="bc2-convTable"><thead><tr><th>Parameter</th><th>Conventional estimate</th><th>Method</th></tr></thead><tbody></tbody></table>
 <p id="bc2-convNote" class="explain" style="font-size:11px;color:var(--muted);margin:6px 0 0"></p>
 </div>
 
 <div class="guided-panel">
 <h3 style="margin-top:0">Test comparison (the forward model)</h3>
-<p class="explain" style="font-size:12px;margin-top:0">Showing the model at: <b id="bc2-whichParamsLabel">the paper's default parameters</b> <button type="button" class="ghost" id="bc2-useExampleBtn" style="margin-left:8px;font-size:11px;padding:5px 10px">Use default parameters</button> <button type="button" class="ghost" id="bc2-useConventionalBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use conventional result (9b.1)</button> <button type="button" class="ghost" id="bc2-useBayesBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use Bayesian result (9b.2)</button></p>
+<p class="explain" style="font-size:12px;margin-top:0">Showing the model at: <b id="bc2-whichParamsLabel">the paper's default parameters</b> <button type="button" class="ghost" id="bc2-useExampleBtn" style="margin-left:8px;font-size:11px;padding:5px 10px">Use default parameters</button> <button type="button" class="ghost" id="bc2-useConventionalBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use conventional result (10b.1)</button> <button type="button" class="ghost" id="bc2-useBayesBtn" style="margin-left:4px;font-size:11px;padding:5px 10px" disabled>Use Bayesian result (10b.2)</button></p>
 <div class="test-select" id="bc2-testSelect"></div>
 <h4 id="bc2-testTitle" style="margin:10px 0 2px;color:var(--navy)"></h4>
 <p class="explain" style="font-size:11px;color:var(--muted);margin:0 0 4px" id="bc2-testMeta"></p>
@@ -1074,8 +1081,8 @@ table.params td:first-child,table.params th:first-child{text-align:left}
 </div>
 
 <div class="guided-panel">
-<h3 style="margin-top:0">9b.2 &middot; Bayesian calibration (MCMC)</h3>
-<p class="explain" style="font-size:12px;margin-top:0">Same priors, same likelihood, same affine-invariant ensemble sampler as 9a &mdash; run here against your own tests. Compare its results against 9b.1's conventional point estimates above.</p>
+<h3 style="margin-top:0">10b.2 &middot; Bayesian calibration (MCMC)</h3>
+<p class="explain" style="font-size:12px;margin-top:0">Same priors, same likelihood, same affine-invariant ensemble sampler as 10a &mdash; run here against your own tests. Compare its results against 10b.1's conventional point estimates above.</p>
 <h4 style="margin:12px 0 4px;color:var(--navy);font-size:12.5px">Priors</h4>
 <table class="params" id="bc2-priorsTable"></table>
 
@@ -2401,7 +2408,7 @@ updateConstructionPanels();
   // slot, so a chain of jumps (card -> card -> card) still unwinds one step at a time.
   var navStack=[];
   var backBtn=document.getElementById('backToPrevious');
-  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning','bayesian-calibration':'Bayesian calibration','state-parameter-lab':'State-parameter lab'};
+  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','csl-section':'CSL & ψ','dilatancy-section':'Dilatancy','calibration-section':'NorSand calibration','norsand-section':'NorSand parameters','knowledge-check':'Check learning','bayesian-calibration':'Bayesian calibration','state-parameter-lab':'Recap: ψ & strength'};
   function navOriginLabel(el){
     var idEl=el.closest('[id]');
     return (idEl && SECTION_LABELS[idEl.id]) || 'where you were';
@@ -3500,7 +3507,7 @@ document.addEventListener('keydown', function(e){
     {label:'Mental model', ids:['mental-model']},
     {label:'Notation', ids:['notation']},
     {label:'CSL & ψ', ids:['csl-section','quizCheckABC']},
-    {label:'Recap & uncertainty', ids:['state-parameter-lab']},
+    {label:'Recap: ψ & strength', ids:['state-parameter-lab']},
     {label:'Dilatancy', ids:['dilatancy-section','quizCheckDE']},
     {label:'NorSand calibration', ids:['calibration-section','quizCheckFGH']},
     {label:'NorSand parameters', ids:['norsand-section','quizCheckI']},
@@ -4025,8 +4032,8 @@ function plotXY(cv, dataX, dataY, dataMarkX, dataMarkY, modelX, modelY, modelMar
 
 // ============================================================================
 // Everything below is written against a "ctx" object rather than hardcoded globals,
-// so the exact same test-viewer + MCMC engine can drive both 9a (the paper's fixed
-// 12-test dataset) and 9b (a reader's own uploaded CSV) without duplicating logic.
+// so the exact same test-viewer + MCMC engine can drive both 10a (the paper's fixed
+// 12-test dataset) and 10b (a reader's own uploaded CSV) without duplicating logic.
 // ============================================================================
 function makeCalibContext(prefix, NSprops1_, TEST_IDS_, PROP2_, STRMX_, STEPS_, FRS_PLOT_, BAYES_DATA_, defaultParams, xrangeMax){
   return {
@@ -4398,7 +4405,7 @@ function drawBandChart(cv, xs, yMean, yLo, yHi, xlab, ylab, dataXMarks){
 }
 
 // ============================================================================
-// 9a — instantiate the paper's own fixed 12-test context and wire it up
+// 10a — instantiate the paper's own fixed 12-test context and wire it up
 // ============================================================================
 var ctxPaper = makeCalibContext('bc-', NSprops1, TEST_IDS, PROP2, STRMX, STEPS, FRS_PLOT, BAYES_DATA, NSprops3_example, 30);
 ctxPaper.currentTestIdx = 2; // default: CID-D400, matching the paper's own Figure 7 example
@@ -4433,7 +4440,7 @@ window.ctxPaper = ctxPaper; // exposed for the self-test suite
 })();
 
 // ============================================================================
-// 9b — upload your own CID/CIU data and run the exact same engine against it
+// 10b — upload your own CID/CIU data and run the exact same engine against it
 // ============================================================================
 var HEADER_ALIASES = {
   test_id:['testid','test','id','sample','specimen','name'],
@@ -4601,8 +4608,8 @@ function fillImmediateTable(ds, NSprops1b){
     tbody.appendChild(tr);
   });
 }
-// 9b.1 — conventional (deterministic, non-Bayesian) point-estimate calibration of the 5
-// parameters the MCMC in 9b.2 otherwise infers: Gref, m from an initial-modulus-vs-p0'
+// 10b.1 — conventional (deterministic, non-Bayesian) point-estimate calibration of the 5
+// parameters the MCMC in 10b.2 otherwise infers: Gref, m from an initial-modulus-vs-p0'
 // regression (standard practice), H0/H_psi from fitting one constant H per test by least
 // squares against that whole test's q-e1 curve (holding Gref/m/nu fixed, HPsi=0 so H really
 // is constant for that single run) and then regressing those per-test H's against psi0 --
@@ -4713,12 +4720,12 @@ function readNSprops1FromForm(){
 }
 
 var ctxUser = null;
-// 9b-only button (ctxPaper's DOM has no equivalent), so wired directly here rather than
+// 10b-only button (ctxPaper's DOM has no equivalent), so wired directly here rather than
 // inside the shared initMcmcUI.
 document.getElementById('bc2-useConventionalBtn').addEventListener('click', function(){
   if(!ctxUser || !ctxUser.conventionalParams) return;
   ctxUser.currentCalibParams = ctxUser.conventionalParams.slice();
-  document.getElementById('bc2-whichParamsLabel').textContent = "9b.1's conventional (least-squares) result";
+  document.getElementById('bc2-whichParamsLabel').textContent = "10b.1's conventional (least-squares) result";
   renderTest(ctxUser, ctxUser.currentTestIdx);
 });
 document.getElementById('bc2-parseBtn').addEventListener('click', function(){
@@ -4762,7 +4769,7 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
       document.getElementById('bc2-whichParamsLabel').textContent = ctxUser.exampleLabel;
 
       document.getElementById('bc2-results').style.display = '';
-      status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Running conventional (9b.1) calibration…';
+      status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Running conventional (10b.1) calibration…';
       status.style.color = '#268160';
 
       // deferred so the status message above actually paints before this runs (it's a
@@ -4780,7 +4787,7 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
         } else {
           convNote.textContent = 'Not enough tests to fit Gref/m/H0/Hψ conventionally (need ≥1 test for Gref/m, ≥2 at different ψ0 for H0/Hψ).';
         }
-        status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Scroll down for 9b.1 (conventional), the test viewer, and 9b.2 (Bayesian).';
+        status.textContent = 'Loaded ' + ds.TEST_IDS.length + ' test' + (ds.TEST_IDS.length===1?'':'s') + ' (' + rows.length + ' rows). Scroll down for 10b.1 (conventional), the test viewer, and 10b.2 (Bayesian).';
       }, 30);
     } catch(err){
       status.textContent = 'Could not parse this file: ' + err.message;
@@ -4791,6 +4798,106 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   reader.onerror = function(){ status.textContent='Could not read this file.'; status.style.color='#c64852'; };
   reader.readAsText(fileInput.files[0]);
 });
+})();
+</script>
+
+<script>
+// Self-contained "warm-up" Monte Carlo panel at the top of section 10 -- a light forward
+// uncertainty-propagation demo (base sliders -> psi distribution) using the exact same
+// state-parameter equation as Section 5's recap, entirely independent of that page's own
+// JS state so this panel works regardless of what Section 5's sliders currently hold.
+(function(){
+  var P_REF = 100;
+  function $(id){ return document.getElementById('bcu-'+id); }
+  var s_lam=$("lam"), s_eG=$("eG"), s_e=$("e"), s_pp=$("pp");
+  if(!s_lam) return;
+
+  function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+  function hexA(hex,a){ hex=hex.replace('#',''); if(hex.length===3)hex=hex.split('').map(function(x){return x+x;}).join(''); var n=parseInt(hex,16); return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')'; }
+  function fmt(x,n){ return x.toFixed(n); }
+  function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
+  function psiOf(lam,eG,e,pp){ return e - eG + lam*Math.log10(pp/P_REF); }
+
+  var rngState = 20260826;
+  function rnd(){ rngState=(rngState*1103515245+12345)&0x7fffffff; return rngState/0x7fffffff; }
+  function gaussian(){ var u1=Math.max(1e-9,rnd()), u2=rnd(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
+
+  function updateReadouts(){
+    $("lamOut").textContent = fmt(+s_lam.value,2);
+    $("eGOut").textContent = fmt(+s_eG.value,2);
+    $("eOut").textContent = fmt(+s_e.value,2);
+    $("ppOut").textContent = Math.round(+s_pp.value);
+  }
+
+  var lastPsis=null;
+  function runMonteCarlo(){
+    var N=800;
+    var lam0=+s_lam.value, eG0=+s_eG.value, e0=+s_e.value, pp0=+s_pp.value;
+    var pLam=+$("u-lam").value/100, pEG=+$("u-eG").value/100, pE=+$("u-e").value/100, pPP=+$("u-pp").value/100;
+    var lamLo=+s_lam.min, lamHi=+s_lam.max, eGLo=+s_eG.min, eGHi=+s_eG.max, eLo=+s_e.min, eHi=+s_e.max;
+    var psis=[];
+    for(var i=0;i<N;i++){
+      var lam=clamp(lam0*(1+pLam*gaussian()), lamLo, lamHi);
+      var eG=clamp(eG0*(1+pEG*gaussian()), eGLo, eGHi);
+      var e=clamp(e0*(1+pE*gaussian()), eLo, eHi);
+      var pp=Math.max(1,pp0*(1+pPP*gaussian()));
+      psis.push(psiOf(lam,eG,e,pp));
+    }
+    psis.sort(function(a,b){return a-b;});
+    lastPsis=psis;
+    var mean=psis.reduce(function(a,b){return a+b;},0)/psis.length;
+    var sd=Math.sqrt(psis.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/psis.length);
+    var p025=psis[Math.floor(0.025*psis.length)], p975=psis[Math.floor(0.975*psis.length)];
+    var pLoose=psis.filter(function(v){return v>0;}).length/psis.length;
+    $("u-mean").textContent=(mean>=0?"+":"")+fmt(mean,3);
+    $("u-sd").textContent="±"+fmt(sd,3);
+    $("u-p95").textContent=fmt(p025,3)+" to "+(p975>=0?"+":"")+fmt(p975,3);
+    $("u-ploose").textContent=(pLoose*100).toFixed(0)+"%";
+    $("u-ploose").style.color = pLoose>0.5 ? getCss('--red') : getCss('--green');
+    drawHistogram(psis);
+  }
+
+  function drawHistogram(psis){
+    var cv=$("cvHist"), ctx=cv.getContext('2d');
+    var w=cv.clientWidth||400, h=230; cv.width=w; cv.height=h;
+    var m={l:44,r:14,t:14,b:38};
+    ctx.clearRect(0,0,w,h);
+    var lo=Math.min(-0.4,psis[0]), hi=Math.max(0.4,psis[psis.length-1]);
+    var bins=28, counts=new Array(bins).fill(0);
+    psis.forEach(function(v){ var b=clamp(Math.floor((v-lo)/(hi-lo+1e-9)*bins),0,bins-1); counts[b]++; });
+    var maxC=Math.max.apply(null,counts);
+    var X=function(v){ return m.l+(v-lo)/(hi-lo)*(w-m.l-m.r); };
+    var pw=w-m.l-m.r, ph=h-m.t-m.b;
+    for(var bi=0; bi<bins; bi++){
+      var x0=m.l+pw*bi/bins, bw=pw/bins, bh=ph*(counts[bi]/maxC);
+      var binCenter=lo+(hi-lo)*(bi+0.5)/bins;
+      ctx.fillStyle=hexA(binCenter<0?getCss('--green'):getCss('--red'), 0.55);
+      ctx.fillRect(x0, m.t+ph-bh, Math.max(1,bw-1), bh);
+    }
+    ctx.strokeStyle=getCss('--muted'); ctx.lineWidth=1.4; ctx.save(); ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(X(0),m.t); ctx.lineTo(X(0),m.t+ph); ctx.stroke(); ctx.restore();
+    ctx.strokeStyle=getCss('--line'); ctx.fillStyle=getCss('--muted'); ctx.font="10.5px 'Segoe UI',Arial,sans-serif"; ctx.textAlign='center'; ctx.textBaseline='top';
+    [-0.3,-0.2,-0.1,0,0.1,0.2,0.3].forEach(function(v){ if(v>=lo&&v<=hi){ ctx.fillText(v===0?"0":v.toFixed(1), X(v), m.t+ph+8); } });
+    ctx.strokeStyle=getCss('--muted'); ctx.strokeRect(m.l+0.5,m.t+0.5,pw,ph);
+    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText("ψ (800 Monte Carlo samples)",(m.l+w-m.r)/2,h-9);
+  }
+
+  var uncEnabled=false;
+  var uncEnableEl=$("uncEnable"), uncPanel=$("uncPanel");
+  uncEnableEl.addEventListener('change', function(){
+    uncEnabled = uncEnableEl.checked;
+    uncPanel.style.display = uncEnabled ? '' : 'none';
+    if(uncEnabled) runMonteCarlo();
+  });
+  [s_lam,s_eG,s_e,s_pp].forEach(function(s){ s.addEventListener('input', function(){ updateReadouts(); if(uncEnabled) runMonteCarlo(); }); });
+  $("u-lam").addEventListener('input', function(){ $("u-lamOut").textContent=this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  $("u-eG").addEventListener('input', function(){ $("u-eGOut").textContent=this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  $("u-e").addEventListener('input', function(){ $("u-eOut").textContent=this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  $("u-pp").addEventListener('input', function(){ $("u-ppOut").textContent=this.value+"%"; if(uncEnabled) runMonteCarlo(); });
+  window.addEventListener('resize', function(){ if(uncEnabled && lastPsis) drawHistogram(lastPsis); });
+
+  updateReadouts();
 })();
 </script>
 
@@ -4879,7 +4986,6 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     } else {
       $("numline").innerHTML = "= −"+params.k+" · ( "+fmt(params.e,2)+" − "+fmt(params.eG,2)+" + "+fmt(params.lam,2)+"·log₁₀("+Math.round(params.pp)+"/100) ) = −"+params.k+"·("+psiChip+") = <b style='color:"+c+"'>"+(d.dphi>=0?"+":"")+fmt(d.dphi,1)+"°</b>";
     }
-    if(uncEnabled) runMonteCarlo();
   }
 
   // ================= CANVAS PLOTS =================
@@ -4941,11 +5047,6 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.fillStyle=COL_LOOSE(); ctx.textAlign='right'; ctx.textBaseline='top';
     ctx.fillText("CONTRACTIVE (above CSL)", w-m.r-8, m.t+7);
 
-    // Monte Carlo sample cloud (drawn under the main point)
-    if(uncEnabled && mcSamples){
-      ctx.fillStyle=hexA(getCss('--blue'),0.35);
-      mcSamples.forEach(function(s){ var x=X(Math.log10(s.pp)), y=Y(s.e); if(x>=m.l&&x<=w-m.r&&y>=m.t&&y<=h-m.b){ ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); } });
-    }
     ctx.restore();
 
     var px=X(cur.lp), py=Y(cur.e), pcs=Y(ecsAt(cur.lp));
@@ -4997,10 +5098,6 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.save(); ctx.beginPath(); ctx.rect(m.l,m.t,w-m.l-m.r,h-m.t-m.b); ctx.clip();
     ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.4; ctx.beginPath();
     ctx.moveTo(X(PSI_MIN),Y(-cur.k*PSI_MIN)); ctx.lineTo(X(PSI_MAX),Y(-cur.k*PSI_MAX)); ctx.stroke();
-    if(uncEnabled && mcSamples){
-      ctx.fillStyle=hexA(getCss('--blue'),0.35);
-      mcSamples.forEach(function(s){ var x=X(s.psi), y=Y(s.dphi); if(x>=m.l&&x<=w-m.r&&y>=m.t&&y<=h-m.b){ ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); } });
-    }
     ctx.restore();
 
     var px=Math.max(m.l,Math.min(w-m.r,X(d.psi))), py=Math.max(m.t,Math.min(h-m.b,Y(d.dphi)));
@@ -5045,75 +5142,11 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
     ctx.strokeStyle=COL_LAW(); ctx.lineWidth=2.4; ctx.beginPath();
     for(var i=0;i<=140;i++){ var ps=PSI_MIN+(PSI_MAX-PSI_MIN)*i/140, xx=X(ps), yy=Y(Mpk(ps)); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
     ctx.stroke();
-    if(uncEnabled && mcSamples){
-      ctx.fillStyle=hexA(getCss('--blue'),0.35);
-      mcSamples.forEach(function(s){ var Mp=Mpk(s.psi); var x=X(s.psi), y=Y(Mp); if(x>=m.l&&x<=w-m.r&&y>=m.t&&y<=h-m.b){ ctx.beginPath(); ctx.arc(x,y,1.6,0,7); ctx.fill(); } });
-    }
     ctx.restore();
     ctx.fillStyle=COL_LAW(); ctx.font="600 "+fontStr(11.5); ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText("Mpeak = M·e−nψ",m.l+6,m.t+24);
 
     var Mp=Mpk(d.psi), px=Math.max(m.l,Math.min(w-m.r,X(d.psi))), py=Math.max(m.t,Math.min(h-m.b,Y(Mp)));
     ctx.beginPath(); ctx.arc(px,py,6,0,7); ctx.fillStyle='#fff'; ctx.fill(); ctx.lineWidth=3; ctx.strokeStyle=c; ctx.stroke();
-  }
-
-  // ================= Monte Carlo uncertainty propagation =================
-  var uncEnabled=false, mcSamples=null;
-  var mc_rng_state = 12345;
-  function mcRandom(){ mc_rng_state = (mc_rng_state*1103515245+12345)&0x7fffffff; return mc_rng_state/0x7fffffff; }
-  function gaussian(){ var u1=Math.max(1e-9,mcRandom()), u2=mcRandom(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
-  function clamp(v,lo,hi){ return Math.max(lo,Math.min(hi,v)); }
-
-  function runMonteCarlo(){
-    var N=800;
-    var pLam=+$("u-lam").value/100, pEG=+$("u-eG").value/100, pE=+$("u-e").value/100, pPP=+$("u-pp").value/100;
-    var lamLo=+s_lam.min, lamHi=+s_lam.max, eGLo=+s_eG.min, eGHi=+s_eG.max, eLo=+s_e.min, eHi=+s_e.max;
-    var samples=[];
-    for(var i=0;i<N;i++){
-      var lam=clamp(params.lam*(1+pLam*gaussian()), lamLo, lamHi);
-      var eG=clamp(params.eG*(1+pEG*gaussian()), eGLo, eGHi);
-      var e=clamp(params.e*(1+pE*gaussian()), eLo, eHi);
-      var pp=Math.max(1,params.pp*(1+pPP*gaussian()));
-      var d=derive({lam:lam,eG:eG,e:e,pp:pp});
-      samples.push({lam:lam,eG:eG,e:e,pp:pp,psi:d.psi,dphi:d.dphi});
-    }
-    mcSamples = samples;
-    var psis = samples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;});
-    var mean = psis.reduce(function(a,b){return a+b;},0)/psis.length;
-    var sd = Math.sqrt(psis.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/psis.length);
-    var p025 = psis[Math.floor(0.025*psis.length)], p975 = psis[Math.floor(0.975*psis.length)];
-    var pLoose = psis.filter(function(v){return v>0;}).length/psis.length;
-    $("u-mean").textContent = (mean>=0?"+":"")+fmt(mean,3);
-    $("u-sd").textContent = "±"+fmt(sd,3);
-    $("u-p95").textContent = fmt(p025,3)+" to "+(p975>=0?"+":"")+fmt(p975,3);
-    $("u-ploose").textContent = (pLoose*100).toFixed(0)+"%";
-    $("u-ploose").style.color = pLoose>0.5 ? COL_LOOSE() : COL_DENSE();
-    drawHistogram(psis);
-    drawCSLplot(); drawStrengthPlot();
-  }
-  function drawHistogram(psis){
-    var cv=$("cvHist"), ctx=cv.getContext('2d');
-    var dim=fitCanvas(cv,ctx,230), w=dim.w, h=dim.h;
-    var m={l:44,r:14,t:14,b:38};
-    ctx.clearRect(0,0,w,h);
-    var lo=Math.min(PSI_MIN,psis[0]), hi=Math.max(PSI_MAX,psis[psis.length-1]);
-    var bins=28, counts=new Array(bins).fill(0);
-    psis.forEach(function(v){ var b=clamp(Math.floor((v-lo)/(hi-lo+1e-9)*bins),0,bins-1); counts[b]++; });
-    var maxC=Math.max.apply(null,counts);
-    var X=function(v){ return m.l+(v-lo)/(hi-lo)*(w-m.l-m.r); };
-    var pw=w-m.l-m.r, ph=h-m.t-m.b;
-    for(var bi=0; bi<bins; bi++){
-      var x0=m.l+pw*bi/bins, bw=pw/bins, bh=ph*(counts[bi]/maxC);
-      var binCenter=lo+(hi-lo)*(bi+0.5)/bins;
-      ctx.fillStyle=hexA(binCenter<0?COL_DENSE():COL_LOOSE(), 0.55);
-      ctx.fillRect(x0, m.t+ph-bh, Math.max(1,bw-1), bh);
-    }
-    ctx.strokeStyle=getCss('--muted'); ctx.lineWidth=1.4; ctx.save(); ctx.setLineDash([4,4]);
-    ctx.beginPath(); ctx.moveTo(X(0),m.t); ctx.lineTo(X(0),m.t+ph); ctx.stroke(); ctx.restore();
-    ctx.strokeStyle=COL_GRID(); ctx.fillStyle=getCss('--muted'); ctx.font=fontStr(10.5); ctx.textAlign='center'; ctx.textBaseline='top';
-    [-0.3,-0.2,-0.1,0,0.1,0.2,0.3].forEach(function(v){ if(v>=lo&&v<=hi){ ctx.fillText(v===0?"0":v.toFixed(1), X(v), m.t+ph+8); } });
-    ctx.strokeStyle=getCss('--muted'); ctx.strokeRect(m.l+0.5,m.t+0.5,pw,ph);
-    ctx.fillStyle=getCss('--muted'); ctx.textAlign='center'; ctx.textBaseline='alphabetic';
-    ctx.fillText("ψ (800 Monte Carlo samples)",(m.l+w-m.r)/2,h-9);
   }
 
   // ---- animation loop ----
@@ -5156,18 +5189,7 @@ document.getElementById('bc2-parseBtn').addEventListener('click', function(){
   mode_M.addEventListener("click",function(){setMode('M');});
   setMode('phi'); // establish initial active-button styling
 
-  var uncEnableEl=$("uncEnable"), uncPanel=$("uncPanel");
-  uncEnableEl.addEventListener('change', function(){
-    uncEnabled = uncEnableEl.checked;
-    uncPanel.style.display = uncEnabled ? '' : 'none';
-    if(uncEnabled) runMonteCarlo(); else { mcSamples=null; drawCSLplot(); drawStrengthPlot(); }
-  });
-  $("u-lam").addEventListener('input', function(){ $("u-lamOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
-  $("u-eG").addEventListener('input', function(){ $("u-eGOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
-  $("u-e").addEventListener('input', function(){ $("u-eOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
-  $("u-pp").addEventListener('input', function(){ $("u-ppOut").textContent = this.value+"%"; if(uncEnabled) runMonteCarlo(); });
-
-  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); if(uncEnabled&&mcSamples) drawHistogram(mcSamples.map(function(s){return s.psi;}).sort(function(a,b){return a-b;})); });
+  window.addEventListener("resize", function(){ drawCSLplot(); drawStrengthPlot(); });
 
   // redraw once this page's card actually becomes visible (same fix as section 9's charts)
   (function(){
