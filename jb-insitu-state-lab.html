@@ -178,7 +178,7 @@ body{padding-bottom:54px}
 </div></header>
 <div style="position:fixed;bottom:70px;right:6px;z-index:56;font-size:8.5px;color:#9aa9ae;opacity:.7;pointer-events:none;background:rgba(255,255,255,.75);padding:2px 6px;border-radius:4px">Prepared by: Zana Taher</div>
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">1. Start here</a><a href="#mental-model">2. Mental model</a><a href="#notation">3. Notation</a><a href="#cpt-groups-section">4. Dimensionless CPT</a><a href="#ic-section">5. Soil behaviour type</a><a href="#inversion-section">6. Inverting for ψ</a><a href="#variability-section">7. How variable is ψ</a><a href="#knowledge-check">8. Check learning</a>
+<a href="#start">1. Start here</a><a href="#cpt-sounding">2. A CPT sounding</a><a href="#mental-model">3. Mental model</a><a href="#notation">4. Notation</a><a href="#cpt-groups-section">5. Dimensionless CPT</a><a href="#ic-section">6. Soil behaviour type</a><a href="#inversion-section">7. Inverting for ψ</a><a href="#variability-section">8. How variable is ψ</a><a href="#knowledge-check">9. Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -200,16 +200,17 @@ body{padding-bottom:54px}
 <div class="callout"><b>Recommended route:</b> mental model first, then dimensionless groups, soil type, the ψ inversion itself, and only then the variability question.</div></div>
 <div class="big-idea"><div class="eyebrow" style="color:#aee7f7">The big idea</div><div class="formula">Q<sub>p</sub> = k&middot;exp(&minus;m&psi;)</div><p>Cone resistance, once you strip out the effect of stress level, is an exponential function of state alone. Invert it, and a number in MPa becomes a statement about density relative to critical.</p></div>
 </div>
-<p class="explain" style="font-size:11.5px;margin-top:10px">This module is 8 short pages, in this order — jump to any of them, or just use the Next button below to go straight through.</p>
+<p class="explain" style="font-size:11.5px;margin-top:10px">This module is 9 short pages, in this order — jump to any of them, or just use the Next button below to go straight through.</p>
 <div class="goal-grid">
 <button type="button" class="goal" data-gotopage="start"><span class="goal-num">1</span><b>Start here</b>Why raw CPT numbers can't be read directly, and where to jump in.</button>
-<button type="button" class="goal" data-gotopage="mental-model"><span class="goal-num">2</span><b>Mental model</b>See why the same soil gives very different raw readings at different depths.</button>
-<button type="button" class="goal" data-gotopage="notation"><span class="goal-num">3</span><b>Notation</b>Every symbol used in this module, grouped by what it describes.</button>
-<button type="button" class="goal" data-gotopage="cpt-groups-section"><span class="goal-num">4</span><b>Dimensionless CPT</b>Q, F, B<sub>q</sub>, and Q<sub>p</sub> — stripping stress level out of the raw channels.</button>
-<button type="button" class="goal" data-gotopage="ic-section"><span class="goal-num">5</span><b>Soil behaviour type</b>The I<sub>c</sub> index — confirming you're actually looking at sand before trusting ψ.</button>
-<button type="button" class="goal" data-gotopage="inversion-section"><span class="goal-num">6</span><b>Inverting for ψ</b>Q<sub>p</sub>=k&middot;exp(&minus;m&psi;), calibrated from the same 17-sand database as Module 1.</button>
-<button type="button" class="goal" data-gotopage="variability-section"><span class="goal-num">7</span><b>How variable is &psi;</b>The real Nerlerk berm case: why the mean isn't the design value.</button>
-<button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">8</span><b>Check learning</b>40 questions, split into checkpoints you'll already have met along the way.</button>
+<button type="button" class="goal" data-gotopage="cpt-sounding"><span class="goal-num">2</span><b>A CPT sounding</b>A real-looking two-layer sounding to explore — or upload your own.</button>
+<button type="button" class="goal" data-gotopage="mental-model"><span class="goal-num">3</span><b>Mental model</b>See why the same soil gives very different raw readings at different depths.</button>
+<button type="button" class="goal" data-gotopage="notation"><span class="goal-num">4</span><b>Notation</b>Every symbol used in this module, grouped by what it describes.</button>
+<button type="button" class="goal" data-gotopage="cpt-groups-section"><span class="goal-num">5</span><b>Dimensionless CPT</b>Q, F, B<sub>q</sub>, and Q<sub>p</sub> — stripping stress level out of the raw channels.</button>
+<button type="button" class="goal" data-gotopage="ic-section"><span class="goal-num">6</span><b>Soil behaviour type</b>The I<sub>c</sub> index — confirming you're actually looking at sand before trusting ψ.</button>
+<button type="button" class="goal" data-gotopage="inversion-section"><span class="goal-num">7</span><b>Inverting for ψ</b>Q<sub>p</sub>=k&middot;exp(&minus;m&psi;), calibrated from the same 17-sand database as Module 1.</button>
+<button type="button" class="goal" data-gotopage="variability-section"><span class="goal-num">8</span><b>How variable is &psi;</b>The real Nerlerk berm case: why the mean isn't the design value.</button>
+<button type="button" class="goal" data-gotopage="knowledge-check"><span class="goal-num">9</span><b>Check learning</b>40 questions, split into checkpoints you'll already have met along the way.</button>
 </div>
 </section>
 
@@ -221,19 +222,57 @@ body{padding-bottom:54px}
 </div>
 </div>
 
+<section id="cpt-sounding" class="card">
+<h2>2. A CPT sounding, start to finish</h2>
+<div class="explain"><p>Every section after this one works with <b>one depth at a time</b>. A real CPT gives you a continuous profile instead &mdash; q<sub>t</sub>, f<sub>s</sub>, and u<sub>2</sub> recorded every few centimeters from the surface down. Below is a synthetic sounding built for this module (not real project data) with two contrasting layers, so you can see how the raw channels &mdash; and everything they feed into &mdash; change with depth before diving into the equations. Explore it, send a depth straight into Section 5's calculator, or upload your own sounding.</p></div>
+
+<div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a looser upper zone and a denser lower zone &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it.</div>
+
+<div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:440px" role="img" aria-label="Four-panel CPT log: tip resistance, sleeve friction, pore pressure, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span></div>
+
+<div class="guided-panel">
+<div class="grid4">
+<div class="slider-block"><label for="sndDepth"><span>Selected depth (m)</span> <span class="readout" id="sndDepthOut">4.00</span></label><input id="sndDepth" type="range" min="0.1" max="16" step="0.05" value="4"></div>
+<div class="slider-block"><label for="sndGamma"><span>Assumed unit weight, &gamma; (kN/m&sup3;)</span> <span class="readout" id="sndGammaOut">19.0</span></label><input id="sndGamma" type="range" min="15" max="21" step="0.5" value="19"><div class="hint">Used only to estimate &sigma;&prime;<sub>vo</sub> for this preview &mdash; a real design would use a measured or logged unit-weight profile.</div></div>
+<div class="slider-block"><label for="sndWt"><span>Water table depth (m)</span> <span class="readout" id="sndWtOut">1.5</span></label><input id="sndWt" type="range" min="0" max="6" step="0.1" value="1.5"></div>
+<div class="slider-block"><label for="sndKo"><span>Geostatic ratio, K<sub>o</sub></span> <span class="readout" id="sndKoOut">0.50</span></label><input id="sndKo" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
+</div>
+<label for="sndSandSelect" style="font-size:12.5px;font-weight:700">Sand for the &psi;-inversion preview (Section 7's method)</label><br>
+<select id="sndSandSelect"></select>
+<div class="statgrid" id="sndStats" style="margin-top:10px"></div>
+<button type="button" id="sndUseDepthBtn" class="alt" style="margin-top:10px">Use this depth in Section 5's calculator →</button>
+</div>
+
+<div class="s2-lab">
+<h3 style="margin-top:0">Or upload your own CPT sounding</h3>
+<p class="explain" style="font-size:12.5px">Your file should be a CSV or tab-delimited text file with <b>one row per depth</b>, columns in exactly this order:</p>
+<div style="overflow-x:auto"><table style="margin:6px 0 10px"><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th><th>Column 4</th></tr></thead><tbody><tr><td>Depth (m)</td><td>q<sub>t</sub> or q<sub>c</sub> &mdash; tip resistance (MPa)</td><td>f<sub>s</sub> &mdash; sleeve friction (kPa)</td><td>u<sub>2</sub> &mdash; dynamic pore pressure (kPa)</td></tr></tbody></table></div>
+<p class="explain" style="font-size:11.5px;color:var(--muted)">A header row (or several, like a raw ConeTec/Vertek export) is fine &mdash; any row that doesn't start with 4 readable numbers is skipped automatically. Extra columns after the fourth (R<sub>f</sub>, inclination, layer number, depth in feet, etc.) are simply ignored, so a full raw CPT export works as-is without editing.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+<input type="file" id="sndFileInput" accept=".csv,.txt">
+<button type="button" id="sndDownloadExample" class="alt">Download example CSV</button>
+<button type="button" id="sndResetExample" class="alt">Reset to example sounding</button>
+</div>
+<div id="sndUploadStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
+</div>
+
+<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is fabricated for this module &mdash; not data from any real site or project &mdash; engineered specifically to show two contrasting layers. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead.</div>
+</section>
+
 <div id="flowStickyMarker"></div>
 <div class="flow-sticky" id="flowSticky">
-<div class="flow-map" aria-label="Concept map, updates live as you move sliders on Sections 4-7">
+<div class="flow-map" aria-label="Concept map, updates live as you move sliders on Sections 2 and 5-8">
 <div class="flow-node" id="flowRaw" style="background:#586d75">Raw channels<small>q<sub>t</sub>, f<sub>s</sub>, u<sub>2</sub></small></div><div class="flow-arrow">→</div>
 <div class="flow-node" id="flowDim" style="background:#1479b8">Dimensionless<small>Q, F, B<sub>q</sub>, Q<sub>p</sub></small></div><div class="flow-arrow">→</div>
 <div class="flow-node" id="flowIc" style="background:#7653a6">Soil type<small>I<sub>c</sub></small></div><div class="flow-arrow">→</div>
 <div class="flow-node" id="flowPsi" style="background:var(--green)">State<small>&psi;</small></div>
 </div>
-<p class="explain" style="font-size:10.5px;margin:4px 0 0;color:var(--muted)">Live recap — tracks the sliders on Sections 4&ndash;7 as you move them.</p>
+<p class="explain" style="font-size:10.5px;margin:4px 0 0;color:var(--muted)">Live recap — tracks the sliders on Sections 2 and 5&ndash;8 as you move them.</p>
 </div>
 
 <section id="mental-model" class="card">
-<h2>2. Build the mental model before using the equations</h2>
+<h2>3. Build the mental model before using the equations</h2>
 <p class="explain">Follow the chain above. Each stage answers a different question, and it's the organizing structure for Chapters 4&ndash;5. Before any formula: here's the single fact that makes a raw CPT reading useless on its own.</p>
 
 <div class="s2-lab">
@@ -246,9 +285,11 @@ body{padding-bottom:54px}
 <div id="mmStatus" class="callout" aria-live="polite">Drag the depth slider and watch the raw q<sub>t</sub> gap between dense and loose grow, even though neither sand's &psi; has changed.</div>
 <div class="statgrid n2" id="mmStats"></div>
 </div>
-<div><canvas id="mmChart" role="img" aria-label="Chart of raw tip resistance versus depth-equivalent stress for a constant-psi dense sand and a constant-psi loose sand, showing the raw resistance gap widening with depth."></canvas></div>
+<div><canvas id="mmChart" role="img" aria-label="Chart of raw tip resistance versus depth-equivalent stress for a constant-psi dense sand and a constant-psi loose sand, showing the raw resistance gap widening with depth."></canvas>
+<div class="legend"><span><i style="background:var(--green)"></i>dense, ψ=&minus;0.15 (constant)</span><span><i style="background:var(--red)"></i>loose, ψ=+0.05 (constant)</span><span><i style="background:#9aa9ae"></i>current depth marker</span></div>
 </div>
-<p class="explain" style="font-size:11px;margin-top:6px">Both lines use Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) &mdash; the exact equation Section 6 inverts &mdash; with &psi;=&minus;0.15 (dense) and &psi;=+0.05 (loose) held fixed, for a representative sand (&lambda;<sub>10</sub>=0.05). <b>This is why Section 4 exists:</b> before you can say anything about density from a CPT trace, the raw MPa reading has to be normalized by the stress level it was measured at.</p>
+</div>
+<p class="explain" style="font-size:11px;margin-top:6px">Both lines use Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) &mdash; the exact equation Section 7 inverts &mdash; with &psi;=&minus;0.15 (dense) and &psi;=+0.05 (loose) held fixed, for a representative sand (&lambda;<sub>10</sub>=0.05). <b>This is why Section 5 exists:</b> before you can say anything about density from a CPT trace, the raw MPa reading has to be normalized by the stress level it was measured at.</p>
 </div>
 
 <h3>Walk through the inversion chain</h3>
@@ -263,7 +304,7 @@ body{padding-bottom:54px}
 <h3 id="predictQuiz">Predict before calculating</h3>
 <div class="explain"><p>A CPT at 3&nbsp;m depth (p&prime;<sub>o</sub>&asymp;50&nbsp;kPa) gives q<sub>t</sub>=8&nbsp;MPa. The same sand, at 20&nbsp;m depth (p&prime;<sub>o</sub>&asymp;350&nbsp;kPa) in the same deposit, gives q<sub>t</sub>=25&nbsp;MPa. What's the best first-order read on this?</p></div>
 <div class="choice-row" id="predictionChoices"><button type="button" data-answer="wrong">The deeper sand must be much looser (weaker), since 25 isn't "3&times;" 8</button><button type="button" data-answer="correct">Both readings could easily represent a similar &psi; — raw q<sub>t</sub> naturally grows with depth even at constant state</button><button type="button" data-answer="wrong">The deeper sand must be much denser (stronger)</button></div>
-<div id="predictionFeedback" class="feedback" aria-live="polite">Choose an answer, then use Section 6 to test it numerically.</div>
+<div id="predictionFeedback" class="feedback" aria-live="polite">Choose an answer, then use Section 7 to test it numerically.</div>
 
 <div class="grid2" style="margin-top:16px">
 <div class="visual-panel"><h3>Particle-scale intuition</h3><div class="two-state">
@@ -275,13 +316,13 @@ body{padding-bottom:54px}
 <div class="lesson-tabs" role="tablist" aria-label="What changes Qp?"><button type="button" role="tab" id="tab-pane-qt" aria-controls="pane-qt" aria-selected="true" class="on" data-pane="pane-qt">Increase q<sub>t</sub></button><button type="button" role="tab" id="tab-pane-po" aria-controls="pane-po" aria-selected="false" data-pane="pane-po">Increase p&prime;<sub>o</sub></button><button type="button" role="tab" id="tab-pane-psi" aria-controls="pane-psi" aria-selected="false" data-pane="pane-psi">Decrease &psi;</button></div>
 <div id="pane-qt" class="lesson-pane on callout" role="tabpanel" aria-labelledby="tab-pane-qt"><b>Increase q<sub>t</sub> at fixed p&prime;<sub>o</sub>:</b> Q<sub>p</sub> rises directly — a genuinely stronger reading at the same stress level.</div>
 <div id="pane-po" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-po"><b>Increase p&prime;<sub>o</sub> at fixed q<sub>t</sub>:</b> Q<sub>p</sub> FALLS, even though nothing about the soil changed. This is exactly the depth effect in the chart above, working in reverse.</div>
-<div id="pane-psi" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-psi"><b>Decrease &psi; (denser):</b> Q<sub>p</sub> rises exponentially, per Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) — this is the actual relationship Section 6 inverts.</div>
+<div id="pane-psi" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-psi"><b>Decrease &psi; (denser):</b> Q<sub>p</sub> rises exponentially, per Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) — this is the actual relationship Section 7 inverts.</div>
 <div class="warning"><b>Sign-convention checkpoint:</b> this module keeps Module 1's convention &mdash; &psi;&lt;0 is dense/dilative/strong, &psi;&gt;0 is loose/contractive/weak.</div>
 </div></div>
 </section>
 
 <div class="card" id="notation">
-<h2>3. Notation used in this module</h2>
+<h2>4. Notation used in this module</h2>
 <p class="explain" style="font-size:12px">Symbols in roughly the order they first appear below, grouped by what they describe &mdash; choose any card to jump to where it's actually used. &psi;, &Gamma;, and &lambda;<sub>10</sub> carry over unchanged from Module 1.</p>
 <div class="notation-grid">
 
@@ -316,8 +357,8 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="cpt-groups-section">
-<h2>4. From raw CPT readings to dimensionless resistance</h2>
-<div class="explain"><p>A raw CPT gives three channels: tip resistance q<sub>t</sub>, sleeve friction f<sub>s</sub>, and pore pressure u<sub>2</sub>. As Section 2's demo just showed, none of these mean anything on their own &mdash; resistance scales almost linearly with stress level, so the book's Table 4.1 strips that out with dimensionless groups:</p></div>
+<h2>5. From raw CPT readings to dimensionless resistance</h2>
+<div class="explain"><p>A raw CPT gives three channels: tip resistance q<sub>t</sub>, sleeve friction f<sub>s</sub>, and pore pressure u<sub>2</sub>. As Section 3's demo just showed, none of these mean anything on their own &mdash; resistance scales almost linearly with stress level, so the book's Table 4.1 strips that out with dimensionless groups:</p></div>
 <div class="eq">Q = (q<sub>t</sub> &minus; &sigma;<sub>vo</sub>) / &sigma;&prime;<sub>vo</sub> &nbsp;&nbsp; F = f<sub>s</sub>/(q<sub>t</sub> &minus; &sigma;<sub>vo</sub>) &nbsp;&nbsp; B<sub>q</sub> = (u<sub>2</sub> &minus; u<sub>0</sub>)/(q<sub>t</sub> &minus; &sigma;<sub>vo</sub>)</div>
 <div class="eq">p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>(1+2K<sub>o</sub>)/3 &nbsp;&nbsp; Q<sub>p</sub> = (q<sub>t</sub> &minus; p&prime;<sub>o</sub>) / p&prime;<sub>o</sub> &nbsp;&nbsp; (&asymp; 3Q/(1+2K<sub>o</sub>), Table 4.1)</div>
 
@@ -339,7 +380,9 @@ body{padding-bottom:54px}
 <div class="statgrid" id="cptStats"></div>
 <p class="explain" style="font-size:11.5px;color:var(--muted);margin-top:6px">B<sub>q</sub> should stay within about &plusmn;0.02 for the drained-penetration relationships used below (Section 4.7.3) &mdash; the badge flags it if not.</p>
 </div>
-<div><canvas id="cptChart" role="img" aria-label="Bar chart comparing the raw channels to the resulting dimensionless Qp value on a reference scale."></canvas></div>
+<div><canvas id="cptChart" role="img" aria-label="Bar chart comparing the raw channels to the resulting dimensionless Qp value on a reference scale."></canvas>
+<div class="legend"><span><i style="background:#586d75"></i>q<sub>t</sub> (raw, MPa)</span><span><i style="background:#1479b8"></i>Q (dimensionless)</span><span><i style="background:var(--red)"></i>Q<sub>p</sub> (dimensionless)</span></div>
+</div>
 </div>
 </div>
 
@@ -363,7 +406,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="ic-section">
-<h2>5. Soil behaviour&ndash;type index, I<sub>c</sub></h2>
+<h2>6. Soil behaviour&ndash;type index, I<sub>c</sub></h2>
 <div class="explain"><p>Before trusting a &psi; estimate, the CPT itself tells you whether you're even in sand. Been &amp; Jefferies' index uses the piezometric channel (Eq. 4.13a); Robertson &amp; Wride's ignores it (Eq. 4.13b, and per the book, "best avoided" when pore pressure data exists):</p></div>
 <div class="eq">I<sub>c</sub> = &radic;[(3&minus;log(Q(1&minus;B<sub>q</sub>)+1))&sup2; + (1.5+1.3&middot;log(F))&sup2;] &nbsp;&nbsp; I<sub>c(R&amp;W)</sub> = &radic;[(3.47&minus;log(Q))&sup2; + (1.22+log(F))&sup2;]</div>
 <div class="statgrid n3" id="icStats"></div>
@@ -381,7 +424,9 @@ body{padding-bottom:54px}
 </tbody>
 </table>
 </div>
-<div><canvas id="icChart" role="img" aria-label="Horizontal scale showing where the current Ic value falls among the soil behaviour type boundaries."></canvas></div>
+<div><canvas id="icChart" role="img" aria-label="Horizontal scale showing where the current Ic value falls among the soil behaviour type boundaries."></canvas>
+<div class="legend"><span><i style="background:#e38a22"></i>gravelly &rarr; sand</span><span><i style="background:#c9a227"></i>silty sand/sandy silt</span><span><i style="background:#7653a6"></i>clayey silt</span><span><i style="background:#61737b"></i>clay</span><span><i style="background:#123b4a"></i>current I<sub>c</sub> marker</span></div>
+</div>
 </div>
 <div class="callout" style="margin-top:10px" id="icApplicability" aria-live="polite"></div>
 
@@ -395,7 +440,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="inversion-section">
-<h2>6. Inverting for &psi;: the dimensionless CPT method</h2>
+<h2>7. Inverting for &psi;: the dimensionless CPT method</h2>
 <div class="explain"><p>The book's core result (Eqs. 4.7/4.8, from Been et al. 1986/87's calibration chamber database) is a simple exponential relationship between Q<sub>p</sub> and &psi;, with the two fitting constants k and m predictable directly from a sand's CSL slope &lambda;<sub>10</sub> (Eqs. 4.11a/b) &mdash; the same &lambda;<sub>10</sub> already in Module 1's Table 2.1 database:</p></div>
 <div class="eq">Q<sub>p</sub> = k&middot;exp(&minus;m&psi;) &nbsp;&nbsp; &psi; = &minus;ln(Q<sub>p</sub>/k)/m</div>
 <div class="eq">k = 8 + 0.55/(&lambda;<sub>10</sub> &minus; 0.01) &nbsp;&nbsp; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) &nbsp; (Eqs. 4.11a, 4.11b)</div>
@@ -423,7 +468,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="variability-section">
-<h2>7. How variable is &psi; really? Choosing a characteristic value &psi;<sub>k</sub></h2>
+<h2>8. How variable is &psi; really? Choosing a characteristic value &psi;<sub>k</sub></h2>
 <div class="explain">
 <p>Chapter 5's central point: &psi; measured continuously down a real CPT sounding is never one number, it's a distribution &mdash; and Rowe &amp; Craig's centrifuge caisson tests found that as little as <b>4% loose material by volume</b> measurably degraded cyclic performance, with <b>10%</b> triggering outright liquefaction failure during testing. So which percentile of the distribution should a design actually use? The book's real example is the Nerlerk berm (Module 1's Ch. 1 flow-failure case history): over the 3&ndash;7 m depth interval, the median CPT-derived &psi; &asymp; &minus;0.08 looked comfortably stable, but the 80th percentile was &asymp; &minus;0.03, and Onisiphorou's stochastic re-analysis found liquefiable behavior starting around &psi; &gt; &minus;0.02 &mdash; i.e. the "average" soil looked fine while a real, connected fraction of it did not.</p>
 </div>
@@ -438,7 +483,9 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:12px">Defaults are the book's own Nerlerk berm stochastic-analysis input (&psi;<sub>&mu;</sub>=&minus;0.08, &psi;<sub>&sigma;</sub>=0.05, Onisiphorou 2000). "80th percentile" here follows the book's convention: the value that 80% of measurements are <i>stronger</i> (denser) than &mdash; i.e. the 80th percentile of the &psi; distribution itself, since higher &psi; is weaker. Practical guidance from Section 5.5.1: <b>80th&ndash;90th percentile</b>, erring toward 90th for cyclic loading and relaxing toward 80th for static problems.</p>
 
 <div class="bayes-grid2">
-<div class="bayes-chart-box"><canvas id="distChart" role="img" aria-label="Probability density chart of the psi distribution, with the region weaker than the characteristic value shaded."></canvas></div>
+<div class="bayes-chart-box"><canvas id="distChart" role="img" aria-label="Probability density chart of the psi distribution, with the region weaker than the characteristic value shaded."></canvas>
+<div class="legend"><span><i style="background:#123b4a"></i>&psi; probability density</span><span><i style="background:var(--red)"></i>weaker than &psi;<sub>k</sub> (shaded)</span><span><i style="background:#1479b8"></i>chosen &psi;<sub>k</sub></span><span><i style="background:#c64852"></i>Nerlerk liquefiable threshold</span></div>
+</div>
 <div>
 <div class="statgrid n2" id="psikStats"></div>
 <table style="margin-top:10px">
@@ -462,19 +509,19 @@ body{padding-bottom:54px}
 </div>
 
 <section id="knowledge-check" class="card">
-<h2>8. Check learning</h2>
+<h2>9. Check learning</h2>
 <p class="explain">You've already met all four blocks (A&ndash;D) along the way, right after the section that taught them. <b>"Check my understanding" below grades every block together</b>, wherever it appeared on the page, so it's fine to submit even if you skimmed or skipped some.</p>
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 40 answered</div>
 <div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
 
-<div class="callout" style="margin-top:14px"><b>Back to where you started.</b> Section 2's chain asked you to read raw channels, normalize, check soil type, and invert. You now have the real machinery behind each arrow: <b>normalize</b> is Q, F, B<sub>q</sub>, Q<sub>p</sub> (Table 4.1); <b>check soil type</b> is I<sub>c</sub> (Eq. 4.13); <b>invert</b> is Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) (Eqs. 4.7/4.8/4.11); and the honest final step &mdash; <b>how variable is it</b> &mdash; is Chapter 5's characteristic value &psi;<sub>k</sub>. <a href="jb-static-liquefaction-lab.html">Module 3</a> picks up from here: what a design actually does with &psi;<sub>k</sub> once you have it.</p>
+<div class="callout" style="margin-top:14px"><b>Back to where you started.</b> Section 3's chain asked you to read raw channels, normalize, check soil type, and invert. You now have the real machinery behind each arrow: <b>normalize</b> is Q, F, B<sub>q</sub>, Q<sub>p</sub> (Table 4.1); <b>check soil type</b> is I<sub>c</sub> (Eq. 4.13); <b>invert</b> is Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) (Eqs. 4.7/4.8/4.11); and the honest final step &mdash; <b>how variable is it</b> &mdash; is Chapter 5's characteristic value &psi;<sub>k</sub>. <a href="jb-static-liquefaction-lab.html">Module 3</a> picks up from here: what a design actually does with &psi;<sub>k</sub> once you have it.</p>
 
 <h3>Quick-reference glossary</h3><div class="glossary-grid">
 <div class="term"><b>q<sub>t</sub>, f<sub>s</sub>, u<sub>2</sub></b>The three raw CPT channels: tip resistance, sleeve friction, pore pressure.</div><div class="term"><b>Q, F, B<sub>q</sub></b>Dimensionless normalized tip resistance, friction ratio, and pore-pressure ratio (Table 4.1).</div><div class="term"><b>Q<sub>p</sub></b>Tip resistance normalized by mean effective stress p&prime;<sub>o</sub>.</div><div class="term"><b>I<sub>c</sub></b>Soil behaviour&ndash;type index; higher means finer/more clay-like.</div><div class="term"><b>k, m</b>Fitting constants in Q<sub>p</sub>=k&middot;exp(&minus;m&psi;), predictable from &lambda;<sub>10</sub>.</div><div class="term"><b>Stress-level bias</b>The &plusmn;0.05 error in this chapter's simple inversion, caused by ignoring elastic rigidity I<sub>r</sub>.</div><div class="term"><b>&psi;<sub>&mu;</sub>, &psi;<sub>&sigma;</sub></b>Mean and standard deviation of &psi; measured down a real sounding.</div><div class="term"><b>&psi;<sub>k</sub></b>Characteristic (design) &psi; &mdash; a chosen percentile, not the mean.</div><div class="term"><b>Nerlerk berm</b>The real case history showing why the mean &psi; understated risk.</div></div>
 </section>
 
 <div class="card" id="about-tool">
-<div class="warning"><b>About this tool.</b> Section 4's dimensionless groups and Section 5's I<sub>c</sub> formulas (Eqs. 4.13a/b, Table 4.4 boundaries) are transcribed exactly. Section 6's Q<sub>p</sub>&ndash;&psi; relationship (Eqs. 4.7, 4.8, 4.11a, 4.11b) is the book's own &lambda;<sub>10</sub>-only calibration and is presented together with its own documented limitation (stress-level/rigidity bias, &plusmn;0.05, Section 4.6.2). The book's fully rigidity-corrected general inversion (Eq. 4.12, Table 4.3) is real and cited, but was <b>not</b> implemented as a calculator here: the source PDF's typesetting of Eq. 4.12 could not be extracted unambiguously (an exponent/constant of 1.45 appears in a position consistent with either k<sup>1.45</sup>=&prod;f<sub>i</sub> or a scaling constant, and this could not be confirmed against the original 1998 paper), so rather than guess, the qualitative finding (H and M matter most, N and &lambda; less, &nu; negligible) is reported without a fabricated formula. Section 7's characteristic-value calculator assumes a normal distribution of &psi; for illustration; the book notes real sand strength distributions often skew log-normal. The Section 2 mental-model chart uses illustrative &psi; values (&minus;0.15 dense, +0.05 loose) held constant with depth for a representative &lambda;<sub>10</sub>=0.05 sand &mdash; it is meant to isolate the stress-normalization effect, not to represent a real sounding.</div>
+<div class="warning"><b>About this tool.</b> Section 5's dimensionless groups and Section 6's I<sub>c</sub> formulas (Eqs. 4.13a/b, Table 4.4 boundaries) are transcribed exactly. Section 7's Q<sub>p</sub>&ndash;&psi; relationship (Eqs. 4.7, 4.8, 4.11a, 4.11b) is the book's own &lambda;<sub>10</sub>-only calibration and is presented together with its own documented limitation (stress-level/rigidity bias, &plusmn;0.05, Section 4.6.2). The book's fully rigidity-corrected general inversion (Eq. 4.12, Table 4.3) is real and cited, but was <b>not</b> implemented as a calculator here: the source PDF's typesetting of Eq. 4.12 could not be extracted unambiguously (an exponent/constant of 1.45 appears in a position consistent with either k<sup>1.45</sup>=&prod;f<sub>i</sub> or a scaling constant, and this could not be confirmed against the original 1998 paper), so rather than guess, the qualitative finding (H and M matter most, N and &lambda; less, &nu; negligible) is reported without a fabricated formula. Section 8's characteristic-value calculator assumes a normal distribution of &psi; for illustration; the book notes real sand strength distributions often skew log-normal. The Section 3 mental-model chart uses illustrative &psi; values (&minus;0.15 dense, +0.05 loose) held constant with depth for a representative &lambda;<sub>10</sub>=0.05 sand &mdash; it is meant to isolate the stress-normalization effect, not to represent a real sounding.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
 
@@ -536,7 +583,255 @@ function updateFlow(raw,dim,ic,psi){
   if(fp && psi!==undefined) fp.querySelector("small").textContent=psi;
 }
 
-// ---------------- Section 2: mental-model mini demo ----------------
+// ---------------- Section 2: CPT sounding, start to finish ----------------
+var sndRngState = 20260828;
+function sndRnd(){ sndRngState=(sndRngState*1103515245+12345)&0x7fffffff; return sndRngState/0x7fffffff; }
+function sndGaussian(){ var u1=Math.max(1e-9,sndRnd()), u2=sndRnd(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
+
+var SND_LAYER_Z = 8;   // synthetic layer boundary depth (m); null once real user data is loaded
+var SND_MAX_Z = 16;
+
+function generateSyntheticSounding(){
+  var rows=[];
+  for(var z=0.1; z<=16+1e-9; z=+(z+0.1).toFixed(2)){
+    var inUpper = z < 8;
+    var qt, rfBase, u2;
+    if(inUpper){
+      qt = 2.2 + 0.45*z + sndGaussian()*0.7;
+      rfBase = 1.6;
+      u2 = 9.81*Math.max(0,z-1.0) + qt*1000*0.05 + sndGaussian()*12;
+    } else {
+      var zz = z - 8;
+      qt = 6.5 + 0.55*zz + sndGaussian()*1.1;
+      rfBase = 0.55;
+      u2 = 9.81*Math.max(0,z-1.0)*0.35 + 6 + sndGaussian()*9;
+    }
+    qt = Math.max(0.5, qt);
+    var rf = Math.max(0.15, rfBase + sndGaussian()*0.25);
+    var fs = qt*1000*rf/100;
+    u2 = Math.max(1, u2);
+    rows.push({z:+z.toFixed(2), qt:+qt.toFixed(2), fs:+fs.toFixed(1), u2:+u2.toFixed(1)});
+  }
+  return rows;
+}
+
+var sndData = generateSyntheticSounding();
+var sndIsUserData = false;
+
+function sndInterp(z){
+  if(!sndData.length) return null;
+  if(z<=sndData[0].z) return sndData[0];
+  if(z>=sndData[sndData.length-1].z) return sndData[sndData.length-1];
+  for(var i=0;i<sndData.length-1;i++){
+    if(z>=sndData[i].z && z<=sndData[i+1].z){
+      var a=sndData[i], b=sndData[i+1];
+      var t=(z-a.z)/((b.z-a.z)||1);
+      return {z:z, qt:a.qt+(b.qt-a.qt)*t, fs:a.fs+(b.fs-a.fs)*t, u2:a.u2+(b.u2-a.u2)*t};
+    }
+  }
+  return sndData[sndData.length-1];
+}
+
+var sndSandSel = el('sndSandSelect');
+sndSandSel.innerHTML = SANDS.map(function(s,i){ return '<option value="'+i+'"'+(i===8?" selected":"")+'>'+s.name+' (λ10='+s.lambda10+')</option>'; }).join("");
+
+function sndComputeFromValues(z, qt, fs, u2){
+  var gamma = num('sndGamma'), wt = num('sndWt'), ko = num('sndKo');
+  var svTotal = gamma*z;
+  var u0 = z>wt ? 9.81*(z-wt) : 0;
+  var svEff = Math.max(0.5, svTotal-u0);
+  var qtKpa = qt*1000;
+  var qNet = Math.max(1, qtKpa-svTotal);
+  var Q = qNet/svEff;
+  var F = (fs/qNet)*100;
+  var Bq = (u2-u0)/qNet;
+  var po = svEff*(1+2*ko)/3;
+  var Qp = (qtKpa-po)/po;
+  var ic = icOf(Q,F,Bq);
+  var sand = SANDS[+sndSandSel.value];
+  var psi = psiOfQp(sand.lambda10, Math.max(1,Qp));
+  return {z:z, qt:qt, fs:fs, u2:u2, svTotal:svTotal, u0:u0, svEff:svEff, Q:Q, F:F, Bq:Bq, po:po, Qp:Qp, ic:ic, psi:psi};
+}
+function sndComputeAt(z){ var pt=sndInterp(z); if(!pt) return null; return sndComputeFromValues(z, pt.qt, pt.fs, pt.u2); }
+function sndComputeAtRow(row){ return sndComputeFromValues(row.z, row.qt, row.fs, row.u2); }
+
+function drawCptLog(){
+  var host=el('cptLogChart'); if(!host) return;
+  var W=host.clientWidth||760, H=440;
+  host.width=W; host.height=H;
+  var ctx=host.getContext('2d'); ctx.clearRect(0,0,W,H);
+  var mt=30, mb=32, ml=42, mr=10, gap=16;
+  var ph=H-mt-mb;
+  var panelCount=4;
+  var panelW=(W-ml-mr-gap*(panelCount-1))/panelCount;
+  function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/SND_MAX_Z)); }
+
+  ctx.fillStyle='#61737b'; ctx.font='10px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  var zStep = SND_MAX_Z<=8?1:(SND_MAX_Z<=20?2:5);
+  for(var zt=0; zt<=SND_MAX_Z+1e-6; zt+=zStep){ ctx.fillText(zt.toFixed(0), ml-6, Y(zt)); }
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('depth (m)',0,0); ctx.restore();
+
+  var qtMax = Math.max(10, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.qt;}))/2)*2 + 2);
+  var fsMax = Math.max(80, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.fs;}))/20)*20 + 20);
+  var u2Max = Math.max(60, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.u2;}))/20)*20 + 20);
+  var panels=[
+    {key:'qt', label:'qt (MPa)', color:'#1479b8', min:0, max:qtMax},
+    {key:'fs', label:'fs (kPa)', color:'#2d8b65', min:0, max:fsMax},
+    {key:'u2', label:'u2 (kPa)', color:'#7653a6', min:-20, max:u2Max, zero:true},
+    {key:'psi', label:'ψ (est.)', color:'#c64852', min:-0.3, max:0.3, zero:true, isPsi:true}
+  ];
+
+  panels.forEach(function(panel,pi){
+    var px = ml+gap*pi+panelW*pi;
+    function X(v){ var t=(v-panel.min)/(panel.max-panel.min); return px+Math.max(0,Math.min(1,t))*panelW; }
+    if(SND_LAYER_Z!=null){
+      ctx.fillStyle='#f2f7f9'; ctx.fillRect(px,mt,panelW,Y(SND_LAYER_Z)-mt);
+      ctx.fillStyle='#e7eef1'; ctx.fillRect(px,Y(SND_LAYER_Z),panelW,mt+ph-Y(SND_LAYER_Z));
+    } else {
+      ctx.fillStyle='#f7fafb'; ctx.fillRect(px,mt,panelW,ph);
+    }
+    ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(px+0.5,mt+0.5,panelW-1,ph-1);
+    if(panel.zero){
+      var x0=X(0);
+      ctx.strokeStyle='#c3ced1'; ctx.setLineDash([3,2]); ctx.beginPath(); ctx.moveTo(x0,mt); ctx.lineTo(x0,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.fillStyle='#20343d'; ctx.font='700 10.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    ctx.fillText(panel.label, px+panelW/2, mt-9);
+    ctx.font='9px Arial'; ctx.fillStyle='#9aa9ae'; ctx.textBaseline='top';
+    [panel.min, panel.max].forEach(function(v){
+      ctx.fillText(panel.isPsi ? (v>=0?'+':'')+v.toFixed(2) : v.toFixed(0), X(v), mt+ph+4);
+    });
+    ctx.beginPath(); ctx.strokeStyle=panel.color; ctx.lineWidth=1.6;
+    var first=true;
+    sndData.forEach(function(row){
+      var val = panel.isPsi ? sndComputeAtRow(row).psi : row[panel.key];
+      var x=X(val), y=Y(row.z);
+      if(first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+    var cz=num('sndDepth');
+    var yNow=Y(cz);
+    ctx.strokeStyle='#20343d'; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,yNow); ctx.lineTo(px+panelW,yNow); ctx.stroke(); ctx.setLineDash([]);
+    var cur = sndComputeAt(cz);
+    if(cur){
+      var curVal = panel.isPsi ? cur.psi : (panel.key==='qt'?cur.qt:panel.key==='fs'?cur.fs:cur.u2);
+      ctx.fillStyle=panel.color; ctx.beginPath(); ctx.arc(X(curVal), yNow, 4.5, 0, 7); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
+    }
+  });
+}
+
+function updateSounding(){
+  el('sndDepthOut').textContent = num('sndDepth').toFixed(2);
+  el('sndGammaOut').textContent = num('sndGamma').toFixed(1);
+  el('sndWtOut').textContent = num('sndWt').toFixed(1);
+  el('sndKoOut').textContent = num('sndKo').toFixed(2);
+  var c = sndComputeAt(num('sndDepth'));
+  if(c){
+    var badge = c.psi<0 ? '<span class="badge dilate">dense of critical</span>' : '<span class="badge contract">loose of critical</span>';
+    el('sndStats').innerHTML =
+      '<div class="stat"><small>q<sub>t</sub> (MPa)</small><strong>'+c.qt.toFixed(2)+'</strong></div>'+
+      '<div class="stat"><small>f<sub>s</sub> (kPa)</small><strong>'+c.fs.toFixed(1)+'</strong></div>'+
+      '<div class="stat"><small>u<sub>2</sub> (kPa)</small><strong>'+c.u2.toFixed(1)+'</strong></div>'+
+      '<div class="stat"><small>I<sub>c</sub></small><strong>'+c.ic.toFixed(2)+'</strong></div>'+
+      '<div class="stat"><small>Q<sub>p</sub></small><strong>'+c.Qp.toFixed(1)+'</strong></div>'+
+      '<div class="stat hi"><small>&psi; (estimated)</small><strong>'+(c.psi>=0?"+":"")+c.psi.toFixed(3)+'</strong>'+badge+'</div>';
+    updateFlow(c.qt.toFixed(1)+' MPa', 'Qp='+c.Qp.toFixed(1), 'Ic='+c.ic.toFixed(2), (c.psi>=0?"+":"")+c.psi.toFixed(3));
+  }
+  drawCptLog();
+}
+['sndDepth','sndGamma','sndWt','sndKo'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
+sndSandSel.addEventListener('change', updateSounding);
+
+el('sndUseDepthBtn').addEventListener('click', function(){
+  var z=num('sndDepth');
+  var c=sndComputeAt(z);
+  if(!c) return;
+  function setClamped(id,val){ var s=el(id); s.value=Math.max(+s.min,Math.min(+s.max,val)); }
+  setClamped('qt', c.qt);
+  setClamped('fs', c.fs);
+  setClamped('u2', c.u2);
+  setClamped('sv', c.svEff);
+  setClamped('u0', c.u0);
+  setClamped('ko', num('sndKo'));
+  if(window.gotoPageForElement) window.gotoPageForElement(document.getElementById('cpt-groups-section'));
+  updateSection4();
+  var pulseEl=document.getElementById('cptChart');
+  if(pulseEl){ pulseEl.classList.add('pulse-target'); setTimeout(function(){ pulseEl.classList.remove('pulse-target'); },2600); }
+});
+
+function sndParseCsv(text){
+  var lines = text.split(/\r\n|\r|\n/);
+  var rows=[];
+  for(var i=0;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line) continue;
+    var parts = line.split(/[,\t]+/).map(function(s){ return s.trim(); });
+    if(parts.length<4) continue;
+    var z=parseFloat(parts[0]), qt=parseFloat(parts[1]), fs=parseFloat(parts[2]), u2=parseFloat(parts[3]);
+    if(!isFinite(z) || !isFinite(qt) || !isFinite(fs) || !isFinite(u2)) continue;
+    rows.push({z:z, qt:qt, fs:fs, u2:u2});
+  }
+  rows.sort(function(a,b){ return a.z-b.z; });
+  return rows;
+}
+
+el('sndFileInput').addEventListener('change', function(ev){
+  var file = ev.target.files && ev.target.files[0];
+  if(!file) return;
+  var status = el('sndUploadStatus');
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var rows = sndParseCsv(String(e.target.result));
+    status.style.display='block';
+    if(rows.length < 5){
+      status.className='warning';
+      status.innerHTML = '<b>Couldn\'t read this file.</b> Found only '+rows.length+' row(s) with 4 readable numbers (depth, qt, fs, u2, in that order) on one line. Check the column-order guide above — a stray text column, a semicolon delimiter, or units baked into a cell\'s text are the most common causes.';
+      return;
+    }
+    sndData = rows;
+    sndIsUserData = true;
+    SND_MAX_Z = rows[rows.length-1].z;
+    SND_LAYER_Z = null;
+    var depthSlider = el('sndDepth');
+    depthSlider.min = rows[0].z; depthSlider.max = rows[rows.length-1].z;
+    depthSlider.value = rows[Math.floor(rows.length/2)].z;
+    status.className='callout';
+    status.innerHTML = '<b>Loaded '+rows.length+' depths from '+file.name+'</b>, ranging '+rows[0].z.toFixed(2)+' m to '+rows[rows.length-1].z.toFixed(2)+' m. The layer shading above is specific to the built-in example, so it\'s hidden for uploaded data.';
+    updateSounding();
+  };
+  reader.onerror = function(){
+    status.style.display='block'; status.className='warning';
+    status.textContent="Couldn't read that file — try re-saving it as a plain CSV or TXT file.";
+  };
+  reader.readAsText(file);
+});
+
+el('sndResetExample').addEventListener('click', function(){
+  sndData = generateSyntheticSounding();
+  sndIsUserData = false;
+  SND_MAX_Z = 16; SND_LAYER_Z = 8;
+  var depthSlider = el('sndDepth');
+  depthSlider.min=0.1; depthSlider.max=16; depthSlider.value=4;
+  el('sndUploadStatus').style.display='none';
+  el('sndFileInput').value='';
+  updateSounding();
+});
+
+el('sndDownloadExample').addEventListener('click', function(){
+  var lines=['Depth_m,qt_MPa,fs_kPa,u2_kPa'];
+  generateSyntheticSounding().forEach(function(r){ lines.push(r.z+','+r.qt+','+r.fs+','+r.u2); });
+  var blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href=url; a.download='example-cpt-sounding.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+});
+
+updateSounding();
+
+// ---------------- Section 3: mental-model mini demo ----------------
 var mmDepthSlide=el("mmDepth"), mmState="both";
 document.querySelectorAll('[data-mmstate]').forEach(function(b){
   b.addEventListener('click',function(){
@@ -618,10 +913,10 @@ window.addEventListener("resize",updateMentalModel);
       choices.forEach(function(x){ x.classList.remove('correct','wrong'); });
       if(b.dataset.answer==='correct'){
         b.classList.add('correct');
-        fb.textContent='Correct — raw qt scales with confining stress, so the same ψ naturally gives a bigger number deeper down. Section 6\'s Qp = (qt−p′o)/p′o is exactly the normalization that removes this effect.';
+        fb.textContent='Correct — raw qt scales with confining stress, so the same ψ naturally gives a bigger number deeper down. Section 7\'s Qp = (qt−p′o)/p′o is exactly the normalization that removes this effect.';
       } else {
         b.classList.add('wrong');
-        fb.textContent='Not quite — before concluding anything about density, the depth (stress) effect has to be normalized out first. Try Section 6\'s calculator with matched Qp values at both depths.';
+        fb.textContent='Not quite — before concluding anything about density, the depth (stress) effect has to be normalized out first. Try Section 7\'s calculator with matched Qp values at both depths.';
       }
     });
   });
@@ -656,7 +951,7 @@ window.addEventListener("resize",updateMentalModel);
   fill('denseParticles'); fill('looseParticles');
 })();
 
-// ---------------- Section 4: dimensionless CPT groups ----------------
+// ---------------- Section 5: dimensionless CPT groups ----------------
 var s1ids=["qt","fs","u2","sv","u0","ko"];
 s1ids.forEach(function(id){ el(id).addEventListener("input",updateSection4); });
 
@@ -732,8 +1027,8 @@ function updateIc(Q,F,Bq){
   drawIcChart(IcBJ);
   var isSand = IcBJ < 1.80;
   el("icApplicability").innerHTML = isSand
-    ? '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' — sand-like.</b> Section 6\'s &psi;-inversion, calibrated on sand-like calibration-chamber data, applies here without extra caveats.'
-    : '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' — outside the clean-sand range.</b> Section 6\'s &psi;-inversion was calibrated on sand-like materials; treat a &psi; computed at this I<sub>c</sub> with real caution, or as not meaningful at all once well into silt/clay territory.';
+    ? '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' — sand-like.</b> Section 7\'s &psi;-inversion, calibrated on sand-like calibration-chamber data, applies here without extra caveats.'
+    : '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' — outside the clean-sand range.</b> Section 7\'s &psi;-inversion was calibrated on sand-like materials; treat a &psi; computed at this I<sub>c</sub> with real caution, or as not meaningful at all once well into silt/clay territory.';
   updateFlow(undefined, undefined, 'Ic='+IcBJ.toFixed(2), undefined);
 }
 
@@ -777,7 +1072,7 @@ function updateJaky(){
 el("jakyPhi").addEventListener("input",updateJaky);
 updateJaky();
 
-// ---------------- Section 6: inversion ----------------
+// ---------------- Section 7: inversion ----------------
 var sandSel = el("sandSelect");
 sandSel.innerHTML = SANDS.map(function(s,i){ return '<option value="'+i+'"'+(i===8?" selected":"")+'>'+s.name+' (λ10='+s.lambda10+')</option>'; }).join("");
 sandSel.addEventListener("change", updateSection4);
@@ -833,9 +1128,9 @@ function updateInversionFromQp(Qp){
 }
 
 updateSection4();
-window.addEventListener("resize",function(){ updateSection4(); updateMentalModel(); updateSection7(); });
+window.addEventListener("resize",function(){ updateSection4(); updateMentalModel(); updateSection7(); updateSounding(); });
 
-// ---------------- Section 7: variability / characteristic value ----------------
+// ---------------- Section 8: variability / characteristic value ----------------
 function invNorm(p){
   var a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
   var b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
@@ -981,28 +1276,28 @@ window.runModule2SelfTests = function(){
 (function(){
 var QUIZ_40 = [
 // Block A — dimensionless CPT groups & Ko (10)
-{q:"Why can't raw qt alone tell you whether a sand is dense or loose?",opts:["It can — qt alone is fully sufficient for that judgment","qt scales with confining stress, so the same soil gives a higher qt at greater depth even with unchanged density — a fair comparison needs stress removed first","qt is completely unrelated to stress level"],correct:"b",exp:"This is exactly Section 2's mental-model demo: two constant-ψ sands read very different raw qt values simply because depth (stress) changed."},
+{q:"Why can't raw qt alone tell you whether a sand is dense or loose?",opts:["It can — qt alone is fully sufficient for that judgment","qt scales with confining stress, so the same soil gives a higher qt at greater depth even with unchanged density — a fair comparison needs stress removed first","qt is completely unrelated to stress level"],correct:"b",exp:"This is exactly Section 3's mental-model demo: two constant-ψ sands read very different raw qt values simply because depth (stress) changed."},
 {q:"What does Bq represent?",opts:["The normalized pore-pressure ratio, (u2−u0)/(qt−σvo) — a measure of excess pore pressure generated during penetration","The same quantity as the friction ratio F, just renamed","A correction factor for cone area ratio, unrelated to pore pressure"],correct:"a",exp:"Bq isolates how much excess pore pressure the penetration itself generated, normalized by net tip resistance."},
 {q:"What is the purpose of the dimensionless groups Q, F, and Bq (Table 4.1)?",opts:["To make the raw channels look more complicated with no real benefit","To strip out the effect of stress level (and cone geometry) from the raw q/f/u channels so different depths and sites become comparable","To directly compute ψ without any further steps"],correct:"b",exp:"They're normalized quantities specifically so a reading at 3 m and one at 20 m can be compared on the same footing."},
 {q:"In p′o = σ′vo(1+2Ko)/3, what does the (1+2Ko)/3 factor represent?",opts:["The mean of the vertical and two horizontal effective stresses — the definition of mean effective stress","An arbitrary empirical constant with no physical meaning","A direct conversion from total to effective stress"],correct:"a",exp:"Mean effective stress p′ = (σ′1+2σ′3)/3; at rest, σ′3 = Ko·σ′vo, giving exactly this factor."},
-{q:"What does a Bq value well outside ±0.02 signal, for the drained-penetration relationships used in this module (Section 4.7.3)?",opts:["Nothing — Bq is irrelevant to those relationships","Significant excess pore pressure is being generated, so the drained assumption behind those relationships weakens or breaks down","The cone must have malfunctioned"],correct:"b",exp:"The badge on Section 4's calculator flags exactly this — the dimensionless CPT method used later assumes drained penetration."},
+{q:"What does a Bq value well outside ±0.02 signal, for the drained-penetration relationships used in this module (Section 4.7.3)?",opts:["Nothing — Bq is irrelevant to those relationships","Significant excess pore pressure is being generated, so the drained assumption behind those relationships weakens or breaks down","The cone must have malfunctioned"],correct:"b",exp:"The badge on Section 5's calculator flags exactly this — the dimensionless CPT method used later assumes drained penetration."},
 {q:"Jaky's equation, Ko = 1 − sinφ′, is presented in this module as:",opts:["A precise, universally trusted design relationship","Presented WITH the book's own explicit skepticism about its physical basis, not endorsed as reliable in all cases","Only applicable to clays, never to sands"],correct:"b",exp:"Section 4.9.1 of the book raises a specific, real objection to this formula — it isn't just handed over uncritically."},
 {q:"What is the book's specific objection to Jaky's equation here?",opts:["Densifying a sand by vibration raises φ′, so Jaky predicts Ko should FALL — but real measurements show horizontal stress RISES with densification: 'the wrong sense'","There is no real objection — the equation is fully endorsed","Jaky's equation only works for organic soils"],correct:"a",exp:"This is the book's own words: the equation gets the direction of the effect backwards for densification."},
 {q:"What is the book's actual practical conclusion about Jaky's equation, given that objection?",opts:["Treat it as an exact, high-precision design value always","At best it indicates Ko≈0.5 under loose, normally consolidated conditions — a rough anchor, not a real physical relationship","It should never be used under any circumstances, even as a rough check"],correct:"b",exp:"The book doesn't discard it entirely — it downgrades it to a rough sanity-check value, not a precise design tool."},
 {q:"Holding qt and σ′vo fixed, increasing Ko does what to p′o and Qp?",opts:["Increases p′o, which then decreases Qp = (qt−p′o)/p′o","Decreases p′o and increases Qp","Has no effect on either quantity"],correct:"a",exp:"A larger Ko raises the mean effective stress estimate p′o, which — at fixed qt — pulls Qp down."},
-{q:"Why does the ψ-inversion in Section 6 use Qp = (qt−p′o)/p′o rather than just Q = (qt−σvo)/σ′vo?",opts:["Qp uses p′o (the actual mean effective stress, accounting for Ko), which is the quantity the underlying calibration-chamber correlation was actually built around","Q and Qp are exactly the same thing, always","Qp ignores Ko entirely, while Q accounts for it"],correct:"a",exp:"Q normalizes by vertical effective stress alone; Qp uses the mean effective stress p′o, which is what the book's Qp=k·exp(−mψ) correlation is calibrated against."}
+{q:"Why does the ψ-inversion in Section 7 use Qp = (qt−p′o)/p′o rather than just Q = (qt−σvo)/σ′vo?",opts:["Qp uses p′o (the actual mean effective stress, accounting for Ko), which is the quantity the underlying calibration-chamber correlation was actually built around","Q and Qp are exactly the same thing, always","Qp ignores Ko entirely, while Q accounts for it"],correct:"a",exp:"Q normalizes by vertical effective stress alone; Qp uses the mean effective stress p′o, which is what the book's Qp=k·exp(−mψ) correlation is calibrated against."}
 ,
 // Block B — soil behaviour-type index Ic (10)
 {q:"What does a HIGHER Ic value generally indicate?",opts:["Coarser, cleaner sand","Finer, more clay-like soil behavior","Higher relative density, specifically"],correct:"b",exp:"Ic increases as the soil behaves less like clean sand and more like silt/clay, per Table 4.4's classification bands."},
 {q:"Why does the book favor the Been & Jefferies Ic (which uses Bq) over Robertson & Wride's (which ignores it) when pore-pressure data is available?",opts:["R&W's is always more accurate, regardless of what data is available","Incorporating the already-measured piezometric channel improves the classification; the book calls R&W's 'best avoided' when Bq data exists","Bq data can never be used in any Ic formula"],correct:"b",exp:"This module's default statistic uses the Been & Jefferies form for exactly this reason."},
-{q:"Before trusting a ψ estimate from Section 6, what should Ic be checked for first?",opts:["Nothing — ψ can be computed meaningfully for any material regardless of soil type","Whether you're actually in a sand-like material, since the Qp–ψ correlation used later was calibrated on sands","Whether the cone itself needs recalibration"],correct:"b",exp:"Section 5 exists specifically as a gate before Section 6's inversion is applied."},
+{q:"Before trusting a ψ estimate from Section 7, what should Ic be checked for first?",opts:["Nothing — ψ can be computed meaningfully for any material regardless of soil type","Whether you're actually in a sand-like material, since the Qp–ψ correlation used later was calibrated on sands","Whether the cone itself needs recalibration"],correct:"b",exp:"Section 6 exists specifically as a gate before Section 7's inversion is applied."},
 {q:"A very high Q combined with a very low F tends to indicate:",opts:["Clay-like soil behavior (high Ic)","Coarse, low-Ic, sand-like soil behavior","Nothing can be inferred from Q and F alone"],correct:"b",exp:"High normalized tip resistance with low friction ratio is the classic sand-like signature in both Ic formulas."},
 {q:"Robertson & Wride's Ic formula (Eq. 4.13b) deliberately omits which channel?",opts:["Tip resistance, qt","Pore pressure, u2 (via Bq)","Sleeve friction, fs"],correct:"b",exp:"That's the whole distinction between the two formulas — R&W's doesn't use the piezometric channel at all."},
-{q:"If Ic falls well into the 'clays' or 'organic soils' range, is the Chapter 4 ψ–CPT correlation still appropriate?",opts:["Yes — it applies equally to every soil type","No — it was developed and calibrated on sand-like materials, and shouldn't be trusted outside that range","Only if Bq happens to be low"],correct:"b",exp:"This is exactly why Section 5 (Ic) is checked before Section 6 (the ψ inversion) is applied to a reading."},
+{q:"If Ic falls well into the 'clays' or 'organic soils' range, is the Chapter 4 ψ–CPT correlation still appropriate?",opts:["Yes — it applies equally to every soil type","No — it was developed and calibrated on sand-like materials, and shouldn't be trusted outside that range","Only if Bq happens to be low"],correct:"b",exp:"This is exactly why Section 6 (Ic) is checked before Section 7 (the ψ inversion) is applied to a reading."},
 {q:"Which two dimensionless CPT groups feed directly into BOTH Ic formulas?",opts:["Q and F","Bq alone, in both formulas","p′o and Ko"],correct:"a",exp:"Both Ic formulas are built from Q and F (Been & Jefferies' also folds in Bq through Q(1−Bq))."},
 {q:"Practically, why compute Ic before running the ψ inversion on a real sounding?",opts:["It isn't necessary — ψ should be computed at every depth regardless of soil type","It flags depths where the material is too fine-grained for the sand-calibrated ψ correlation to be meaningful, so those depths can be screened or interpreted differently","Ic replaces the need to ever compute ψ"],correct:"b",exp:"This is standard CPT-interpretation practice: classify first, then decide which correlations are appropriate at each depth."},
 {q:"Between the two Ic formulas, which one is better able to use pore-pressure information from a piezocone (CPTu)?",opts:["Robertson & Wride's, Eq. 4.13b","Been & Jefferies', Eq. 4.13a, since it explicitly incorporates Bq","Neither formula ever uses pore-pressure information"],correct:"b",exp:"The Q(1−Bq)+1 term inside Been & Jefferies' Ic is exactly where the piezometric channel enters."},
-{q:"On the Section 5 Ic scale chart, where does 'sand-like' territory generally sit relative to 'clay-like'?",opts:["Sand-like sits at the LOWER end of the Ic scale, clay-like at the higher end","Sand-like sits at the higher end, clay-like at the lower end","Ic doesn't order soil types along any consistent scale"],correct:"a",exp:"Lower Ic (coarser, cleaner) sits to the left of the boundaries table; Ic rises through silt into clay and organic soils."}
+{q:"On the Section 6 Ic scale chart, where does 'sand-like' territory generally sit relative to 'clay-like'?",opts:["Sand-like sits at the LOWER end of the Ic scale, clay-like at the higher end","Sand-like sits at the higher end, clay-like at the lower end","Ic doesn't order soil types along any consistent scale"],correct:"a",exp:"Lower Ic (coarser, cleaner) sits to the left of the boundaries table; Ic rises through silt into clay and organic soils."}
 ,
 // Block C — inverting for psi via Qp = k·exp(-m·psi) (10)
 {q:"What determines the fitting constants k and m in Qp = k·exp(−mψ) for a given sand?",opts:["They're universal constants, identical for every sand","They're predictable directly from that sand's CSL slope λ10 (Eqs. 4.11a/b) — the same λ10 already in Module 1's Table 2.1","They must be independently re-derived from full triaxial testing every single time"],correct:"b",exp:"This is the whole point of Eqs. 4.11a/b — λ10 alone, already tabulated, gets you k and m."},
@@ -1134,11 +1429,27 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 </script>
 
 <script>
+// ---- maximize interaction throughout and strengthen figure legends (ported from Module 1) ----
+(function(){
+var figureInfo={
+'cptLogChart':['CPT log: four channels versus depth','Blue: qt (tip resistance). Green: fs (sleeve friction). Purple: u2 (pore pressure). Red: ψ estimated from this depth\'s Qp via Section 7\'s method. Shaded bands mark this sounding\'s two layers. Dotted horizontal line and colored dots: the currently selected depth.','Scan the qt panel first — the layer break is usually obvious there before anywhere else. Then read the same depth across all four panels using the horizontal marker to see how one raw signal change propagates into fs, u2, and finally ψ.'],
+'mmChart':['Raw tip resistance versus depth, at constant ψ','Green: a dense sand (ψ=−0.15) held at that same state all the way down. Red: a loose sand (ψ=+0.05), also held constant. Dashed vertical: the current depth slider position.','Compare the vertical gap between the two lines at a shallow depth versus a deep one — it widens even though neither line\'s ψ ever changes, which is the whole point: raw qt confounds state with stress level.'],
+'cptChart':['One depth\'s raw and normalized readings, side by side','Each bar is scaled to its own typical range (see the note under the chart), so compare each bar\'s height to its own axis, not to the others directly.','Read qt first (the raw MPa reading), then Q, then Qp — each step to the right is one more layer of stress-normalization applied to the same underlying measurement.'],
+'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
+'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
+'distChart':['The ψ distribution at a site, and where ψk sits in it','Navy curve: assumed-normal probability density of ψ across the sounding. Red shading: the weaker (higher-ψ) tail beyond the chosen ψk. Blue vertical line: the chosen characteristic value itself. Red dashed line: the Nerlerk case\'s real liquefiable threshold.','The mean sits at the peak of the curve — read ψk\'s line position relative to that peak to see how much conservatism the chosen percentile is actually buying, then compare ψk against the red liquefiable-threshold line.']
+};
+Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);tools.querySelector('button').addEventListener('click',function(){help.classList.toggle('open');this.setAttribute('aria-expanded',help.classList.contains('open'));parent.classList.toggle('chart-reading-mode');});});
+document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
+})();
+</script>
+
+<script>
 // ---- Back button / data-goto / data-pulse handler (ported pattern from Module 1) ----
 (function(){
   var navStack=[];
   var backBtn=document.getElementById('backToPrevious');
-  var SECTION_LABELS={'start':'Start here','mental-model':'Mental model','notation':'Notation','cpt-groups-section':'Dimensionless CPT','ic-section':'Soil behaviour type','inversion-section':'Inverting for ψ','variability-section':'How variable is ψ','knowledge-check':'Check learning'};
+  var SECTION_LABELS={'start':'Start here','cpt-sounding':'A CPT sounding','mental-model':'Mental model','notation':'Notation','cpt-groups-section':'Dimensionless CPT','ic-section':'Soil behaviour type','inversion-section':'Inverting for ψ','variability-section':'How variable is ψ','knowledge-check':'Check learning'};
   function navOriginLabel(e){
     var idEl=e.closest('[id]');
     return (idEl && SECTION_LABELS[idEl.id]) || 'where you were';
@@ -1213,6 +1524,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 (function(){
   var PAGES = [
     {label:'Start here', ids:['start','about-module']},
+    {label:'A CPT sounding', ids:['cpt-sounding']},
     {label:'Mental model', ids:['mental-model']},
     {label:'Notation', ids:['notation']},
     {label:'Dimensionless CPT', ids:['cpt-groups-section','quizCheckA']},
@@ -1221,7 +1533,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
     {label:'How variable is ψ', ids:['variability-section','quizCheckD']},
     {label:'Check learning', ids:['knowledge-check','about-tool']}
   ];
-  var STICKY_PAGES = [3,4,5,6];
+  var STICKY_PAGES = [1,4,5,6,7];
   var currentPage = 0;
   var historyReady = false;
   var announcer = document.getElementById('pageAnnouncer');
