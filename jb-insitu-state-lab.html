@@ -235,7 +235,7 @@ body{padding-bottom:54px}
 <div class="grid4">
 <div class="slider-block"><label for="sndDepth"><span>Selected depth (m)</span> <span class="readout" id="sndDepthOut">4.00</span></label><input id="sndDepth" type="range" min="0.1" max="16" step="0.05" value="4"></div>
 <div class="slider-block"><label for="sndGamma"><span>Assumed unit weight, &gamma; (kN/m&sup3;)</span> <span class="readout" id="sndGammaOut">19.0</span></label><input id="sndGamma" type="range" min="15" max="21" step="0.5" value="19"><div class="hint">Used only to estimate &sigma;&prime;<sub>vo</sub> for this preview &mdash; a real design would use a measured or logged unit-weight profile.</div></div>
-<div class="slider-block"><label for="sndWt"><span>Water table depth (m)</span> <span class="readout" id="sndWtOut">1.5</span></label><input id="sndWt" type="range" min="0" max="6" step="0.1" value="1.5"></div>
+<div class="slider-block"><label for="sndWt"><span>Water table depth (m)</span> <span class="readout" id="sndWtOut">1.5</span></label><input id="sndWt" type="range" min="0" max="16" step="0.1" value="1.5"><div class="hint">Range always spans the full sounding &mdash; from ground surface to the deepest point on the log.</div></div>
 <div class="slider-block"><label for="sndKo"><span>Geostatic ratio, K<sub>o</sub></span> <span class="readout" id="sndKoOut">0.50</span></label><input id="sndKo" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
 </div>
 <label for="sndSandSelect" style="font-size:12.5px;font-weight:700">Sand for the &psi;-inversion preview (Section 7's method)</label><br>
@@ -865,9 +865,9 @@ var sndUnitSystem = 'metric';
 function renderSndUnitGuide(){
   var body = el('sndUnitGuideBody');
   if(sndUnitSystem==='metric'){
-    body.innerHTML = '<tr><td>Depth (m)</td><td>q<sub>t</sub> or q<sub>c</sub> &mdash; tip resistance (MPa)</td><td>f<sub>s</sub> &mdash; sleeve friction (kPa)</td><td>u<sub>2</sub> &mdash; pore pressure, as head of water (m)</td></tr>';
+    body.innerHTML = '<tr><td>Depth (m)</td><td>q<sub>t</sub> &mdash; tip resistance (MPa)</td><td>f<sub>s</sub> &mdash; sleeve friction (kPa)</td><td>u<sub>2</sub> &mdash; pore pressure, as head of water (m)</td></tr>';
   } else {
-    body.innerHTML = '<tr><td>Depth (ft)</td><td>q<sub>t</sub> or q<sub>c</sub> &mdash; tip resistance (tsf)</td><td>f<sub>s</sub> &mdash; sleeve friction (tsf)</td><td>u<sub>2</sub> &mdash; pore pressure, as head of water (ft)</td></tr>';
+    body.innerHTML = '<tr><td>Depth (ft)</td><td>q<sub>t</sub> &mdash; tip resistance (tsf)</td><td>f<sub>s</sub> &mdash; sleeve friction (tsf)</td><td>u<sub>2</sub> &mdash; pore pressure, as head of water (ft)</td></tr>';
   }
 }
 renderSndUnitGuide();
@@ -925,6 +925,9 @@ el('sndFileInput').addEventListener('change', function(ev){
     var depthSlider = el('sndDepth');
     depthSlider.min = rows[0].z; depthSlider.max = rows[rows.length-1].z;
     depthSlider.value = rows[Math.floor(rows.length/2)].z;
+    var wtSlider = el('sndWt');
+    wtSlider.max = SND_MAX_Z;
+    if(+wtSlider.value > SND_MAX_Z) wtSlider.value = SND_MAX_Z;
     status.className='callout';
     status.innerHTML = '<b>Loaded '+rows.length+' depths from '+file.name+'</b> ('+(sndUnitSystem==='metric'?'read as metric':'read as imperial, converted to metric')+'), ranging '+rows[0].z.toFixed(2)+' m ('+mToFt(rows[0].z).toFixed(1)+' ft) to '+rows[rows.length-1].z.toFixed(2)+' m ('+mToFt(rows[rows.length-1].z).toFixed(1)+' ft). The layer shading above is specific to the built-in example, so it\'s hidden for uploaded data.';
     updateSounding();
@@ -942,6 +945,7 @@ el('sndResetExample').addEventListener('click', function(){
   SND_MAX_Z = 16; SND_LAYER_Z = 8;
   var depthSlider = el('sndDepth');
   depthSlider.min=0.1; depthSlider.max=16; depthSlider.value=4;
+  el('sndWt').max = 16;
   el('sndUploadStatus').style.display='none';
   el('sndFileInput').value='';
   updateSounding();
@@ -1600,7 +1604,7 @@ var figureInfo={
 'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
 'distChart':['The ψ distribution at a site, and where ψk sits in it','Navy curve: assumed-normal probability density of ψ across the sounding. Red shading: the weaker (higher-ψ) tail beyond the chosen ψk. Blue vertical line: the chosen characteristic value itself. Red dashed line: the Nerlerk case\'s real liquefiable threshold.','The mean sits at the peak of the curve — read ψk\'s line position relative to that peak to see how much conservatism the chosen percentile is actually buying, then compare ψk against the red liquefiable-threshold line.']
 };
-Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);tools.querySelector('button').addEventListener('click',function(){help.classList.toggle('open');this.setAttribute('aria-expanded',help.classList.contains('open'));parent.classList.toggle('chart-reading-mode');});});
+Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
 document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
 })();
 </script>
