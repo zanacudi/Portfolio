@@ -228,8 +228,8 @@ body{padding-bottom:54px}
 
 <div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a looser upper zone and a denser lower zone &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it.</div>
 
-<div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:440px" role="img" aria-label="Four-panel CPT log: tip resistance, sleeve friction, pore pressure, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span></div>
+<div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Four-panel CPT log: tip resistance, sleeve friction, pore pressure, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
 
 <div class="guided-panel">
 <div class="grid4">
@@ -246,9 +246,13 @@ body{padding-bottom:54px}
 
 <div class="s2-lab">
 <h3 style="margin-top:0">Or upload your own CPT sounding</h3>
-<p class="explain" style="font-size:12.5px">Your file should be a CSV or tab-delimited text file with <b>one row per depth</b>, columns in exactly this order:</p>
-<div style="overflow-x:auto"><table style="margin:6px 0 10px"><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th><th>Column 4</th></tr></thead><tbody><tr><td>Depth (m)</td><td>q<sub>t</sub> or q<sub>c</sub> &mdash; tip resistance (MPa)</td><td>f<sub>s</sub> &mdash; sleeve friction (kPa)</td><td>u<sub>2</sub> &mdash; dynamic pore pressure (kPa)</td></tr></tbody></table></div>
+<p class="explain" style="font-size:12.5px">Your file should be a CSV or tab-delimited text file with <b>one row per depth</b>, columns in exactly this order. Pick whichever unit system your file already uses below &mdash; the tool converts everything to metric internally either way:</p>
+<div style="overflow-x:auto"><table style="margin:6px 0 10px" id="sndUnitGuideTable"><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th><th>Column 4</th></tr></thead><tbody id="sndUnitGuideBody"></tbody></table></div>
 <p class="explain" style="font-size:11.5px;color:var(--muted)">A header row (or several, like a raw ConeTec/Vertek export) is fine &mdash; any row that doesn't start with 4 readable numbers is skipped automatically. Extra columns after the fourth (R<sub>f</sub>, inclination, layer number, depth in feet, etc.) are simply ignored, so a full raw CPT export works as-is without editing.</p>
+<div class="s2-presets" role="group" aria-label="Units in your uploaded file" style="margin-top:6px">
+<button type="button" data-sndunits="metric" class="on" aria-pressed="true">My file uses metric (m, MPa, kPa, kPa)</button>
+<button type="button" data-sndunits="imperial" aria-pressed="false">My file uses imperial (ft, tsf, tsf, psi)</button>
+</div>
 <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
 <input type="file" id="sndFileInput" accept=".csv,.txt">
 <button type="button" id="sndDownloadExample" class="alt">Download example CSV</button>
@@ -257,7 +261,7 @@ body{padding-bottom:54px}
 <div id="sndUploadStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
 </div>
 
-<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is fabricated for this module &mdash; not data from any real site or project &mdash; engineered specifically to show two contrasting layers. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead.</div>
+<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is fabricated for this module &mdash; not data from any real site or project &mdash; engineered specifically to show two contrasting layers. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead. The &minus;0.05 dilative/contractive line on the &psi; panel is a practical rule of thumb used only for this log's shading and badge &mdash; the theoretical critical state is still exactly &psi;=0, shown as the thin dashed line beside it. Secondary units in parentheses throughout this page (tsf, ft, psi) use the standard cone conversion 1&nbsp;tsf&nbsp;=&nbsp;95.76&nbsp;kPa; all internal calculations stay in metric.</div>
 </section>
 
 <div id="flowStickyMarker"></div>
@@ -591,6 +595,17 @@ function sndGaussian(){ var u1=Math.max(1e-9,sndRnd()), u2=sndRnd(); return Math
 var SND_LAYER_Z = 8;   // synthetic layer boundary depth (m); null once real user data is loaded
 var SND_MAX_Z = 16;
 
+// ---- unit conversions: internal calculations always stay in metric (m, MPa, kPa) ----
+// 1 tsf = 0.9576 bar = 95.76 kPa, matching the standard cone conversion factor.
+function mpaToTsf(v){ return v*1000/95.76; }
+function kpaToTsf(v){ return v/95.76; }
+function tsfToMpa(v){ return v*95.76/1000; }
+function tsfToKpa(v){ return v*95.76; }
+function mToFt(v){ return v*3.28084; }
+function ftToM(v){ return v/3.28084; }
+function kpaToPsi(v){ return v*0.145038; }
+function psiToKpa(v){ return v/0.145038; }
+
 function generateSyntheticSounding(){
   var rows=[];
   for(var z=0.1; z<=16+1e-9; z=+(z+0.1).toFixed(2)){
@@ -655,52 +670,93 @@ function sndComputeFromValues(z, qt, fs, u2){
 function sndComputeAt(z){ var pt=sndInterp(z); if(!pt) return null; return sndComputeFromValues(z, pt.qt, pt.fs, pt.u2); }
 function sndComputeAtRow(row){ return sndComputeFromValues(row.z, row.qt, row.fs, row.u2); }
 
+var PSI_DIL_BOUNDARY = -0.05;
+
 function drawCptLog(){
   var host=el('cptLogChart'); if(!host) return;
-  var W=host.clientWidth||760, H=440;
+  var W=host.clientWidth||760, H=470;
   host.width=W; host.height=H;
   var ctx=host.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var mt=30, mb=32, ml=42, mr=10, gap=16;
+  var mt=32, mb=46, ml=48, mr=10, gap=16;
   var ph=H-mt-mb;
   var panelCount=4;
   var panelW=(W-ml-mr-gap*(panelCount-1))/panelCount;
   function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/SND_MAX_Z)); }
 
-  ctx.fillStyle='#61737b'; ctx.font='10px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  // ---- depth axis (shared, dual-unit: m primary, ft secondary) ----
   var zStep = SND_MAX_Z<=8?1:(SND_MAX_Z<=20?2:5);
-  for(var zt=0; zt<=SND_MAX_Z+1e-6; zt+=zStep){ ctx.fillText(zt.toFixed(0), ml-6, Y(zt)); }
-  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('depth (m)',0,0); ctx.restore();
+  for(var zt=0; zt<=SND_MAX_Z+1e-6; zt+=zStep){
+    var yz=Y(zt);
+    ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ml,yz); ctx.lineTo(ml+panelCount*panelW+(panelCount-1)*gap,yz); ctx.stroke();
+    ctx.textAlign='right';
+    ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textBaseline='bottom'; ctx.fillText(zt.toFixed(0)+' m', ml-6, yz+1);
+    ctx.fillStyle='#a7b3b8'; ctx.font='8px Arial'; ctx.textBaseline='top'; ctx.fillText('('+mToFt(zt).toFixed(0)+' ft)', ml-6, yz+1);
+  }
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillStyle='#61737b'; ctx.font='10.5px Arial'; ctx.fillText('depth, m (ft)',0,0); ctx.restore();
 
   var qtMax = Math.max(10, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.qt;}))/2)*2 + 2);
   var fsMax = Math.max(80, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.fs;}))/20)*20 + 20);
   var u2Max = Math.max(60, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.u2;}))/20)*20 + 20);
   var panels=[
-    {key:'qt', label:'qt (MPa)', color:'#1479b8', min:0, max:qtMax},
-    {key:'fs', label:'fs (kPa)', color:'#2d8b65', min:0, max:fsMax},
-    {key:'u2', label:'u2 (kPa)', color:'#7653a6', min:-20, max:u2Max, zero:true},
-    {key:'psi', label:'ψ (est.)', color:'#c64852', min:-0.3, max:0.3, zero:true, isPsi:true}
+    {key:'qt', label:'qt', unit:'MPa', min:0, max:qtMax, color:'#1479b8', toSecond:mpaToTsf, secondUnit:'tsf', secondDp:2},
+    {key:'fs', label:'fs', unit:'kPa', min:0, max:fsMax, color:'#2d8b65', toSecond:kpaToTsf, secondUnit:'tsf', secondDp:2},
+    {key:'u2', label:'u2', unit:'kPa', min:-20, max:u2Max, color:'#7653a6', toSecond:kpaToPsi, secondUnit:'psi', secondDp:1, zero:true},
+    {key:'psi', label:'ψ (est.)', unit:'', min:-0.3, max:0.3, color:'#c64852', isPsi:true}
   ];
 
   panels.forEach(function(panel,pi){
     var px = ml+gap*pi+panelW*pi;
     function X(v){ var t=(v-panel.min)/(panel.max-panel.min); return px+Math.max(0,Math.min(1,t))*panelW; }
-    if(SND_LAYER_Z!=null){
+
+    // ---- background: layer shading (raw channels) or dilative/contractive shading (psi) ----
+    if(panel.isPsi){
+      var xB=X(PSI_DIL_BOUNDARY);
+      ctx.fillStyle='#e9f6ef'; ctx.fillRect(px,mt,Math.max(0,xB-px),ph);
+      ctx.fillStyle='#fdeee9'; ctx.fillRect(xB,mt,Math.max(0,px+panelW-xB),ph);
+    } else if(SND_LAYER_Z!=null){
       ctx.fillStyle='#f2f7f9'; ctx.fillRect(px,mt,panelW,Y(SND_LAYER_Z)-mt);
       ctx.fillStyle='#e7eef1'; ctx.fillRect(px,Y(SND_LAYER_Z),panelW,mt+ph-Y(SND_LAYER_Z));
     } else {
       ctx.fillStyle='#f7fafb'; ctx.fillRect(px,mt,panelW,ph);
     }
     ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(px+0.5,mt+0.5,panelW-1,ph-1);
+
     if(panel.zero){
       var x0=X(0);
       ctx.strokeStyle='#c3ced1'; ctx.setLineDash([3,2]); ctx.beginPath(); ctx.moveTo(x0,mt); ctx.lineTo(x0,mt+ph); ctx.stroke(); ctx.setLineDash([]);
     }
+    if(panel.isPsi){
+      var xZero=X(0), xBnd=X(PSI_DIL_BOUNDARY);
+      ctx.strokeStyle='#9aa9ae'; ctx.setLineDash([3,2]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xZero,mt); ctx.lineTo(xZero,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle='#123b4a'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xBnd,mt); ctx.lineTo(xBnd,mt+ph); ctx.stroke();
+      ctx.font='8px Arial'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle='#61737b';
+      ctx.fillText('critical, ψ=0', xZero, mt+3);
+      ctx.fillStyle='#123b4a'; ctx.font='700 8px Arial';
+      ctx.fillText('ψ=−0.05', xBnd, mt+13);
+      ctx.font='700 8px Arial'; ctx.textBaseline='alphabetic';
+      ctx.textAlign='left'; ctx.fillStyle='#1f7a4c'; ctx.fillText('DILATIVE', px+4, mt+ph-5);
+      ctx.textAlign='right'; ctx.fillStyle='#b03a44'; ctx.fillText('CONTRACTIVE', px+panelW-4, mt+ph-5);
+    }
+
+    // panel title (primary + secondary unit)
     ctx.fillStyle='#20343d'; ctx.font='700 10.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-    ctx.fillText(panel.label, px+panelW/2, mt-9);
-    ctx.font='9px Arial'; ctx.fillStyle='#9aa9ae'; ctx.textBaseline='top';
-    [panel.min, panel.max].forEach(function(v){
-      ctx.fillText(panel.isPsi ? (v>=0?'+':'')+v.toFixed(2) : v.toFixed(0), X(v), mt+ph+4);
-    });
+    ctx.fillText(panel.label+(panel.unit?' ('+panel.unit+(panel.secondUnit?' · '+panel.secondUnit:'')+')':''), px+panelW/2, mt-10);
+
+    // x-axis ticks: adaptive count by panel width, dual-unit where applicable
+    var nTicks = panelW<75 ? 3 : 5;
+    for(var ti=0; ti<nTicks; ti++){
+      var v = panel.min + (panel.max-panel.min)*ti/(nTicks-1);
+      var xt=X(v);
+      ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xt,mt); ctx.lineTo(xt,mt+ph); ctx.stroke();
+      ctx.font='8.5px Arial'; ctx.fillStyle='#8b9aa0'; ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.fillText(panel.isPsi ? (v>=0?'+':'')+v.toFixed(2) : v.toFixed(v>=100?0:1), xt, mt+ph+4);
+      if(panel.toSecond && panelW>=75){
+        ctx.font='7.5px Arial'; ctx.fillStyle='#b7c2c6';
+        ctx.fillText('('+panel.toSecond(v).toFixed(panel.secondDp)+')', xt, mt+ph+14);
+      }
+    }
+
+    // trace
     ctx.beginPath(); ctx.strokeStyle=panel.color; ctx.lineWidth=1.6;
     var first=true;
     sndData.forEach(function(row){
@@ -709,6 +765,8 @@ function drawCptLog(){
       if(first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
     });
     ctx.stroke();
+
+    // current-depth marker
     var cz=num('sndDepth');
     var yNow=Y(cz);
     ctx.strokeStyle='#20343d'; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,yNow); ctx.lineTo(px+panelW,yNow); ctx.stroke(); ctx.setLineDash([]);
@@ -719,20 +777,31 @@ function drawCptLog(){
       ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
     }
   });
+
+  // ---- water table (phreatic surface), spanning all four panels ----
+  var wt = num('sndWt');
+  if(wt>=0 && wt<=SND_MAX_Z){
+    var ywt=Y(wt);
+    var fullRight = ml+panelCount*panelW+(panelCount-1)*gap;
+    ctx.strokeStyle='#1479b8'; ctx.lineWidth=1.8; ctx.setLineDash([7,3]);
+    ctx.beginPath(); ctx.moveTo(ml,ywt); ctx.lineTo(fullRight,ywt); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#1479b8'; ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+    ctx.fillText('▽ water table ('+wt.toFixed(1)+' m / '+mToFt(wt).toFixed(1)+' ft)', ml+3, ywt-3);
+  }
 }
 
 function updateSounding(){
-  el('sndDepthOut').textContent = num('sndDepth').toFixed(2);
-  el('sndGammaOut').textContent = num('sndGamma').toFixed(1);
-  el('sndWtOut').textContent = num('sndWt').toFixed(1);
+  el('sndDepthOut').textContent = num('sndDepth').toFixed(2)+' m ('+mToFt(num('sndDepth')).toFixed(1)+' ft)';
+  el('sndGammaOut').textContent = num('sndGamma').toFixed(1)+' kN/m³ ('+(num('sndGamma')*6.366).toFixed(0)+' pcf)';
+  el('sndWtOut').textContent = num('sndWt').toFixed(1)+' m ('+mToFt(num('sndWt')).toFixed(1)+' ft)';
   el('sndKoOut').textContent = num('sndKo').toFixed(2);
   var c = sndComputeAt(num('sndDepth'));
   if(c){
-    var badge = c.psi<0 ? '<span class="badge dilate">dense of critical</span>' : '<span class="badge contract">loose of critical</span>';
+    var badge = c.psi<PSI_DIL_BOUNDARY ? '<span class="badge dilate">dilative (ψ&lt;−0.05)</span>' : '<span class="badge contract">contractive (ψ&ge;−0.05)</span>';
     el('sndStats').innerHTML =
-      '<div class="stat"><small>q<sub>t</sub> (MPa)</small><strong>'+c.qt.toFixed(2)+'</strong></div>'+
-      '<div class="stat"><small>f<sub>s</sub> (kPa)</small><strong>'+c.fs.toFixed(1)+'</strong></div>'+
-      '<div class="stat"><small>u<sub>2</sub> (kPa)</small><strong>'+c.u2.toFixed(1)+'</strong></div>'+
+      '<div class="stat"><small>q<sub>t</sub> (MPa · tsf)</small><strong>'+c.qt.toFixed(2)+' · '+mpaToTsf(c.qt).toFixed(2)+'</strong></div>'+
+      '<div class="stat"><small>f<sub>s</sub> (kPa · tsf)</small><strong>'+c.fs.toFixed(1)+' · '+kpaToTsf(c.fs).toFixed(3)+'</strong></div>'+
+      '<div class="stat"><small>u<sub>2</sub> (kPa · psi)</small><strong>'+c.u2.toFixed(1)+' · '+kpaToPsi(c.u2).toFixed(1)+'</strong></div>'+
       '<div class="stat"><small>I<sub>c</sub></small><strong>'+c.ic.toFixed(2)+'</strong></div>'+
       '<div class="stat"><small>Q<sub>p</sub></small><strong>'+c.Qp.toFixed(1)+'</strong></div>'+
       '<div class="stat hi"><small>&psi; (estimated)</small><strong>'+(c.psi>=0?"+":"")+c.psi.toFixed(3)+'</strong>'+badge+'</div>';
@@ -760,7 +829,27 @@ el('sndUseDepthBtn').addEventListener('click', function(){
   if(pulseEl){ pulseEl.classList.add('pulse-target'); setTimeout(function(){ pulseEl.classList.remove('pulse-target'); },2600); }
 });
 
-function sndParseCsv(text){
+// ---- unit system for CSV upload/download: 'metric' (m, MPa, kPa, kPa) or 'imperial' (ft, tsf, tsf, psi) ----
+var sndUnitSystem = 'metric';
+function renderSndUnitGuide(){
+  var body = el('sndUnitGuideBody');
+  if(sndUnitSystem==='metric'){
+    body.innerHTML = '<tr><td>Depth (m)</td><td>q<sub>t</sub> or q<sub>c</sub> &mdash; tip resistance (MPa)</td><td>f<sub>s</sub> &mdash; sleeve friction (kPa)</td><td>u<sub>2</sub> &mdash; dynamic pore pressure (kPa)</td></tr>';
+  } else {
+    body.innerHTML = '<tr><td>Depth (ft)</td><td>q<sub>t</sub> or q<sub>c</sub> &mdash; tip resistance (tsf)</td><td>f<sub>s</sub> &mdash; sleeve friction (tsf)</td><td>u<sub>2</sub> &mdash; dynamic pore pressure (psi)</td></tr>';
+  }
+}
+renderSndUnitGuide();
+document.querySelectorAll('[data-sndunits]').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.querySelectorAll('[data-sndunits]').forEach(function(x){ x.classList.remove('on'); x.setAttribute('aria-pressed','false'); });
+    b.classList.add('on'); b.setAttribute('aria-pressed','true');
+    sndUnitSystem = b.dataset.sndunits;
+    renderSndUnitGuide();
+  });
+});
+
+function sndParseCsv(text, units){
   var lines = text.split(/\r\n|\r|\n/);
   var rows=[];
   for(var i=0;i<lines.length;i++){
@@ -770,6 +859,12 @@ function sndParseCsv(text){
     if(parts.length<4) continue;
     var z=parseFloat(parts[0]), qt=parseFloat(parts[1]), fs=parseFloat(parts[2]), u2=parseFloat(parts[3]);
     if(!isFinite(z) || !isFinite(qt) || !isFinite(fs) || !isFinite(u2)) continue;
+    if(units==='imperial'){
+      z = ftToM(z);
+      qt = tsfToMpa(qt);
+      fs = tsfToKpa(fs);
+      u2 = psiToKpa(u2);
+    }
     rows.push({z:z, qt:qt, fs:fs, u2:u2});
   }
   rows.sort(function(a,b){ return a.z-b.z; });
@@ -782,11 +877,11 @@ el('sndFileInput').addEventListener('change', function(ev){
   var status = el('sndUploadStatus');
   var reader = new FileReader();
   reader.onload = function(e){
-    var rows = sndParseCsv(String(e.target.result));
+    var rows = sndParseCsv(String(e.target.result), sndUnitSystem);
     status.style.display='block';
     if(rows.length < 5){
       status.className='warning';
-      status.innerHTML = '<b>Couldn\'t read this file.</b> Found only '+rows.length+' row(s) with 4 readable numbers (depth, qt, fs, u2, in that order) on one line. Check the column-order guide above — a stray text column, a semicolon delimiter, or units baked into a cell\'s text are the most common causes.';
+      status.innerHTML = '<b>Couldn\'t read this file.</b> Found only '+rows.length+' row(s) with 4 readable numbers (depth, qt, fs, u2, in that order) on one line. Check the column-order guide above — a stray text column, a semicolon delimiter, the wrong unit system selected, or units baked into a cell\'s text are the most common causes.';
       return;
     }
     sndData = rows;
@@ -797,7 +892,7 @@ el('sndFileInput').addEventListener('change', function(ev){
     depthSlider.min = rows[0].z; depthSlider.max = rows[rows.length-1].z;
     depthSlider.value = rows[Math.floor(rows.length/2)].z;
     status.className='callout';
-    status.innerHTML = '<b>Loaded '+rows.length+' depths from '+file.name+'</b>, ranging '+rows[0].z.toFixed(2)+' m to '+rows[rows.length-1].z.toFixed(2)+' m. The layer shading above is specific to the built-in example, so it\'s hidden for uploaded data.';
+    status.innerHTML = '<b>Loaded '+rows.length+' depths from '+file.name+'</b> ('+(sndUnitSystem==='metric'?'read as metric':'read as imperial, converted to metric')+'), ranging '+rows[0].z.toFixed(2)+' m ('+mToFt(rows[0].z).toFixed(1)+' ft) to '+rows[rows.length-1].z.toFixed(2)+' m ('+mToFt(rows[rows.length-1].z).toFixed(1)+' ft). The layer shading above is specific to the built-in example, so it\'s hidden for uploaded data.';
     updateSounding();
   };
   reader.onerror = function(){
@@ -819,12 +914,18 @@ el('sndResetExample').addEventListener('click', function(){
 });
 
 el('sndDownloadExample').addEventListener('click', function(){
-  var lines=['Depth_m,qt_MPa,fs_kPa,u2_kPa'];
-  generateSyntheticSounding().forEach(function(r){ lines.push(r.z+','+r.qt+','+r.fs+','+r.u2); });
+  var lines;
+  if(sndUnitSystem==='imperial'){
+    lines=['Depth_ft,qt_tsf,fs_tsf,u2_psi'];
+    generateSyntheticSounding().forEach(function(r){ lines.push(mToFt(r.z).toFixed(2)+','+mpaToTsf(r.qt).toFixed(3)+','+kpaToTsf(r.fs).toFixed(3)+','+kpaToPsi(r.u2).toFixed(2)); });
+  } else {
+    lines=['Depth_m,qt_MPa,fs_kPa,u2_kPa'];
+    generateSyntheticSounding().forEach(function(r){ lines.push(r.z+','+r.qt+','+r.fs+','+r.u2); });
+  }
   var blob = new Blob([lines.join('\n')], {type:'text/csv'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
-  a.href=url; a.download='example-cpt-sounding.csv';
+  a.href=url; a.download='example-cpt-sounding-'+sndUnitSystem+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
 });
@@ -1261,6 +1362,28 @@ window.runModule2SelfTests = function(){
     check(psik90>psik80, "higher percentile gives a larger (weaker) psik at fixed mu/sigma");
   })();
 
+  // 8. unit-conversion round trips
+  [1,10,95.76,200].forEach(function(v){
+    check(Math.abs(tsfToKpa(kpaToTsf(v))-v)<1e-6, "kPa<->tsf round trip at "+v);
+    check(Math.abs(ftToM(mToFt(v))-v)<1e-9, "m<->ft round trip at "+v);
+    check(Math.abs(psiToKpa(kpaToPsi(v))-v)<1e-6, "kPa<->psi round trip at "+v);
+  });
+  check(Math.abs(kpaToTsf(95.76)-1)<1e-9, "1 tsf = 95.76 kPa exactly (standard cone conversion)");
+  check(Math.abs(mpaToTsf(0.09576)-1)<1e-6, "0.09576 MPa = 1 tsf");
+
+  // 9. CSV parser: metric vs imperial input for the same physical reading agree after conversion
+  (function(){
+    var metricRow = sndParseCsv("1.0,5.0,50,100", 'metric')[0];
+    var imperialRow = sndParseCsv(mToFt(1.0).toFixed(4)+","+mpaToTsf(5.0).toFixed(4)+","+kpaToTsf(50).toFixed(4)+","+kpaToPsi(100).toFixed(4), 'imperial')[0];
+    check(Math.abs(metricRow.z-imperialRow.z)<1e-3, "CSV parser: metric and imperial depth agree after conversion");
+    check(Math.abs(metricRow.qt-imperialRow.qt)<1e-3, "CSV parser: metric and imperial qt agree after conversion");
+    check(Math.abs(metricRow.fs-imperialRow.fs)<1e-2, "CSV parser: metric and imperial fs agree after conversion");
+    check(Math.abs(metricRow.u2-imperialRow.u2)<1e-2, "CSV parser: metric and imperial u2 agree after conversion");
+  })();
+
+  // 10. dilative/contractive badge threshold is -0.05, not 0
+  check(PSI_DIL_BOUNDARY===-0.05, "PSI_DIL_BOUNDARY is exactly -0.05");
+
   var failed=results.filter(function(r){ return !r.pass; });
   console.log('[runModule2SelfTests] '+results.length+' checks, '+failed.length+' failed.');
   if(failed.length) console.table(failed);
@@ -1432,7 +1555,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 // ---- maximize interaction throughout and strengthen figure legends (ported from Module 1) ----
 (function(){
 var figureInfo={
-'cptLogChart':['CPT log: four channels versus depth','Blue: qt (tip resistance). Green: fs (sleeve friction). Purple: u2 (pore pressure). Red: ψ estimated from this depth\'s Qp via Section 7\'s method. Shaded bands mark this sounding\'s two layers. Dotted horizontal line and colored dots: the currently selected depth.','Scan the qt panel first — the layer break is usually obvious there before anywhere else. Then read the same depth across all four panels using the horizontal marker to see how one raw signal change propagates into fs, u2, and finally ψ.'],
+'cptLogChart':['CPT log: four channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> tip resistance in MPa with tsf in parentheses. <b>Panel 2 (green, fs):</b> sleeve friction in kPa with tsf in parentheses. <b>Panel 3 (purple, u2):</b> pore pressure in kPa with psi in parentheses, with a dashed zero line. <b>Panel 4 (red, ψ):</b> state parameter estimated from this depth\'s Qp via Section 7\'s method, with a thin dashed line at the theoretical critical state (ψ=0) and a bold solid line at ψ=−0.05 — this module\'s practical dilative/contractive cutoff, also shown as the green (dilative, ψ&lt;−0.05) versus red (contractive, ψ≥−0.05) shading. In panels 1–3, the two background shades instead mark this sounding\'s two layers. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across all four panels — everything below it is submerged (u0&gt;0 in the calculators). The dotted horizontal line and colored dots mark the currently selected depth.','Scan the qt panel first — the layer break is usually obvious there before anywhere else. Then read the same depth across all four panels using the horizontal marker to see how one raw signal change propagates into fs, u2, and finally ψ. In the ψ panel specifically, check which side of the bold −0.05 line the trace falls on at each layer, and note where the water table sits relative to the layer boundary — pore pressure behavior above versus below the water table is a large part of why u2 looks so different between the two layers.'],
 'mmChart':['Raw tip resistance versus depth, at constant ψ','Green: a dense sand (ψ=−0.15) held at that same state all the way down. Red: a loose sand (ψ=+0.05), also held constant. Dashed vertical: the current depth slider position.','Compare the vertical gap between the two lines at a shallow depth versus a deep one — it widens even though neither line\'s ψ ever changes, which is the whole point: raw qt confounds state with stress level.'],
 'cptChart':['One depth\'s raw and normalized readings, side by side','Each bar is scaled to its own typical range (see the note under the chart), so compare each bar\'s height to its own axis, not to the others directly.','Read qt first (the raw MPa reading), then Q, then Qp — each step to the right is one more layer of stress-normalization applied to the same underlying measurement.'],
 'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
