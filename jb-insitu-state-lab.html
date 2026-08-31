@@ -228,8 +228,8 @@ body{padding-bottom:54px}
 
 <div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a looser upper zone and a denser lower zone &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it.</div>
 
-<div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Four-panel CPT log: tip resistance, sleeve friction, pore pressure, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
+<div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Five-panel CPT log: tip resistance, sleeve friction, pore pressure, dimensionless Qp, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
 
 <div class="guided-panel">
 <div class="grid4">
@@ -241,6 +241,8 @@ body{padding-bottom:54px}
 <label for="sndSandSelect" style="font-size:12.5px;font-weight:700">Sand for the &psi;-inversion preview (Section 7's method)</label><br>
 <select id="sndSandSelect"></select>
 <div class="statgrid" id="sndStats" style="margin-top:10px"></div>
+<h3>How Q<sub>p</sub> is built from this depth's raw trace</h3>
+<div class="eq" id="sndQpEq" style="white-space:normal;font-size:13px"></div>
 <button type="button" id="sndUseDepthBtn" class="alt" style="margin-top:10px">Use this depth in Section 5's calculator →</button>
 </div>
 
@@ -684,7 +686,7 @@ function drawCptLog(){
   var ctx=host.getContext('2d'); ctx.clearRect(0,0,W,H);
   var mt=32, mb=46, ml=48, mr=10, gap=16;
   var ph=H-mt-mb;
-  var panelCount=4;
+  var panelCount=5;
   var panelW=(W-ml-mr-gap*(panelCount-1))/panelCount;
   function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/SND_MAX_Z)); }
 
@@ -704,10 +706,14 @@ function drawCptLog(){
   var fsMax = Math.max(80, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.fs;}))/20)*20 + 20);
   var u2HeadMax = Math.max(5, Math.ceil(Math.max.apply(null, u2HeadVals)) + 2);
   var u2HeadMin = Math.min(-2, Math.floor(Math.min.apply(null, u2HeadVals)) - 1);
+  var qpVals = sndData.map(function(r){ return sndComputeAtRow(r).Qp; });
+  var qpMax = Math.max(50, Math.ceil(Math.max.apply(null, qpVals)/20)*20 + 20);
+  var qpMin = Math.min(0, Math.floor(Math.min.apply(null, qpVals)/20)*20 - 10);
   var panels=[
     {key:'qt', label:'qt', unit:'MPa', min:0, max:qtMax, color:'#1479b8', toSecond:mpaToTsf, secondUnit:'tsf', secondDp:2, getValue:function(row){ return row.qt; }},
     {key:'fs', label:'fs', unit:'kPa', min:0, max:fsMax, color:'#2d8b65', toSecond:kpaToTsf, secondUnit:'tsf', secondDp:2, getValue:function(row){ return row.fs; }},
     {key:'u2', label:'u2', unit:'m', min:u2HeadMin, max:u2HeadMax, color:'#7653a6', toSecond:mToFt, secondUnit:'ft', secondDp:1, zero:true, getValue:function(row){ return kpaToHeadM(row.u2); }},
+    {key:'Qp', label:'Qp', unit:'', min:qpMin, max:qpMax, color:'#e38a22', isQp:true, getValue:function(row){ return sndComputeAtRow(row).Qp; }},
     {key:'psi', label:'ψ (est.)', unit:'', min:-0.3, max:0.3, color:'#c64852', isPsi:true, getValue:function(row){ return sndComputeAtRow(row).psi; }}
   ];
 
@@ -790,7 +796,7 @@ function drawCptLog(){
     ctx.strokeStyle='#20343d'; ctx.setLineDash([2,2]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(px,yNow); ctx.lineTo(px+panelW,yNow); ctx.stroke(); ctx.setLineDash([]);
     var cur = sndComputeAt(cz);
     if(cur){
-      var curVal = panel.isPsi ? cur.psi : panel.getValue({qt:cur.qt, fs:cur.fs, u2:cur.u2});
+      var curVal = panel.isPsi ? cur.psi : panel.isQp ? cur.Qp : panel.getValue({qt:cur.qt, fs:cur.fs, u2:cur.u2});
       ctx.fillStyle=panel.color; ctx.beginPath(); ctx.arc(X(curVal), yNow, 4.5, 0, 7); ctx.fill();
       ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
     }
@@ -824,6 +830,13 @@ function updateSounding(){
       '<div class="stat"><small>Q<sub>p</sub></small><strong>'+c.Qp.toFixed(1)+'</strong></div>'+
       '<div class="stat hi"><small>&psi; (estimated)</small><strong>'+(c.psi>=0?"+":"")+c.psi.toFixed(3)+'</strong>'+badge+'</div>';
     updateFlow(c.qt.toFixed(1)+' MPa', 'Qp='+c.Qp.toFixed(1), 'Ic='+c.ic.toFixed(2), (c.psi>=0?"+":"")+c.psi.toFixed(3));
+
+    var qtKpaNow = c.qt*1000, koNow = num('sndKo');
+    el('sndQpEq').innerHTML =
+      '1&middot; &sigma;&prime;<sub>vo</sub> = &sigma;<sub>vo</sub> &minus; u<sub>0</sub> = '+c.svTotal.toFixed(1)+' &minus; '+c.u0.toFixed(1)+' = <b>'+c.svEff.toFixed(1)+' kPa</b><br>'+
+      '2&middot; p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>&middot;(1+2K<sub>o</sub>)/3 = '+c.svEff.toFixed(1)+'&middot;(1+2&times;'+koNow.toFixed(2)+')/3 = <b>'+c.po.toFixed(1)+' kPa</b><br>'+
+      '3&middot; q<sub>t</sub> (from the raw trace) = '+c.qt.toFixed(2)+' MPa = <b>'+qtKpaNow.toFixed(0)+' kPa</b><br>'+
+      '4&middot; Q<sub>p</sub> = (q<sub>t</sub> &minus; p&prime;<sub>o</sub>) / p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+' &minus; '+c.po.toFixed(1)+') / '+c.po.toFixed(1)+' = <b style="color:var(--blue);font-size:15px">'+c.Qp.toFixed(1)+'</b>';
   }
   drawCptLog();
 }
@@ -1580,6 +1593,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 // ---- maximize interaction throughout and strengthen figure legends (ported from Module 1) ----
 (function(){
 var figureInfo={
+'cptLogChart':['CPT log: five channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> raw tip resistance, MPa (tsf). <b>Panel 2 (green, fs):</b> raw sleeve friction, kPa (tsf). <b>Panel 3 (purple, u2):</b> raw pore pressure, as head of water in m (ft), with a light gray dashed line showing the hydrostatic reference u0 for comparison. <b>Panel 4 (orange, Qp):</b> the dimensionless normalized tip resistance, Qp=(qt&minus;p′o)/p′o — this is the quantity actually built from Panel 1\'s trace plus the assumed stress profile (γ, water table, Ko), and it\'s what Section 7\'s equation inverts. <b>Panel 5 (red, ψ):</b> the resulting state parameter, with a thin dashed line at the theoretical critical state (ψ=0) and a bold line at ψ=−0.05, this module\'s practical dilative/contractive cutoff — shading and the stats badge split at that bold line. In Panels 1–3 the two background shades mark this sounding\'s two layers; in Panel 5 they mark dilative versus contractive instead. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across every panel. The dotted horizontal line and colored dots on each panel mark the currently selected depth.','This is the actual computation chain, left to right: Panel 1\'s raw qt trace, combined with the assumed stress profile, becomes Panel 4\'s Qp trace — read the "How Qp is built" box below the sliders for the exact live arithmetic at your selected depth. Panel 4\'s Qp then becomes Panel 5\'s ψ through Section 7\'s Qp=k·exp(−mψ) relationship. So scan qt first to see where the layer break is, then compare the SAME depth\'s value in Qp — notice Qp does NOT simply track qt, because p′o (driven by depth, γ, and the water table) is changing too. Only after that does ψ make sense as "how Qp compares to what this sand\'s calibration predicts."'],
 'mmChart':['Raw tip resistance versus depth, at constant ψ','Green: a dense sand (ψ=−0.15) held at that same state all the way down. Red: a loose sand (ψ=+0.05), also held constant. Dashed vertical: the current depth slider position.','Compare the vertical gap between the two lines at a shallow depth versus a deep one — it widens even though neither line\'s ψ ever changes, which is the whole point: raw qt confounds state with stress level.'],
 'cptChart':['One depth\'s raw and normalized readings, side by side','Each bar is scaled to its own typical range (see the note under the chart), so compare each bar\'s height to its own axis, not to the others directly.','Read qt first (the raw MPa reading), then Q, then Qp — each step to the right is one more layer of stress-normalization applied to the same underlying measurement.'],
 'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
