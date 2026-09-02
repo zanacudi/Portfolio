@@ -226,7 +226,7 @@ body{padding-bottom:54px}
 <h2>2. A CPT sounding, start to finish</h2>
 <div class="explain"><p>Every section after this one works with <b>one depth at a time</b>. A real CPT gives you a continuous profile instead &mdash; q<sub>t</sub>, f<sub>s</sub>, and u<sub>2</sub> recorded every few centimeters from the surface down. Below is a synthetic sounding built for this module (not real project data) with two contrasting layers, so you can see how the raw channels &mdash; and everything they feed into &mdash; change with depth before diving into the equations. Explore it, send a depth straight into Section 5's calculator, or upload your own sounding.</p></div>
 
-<div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a looser upper zone and a denser lower zone &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it.</div>
+<div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a dense, high-q<sub>t</sub> crust up top and a looser, low-q<sub>t</sub> layer beneath it &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it. Watch the &psi; panel: the same high-tip/low-tip contrast in q<sub>t</sub> carries all the way through to a real dilative/contractive contrast in state.</div>
 
 <div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Five-panel CPT log: tip resistance, sleeve friction, pore pressure, dimensionless Qp, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
 <div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
@@ -614,19 +614,28 @@ function kpaToHeadM(v){ return v/9.81; }
 function headMToKpa(v){ return v*9.81; }
 
 function generateSyntheticSounding(){
+  // Upper layer (0-8 m): "high tip" — a dense crust, qt climbing toward 13-15 MPa,
+  // low friction ratio. Lower layer (8-16 m): "low tip" — looser material, qt
+  // centered around 40-50 tsf (~3.8-4.8 MPa), higher friction ratio. Deliberately
+  // placed this way around (not just loose-shallow/dense-deep): Qp normalizes by
+  // p'o, which is small near the surface, so a moderate qt read shallow can look
+  // artificially dilative regardless of true density. Putting the genuinely loose
+  // material deeper, where p'o is large enough for its low qt to actually pull Qp
+  // (and therefore psi) down, is what makes "high tip vs low tip" actually show up
+  // as a real dilative/contractive contrast in the psi panel, not just in raw qt.
   var rows=[];
   for(var z=0.1; z<=16+1e-9; z=+(z+0.1).toFixed(2)){
-    var inUpper = z < 8;
+    var isDenseZone = z < 8;
     var qt, rfBase, u2;
-    if(inUpper){
-      qt = 2.2 + 0.45*z + sndGaussian()*0.7;
-      rfBase = 1.6;
-      u2 = 9.81*Math.max(0,z-1.0) + qt*1000*0.05 + sndGaussian()*12;
+    if(isDenseZone){
+      qt = 11.5 + 0.4375*z + sndGaussian()*0.6;
+      rfBase = 1.0;
+      u2 = 9.81*Math.max(0,z-1.0)*0.35 + 6 + sndGaussian()*9;
     } else {
       var zz = z - 8;
-      qt = 6.5 + 0.55*zz + sndGaussian()*1.1;
-      rfBase = 0.55;
-      u2 = 9.81*Math.max(0,z-1.0)*0.35 + 6 + sndGaussian()*9;
+      qt = 4.0 + 0.075*zz + sndGaussian()*0.25;
+      rfBase = 3.0;
+      u2 = 9.81*Math.max(0,z-1.0) + qt*1000*0.05 + sndGaussian()*12;
     }
     qt = Math.max(0.5, qt);
     var rf = Math.max(0.15, rfBase + sndGaussian()*0.25);
@@ -681,10 +690,16 @@ var PSI_DIL_BOUNDARY = -0.05;
 
 function drawCptLog(){
   var host=el('cptLogChart'); if(!host) return;
+  // Render at full device-pixel resolution (not just the CSS box size) so text and
+  // thin lines stay crisp on high-DPI screens instead of looking soft/blurry.
+  var dpr = window.devicePixelRatio || 1;
   var W=host.clientWidth||760, H=470;
-  host.width=W; host.height=H;
-  var ctx=host.getContext('2d'); ctx.clearRect(0,0,W,H);
-  var mt=32, mb=46, ml=48, mr=10, gap=16;
+  host.width=Math.round(W*dpr); host.height=Math.round(H*dpr);
+  host.style.width=W+'px'; host.style.height=H+'px';
+  var ctx=host.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+  var mt=32, mb=50, ml=48, mr=10, gap=16;
   var ph=H-mt-mb;
   var panelCount=5;
   var panelW=(W-ml-mr-gap*(panelCount-1))/panelCount;
@@ -696,8 +711,8 @@ function drawCptLog(){
     var yz=Y(zt);
     ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ml,yz); ctx.lineTo(ml+panelCount*panelW+(panelCount-1)*gap,yz); ctx.stroke();
     ctx.textAlign='right';
-    ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textBaseline='bottom'; ctx.fillText(zt.toFixed(0)+' m', ml-6, yz+1);
-    ctx.fillStyle='#a7b3b8'; ctx.font='8px Arial'; ctx.textBaseline='top'; ctx.fillText('('+mToFt(zt).toFixed(0)+' ft)', ml-6, yz+1);
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10.5px Arial'; ctx.textBaseline='bottom'; ctx.fillText(zt.toFixed(0)+' m', ml-6, yz);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top'; ctx.fillText('('+mToFt(zt).toFixed(0)+' ft)', ml-6, yz+1);
   }
   ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillStyle='#61737b'; ctx.font='10.5px Arial'; ctx.fillText('depth, m (ft)',0,0); ctx.restore();
 
@@ -772,11 +787,11 @@ function drawCptLog(){
       var v = panel.min + (panel.max-panel.min)*ti/(nTicks-1);
       var xt=X(v);
       ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xt,mt); ctx.lineTo(xt,mt+ph); ctx.stroke();
-      ctx.font='8.5px Arial'; ctx.fillStyle='#8b9aa0'; ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.font='700 9.5px Arial'; ctx.fillStyle='#3a4b52'; ctx.textAlign='center'; ctx.textBaseline='top';
       ctx.fillText(panel.isPsi ? (v>=0?'+':'')+v.toFixed(2) : v.toFixed(Math.abs(v)>=100?0:1), xt, mt+ph+4);
       if(panel.toSecond && panelW>=75){
-        ctx.font='7.5px Arial'; ctx.fillStyle='#b7c2c6';
-        ctx.fillText('('+panel.toSecond(v).toFixed(panel.secondDp)+')', xt, mt+ph+14);
+        ctx.font='9px Arial'; ctx.fillStyle='#748086';
+        ctx.fillText('('+panel.toSecond(v).toFixed(panel.secondDp)+')', xt, mt+ph+16);
       }
     }
 
