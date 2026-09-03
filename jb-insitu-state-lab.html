@@ -435,8 +435,8 @@ body{padding-bottom:54px}
 <p class="explain" style="font-size:11.5px;color:var(--muted);margin-top:8px">B<sub>q</sub> should stay within about &plusmn;0.02 for the drained-penetration relationships used later (Section 4.7.3) &mdash; the badge flags it if not.</p>
 </div>
 <div>
-<div class="chart-host"><canvas id="cptChart" style="height:330px" role="img" aria-label="Qp against the assumed vertical effective stress, with the real Section 2 sounding scattered behind the fixed-qt curve."></canvas></div>
-<div class="legend"><span><i style="background:#c64852"></i>Q<sub>p</sub> at your q<sub>t</sub>, if only the stress changed</span><span><i style="background:#9aa9ae"></i>every depth of the Section 2 sounding</span><span><i style="background:#20343d"></i>your current setting</span></div>
+<div class="chart-host"><canvas id="cptChart" style="height:330px" role="img" aria-label="Qp on a log axis against vertical effective stress running down the side, showing the real Section 2 sounding and a fixed-qt reference curve."></canvas></div>
+<div class="legend"><span><i style="background:#e38a22"></i>the Section 2 sounding, as measured</span><span><i style="background:#c64852"></i>same q<sub>t</sub> everywhere &mdash; only the stress changing</span><span><i style="background:#20343d"></i>your current &sigma;&prime;<sub>vo</sub></span></div>
 </div>
 </div>
 
@@ -455,7 +455,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <div class="chart-host"><canvas id="koChart" style="height:250px" role="img" aria-label="Qp against Ko at the current qt and effective stress, with the exact expression and the Table 4.1 shortcut overlaid."></canvas></div>
-<div class="legend"><span><i style="background:#c64852"></i>exact Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub></span><span><i style="background:#1479b8"></i>3Q/(1+2K<sub>o</sub>), Table 4.1 shortcut</span><span><i style="background:#20343d"></i>your K<sub>o</sub></span><span><i style="background:#e38a22"></i>Jaky value from &phi;&prime;</span></div>
+<div class="legend"><span><i style="background:#c64852"></i>exact Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub></span><span><i style="background:#1479b8"></i>3Q/(1+2K<sub>o</sub>), Table 4.1 shortcut</span><span><i style="background:#20343d"></i>your K<sub>o</sub></span><span><i style="background:#e38a22"></i>K<sub>o</sub> from Jaky's equation, 1&minus;sin&phi;&prime;</span></div>
 </div>
 </div>
 
@@ -1511,70 +1511,96 @@ function updateSection4(){
   updateFlow(num("qt").toFixed(1)+' MPa', 'Qp='+Qp.toFixed(1));
 }
 
-// Figure A: Qp against the effective stress you assume, at fixed qt -- with every
-// depth of the Section 2 sounding scattered behind it. The curve is the hypothetical
-// "only the stress changed"; the scatter is what real ground actually does, where qt
-// varies with depth as well. The contrast between them is the point.
+// Figure A: the same orientation as the Section 2 log -- the stress axis runs DOWN
+// the side (sigma'vo increases with depth, monotonically, so the real sounding is
+// single-valued in it) and Qp runs across on a log axis. The real trace is drawn as
+// it is, jagged, rather than smoothed or reduced to a cloud of dots.
 function drawCptChart(qtKpa, Q, Qp){
   var host=el("cptChart"); if(!host) return;
-  var cvp=prepCanvas(host, 300, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var mt=18, mb=48, ml=58, mr=14;
+  var cvp=prepCanvas(host, 340, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var mt=20, mb=48, ml=58, mr=14;
   var pw=W-ml-mr, ph=H-mt-mb;
   var svNow=num('sv'), koNow=num('ko');
   function poOf(sv,ko){ return sv*(1+2*ko)/3; }
   function qpOfStress(sv,ko){ var po=poOf(sv,ko); return (qtKpa-po)/po; }
 
-  // real (sigma'vo, Qp) pairs from the Section 2 log, as Section 2 interprets them
-  var pts=sndData.map(function(r){ var c=sndComputeAtRow(r); return {x:c.svEff, y:c.Qp}; })
-                 .filter(function(pt){ return isFinite(pt.x)&&isFinite(pt.y)&&pt.y>0; });
-  var svMin=+el('sv').min;
-  var svMax=Math.max(+el('sv').max, Math.ceil(Math.max.apply(null, pts.map(function(pt){return pt.x;}))/50)*50);
+  // the real sounding, ordered by depth; sigma'vo rises monotonically with depth
+  // whenever gamma exceeds the (scaled) unit weight of water, which it always does here
+  var trace=sndData.map(function(r){ var c=sndComputeAtRow(r); return {sv:c.svEff, qp:c.Qp}; })
+                   .filter(function(t){ return isFinite(t.sv)&&isFinite(t.qp)&&t.qp>0; });
+
+  var svMax=Math.max(+el('sv').max, Math.ceil(Math.max.apply(null, trace.map(function(t){return t.sv;}))/50)*50);
   var qpLo=10, qpHi=Math.max(1000, Math.pow(10, Math.ceil(Math.log10(Math.max(
-             qpOfStress(svMin,koNow), Math.max.apply(null, pts.map(function(pt){return pt.y;})), 100)))));
-  function X(v){ return ml+pw*Math.max(0,Math.min(1,(v-svMin)/(svMax-svMin))); }
-  function Y(q){
+             qpOfStress(+el('sv').min,koNow), Math.max.apply(null, trace.map(function(t){return t.qp;})), 100)))));
+  function Y(sv){ return mt+ph*Math.max(0,Math.min(1,sv/svMax)); }          // stress downward
+  function X(q){
     var lo=Math.log10(qpLo), hi=Math.log10(qpHi);
-    return mt+ph*(1-Math.max(0,Math.min(1,(Math.log10(Math.max(q,qpLo))-lo)/(hi-lo))));
+    return ml+pw*Math.max(0,Math.min(1,(Math.log10(Math.max(q,qpLo))-lo)/(hi-lo)));
   }
+
   ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
   ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
 
-  ctx.textAlign='right'; ctx.textBaseline='middle';
-  for(var d=Math.log10(qpLo); d<=Math.log10(qpHi)+1e-9; d++){
-    var q=Math.pow(10,d), y=Y(q);
+  // vertical axis: sigma'vo, kPa with tsf beneath (bare numbers, units in the title)
+  var yt=niceTicks(0,svMax,4);
+  ctx.textAlign='right';
+  yt.values.forEach(function(v){
+    var y=Y(v);
     ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
-    ctx.font='9.5px Arial'; ctx.fillStyle='#748086'; ctx.fillText(String(Math.round(q)), ml-6, y);
-  }
-  var xt=niceTicks(svMin,svMax,4);
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10px Arial'; ctx.textBaseline='bottom'; ctx.fillText(v.toFixed(yt.dp), ml-6, y);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top'; ctx.fillText('('+kpaToTsf(v).toFixed(1)+')', ml-6, y+1);
+  });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText("σ′vo, kPa (tsf)",0,0); ctx.restore();
+
+  // horizontal axis: Qp by decades
   ctx.textAlign='center'; ctx.textBaseline='top';
-  xt.values.forEach(function(v){
-    var x=X(v);
+  for(var d=Math.log10(qpLo); d<=Math.log10(qpHi)+1e-9; d++){
+    var q=Math.pow(10,d), x=X(q);
     ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke();
     ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-    var t=v.toFixed(xt.dp); ctx.fillText(t, clampLabelX(ctx,x,t,ml,pw), mt+ph+4);
-    ctx.font='9.5px Arial'; ctx.fillStyle='#748086';
-    var t2='('+kpaToTsf(v).toFixed(1)+')'; ctx.fillText(t2, clampLabelX(ctx,x,t2,ml,pw), mt+ph+16);
-  });
-  ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText("σ′vo, kPa (tsf)", ml+pw/2, H-6);
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.fillText('Qp (log)',0,0); ctx.restore();
-
-  ctx.fillStyle='rgba(154,169,174,0.55)';
-  pts.forEach(function(pt){ ctx.beginPath(); ctx.arc(X(pt.x), Y(pt.y), 1.9, 0, 7); ctx.fill(); });
-
-  ctx.beginPath(); ctx.strokeStyle='#c64852'; ctx.lineWidth=2;
-  for(var i=0;i<=180;i++){
-    var sv=svMin+(svMax-svMin)*i/180, x=X(sv), y=Y(qpOfStress(sv,koNow));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    var t=String(Math.round(q));
+    ctx.fillText(t, clampLabelX(ctx,x,t,ml,pw), mt+ph+4);
   }
+  ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('Qp (log)', ml+pw/2, H-6);
+
+  // the real sounding, unsmoothed
+  ctx.beginPath(); ctx.strokeStyle='#e38a22'; ctx.lineWidth=1.5;
+  trace.forEach(function(t,i){ var x=X(t.qp), y=Y(t.sv); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
   ctx.stroke();
 
-  var cx=X(svNow), cy=Y(qpOfStress(svNow,koNow));
+  // the hypothetical: same qt everywhere, only the stress changing
+  ctx.beginPath(); ctx.strokeStyle='#c64852'; ctx.lineWidth=2; ctx.setLineDash([6,3]);
+  for(var i=0;i<=180;i++){
+    var sv=Math.max(1, svMax*i/180), x=X(qpOfStress(sv,koNow)), y=Y(sv);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // Name both curves on the plot, so the figure reads on its own with the legend collapsed
+  function labelAt(sv, qp, text, colour, side){
+    var x=X(qp), y=Y(sv);
+    ctx.font='700 10px Arial'; ctx.textBaseline='middle';
+    var w=ctx.measureText(text).width;
+    if(side==='left' && x-8-w < ml+2) side='right';
+    if(side==='right' && x+8+w > ml+pw-2) side='left';
+    ctx.textAlign = side==='left' ? 'right' : 'left';
+    haloText(ctx, text, x + (side==='left' ? -8 : 8), y, colour);
+  }
+  var tMid=trace[Math.floor(trace.length*0.30)];
+  if(tMid) labelAt(tMid.sv, tMid.qp, 'measured sounding', '#b06d12', 'right');
+  var svRef=svMax*0.78;
+  labelAt(svRef, qpOfStress(svRef,koNow), 'same qt, stress only', '#c64852', 'right');
+
+  var cy=Y(svNow), cx=X(qpOfStress(svNow,koNow));
   ctx.strokeStyle='#20343d'; ctx.setLineDash([3,3]); ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(cx,mt); ctx.lineTo(cx,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(ml,cy); ctx.lineTo(ml+pw,cy); ctx.stroke(); ctx.setLineDash([]);
   ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(cx,cy,4.5,0,7); ctx.fill();
   ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
+  ctx.font='700 9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  haloText(ctx, 'your σ′vo', ml+4, cy-4, '#20343d');
 }
 
 // Figure B: how much the Ko assumption is actually worth, and whether Table 4.1's
@@ -1629,14 +1655,30 @@ function drawKoChart(){
     ctx.stroke();
   });
 
+  // Name the two curves in place rather than relying on the collapsed legend
+  (function(){
+    ctx.font='700 10px Arial'; ctx.textBaseline='bottom';
+    var kA=koMin+(koMax-koMin)*0.22;
+    ctx.textAlign='left'; haloText(ctx,'exact Qp', X(kA)+4, Y(qpExact(kA))-5, '#c64852');
+    var kB=koMin+(koMax-koMin)*0.72;
+    ctx.textBaseline='top'; ctx.textAlign='right';
+    haloText(ctx,'3Q/(1+2Ko) shortcut', X(kB)-4, Y(qpApprox(kB))+5, '#1479b8');
+  })();
+
   // the Jaky-implied Ko, so the slider below has a visible consequence here
   var koJaky=1-Math.sin(num('jakyPhi')*Math.PI/180);
   if(koJaky>=koMin && koJaky<=koMax){
     var xj=X(koJaky);
     ctx.strokeStyle='#e38a22'; ctx.setLineDash([5,3]); ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(xj,mt); ctx.lineTo(xj,mt+ph); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font='700 8.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-    haloText(ctx,'Jaky', xj, mt+3, '#b06d12');
+    // spell the label out -- "Jaky" alone means nothing without the equation beside it
+    ctx.font='700 10px Arial'; ctx.textBaseline='top';
+    var lab='Jaky: Ko = '+koJaky.toFixed(2);
+    var lw=ctx.measureText(lab).width;
+    ctx.textAlign='left';
+    var lx=xj+5;
+    if(lx+lw > ml+pw-3){ ctx.textAlign='right'; lx=xj-5; }
+    haloText(ctx, lab, lx, mt+3, '#b06d12');
   }
   var cx=X(koNow);
   ctx.strokeStyle='#20343d'; ctx.setLineDash([3,3]); ctx.lineWidth=1;
@@ -2303,7 +2345,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 var figureInfo={
 'cptLogChart':['CPT log: five channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> raw tip resistance, MPa (tsf). <b>Panel 2 (green, fs):</b> raw sleeve friction, kPa (tsf). <b>Panel 3 (purple, u2):</b> raw pore pressure, as head of water in m (ft), with a light gray dashed line showing the hydrostatic reference u0 for comparison. <b>Panel 4 (orange, Qp):</b> the dimensionless normalized tip resistance, Qp=(qt&minus;p′o)/p′o — this is the quantity actually built from Panel 1\'s trace plus the assumed stress profile (γ, water table, Ko), and it\'s what Section 7\'s equation inverts. It is plotted on a <b>log axis</b>, because p′o approaches zero at the ground surface, so Qp on any real sounding spans several orders of magnitude and a linear axis would crush the whole profile against one edge. <b>Panel 5 (red, ψ):</b> the resulting state parameter, with a thin dashed line at the theoretical critical state (ψ=0) and a bold line at ψ=−0.05, this module\'s practical dilative/contractive cutoff — shading and the stats badge split at that bold line. In Panels 1–3 the two background shades mark this sounding\'s two layers; in Panel 5 they mark dilative versus contractive instead. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across every panel. The dotted horizontal line and colored dots on each panel mark the currently selected depth.','This is the actual computation chain, left to right: Panel 1\'s raw qt trace, combined with the assumed stress profile, becomes Panel 4\'s Qp trace — read the "How Qp is built" box below the sliders for the exact live arithmetic at your selected depth. Panel 4\'s Qp then becomes Panel 5\'s ψ through Section 7\'s Qp=k·exp(−mψ) relationship — steps 5 to 7 of that same box show k and m being derived from the selected sand\'s λ10 and then inverted for ψ, so the whole chain from raw trace to state is written out numerically. So scan qt first to see where the layer break is, then compare the SAME depth\'s value in Qp — notice Qp does NOT simply track qt, because p′o (driven by depth, γ, and the water table) is changing too. Only after that does ψ make sense as "how Qp compares to what this sand\'s calibration predicts."'],
 'mmChart':['The same ground, denser or looser — qt and the psi it implies','Depth runs down the left in m with ft in parentheses, the same axis as the Section 2 log. <b>Left panel, qt:</b> raw tip resistance in MPa with tsf in parentheses. <b>Blue</b> is the measured Section 2 trace; <b>green</b> is that same trace multiplied by the density factor; <b>red</b> is it divided by the factor. <b>Right panel, psi:</b> the state each of those three traces implies, on the identical p′o profile, with the thin dashed line at critical (psi=0), the bold line at the −0.05 dilative/contractive cutoff, and green/red shading either side. A dashed blue horizontal line marks the water table; the dotted horizontal line and dots mark the depth you have selected.','Read one depth straight across. On the left the three qt traces fan apart as you go deeper — the raw MPa gap between denser and looser keeps widening. On the right the same three cases stay roughly the same distance apart in psi all the way down. That contrast is the whole point: the raw trace exaggerates how different these grounds are at depth, because it is responding to stress as much as to state, while psi answers the question you actually care about. Drag the density factor to change how different the two what-ifs are, and watch which panel reacts proportionately.'],
-'cptChart':['Qp against the stress you assume, with the real sounding behind it','Horizontal axis is the assumed vertical effective stress in kPa with tsf in parentheses; vertical axis is Qp on a log scale. <b>Red curve:</b> what Qp would be at your current qt and Ko if ONLY the stress changed. <b>Grey dots:</b> every depth of the Section 2 sounding, plotted as its own (σ′vo, Qp) pair as Section 2 interprets it. <b>Dashed line and red dot:</b> your current slider setting.','Note first how steeply the red curve falls: qt is fixed along it, yet Qp drops by more than a decade across the plausible stress range, which is why a raw tip reading means nothing until the stress is pinned down. Then look at the grey cloud. Real ground does not sit on that curve, because going deeper raises qt as well as the stress -- the scatter is much flatter than the single-qt curve. The curve isolates one variable; the cloud shows the two moving together, which is what a sounding actually gives you.'],
+'cptChart':['Qp against effective stress, in the same orientation as the log','Laid out like the Section 2 log: <b>σ′vo runs DOWN the left</b> in kPa with tsf in parentheses, so deeper ground is lower on the figure, and <b>Qp runs across on a log scale</b>. <b>Orange:</b> the Section 2 sounding exactly as measured, one point per depth, drawn unsmoothed. <b>Red dashed:</b> what Qp would be at your current qt and Ko if only the stress changed. <b>Dark dashed horizontal line and red dot:</b> the σ′vo you have set on the slider.','Follow the red dashed curve first. qt is fixed all along it, yet Qp still falls by more than a decade from top to bottom, purely because the stress underneath it is growing — that alone is why a raw tip reading means nothing until the stress is pinned down. Now follow the orange trace. Real ground does not lie along that curve: going deeper raises qt as well as the stress, so the measured profile is markedly flatter than the fixed-qt line. The red curve isolates one variable; the orange trace shows both moving at once, which is what a sounding actually hands you.'],
 'koChart':['How much the Ko assumption is actually worth','Horizontal axis is Ko across its plausible range; vertical axis is Qp. <b>Red:</b> the exact Qp=(qt−p′o)/p′o at your current qt and σ′vo. <b>Blue:</b> Table 4.1\'s shortcut 3Q/(1+2Ko). <b>Dark dashed line and dots:</b> your current Ko. <b>Orange dashed line:</b> the Ko that Jaky\'s equation gives for the friction angle on the slider beside this figure.','Two things to take away. First, the red and blue curves stay close over the whole range, so Table 4.1\'s shortcut is a fair stand-in for the exact expression. Second, and more useful: compare how far Qp moves across this entire Ko range against how far it moved across the stress range in the figure above. Ko is the input you can least defend -- the book is openly sceptical of Jaky here -- but it is also the one that costs you least when you get it wrong. Drag the friction angle and watch the orange line move to see how much a whole degree of φ′ is really worth.'],
 'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
 'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
