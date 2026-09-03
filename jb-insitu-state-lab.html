@@ -168,6 +168,22 @@ body{padding-bottom:54px}
 .bayes-chart-box{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fbfdfe}
 .bayes-chart-box canvas{display:block;width:100%;height:230px}
 @media(max-width:900px){.bayes-grid2{grid-template-columns:1fr}}
+
+/* Section 2's CPT log: controls beside the log rather than stacked above it, so a
+   slider and the five panels it drives stay visible together without scrolling. */
+.snd-layout{display:grid;grid-template-columns:minmax(290px,0.82fr) 1.18fr;gap:16px;align-items:start;margin-top:10px}
+.snd-layout>div{min-width:0}
+.snd-controls{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb)}
+.snd-controls .slider-block{margin:7px 0;padding:9px 11px}
+.snd-controls .slider-block .hint{font-size:10px;line-height:1.35;margin-top:4px}
+.snd-controls .statgrid{grid-template-columns:repeat(2,1fr);gap:7px}
+.snd-controls .stat{padding:8px 7px}
+.snd-controls .stat strong{font-size:13.5px}
+.snd-controls h3{margin:12px 0 5px}
+.snd-controls .eq{font-size:12px;padding:8px 10px}
+.snd-controls select{width:100%;margin-top:3px}
+@media(max-width:1000px){.snd-layout{grid-template-columns:1fr}.snd-controls .statgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.snd-controls .statgrid{grid-template-columns:repeat(2,1fr)}}
 </style></head>
 <body>
 <header><div class="wrap">
@@ -228,22 +244,26 @@ body{padding-bottom:54px}
 
 <div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a dense, high-q<sub>t</sub> crust up top and a looser, low-q<sub>t</sub> layer beneath it &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it. Watch the &psi; panel: the same high-tip/low-tip contrast in q<sub>t</sub> carries all the way through to a real dilative/contractive contrast in state.</div>
 
-<div class="chart-host" style="margin-top:10px"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Five-panel CPT log: tip resistance, sleeve friction, pore pressure, dimensionless Qp, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
-
-<div class="guided-panel">
-<div class="grid4">
+<div class="snd-layout">
+<div class="snd-controls">
 <div class="slider-block"><label for="sndDepth"><span>Selected depth (m)</span> <span class="readout" id="sndDepthOut">4.00</span></label><input id="sndDepth" type="range" min="0.1" max="16" step="0.05" value="4"></div>
 <div class="slider-block"><label for="sndGamma"><span>Assumed unit weight, &gamma; (kN/m&sup3;)</span> <span class="readout" id="sndGammaOut">19.0</span></label><input id="sndGamma" type="range" min="15" max="21" step="0.5" value="19"><div class="hint">Used only to estimate &sigma;&prime;<sub>vo</sub> for this preview &mdash; a real design would use a measured or logged unit-weight profile.</div></div>
 <div class="slider-block"><label for="sndWt"><span>Water table depth (m)</span> <span class="readout" id="sndWtOut">1.5</span></label><input id="sndWt" type="range" min="0" max="16" step="0.1" value="1.5"><div class="hint">Range always spans the full sounding &mdash; from ground surface to the deepest point on the log.</div></div>
 <div class="slider-block"><label for="sndKo"><span>Geostatic ratio, K<sub>o</sub></span> <span class="readout" id="sndKoOut">0.50</span></label><input id="sndKo" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
-</div>
-<label for="sndSandSelect" style="font-size:12.5px;font-weight:700">Sand for the &psi;-inversion preview (Section 7's method)</label><br>
+<label for="sndSandSelect" style="font-size:12px;font-weight:700;display:block;margin-top:8px">Sand for the &psi;-inversion preview (Section 7's method)</label>
 <select id="sndSandSelect"></select>
 <div class="statgrid" id="sndStats" style="margin-top:10px"></div>
-<h3>How Q<sub>p</sub> is built from this depth's raw trace</h3>
+<button type="button" id="sndUseDepthBtn" class="alt" style="margin-top:10px;width:100%">Use this depth in Section 5's calculator →</button>
+</div>
+<div>
+<div class="chart-host"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Five-panel CPT log: tip resistance, sleeve friction, pore pressure, dimensionless Qp, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
+</div>
+</div>
+
+<div class="guided-panel">
+<h3 style="margin-top:0">How Q<sub>p</sub> is built from this depth's raw trace</h3>
 <div class="eq" id="sndQpEq" style="white-space:normal;font-size:13px"></div>
-<button type="button" id="sndUseDepthBtn" class="alt" style="margin-top:10px">Use this depth in Section 5's calculator →</button>
 </div>
 
 <div class="s2-lab">
@@ -693,7 +713,11 @@ function drawCptLog(){
   // Render at full device-pixel resolution (not just the CSS box size) so text and
   // thin lines stay crisp on high-DPI screens instead of looking soft/blurry.
   var dpr = window.devicePixelRatio || 1;
-  var W=host.clientWidth||760, H=470;
+  // Measure the PARENT, not the canvas: the DPR scaling below pins the canvas's own
+  // CSS width, which would otherwise make host.clientWidth a stale self-reference that
+  // can shrink but never grow back when the layout gets wider.
+  var box = host.parentElement;
+  var W = Math.max(320, (box && box.clientWidth) || host.clientWidth || 760), H=470;
   host.width=Math.round(W*dpr); host.height=Math.round(H*dpr);
   host.style.width=W+'px'; host.style.height=H+'px';
   var ctx=host.getContext('2d');
@@ -782,14 +806,17 @@ function drawCptLog(){
     ctx.fillText(panel.label+(panel.unit?', '+panel.unit+(panel.secondUnit?' ('+panel.secondUnit+')':''):''), px+panelW/2, mt-10);
 
     // x-axis ticks: adaptive count by panel width, dual-unit where applicable
-    var nTicks = panelW<75 ? 3 : 5;
+    // Each tick prints a primary value and (for most panels) a bracketed secondary
+    // unit under it, so tick COUNT has to fall as the panel narrows or the labels
+    // collide — especially now that the log shares its row with the control column.
+    var nTicks = panelW<95 ? 2 : (panelW<150 ? 3 : 5);
     for(var ti=0; ti<nTicks; ti++){
       var v = panel.min + (panel.max-panel.min)*ti/(nTicks-1);
       var xt=X(v);
       ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xt,mt); ctx.lineTo(xt,mt+ph); ctx.stroke();
       ctx.font='700 9.5px Arial'; ctx.fillStyle='#3a4b52'; ctx.textAlign='center'; ctx.textBaseline='top';
       ctx.fillText(panel.isPsi ? (v>=0?'+':'')+v.toFixed(2) : v.toFixed(Math.abs(v)>=100?0:1), xt, mt+ph+4);
-      if(panel.toSecond && panelW>=75){
+      if(panel.toSecond && panelW>=70){
         ctx.font='9px Arial'; ctx.fillStyle='#748086';
         ctx.fillText('('+panel.toSecond(v).toFixed(panel.secondDp)+')', xt, mt+ph+16);
       }
