@@ -320,16 +320,16 @@ body{padding-bottom:54px}
 
 <div class="s2-lab">
 <h3 style="margin-top:0">See it happen first: the same sand, two depths</h3>
-<p class="explain">Push the same sand at the same relative state (same &psi;) at a shallow depth, then again much deeper. <b>The raw tip resistance is not the same number</b> &mdash; it can't be, because resistance scales with confining stress. Watch the gap between "dense" and "loose" grow in raw MPa as depth increases, even though each curve represents one constant &psi; all the way down.</p>
+<p class="explain">Push the same sand at the same relative state (same &psi;) at a shallow depth, then again much deeper. <b>The raw tip resistance is not the same number</b> &mdash; it can't be, because resistance scales with confining stress. Watch the gap between "dense" and "loose" grow in raw MPa as depth increases, even though each curve represents one constant &psi; all the way down. Both curves are plotted against the same depth axis as the Section 2 log, so you can read them together.</p>
 <div class="grid2" style="margin-top:8px">
 <div>
 <div class="s2-presets" role="group" aria-label="State to compare"><button type="button" data-mmstate="both" class="on" aria-pressed="true">Dense &amp; loose</button><button type="button" data-mmstate="dense" aria-pressed="false">Dense only</button><button type="button" data-mmstate="loose" aria-pressed="false">Loose only</button></div>
-<div class="slider-block"><label for="mmDepth"><span>Depth-equivalent stress, p&prime;<sub>o</sub> (kPa)</span> <span class="readout" id="mmDepthOut">100</span></label><input id="mmDepth" type="range" min="10" max="800" step="5" value="100"></div>
+<div class="slider-block"><label for="mmDepth"><span>Depth, m (ft)</span> <span class="readout" id="mmDepthOut">20.0 (66)</span></label><input id="mmDepth" type="range" min="0.5" max="54" step="0.25" value="20"><div class="hint">Uses the same unit weight, water table and % hydrostatic you set in Section 2, so this demo and the real log stay consistent.</div></div>
 <div id="mmStatus" class="callout" aria-live="polite">Drag the depth slider and watch the raw q<sub>t</sub> gap between dense and loose grow, even though neither sand's &psi; has changed.</div>
 <div class="statgrid n2" id="mmStats"></div>
 </div>
 <div><canvas id="mmChart" role="img" aria-label="Chart of raw tip resistance versus depth-equivalent stress for a constant-psi dense sand and a constant-psi loose sand, showing the raw resistance gap widening with depth."></canvas>
-<div class="legend"><span><i style="background:var(--green)"></i>dense, ψ=&minus;0.15 (constant)</span><span><i style="background:var(--red)"></i>loose, ψ=+0.05 (constant)</span><span><i style="background:#9aa9ae"></i>current depth marker</span></div>
+<div class="legend"><span><i style="background:var(--green)"></i>dense, ψ=&minus;0.15 (constant)</span><span><i style="background:var(--red)"></i>loose, ψ=+0.05 (constant)</span><span><i style="background:#9aa9ae"></i>current depth marker</span><span><i style="background:#1479b8"></i>water table</span></div>
 </div>
 </div>
 <p class="explain" style="font-size:11px;margin-top:6px">Both lines use Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) &mdash; the exact equation Section 7 inverts &mdash; with &psi;=&minus;0.15 (dense) and &psi;=+0.05 (loose) held fixed, for a representative sand (&lambda;<sub>10</sub>=0.05). <b>This is why Section 5 exists:</b> before you can say anything about density from a CPT trace, the raw MPa reading has to be normalized by the stress level it was measured at.</p>
@@ -355,7 +355,7 @@ body{padding-bottom:54px}
 <div class="state-box loose"><b>Loose of critical, ψ &gt; 0</b><div class="particles" id="looseParticles"></div><small>Grains collapse ahead of the cone with little resistance. Tip resistance is disproportionately LOW once normalized — Q<sub>p</sub> is small.</small></div>
 </div></div>
 <div class="visual-panel"><h3>What actually changes Q<sub>p</sub>?</h3>
-<p class="explain" style="font-size:11.5px;margin-top:0">Two things move Q<sub>p</sub> at a fixed q<sub>t</sub> reading, and only one of them is state. Here's what each tab means before Sections 4 and 6 make it precise:</p>
+<p class="explain" style="font-size:11.5px;margin-top:0">Two things move Q<sub>p</sub> at a fixed q<sub>t</sub> reading, and only one of them is state. Here's what each tab means before Sections 5 and 7 make it precise:</p>
 <div class="lesson-tabs" role="tablist" aria-label="What changes Qp?"><button type="button" role="tab" id="tab-pane-qt" aria-controls="pane-qt" aria-selected="true" class="on" data-pane="pane-qt">Increase q<sub>t</sub></button><button type="button" role="tab" id="tab-pane-po" aria-controls="pane-po" aria-selected="false" data-pane="pane-po">Increase p&prime;<sub>o</sub></button><button type="button" role="tab" id="tab-pane-psi" aria-controls="pane-psi" aria-selected="false" data-pane="pane-psi">Decrease &psi;</button></div>
 <div id="pane-qt" class="lesson-pane on callout" role="tabpanel" aria-labelledby="tab-pane-qt"><b>Increase q<sub>t</sub> at fixed p&prime;<sub>o</sub>:</b> Q<sub>p</sub> rises directly — a genuinely stronger reading at the same stress level.</div>
 <div id="pane-po" class="lesson-pane callout" role="tabpanel" aria-labelledby="tab-pane-po"><b>Increase p&prime;<sub>o</sub> at fixed q<sub>t</sub>:</b> Q<sub>p</sub> FALLS, even though nothing about the soil changed. This is exactly the depth effect in the chart above, working in reverse.</div>
@@ -743,6 +743,21 @@ function fmtSecondary(panel, v){
   if(a<1e-9) return '(0)';
   return '('+s.toFixed(a>=10 ? 0 : (a>=1 ? 1 : 2))+')';
 }
+// Size a canvas to its container at full device-pixel resolution, so text and thin
+// lines stay crisp on high-DPI screens. Measures the PARENT, never the canvas itself:
+// we pin the canvas's own CSS width here, which would otherwise make clientWidth a
+// stale self-reference that can shrink but never grow back when the layout widens.
+function prepCanvas(host, cssH, minW){
+  var dpr = window.devicePixelRatio || 1;
+  var box = host.parentElement;
+  var W = Math.max(minW||260, (box && box.clientWidth) || host.clientWidth || 520);
+  host.width = Math.round(W*dpr); host.height = Math.round(cssH*dpr);
+  host.style.width = W+'px'; host.style.height = cssH+'px';
+  var ctx = host.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,cssH);
+  return {ctx:ctx, W:W, H:cssH};
+}
 // Keep a centered label fully inside its own panel instead of spilling into the gap.
 function clampLabelX(ctx, x, text, px, panelW){
   var half = ctx.measureText(text).width/2 + 1;
@@ -776,17 +791,7 @@ function drawCptLog(){
   var host=el('cptLogChart'); if(!host) return;
   // Render at full device-pixel resolution (not just the CSS box size) so text and
   // thin lines stay crisp on high-DPI screens instead of looking soft/blurry.
-  var dpr = window.devicePixelRatio || 1;
-  // Measure the PARENT, not the canvas: the DPR scaling below pins the canvas's own
-  // CSS width, which would otherwise make host.clientWidth a stale self-reference that
-  // can shrink but never grow back when the layout gets wider.
-  var box = host.parentElement;
-  var W = Math.max(320, (box && box.clientWidth) || host.clientWidth || 760), H=470;
-  host.width=Math.round(W*dpr); host.height=Math.round(H*dpr);
-  host.style.width=W+'px'; host.style.height=H+'px';
-  var ctx=host.getContext('2d');
-  ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,W,H);
+  var cv=prepCanvas(host, 470, 320), ctx=cv.ctx, W=cv.W, H=cv.H;
   var mt=32, mb=50, ml=48, mr=10, gap=20;
   var ph=H-mt-mb;
   var panelCount=5;
@@ -1019,6 +1024,8 @@ function updateSounding(){
   drawCptLog();
 }
 ['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
+// gamma / water table / Ko / % hydrostatic also drive Section 3's demo, so keep it in step
+['sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', function(){ if(window.updateMentalModel) updateMentalModel(); }); });
 sndSandSel.addEventListener('change', updateSounding);
 
 el('sndUseDepthBtn').addEventListener('click', function(){
@@ -1107,10 +1114,14 @@ el('sndFileInput').addEventListener('change', function(ev){
     var wtSlider = el('sndWt');
     wtSlider.max = SND_MAX_Z;
     if(+wtSlider.value > SND_MAX_Z) wtSlider.value = SND_MAX_Z;
+    var mmS = el('mmDepth');
+    mmS.min = rows[0].z; mmS.max = SND_MAX_Z;
+    if(+mmS.value > SND_MAX_Z || +mmS.value < rows[0].z) mmS.value = rows[Math.floor(rows.length/2)].z;
     status.className='callout';
     status.innerHTML = '<b>Loaded '+rows.length+' depths from '+file.name+'</b> ('+(sndUnitSystem==='metric'?'read as metric':'read as imperial, converted to metric')+'), ranging '+rows[0].z.toFixed(2)+' m ('+mToFt(rows[0].z).toFixed(1)+' ft) to '+rows[rows.length-1].z.toFixed(2)+' m ('+mToFt(rows[rows.length-1].z).toFixed(1)+' ft). The layer shading above is specific to the built-in example, so it\'s hidden for uploaded data.';
     el('sndViewResultsBtn').style.display='inline-block';
     updateSounding();
+    if(window.updateMentalModel) updateMentalModel();
   };
   reader.onerror = function(){
     status.style.display='block'; status.className='warning';
@@ -1127,10 +1138,12 @@ el('sndResetExample').addEventListener('click', function(){
   var depthSlider = el('sndDepth');
   depthSlider.min=0.5; depthSlider.max=54; depthSlider.value=20;
   el('sndWt').max = 54;
+  var mmR = el('mmDepth'); mmR.min=0.5; mmR.max=54; mmR.value=20;
   el('sndUploadStatus').style.display='none';
   el('sndViewResultsBtn').style.display='none';
   el('sndFileInput').value='';
   updateSounding();
+  if(window.updateMentalModel) updateMentalModel();
 });
 
 // After an upload the log is off-screen above the upload box, so offer a jump back to it.
@@ -1172,41 +1185,82 @@ document.querySelectorAll('[data-mmstate]').forEach(function(b){
   });
 });
 var MM_LAM=0.05, MM_PSI_DENSE=-0.15, MM_PSI_LOOSE=0.05;
+// p'o at a given depth, using the SAME ground assumptions the reader set in Section 2
+// (unit weight, water table, % hydrostatic), so this demo and the real log agree.
+function mmPoAt(z){
+  var gamma=num('sndGamma'), wt=num('sndWt'), ko=num('sndKo'), hyd=num('sndHyd')/100;
+  var u0=(z>wt ? 9.81*(z-wt) : 0)*hyd;
+  var svEff=Math.max(0.5, gamma*z-u0);
+  return svEff*(1+2*ko)/3;
+}
+function mmQtAt(z, psiVal){ return mmPoAt(z)*(1+qpOf(MM_LAM,psiVal))/1000; }  // MPa
 function updateMentalModel(){
-  var p0=num("mmDepth");
-  el("mmDepthOut").textContent=p0.toFixed(0);
-  var qpD=qpOf(MM_LAM,MM_PSI_DENSE), qpL=qpOf(MM_LAM,MM_PSI_LOOSE);
-  var qtD=(p0*(1+qpD))/1000, qtL=(p0*(1+qpL))/1000; // MPa
-  var gap=qtD-qtL;
+  var z=num("mmDepth");
+  el("mmDepthOut").textContent=z.toFixed(1)+' ('+mToFt(z).toFixed(0)+')';
+  var qtD=mmQtAt(z,MM_PSI_DENSE), qtL=mmQtAt(z,MM_PSI_LOOSE), gap=qtD-qtL;
+  var poNow=mmPoAt(z);
   el("mmStats").innerHTML =
-    '<div class="stat"><small>Dense q<sub>t</sub> (MPa)</small><strong>'+qtD.toFixed(2)+'</strong></div>'+
-    '<div class="stat"><small>Loose q<sub>t</sub> (MPa)</small><strong>'+qtL.toFixed(2)+'</strong></div>'+
-    '<div class="stat hi" style="grid-column:1/-1"><small>Raw gap at this depth</small><strong>'+gap.toFixed(2)+' MPa</strong></div>';
-  el("mmStatus").innerHTML = '<b>At p&prime;<sub>o</sub>='+p0.toFixed(0)+' kPa:</b> the same two constant-&psi; sands now read '+qtD.toFixed(1)+' MPa (dense) versus '+qtL.toFixed(1)+' MPa (loose) &mdash; a raw gap of '+gap.toFixed(1)+' MPa. Neither sand\'s state has changed; only depth has. Drag to the far right and watch the gap keep growing.';
+    '<div class="stat"><small>Dense q<sub>t</sub>, MPa (tsf)</small><strong>'+qtD.toFixed(2)+' ('+mpaToTsf(qtD).toFixed(0)+')</strong></div>'+
+    '<div class="stat"><small>Loose q<sub>t</sub>, MPa (tsf)</small><strong>'+qtL.toFixed(2)+' ('+mpaToTsf(qtL).toFixed(0)+')</strong></div>'+
+    '<div class="stat"><small>p&prime;<sub>o</sub> here (kPa)</small><strong>'+poNow.toFixed(0)+'</strong></div>'+
+    '<div class="stat hi"><small>Raw gap, MPa (tsf)</small><strong>'+gap.toFixed(2)+' ('+mpaToTsf(gap).toFixed(0)+')</strong></div>';
+  el("mmStatus").innerHTML = '<b>At '+z.toFixed(1)+' m ('+mToFt(z).toFixed(0)+' ft), where p&prime;<sub>o</sub> = '+poNow.toFixed(0)+' kPa:</b> the same two constant-&psi; sands read '+qtD.toFixed(1)+' MPa (dense) versus '+qtL.toFixed(1)+' MPa (loose) &mdash; a raw gap of '+gap.toFixed(1)+' MPa ('+mpaToTsf(gap).toFixed(0)+' tsf). Neither sand\'s &psi; has changed; only depth has. Drag deeper and watch the gap keep opening.';
 
-  var W=el("mmChart").clientWidth||520,H=250;
-  var cv=el("mmChart"); cv.width=W; cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=52,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmax=800, ymax=(800*(1+qpD)/1000)*1.08;
-  function X(v){ return ml+pw*v/xmax; }
-  function Y(v){ return mt+ph*(1-v/ymax); }
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  for(var xv=0;xv<=xmax;xv+=200){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv,x-10,mt+ph+13); }
-  ctx.textAlign="right";
-  for(var yv=0;yv<=ymax;yv+=Math.ceil(ymax/5/5)*5){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(0),ml-8,y+3); }
-  ctx.textAlign="left";
-  ctx.fillText("depth-equivalent stress, p′o (kPa)", ml+pw/2-70, H-2);
-  ctx.save(); ctx.translate(13,mt+ph/2+30); ctx.rotate(-Math.PI/2); ctx.fillText("raw tip resistance, qt (MPa)",0,0); ctx.restore();
+  var host=el("mmChart");
+  var cvp=prepCanvas(host, 250, 240), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=56,mr=16,mt=14,mb=44; var pw=W-ml-mr, ph=H-mt-mb;
+  var xmax=SND_MAX_Z;
+  var ymax=Math.max(mmQtAt(xmax,MM_PSI_DENSE), 1)*1.08;
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/xmax)); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,v/ymax))); }
+
+  var xt=niceTicks(0,xmax,5), yt=niceTicks(0,ymax,5);
+  ctx.strokeStyle="#eef2f4"; ctx.lineWidth=1;
+  xt.values.forEach(function(v){ var x=X(v); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); });
+  yt.values.forEach(function(v){ var y=Y(v); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); });
+  ctx.strokeStyle="#d7e1e5"; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+
+  // x ticks: depth in m with ft beneath, each clamped inside the plot box
+  ctx.textAlign="center"; ctx.textBaseline="top";
+  xt.values.forEach(function(v){
+    ctx.font="700 9.5px Arial"; ctx.fillStyle="#3a4b52";
+    var t=v.toFixed(xt.dp);
+    ctx.fillText(t, clampLabelX(ctx, X(v), t, ml, pw), mt+ph+4);
+    ctx.font="9px Arial"; ctx.fillStyle="#748086";
+    var t2='('+mToFt(v).toFixed(0)+')';
+    ctx.fillText(t2, clampLabelX(ctx, X(v), t2, ml, pw), mt+ph+16);
+  });
+  // y ticks: qt in MPa with tsf beside
+  ctx.textAlign="right"; ctx.textBaseline="middle";
+  yt.values.forEach(function(v){
+    ctx.font="700 9.5px Arial"; ctx.fillStyle="#3a4b52";
+    ctx.fillText(v.toFixed(yt.dp), ml-26, Y(v));
+    ctx.font="9px Arial"; ctx.fillStyle="#748086";
+    ctx.fillText('('+mpaToTsf(v).toFixed(0)+')', ml-4, Y(v));
+  });
+  ctx.textAlign="center"; ctx.textBaseline="alphabetic"; ctx.font="10.5px Arial"; ctx.fillStyle="#61737b";
+  ctx.fillText("depth, m (ft)", ml+pw/2, H-6);
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText("raw tip resistance, qt — MPa (tsf)",0,0); ctx.restore();
+
   function drawLine(psiVal,color){
     ctx.strokeStyle=color; ctx.lineWidth=2.4; ctx.beginPath();
-    for(var xv2=0;xv2<=xmax;xv2+=10){
-      var qtv=(xv2*(1+qpOf(MM_LAM,psiVal)))/1000;
-      var x=X(xv2), y=Y(qtv);
-      if(xv2===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    var first=true;
+    for(var zz=0; zz<=xmax+1e-9; zz+=xmax/240){
+      var x=X(zz), y=Y(mmQtAt(zz,psiVal));
+      if(first){ ctx.moveTo(x,y); first=false; } else ctx.lineTo(x,y);
     }
     ctx.stroke();
   }
+  // water table, for continuity with the Section 2 log
+  var wtNow=num('sndWt');
+  if(wtNow>0 && wtNow<xmax){
+    ctx.save(); ctx.strokeStyle='#1479b8'; ctx.lineWidth=1.4; ctx.setLineDash([6,3]);
+    ctx.beginPath(); ctx.moveTo(X(wtNow),mt); ctx.lineTo(X(wtNow),mt+ph); ctx.stroke(); ctx.restore();
+    ctx.font='700 8.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+    haloText(ctx,'▽ water table', X(wtNow)+3, mt+3, '#1479b8');
+  }
+  var p0=z;
   if(mmState==="both"||mmState==="dense") drawLine(MM_PSI_DENSE, getCss('--green')||'#268160');
   if(mmState==="both"||mmState==="loose") drawLine(MM_PSI_LOOSE, getCss('--red')||'#c64852');
   var xNow=X(p0);
@@ -1215,6 +1269,7 @@ function updateMentalModel(){
   if(mmState==="both"||mmState==="loose"){ var yL=Y(qtL); ctx.fillStyle=getCss('--red')||'#c64852'; ctx.beginPath(); ctx.arc(xNow,yL,5,0,7); ctx.fill(); }
 }
 mmDepthSlide.addEventListener("input",updateMentalModel);
+window.updateMentalModel=updateMentalModel;
 window.addEventListener("resize",updateMentalModel);
 
 // concept-line walk-through
@@ -1652,6 +1707,25 @@ window.runModule2SelfTests = function(){
   check(+el('sndHyd').max===100, "% hydrostatic slider is capped at 100");
   check(+el('sndHyd').min===0, "% hydrostatic slider reaches 0");
 
+  // 11c. Section 3's demo: constant-psi curves must rise with depth, stay ordered
+  // dense-above-loose, widen with depth, and agree with the Section 2 stress model.
+  (function(){
+    var zs=[2,10,25,45];
+    var qtD=zs.map(function(z){ return mmQtAt(z, MM_PSI_DENSE); });
+    var qtL=zs.map(function(z){ return mmQtAt(z, MM_PSI_LOOSE); });
+    check(zs.every(function(_,i){ return i===0 || qtD[i]>qtD[i-1]; }), "S3: dense constant-psi qt increases with depth");
+    check(zs.every(function(_,i){ return i===0 || qtL[i]>qtL[i-1]; }), "S3: loose constant-psi qt increases with depth");
+    check(zs.every(function(_,i){ return qtD[i]>qtL[i]; }), "S3: dense qt exceeds loose qt at every depth");
+    var gaps=zs.map(function(_,i){ return qtD[i]-qtL[i]; });
+    check(gaps.every(function(_,i){ return i===0 || gaps[i]>gaps[i-1]; }), "S3: the dense-vs-loose raw qt gap widens with depth");
+    // the demo's p'o must match the Section 2 calculator's p'o at the same depth
+    var z=25, c=sndComputeAt(z);
+    check(Math.abs(mmPoAt(z)-c.po)<1e-6, "S3 p'o at "+z+" m matches the Section 2 calculator exactly");
+    // and inverting the demo's own qt must return the psi it was built from
+    var qpBack=(mmQtAt(z,MM_PSI_DENSE)*1000-mmPoAt(z))/mmPoAt(z);
+    check(Math.abs(psiOfQp(MM_LAM,qpBack)-MM_PSI_DENSE)<1e-6, "S3: inverting the dense curve returns psi = "+MM_PSI_DENSE);
+  })();
+
   // 12. the derived default sounding is present and self-consistent
   check(SND_DEFAULT_ROWS.length>200, "default sounding has a full-resolution profile ("+SND_DEFAULT_ROWS.length+" points)");
   (function(){
@@ -1835,7 +1909,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 (function(){
 var figureInfo={
 'cptLogChart':['CPT log: five channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> raw tip resistance, MPa (tsf). <b>Panel 2 (green, fs):</b> raw sleeve friction, kPa (tsf). <b>Panel 3 (purple, u2):</b> raw pore pressure, as head of water in m (ft), with a light gray dashed line showing the hydrostatic reference u0 for comparison. <b>Panel 4 (orange, Qp):</b> the dimensionless normalized tip resistance, Qp=(qt&minus;p′o)/p′o — this is the quantity actually built from Panel 1\'s trace plus the assumed stress profile (γ, water table, Ko), and it\'s what Section 7\'s equation inverts. It is plotted on a <b>log axis</b>, because p′o approaches zero at the ground surface, so Qp on any real sounding spans several orders of magnitude and a linear axis would crush the whole profile against one edge. <b>Panel 5 (red, ψ):</b> the resulting state parameter, with a thin dashed line at the theoretical critical state (ψ=0) and a bold line at ψ=−0.05, this module\'s practical dilative/contractive cutoff — shading and the stats badge split at that bold line. In Panels 1–3 the two background shades mark this sounding\'s two layers; in Panel 5 they mark dilative versus contractive instead. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across every panel. The dotted horizontal line and colored dots on each panel mark the currently selected depth.','This is the actual computation chain, left to right: Panel 1\'s raw qt trace, combined with the assumed stress profile, becomes Panel 4\'s Qp trace — read the "How Qp is built" box below the sliders for the exact live arithmetic at your selected depth. Panel 4\'s Qp then becomes Panel 5\'s ψ through Section 7\'s Qp=k·exp(−mψ) relationship — steps 5 to 7 of that same box show k and m being derived from the selected sand\'s λ10 and then inverted for ψ, so the whole chain from raw trace to state is written out numerically. So scan qt first to see where the layer break is, then compare the SAME depth\'s value in Qp — notice Qp does NOT simply track qt, because p′o (driven by depth, γ, and the water table) is changing too. Only after that does ψ make sense as "how Qp compares to what this sand\'s calibration predicts."'],
-'mmChart':['Raw tip resistance versus depth, at constant ψ','Green: a dense sand (ψ=−0.15) held at that same state all the way down. Red: a loose sand (ψ=+0.05), also held constant. Dashed vertical: the current depth slider position.','Compare the vertical gap between the two lines at a shallow depth versus a deep one — it widens even though neither line\'s ψ ever changes, which is the whole point: raw qt confounds state with stress level.'],
+'mmChart':['Raw tip resistance versus depth, at constant ψ','Horizontal axis is depth in m with ft in parentheses — the same axis the Section 2 log uses. Vertical axis is raw tip resistance in MPa with tsf in parentheses. <b>Green:</b> a dense sand (ψ=−0.15) held at exactly that state all the way down. <b>Red:</b> a loose sand (ψ=+0.05), also held constant. <b>Blue dashed vertical:</b> the water table. <b>Grey dashed vertical:</b> the depth you have selected, with a dot on each curve. p′o at every depth comes from the same unit weight, water table and % hydrostatic you set in Section 2.','Pick a shallow depth, read the vertical gap between the two curves, then slide deep and read it again — it widens steadily even though neither curve\'s ψ ever changes. That gap is pure stress effect, not state. Note also that each curve RISES with depth: one sand at fixed density produces a bigger raw qt the deeper you push, which is exactly why a raw trace cannot be read as density until it has been normalized.'],
 'cptChart':['One depth\'s raw and normalized readings, side by side','Each bar is scaled to its own typical range (see the note under the chart), so compare each bar\'s height to its own axis, not to the others directly.','Read qt first (the raw MPa reading), then Q, then Qp — each step to the right is one more layer of stress-normalization applied to the same underlying measurement.'],
 'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
 'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
