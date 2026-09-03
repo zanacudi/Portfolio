@@ -180,8 +180,15 @@ body{padding-bottom:54px}
 .snd-controls .stat{padding:8px 7px}
 .snd-controls .stat strong{font-size:13.5px}
 .snd-controls h3{margin:12px 0 5px}
-.snd-controls .eq{font-size:12px;padding:8px 10px}
 .snd-controls select{width:100%;margin-top:3px}
+/* The worked example lives under the button, filling what was dead space beside the
+   log. It wraps rather than scrolls, and each numbered step hangs-indents so a
+   wrapped line stays visually attached to its own step. */
+.snd-eq-title{margin:14px 0 5px;font-size:12.5px}
+.snd-controls .eq{font-size:11.5px;line-height:1.65;padding:9px 11px;white-space:normal;overflow-x:visible}
+.snd-controls .eq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+.snd-controls .eq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:2px 0 3px}
+.snd-controls .eq b{white-space:nowrap}
 @media(max-width:1000px){.snd-layout{grid-template-columns:1fr}.snd-controls .statgrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.snd-controls .statgrid{grid-template-columns:repeat(2,1fr)}}
 </style></head>
@@ -254,16 +261,13 @@ body{padding-bottom:54px}
 <select id="sndSandSelect"></select>
 <div class="statgrid" id="sndStats" style="margin-top:10px"></div>
 <button type="button" id="sndUseDepthBtn" class="alt" style="margin-top:10px;width:100%">Use this depth in Section 5's calculator →</button>
+<h3 class="snd-eq-title">From raw trace to Q<sub>p</sub> to &psi; &mdash; every step, at this depth</h3>
+<div class="eq" id="sndQpEq"></div>
 </div>
 <div>
 <div class="chart-host"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Five-panel CPT log: tip resistance, sleeve friction, pore pressure, dimensionless Qp, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
 <div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
 </div>
-</div>
-
-<div class="guided-panel">
-<h3 style="margin-top:0">From raw trace to Q<sub>p</sub> to &psi; &mdash; every step, at the selected depth</h3>
-<div class="eq" id="sndQpEq" style="white-space:normal;font-size:13px"></div>
 </div>
 
 <div class="s2-lab">
@@ -748,6 +752,29 @@ function clampLabelX(ctx, x, text, px, panelW){
   var half = ctx.measureText(text).width/2 + 1;
   return Math.min(Math.max(x, px+half), px+panelW-half);
 }
+// Text with a soft white outline, so annotations stay readable wherever they land
+// (over shading, gridlines, or the trace itself).
+function haloText(ctx, text, x, y, color){
+  ctx.save();
+  ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=3;
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle=color; ctx.fillText(text, x, y);
+  ctx.restore();
+}
+// A label rotated to run up alongside a vertical reference line, placed on the given
+// side of it. After rotate(-90°) the local +y axis points screen-right, so
+// textBaseline 'top' puts glyphs right of the line and 'bottom' puts them left.
+function vLabelBesideLine(ctx, text, xLine, yBottom, side, color, bold){
+  ctx.save();
+  ctx.translate(xLine + (side==='right' ? 3 : -3), yBottom);
+  ctx.rotate(-Math.PI/2);
+  ctx.font=(bold?'700 ':'')+'9px Arial';
+  ctx.textAlign='left';
+  ctx.textBaseline = (side==='right') ? 'top' : 'bottom';
+  haloText(ctx, text, 0, 0, color);
+  ctx.restore();
+}
 
 function drawCptLog(){
   var host=el('cptLogChart'); if(!host) return;
@@ -834,13 +861,15 @@ function drawCptLog(){
       var xZero=X(0), xBnd=X(PSI_DIL_BOUNDARY);
       ctx.strokeStyle='#9aa9ae'; ctx.setLineDash([3,2]); ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xZero,mt); ctx.lineTo(xZero,mt+ph); ctx.stroke(); ctx.setLineDash([]);
       ctx.strokeStyle='#123b4a'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(xBnd,mt); ctx.lineTo(xBnd,mt+ph); ctx.stroke();
-      ctx.font='8px Arial'; ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle='#61737b';
-      ctx.fillText('critical, ψ=0', xZero, mt+3);
-      ctx.fillStyle='#123b4a'; ctx.font='700 8px Arial';
-      ctx.fillText('ψ=−0.05', xBnd, mt+13);
-      ctx.font='700 8px Arial'; ctx.textBaseline='alphabetic';
-      ctx.textAlign='left'; ctx.fillStyle='#1f7a4c'; ctx.fillText('DILATIVE', px+4, mt+ph-5);
-      ctx.textAlign='right'; ctx.fillStyle='#b03a44'; ctx.fillText('CONTRACTIVE', px+panelW-4, mt+ph-5);
+      // The two reference lines sit only ~12px apart on this axis, so horizontal
+      // labels centered on them overlapped each other and the lines themselves.
+      // Run each label vertically ALONGSIDE its own line instead — on opposite
+      // sides — which is the usual well-log convention and can't crowd.
+      vLabelBesideLine(ctx, 'ψ = 0  critical', xZero, mt+ph-7, 'right', '#5c6b72', false);
+      vLabelBesideLine(ctx, 'ψ = −0.05', xBnd, mt+ph-7, 'left', '#123b4a', true);
+      ctx.font='700 9px Arial'; ctx.textBaseline='alphabetic';
+      ctx.textAlign='left'; haloText(ctx,'DILATIVE', px+5, mt+13, '#1f7a4c');
+      ctx.textAlign='right'; haloText(ctx,'CONTRACTIVE', px+panelW-5, mt+13, '#b03a44');
     }
     if(panel.key==='u2'){
       // hydrostatic reference (u0) at the current gamma/water-table assumption, for comparison against measured u2
@@ -953,17 +982,17 @@ function updateSounding(){
 
     var qtKpaNow = c.qt*1000, koNow = num('sndKo');
     var sandNow = SANDS[+sndSandSel.value], kNow = kOf(sandNow.lambda10), mNow = mOf(sandNow.lambda10);
+    var psiCol = c.psi<PSI_DIL_BOUNDARY ? 'var(--green-text)' : 'var(--red-text)';
     el('sndQpEq').innerHTML =
-      '1&middot; &sigma;&prime;<sub>vo</sub> = &sigma;<sub>vo</sub> &minus; u<sub>0</sub> = '+c.svTotal.toFixed(1)+' &minus; '+c.u0.toFixed(1)+' = <b>'+c.svEff.toFixed(1)+' kPa</b><br>'+
-      '2&middot; p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>&middot;(1+2K<sub>o</sub>)/3 = '+c.svEff.toFixed(1)+'&middot;(1+2&times;'+koNow.toFixed(2)+')/3 = <b>'+c.po.toFixed(1)+' kPa</b><br>'+
-      '3&middot; q<sub>t</sub> (from the raw trace) = '+c.qt.toFixed(2)+' MPa = <b>'+qtKpaNow.toFixed(0)+' kPa</b><br>'+
-      '4&middot; Q<sub>p</sub> = (q<sub>t</sub> &minus; p&prime;<sub>o</sub>) / p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+' &minus; '+c.po.toFixed(1)+') / '+c.po.toFixed(1)+' = <b style="color:#c07d1c;font-size:15px">'+c.Qp.toFixed(1)+'</b>'+
-      '<hr style="border:0;border-top:1px solid var(--line);margin:9px 0">'+
-      '<span style="font-size:11px;color:var(--muted);font-family:Arial,Helvetica,sans-serif">…and Q<sub>p</sub> becomes &psi; through Section 7\'s calibration, using this sand\'s &lambda;<sub>10</sub> = '+sandNow.lambda10.toFixed(3)+' ('+sandNow.name+'):</span><br>'+
-      '5&middot; k = 8 + 0.55/(&lambda;<sub>10</sub> &minus; 0.01) = 8 + 0.55/('+sandNow.lambda10.toFixed(3)+' &minus; 0.01) = <b>'+kNow.toFixed(2)+'</b><br>'+
-      '6&middot; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) = 8.1 &minus; 2.3&middot;log<sub>10</sub>('+sandNow.lambda10.toFixed(3)+') = <b>'+mNow.toFixed(2)+'</b><br>'+
-      '7&middot; &psi; = &minus;ln(Q<sub>p</sub>/k)/m = &minus;ln('+c.Qp.toFixed(1)+'/'+kNow.toFixed(2)+')/'+mNow.toFixed(2)+' = <b style="color:'+(c.psi<PSI_DIL_BOUNDARY?'var(--green-text)':'var(--red-text)')+';font-size:15px">'+(c.psi>=0?'+':'')+c.psi.toFixed(3)+'</b> '+
-      '<span style="font-size:11px;color:var(--muted);font-family:Arial,Helvetica,sans-serif">&mdash; '+(c.psi<PSI_DIL_BOUNDARY?'dilative (below &minus;0.05)':'contractive (at or above &minus;0.05)')+'</span>';
+      '<span class="step">1&middot; &sigma;&prime;<sub>vo</sub> = &sigma;<sub>vo</sub> &minus; u<sub>0</sub> = '+c.svTotal.toFixed(1)+' &minus; '+c.u0.toFixed(1)+' = <b>'+c.svEff.toFixed(1)+' kPa</b></span>'+
+      '<span class="step">2&middot; p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>(1+2K<sub>o</sub>)/3 = '+c.svEff.toFixed(1)+'(1+2&times;'+koNow.toFixed(2)+')/3 = <b>'+c.po.toFixed(1)+' kPa</b></span>'+
+      '<span class="step">3&middot; q<sub>t</sub> from the trace = '+c.qt.toFixed(2)+' MPa = <b>'+qtKpaNow.toFixed(0)+' kPa</b></span>'+
+      '<span class="step">4&middot; Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+'&minus;'+c.po.toFixed(1)+')/'+c.po.toFixed(1)+' = <b style="color:#c07d1c;font-size:14px">'+c.Qp.toFixed(1)+'</b></span>'+
+      '<span class="step-note" style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px">Q<sub>p</sub> &rarr; &psi; via Section 7, using &lambda;<sub>10</sub> = '+sandNow.lambda10.toFixed(3)+' ('+sandNow.name+'):</span>'+
+      '<span class="step">5&middot; k = 8 + 0.55/(&lambda;<sub>10</sub>&minus;0.01) = 8 + 0.55/('+sandNow.lambda10.toFixed(3)+'&minus;0.01) = <b>'+kNow.toFixed(2)+'</b></span>'+
+      '<span class="step">6&middot; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) = 8.1 &minus; 2.3&middot;log<sub>10</sub>('+sandNow.lambda10.toFixed(3)+') = <b>'+mNow.toFixed(2)+'</b></span>'+
+      '<span class="step">7&middot; &psi; = &minus;ln(Q<sub>p</sub>/k)/m = &minus;ln('+c.Qp.toFixed(1)+'/'+kNow.toFixed(2)+')/'+mNow.toFixed(2)+' = <b style="color:'+psiCol+';font-size:14px">'+(c.psi>=0?'+':'')+c.psi.toFixed(3)+'</b></span>'+
+      '<span class="step-note" style="color:'+psiCol+';font-weight:700">&rarr; '+(c.psi<PSI_DIL_BOUNDARY?'dilative (below &minus;0.05)':'contractive (at or above &minus;0.05)')+'</span>';
   }
   drawCptLog();
 }
