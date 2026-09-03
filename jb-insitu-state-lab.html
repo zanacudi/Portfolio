@@ -181,6 +181,11 @@ body{padding-bottom:54px}
 .snd-controls .stat strong{font-size:13.5px}
 .snd-controls h3{margin:12px 0 5px}
 .snd-controls select{width:100%;margin-top:3px}
+/* Paired half-width sliders (gamma|Ko, water table|% hydrostatic) */
+.snd-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.snd-row2 .slider-block{margin:6px 0;padding:8px 9px;min-width:0}
+.snd-row2 .slider-block label{font-size:11px;gap:4px;flex-wrap:wrap}
+.snd-row2 .readout{font-size:11px}
 /* The worked example lives under the button, filling what was dead space beside the
    log. It wraps rather than scrolls, and each numbered step hangs-indents so a
    wrapped line stays visually attached to its own step. */
@@ -247,16 +252,22 @@ body{padding-bottom:54px}
 
 <section id="cpt-sounding" class="card">
 <h2>2. A CPT sounding, start to finish</h2>
-<div class="explain"><p>Every section after this one works with <b>one depth at a time</b>. A real CPT gives you a continuous profile instead &mdash; q<sub>t</sub>, f<sub>s</sub>, and u<sub>2</sub> recorded every few centimeters from the surface down. Below is a synthetic sounding built for this module (not real project data) with two contrasting layers, so you can see how the raw channels &mdash; and everything they feed into &mdash; change with depth before diving into the equations. Explore it, send a depth straight into Section 5's calculator, or upload your own sounding.</p></div>
+<div class="explain"><p>Every section after this one works with <b>one depth at a time</b>. A real CPT gives you a continuous profile instead &mdash; q<sub>t</sub>, f<sub>s</sub>, and u<sub>2</sub> recorded every few centimeters from the surface down. Below is a 54&nbsp;m teaching sounding with the shape and scatter of a genuine CPTu log, so you can see how the raw channels &mdash; and everything they feed into &mdash; change with depth before diving into the equations. Explore it, send a depth straight into Section 5's calculator, or upload your own sounding.</p></div>
 
-<div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands mark this sounding's two layers &mdash; a dense, high-q<sub>t</sub> crust up top and a looser, low-q<sub>t</sub> layer beneath it &mdash; visible directly in the raw q<sub>t</sub> trace before any equation is applied to it. Watch the &psi; panel: the same high-tip/low-tip contrast in q<sub>t</sub> carries all the way through to a real dilative/contractive contrast in state.</div>
+<div class="callout"><b>Reading the log:</b> depth increases downward, the way a real CPT log is normally plotted. The two shaded bands split the profile at about 30&nbsp;m, where q<sub>t</sub> steps up into a firmer zone. <b>Now watch the &psi; panel, because it does something you might not expect:</b> q<sub>t</sub> is <i>higher</i> down there, yet &psi; drifts from strongly dilative near the surface into contractive at depth. Nothing is wrong &mdash; p&prime;<sub>o</sub> grows faster with depth than q<sub>t</sub> does, so Q<sub>p</sub>=(q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> falls even while the raw reading rises. This is exactly why a raw q<sub>t</sub> trace can never be read as density on its own.</div>
 
 <div class="snd-layout">
 <div class="snd-controls">
-<div class="slider-block"><label for="sndDepth"><span>Selected depth (m)</span> <span class="readout" id="sndDepthOut">4.00</span></label><input id="sndDepth" type="range" min="0.1" max="16" step="0.05" value="4"></div>
-<div class="slider-block"><label for="sndGamma"><span>Assumed unit weight, &gamma; (kN/m&sup3;)</span> <span class="readout" id="sndGammaOut">19.0</span></label><input id="sndGamma" type="range" min="15" max="21" step="0.5" value="19"><div class="hint">Used only to estimate &sigma;&prime;<sub>vo</sub> for this preview &mdash; a real design would use a measured or logged unit-weight profile.</div></div>
-<div class="slider-block"><label for="sndWt"><span>Water table depth (m)</span> <span class="readout" id="sndWtOut">1.5</span></label><input id="sndWt" type="range" min="0" max="16" step="0.1" value="1.5"><div class="hint">Range always spans the full sounding &mdash; from ground surface to the deepest point on the log.</div></div>
-<div class="slider-block"><label for="sndKo"><span>Geostatic ratio, K<sub>o</sub></span> <span class="readout" id="sndKoOut">0.50</span></label><input id="sndKo" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
+<div class="slider-block"><label for="sndDepth"><span>Selected depth (m)</span> <span class="readout" id="sndDepthOut">20.00</span></label><input id="sndDepth" type="range" min="0.5" max="54" step="0.25" value="20"></div>
+<div class="snd-row2">
+<div class="slider-block"><label for="sndGamma"><span>&gamma;, kN/m&sup3; (pcf)</span> <span class="readout" id="sndGammaOut">19.0</span></label><input id="sndGamma" type="range" min="15" max="21" step="0.5" value="19"></div>
+<div class="slider-block"><label for="sndKo"><span>K<sub>o</sub></span> <span class="readout" id="sndKoOut">0.50</span></label><input id="sndKo" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
+</div>
+<div class="snd-row2">
+<div class="slider-block"><label for="sndWt"><span>Water table, m (ft)</span> <span class="readout" id="sndWtOut">2.0</span></label><input id="sndWt" type="range" min="0" max="54" step="0.25" value="2"></div>
+<div class="slider-block"><label for="sndHyd"><span>% of hydrostatic</span> <span class="readout" id="sndHydOut">100%</span></label><input id="sndHyd" type="range" min="0" max="150" step="5" value="100"></div>
+</div>
+<div class="hint" style="margin:-2px 0 4px">&gamma; only estimates &sigma;&prime;<sub>vo</sub> for this preview; a real design uses a logged unit-weight profile. <b>% of hydrostatic</b> scales the equilibrium pore pressure u<sub>0</sub> at every depth &mdash; 100% is fully hydrostatic, below that is under-drained, above is artesian &mdash; and it feeds &sigma;&prime;<sub>vo</sub>, so it moves p&prime;<sub>o</sub>, Q<sub>p</sub> and &psi; too.</div>
 <label for="sndSandSelect" style="font-size:12px;font-weight:700;display:block;margin-top:8px">Sand for the &psi;-inversion preview (Section 7's method)</label>
 <select id="sndSandSelect"></select>
 <div class="statgrid" id="sndStats" style="margin-top:10px"></div>
@@ -266,7 +277,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <div class="chart-host"><canvas id="cptLogChart" style="height:470px" role="img" aria-label="Five-panel CPT log: tip resistance, sleeve friction, pore pressure, dimensionless Qp, and estimated state parameter, all versus depth, with a marker at the currently selected depth."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#c3ced1"></i>u<sub>0</sub> (hydrostatic reference)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
+<div class="legend"><span><i style="background:#1479b8"></i>q<sub>t</sub> (tip resistance)</span><span><i style="background:#2d8b65"></i>f<sub>s</sub> (sleeve friction)</span><span><i style="background:#7653a6"></i>u<sub>2</sub> (pore pressure, as head)</span><span><i style="background:#e38a22"></i>Q<sub>p</sub> (normalized tip resistance)</span><span><i style="background:#c64852"></i>&psi; (estimated, this depth's sand)</span><span><i style="background:#aab6bb"></i>u<sub>0</sub> at 100% hydrostatic</span><span><i style="background:#1479b8"></i>u<sub>0</sub> assumed (% slider)</span><span><i style="background:#f2f7f9;border:1px solid #d7e1e5"></i>upper layer</span><span><i style="background:#e7eef1;border:1px solid #d7e1e5"></i>lower layer</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative, &psi;&lt;&minus;0.05</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive, &psi;&ge;&minus;0.05</span><span><i style="background:#1479b8"></i>water table (dashed)</span></div>
 </div>
 </div>
 
@@ -288,7 +299,7 @@ body{padding-bottom:54px}
 <button type="button" id="sndViewResultsBtn" style="margin-top:8px;display:none">&uarr; See your sounding on the log above</button>
 </div>
 
-<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is fabricated for this module &mdash; not data from any real site or project &mdash; engineered specifically to show two contrasting layers. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead. The &minus;0.05 dilative/contractive line on the &psi; panel is a practical rule of thumb used only for this log's shading and badge &mdash; the theoretical critical state is still exactly &psi;=0, shown as the thin dashed line beside it. Pore pressure (u<sub>2</sub>, and the hydrostatic reference u<sub>0</sub>) is expressed as head of water, in m with ft in parentheses, matching how a real cone's piezometric channel is usually reported &mdash; not as kPa or psi. Other secondary units in parentheses (tsf, ft) use the standard cone conversion 1&nbsp;tsf&nbsp;=&nbsp;95.76&nbsp;kPa; all internal calculations stay in metric (kPa) regardless of what's displayed.</div>
+<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is a <b>derived teaching dataset</b>, not anyone's project data: it was resampled from ~2200 points onto a clean 0.25&nbsp;m grid, rescaled, given a deterministic per-point perturbation, and had a few localized u<sub>2</sub> spikes clipped, so it keeps a realistic shape and scatter while carrying none of the original values. Treat it as illustrative only. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead. The &minus;0.05 dilative/contractive line on the &psi; panel is a practical rule of thumb used only for this log's shading and badge &mdash; the theoretical critical state is still exactly &psi;=0, shown as the thin dashed line beside it. Pore pressure (u<sub>2</sub>, and the hydrostatic reference u<sub>0</sub>) is expressed as head of water, in m with ft in parentheses, matching how a real cone's piezometric channel is usually reported &mdash; not as kPa or psi. Other secondary units in parentheses (tsf, ft) use the standard cone conversion 1&nbsp;tsf&nbsp;=&nbsp;95.76&nbsp;kPa; all internal calculations stay in metric (kPa) regardless of what's displayed.</div>
 <div class="callout" style="margin-top:8px"><b>Why does a deeper water table make the same reading look more contractive?</b> Try it: drag the water-table slider deeper while watching the &psi; panel at a fixed depth. A deeper water table means less pore pressure counteracts the overburden, so the estimated effective stress p&prime;<sub>o</sub> at that depth goes <i>up</i>. Since the raw q<sub>t</sub> reading hasn't changed, Q<sub>p</sub>=(q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> goes <i>down</i> &mdash; the same absolute resistance now looks weaker relative to a higher confining stress &mdash; and the Section 7 inversion reads that as a more positive (more contractive) &psi;. This is the exact same effect as Module 1's &psi;=e&minus;e<sub>c</sub>(p&prime;): raising p&prime; at constant e always pushes &psi; up, because the critical state line itself drops as stress rises. It isn't a quirk of this calculator &mdash; it's the same reason two identical soils at different depths can appear to have very different states.</div>
 </section>
 
@@ -620,8 +631,8 @@ var sndRngState = 20260828;
 function sndRnd(){ sndRngState=(sndRngState*1103515245+12345)&0x7fffffff; return sndRngState/0x7fffffff; }
 function sndGaussian(){ var u1=Math.max(1e-9,sndRnd()), u2=sndRnd(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
 
-var SND_LAYER_Z = 8;   // synthetic layer boundary depth (m); null once real user data is loaded
-var SND_MAX_Z = 16;
+var SND_LAYER_Z = 30;  // boundary between the two zones of the default profile (m); null for uploaded data
+var SND_MAX_Z = 54;
 
 // ---- unit conversions: internal calculations always stay in metric (m, MPa, kPa) ----
 // 1 tsf = 0.9576 bar = 95.76 kPa, matching the standard cone conversion factor.
@@ -638,37 +649,16 @@ function psiToKpa(v){ return v/0.145038; }
 function kpaToHeadM(v){ return v/9.81; }
 function headMToKpa(v){ return v*9.81; }
 
+// Default sounding: a teaching profile DERIVED from a real CPTu log, not the log
+// itself — resampled from ~2200 points onto a clean 0.25 m grid, rescaled, given a
+// deterministic per-point perturbation, and with a few localized u2 spikes clipped.
+// It keeps the shape that makes the profile instructive (a firmer zone below ~30 m,
+// and a state that drifts from dilative near surface to contractive at depth) while
+// carrying none of the source's actual values.
+// Columns: depth (m), qt (MPa), fs (kPa), u2 (kPa).
+var SND_DEFAULT_ROWS = [[0.5,14.7,243.4,5.8],[0.75,16.03,189.9,11],[1,18.22,307.5,8.7],[1.25,13.03,224.7,2.7],[1.5,10.95,201.9,4.3],[1.75,9.93,132.2,3.6],[2,12.26,161.7,3.8],[2.25,8.72,84.2,-1.1],[2.5,6.76,54,1],[2.75,6.01,45.1,-1.5],[3,3.35,54.4,-0.6],[3.25,1.97,28.3,-3.5],[3.5,6.47,77.4,2.8],[3.75,15.09,215.5,1.3],[4,11.14,126,0.3],[4.25,10.68,105.9,2.1],[4.5,9.22,117.7,0.2],[4.75,11.1,46.9,4.4],[5,6.67,44.9,3.5],[5.25,3.89,45.6,2.7],[5.5,5.44,65.6,0.2],[5.75,8.04,116.9,2.1],[6,6.77,61.7,0.2],[6.25,16.44,255.6,1.5],[6.5,12.96,215.7,1.6],[6.75,11.18,208.3,2.4],[7,10.06,129.5,1.5],[7.25,10.18,123.1,3.7],[7.5,16.27,391.1,-2.6],[7.75,10.69,191.7,2.7],[8,7.4,91.3,3.2],[8.25,5.93,79.3,-0.2],[8.5,5.22,64.8,-0.2],[8.75,5.02,55.1,0.3],[9,9.32,71.7,3.4],[9.25,12.64,96.7,-0.4],[9.5,10.18,115.3,-0.8],[9.75,14.89,162.7,-0.2],[10,11.36,126.4,0.6],[10.25,8.93,83.4,0.8],[10.5,8.52,101.1,1],[10.75,5.75,88.4,-0.1],[11,5.35,59.4,-0.6],[11.25,7.87,62.2,-1],[11.5,8.19,91.6,-0],[11.75,10,98.8,-1.8],[12,3.97,74.5,15.1],[12.25,5.06,100.2,12],[12.5,14.38,212.9,-0.9],[12.75,11.65,118.6,0.5],[13,12.59,91,2.5],[13.25,7.71,98.1,2],[13.5,8.07,97.9,5.4],[13.75,8.74,119.2,4.9],[14,10.5,93.6,3.4],[14.25,12.53,214.3,2.8],[14.5,9.02,146.5,1.5],[14.75,8.02,159.6,1.2],[15,8.27,134.1,-0],[15.25,4.22,107.3,29.1],[15.5,5.66,124.9,9.9],[15.75,5.9,194.7,-0.6],[16,7.81,102,-1.8],[16.25,7.06,101.5,0.2],[16.5,9.73,122.2,3],[16.75,13.5,134.6,3.2],[17,9.8,159.9,-0.4],[17.25,13.83,169.7,98.1],[17.5,14.89,305.5,1.6],[17.75,10.22,233.2,1.4],[18,11.62,106.6,4.8],[18.25,12.15,157.5,1],[18.5,14.56,133.3,1.2],[18.75,12.47,175.4,5],[19,12.15,144.2,5],[19.25,10.43,184.4,0.6],[19.5,13.11,184.5,1.6],[19.75,11.71,146.9,0.9],[20,10.69,177.9,1.4],[20.25,11.71,158,0.9],[20.5,16.29,263.4,-1.2],[20.75,12.48,211.8,2.9],[21,11.23,222.2,1.7],[21.25,10.41,222.9,1],[21.5,13.01,143.3,1.8],[21.75,9.42,184.9,0.2],[22,7.26,205.6,0.3],[22.25,6.86,149.6,1.8],[22.5,14.23,93.1,-1],[22.75,9.83,212,-0.2],[23,9.95,181,-4.8],[23.25,9.14,168,0.3],[23.5,10.34,194.2,1.7],[23.75,9.14,205.6,1.1],[24,9.83,230,1],[24.25,11.19,167.1,-6.1],[24.5,8.51,198.2,-0.9],[24.75,13.87,229,-8.1],[25,8.33,205.4,1.4],[25.25,10.54,222.7,-12.3],[25.5,11.15,210.3,-9.1],[25.75,6.71,247.4,18.6],[26,6.36,222.8,11.3],[26.25,10.92,226.9,3.8],[26.5,9.99,184.3,2.9],[26.75,8.97,217.6,-1],[27,12.53,209.9,-3.2],[27.25,16.83,151.6,0.7],[27.5,11.26,294.5,-0.3],[27.75,11.32,224.2,-4.1],[28,10.03,185.3,-0.6],[28.25,10.43,223.8,-10.8],[28.5,12.4,213,0.2],[28.75,17.6,217,2.8],[29,17.53,214.1,-0.3],[29.25,14.65,223.6,-12.1],[29.5,8.38,233.6,36.7],[29.75,13.52,281.6,2.4],[30,14.04,297.9,6.9],[30.25,13.11,311.5,5.9],[30.5,19.46,318,6.9],[30.75,19.77,321.4,-0],[31,15.68,245.8,0.9],[31.25,14.06,337.3,0.5],[31.5,25.06,331.8,3.6],[31.75,15.13,309.8,0.3],[32,13.73,301.9,49.2],[32.25,14.07,336.8,3.6],[32.5,14.96,285.4,3.1],[32.75,11.47,300.9,2.6],[33,15.86,321.3,2.1],[33.25,16.69,338.3,1.4],[33.5,13.2,306.2,10.2],[33.75,12.96,287.5,18.3],[34,14.42,313.5,-9],[34.25,24.97,363.9,0.1],[34.5,14.12,339,0.1],[34.75,16.87,367.3,0.7],[35,15.98,394.5,2.4],[35.25,16.18,392,5.1],[35.5,15.89,339.5,-2.4],[35.75,19.66,326,-0.3],[36,30.65,290.7,4.8],[36.25,16.81,312.1,-3.5],[36.5,15.8,359.5,-2],[36.75,13.67,347.2,-8.7],[37,17.9,260.7,-1],[37.25,19.74,260.9,-1.2],[37.5,18.27,373.7,-0],[37.75,20.46,380,0.2],[38,34.32,402.1,1.5],[38.25,20.94,367.2,0.4],[38.5,15.34,297.4,-3.7],[38.75,17.39,384.1,-4.7],[39,18.07,330.5,-13.4],[39.25,14.53,350.5,0.3],[39.5,17.78,409.3,-10.6],[39.75,11.91,335.5,12.7],[40,9.52,362.2,-13.1],[40.25,14.46,308.4,-15.3],[40.5,14.55,413.5,-5.9],[40.75,18.45,476.7,-0.2],[41,18.33,447.7,1.5],[41.25,9.88,361.2,13.9],[41.5,11.57,320.1,-15.1],[41.75,18.94,482.2,2],[42,18.28,481.9,2.3],[42.25,18.83,437.9,-1.6],[42.5,15.09,465.3,-0],[42.75,11.1,338.9,2.2],[43,19.12,392.7,1],[43.25,17.26,422.3,3.5],[43.5,16.94,400.7,2.6],[43.75,17.96,434.1,9.5],[44,17.02,419.5,1.9],[44.25,14.7,430.4,-3.2],[44.5,16.27,400,-0.5],[44.75,16.23,368.5,-6.4],[45,13.1,381.1,-8.1],[45.25,17.76,447.6,-4],[45.5,16.66,461.6,-0.9],[45.75,16.55,498.6,3.9],[46,10.99,341.9,-16.6],[46.25,15.61,422,-9.5],[46.5,17.85,412.6,-19.2],[46.75,17.56,421.8,1],[47,13.47,444.9,-17.7],[47.25,17.1,418.8,1.1],[47.5,18.16,461,-26.8],[47.75,24.02,503.5,1.9],[48,25.16,499.7,0.2],[48.25,21.36,423.6,1.2],[48.5,16.91,387.4,-11],[48.75,18.89,373.8,3.7],[49,15.28,419.2,11.5],[49.25,13.75,368.4,-4.1],[49.5,11.12,386.9,-25.2],[49.75,14.48,422.3,12.2],[50,12.6,343.5,-0.7],[50.25,15.12,396.3,-0.9],[50.5,10.65,270,32.4],[50.75,15.48,397.2,0.1],[51,13.6,320.5,-10],[51.25,15.32,432.3,-1.1],[51.5,12.07,379.7,0.3],[51.75,19.39,367.5,-20.7],[52,9.91,145.2,55.7],[52.25,17.55,377.9,-39.8],[52.5,19.4,454.4,-6.3],[52.75,14.24,432.9,0.7],[53,8.76,292.7,84],[53.25,13.84,427.7,-20.9],[53.5,5.72,82,98.1],[53.75,8.71,111.5,98.1],[54,4.59,75.4,98.1]];
 function generateSyntheticSounding(){
-  // Upper layer (0-8 m): "high tip" — a dense crust, qt climbing toward 13-15 MPa,
-  // low friction ratio. Lower layer (8-16 m): "low tip" — looser material, qt
-  // centered around 40-50 tsf (~3.8-4.8 MPa), higher friction ratio. Deliberately
-  // placed this way around (not just loose-shallow/dense-deep): Qp normalizes by
-  // p'o, which is small near the surface, so a moderate qt read shallow can look
-  // artificially dilative regardless of true density. Putting the genuinely loose
-  // material deeper, where p'o is large enough for its low qt to actually pull Qp
-  // (and therefore psi) down, is what makes "high tip vs low tip" actually show up
-  // as a real dilative/contractive contrast in the psi panel, not just in raw qt.
-  var rows=[];
-  for(var z=0.1; z<=16+1e-9; z=+(z+0.1).toFixed(2)){
-    var isDenseZone = z < 8;
-    var qt, rfBase, u2;
-    if(isDenseZone){
-      qt = 11.5 + 0.4375*z + sndGaussian()*0.6;
-      rfBase = 1.0;
-      u2 = 9.81*Math.max(0,z-1.0)*0.35 + 6 + sndGaussian()*9;
-    } else {
-      var zz = z - 8;
-      qt = 4.0 + 0.075*zz + sndGaussian()*0.25;
-      rfBase = 3.0;
-      u2 = 9.81*Math.max(0,z-1.0) + qt*1000*0.05 + sndGaussian()*12;
-    }
-    qt = Math.max(0.5, qt);
-    var rf = Math.max(0.15, rfBase + sndGaussian()*0.25);
-    var fs = qt*1000*rf/100;
-    u2 = Math.max(1, u2);
-    rows.push({z:+z.toFixed(2), qt:+qt.toFixed(2), fs:+fs.toFixed(1), u2:+u2.toFixed(1)});
-  }
-  return rows;
+  return SND_DEFAULT_ROWS.map(function(r){ return {z:r[0], qt:r[1], fs:r[2], u2:r[3]}; });
 }
 
 var sndData = generateSyntheticSounding();
@@ -693,8 +683,14 @@ sndSandSel.innerHTML = SANDS.map(function(s,i){ return '<option value="'+i+'"'+(
 
 function sndComputeFromValues(z, qt, fs, u2){
   var gamma = num('sndGamma'), wt = num('sndWt'), ko = num('sndKo');
+  var hydFrac = num('sndHyd')/100;
   var svTotal = gamma*z;
-  var u0 = z>wt ? 9.81*(z-wt) : 0;
+  // Full hydrostatic equilibrium pore pressure, then the fraction of it actually
+  // assumed at this site. Below 100% is under-drained/partially drained (common under
+  // tailings and where there is downward seepage); above 100% is artesian. The scaled
+  // u0 — not the hydrostatic one — is what feeds sigma'vo, and therefore p'o, Qp and psi.
+  var u0Full = z>wt ? 9.81*(z-wt) : 0;
+  var u0 = u0Full*hydFrac;
   var svEff = Math.max(0.5, svTotal-u0);
   var qtKpa = qt*1000;
   var qNet = Math.max(1, qtKpa-svTotal);
@@ -706,7 +702,7 @@ function sndComputeFromValues(z, qt, fs, u2){
   var ic = icOf(Q,F,Bq);
   var sand = SANDS[+sndSandSel.value];
   var psi = psiOfQp(sand.lambda10, Math.max(1,Qp));
-  return {z:z, qt:qt, fs:fs, u2:u2, svTotal:svTotal, u0:u0, svEff:svEff, Q:Q, F:F, Bq:Bq, po:po, Qp:Qp, ic:ic, psi:psi};
+  return {z:z, qt:qt, fs:fs, u2:u2, svTotal:svTotal, u0:u0, u0Full:u0Full, hydFrac:hydFrac, svEff:svEff, Q:Q, F:F, Bq:Bq, po:po, Qp:Qp, ic:ic, psi:psi};
 }
 function sndComputeAt(z){ var pt=sndInterp(z); if(!pt) return null; return sndComputeFromValues(z, pt.qt, pt.fs, pt.u2); }
 function sndComputeAtRow(row){ return sndComputeFromValues(row.z, row.qt, row.fs, row.u2); }
@@ -811,8 +807,14 @@ function drawCptLog(){
   var u2HeadVals = sndData.map(function(r){ return kpaToHeadM(r.u2); });
   var qtMax = Math.max(10, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.qt;}))/2)*2 + 2);
   var fsMax = Math.max(80, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.fs;}))/20)*20 + 20);
-  var u2HeadMax = Math.max(5, Math.ceil(Math.max.apply(null, u2HeadVals)) + 2);
-  var u2HeadMin = Math.min(-2, Math.floor(Math.min.apply(null, u2HeadVals)) - 1);
+  // Scale u2 to a robust percentile, not the raw extremes: real CPTu logs contain
+  // short pore-pressure spikes (fine seams, dissipation pauses) that would otherwise
+  // set the axis on their own and flatten the rest of the profile. Values beyond the
+  // range still plot — X() clamps them to the panel edge.
+  var u2Sorted = u2HeadVals.slice().sort(function(a,b){ return a-b; });
+  function u2Pct(p){ return u2Sorted[Math.min(u2Sorted.length-1, Math.max(0, Math.floor((u2Sorted.length-1)*p)))]; }
+  var u2HeadMax = Math.max(5, Math.ceil(u2Pct(0.98)) + 2);
+  var u2HeadMin = Math.min(-2, Math.floor(u2Pct(0.02)) - 1);
   // Qp spans a huge dynamic range on any real sounding — p'o goes to nearly zero at the
   // surface, so the topmost readings blow up (this example hits ~9400 in the first
   // 10 cm against a median near 67). A linear axis would flatten every meaningful
@@ -872,15 +874,26 @@ function drawCptLog(){
       ctx.textAlign='right'; haloText(ctx,'CONTRACTIVE', px+panelW-5, mt+13, '#b03a44');
     }
     if(panel.key==='u2'){
-      // hydrostatic reference (u0) at the current gamma/water-table assumption, for comparison against measured u2
-      ctx.beginPath(); ctx.strokeStyle='#c3ced1'; ctx.lineWidth=1.3; ctx.setLineDash([2,3]);
-      var wtNow=num('sndWt'), firstH=true;
-      sndData.forEach(function(row){
-        var u0kpa = row.z>wtNow ? 9.81*(row.z-wtNow) : 0;
-        var xh=X(kpaToHeadM(u0kpa)), yh=Y(row.z);
-        if(firstH){ ctx.moveTo(xh,yh); firstH=false; } else ctx.lineTo(xh,yh);
-      });
-      ctx.stroke(); ctx.setLineDash([]);
+      // Two equilibrium-pore-pressure references, both plotted as head so the profile
+      // is just a straight line of slope 1 (in m of head per m of depth) below the
+      // water table: the full 100% hydrostatic case, and the fraction actually assumed.
+      var wtNow=num('sndWt'), hydNow=num('sndHyd')/100;
+      var wtClamped=Math.min(Math.max(wtNow,0), SND_MAX_Z);
+      function drawU0(frac, color, dash, width){
+        ctx.save(); ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash);
+        ctx.beginPath();
+        ctx.moveTo(X(0), Y(0));
+        ctx.lineTo(X(0), Y(wtClamped));
+        ctx.lineTo(X(frac*(SND_MAX_Z-wtClamped)), Y(SND_MAX_Z));
+        ctx.stroke(); ctx.restore();
+      }
+      drawU0(1, '#aab6bb', [2,3], 1.3);                     // 100% hydrostatic reference
+      if(Math.abs(hydNow-1) > 0.001){
+        drawU0(hydNow, '#1479b8', [6,3], 1.8);              // the assumed profile in use
+        var yLab=Y(wtClamped+(SND_MAX_Z-wtClamped)*0.72);
+        ctx.font='700 8.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+        haloText(ctx, Math.round(hydNow*100)+'%', X(hydNow*(SND_MAX_Z-wtClamped)*0.72), yLab, '#1479b8');
+      }
     }
 
     // panel title, format "label, unit (secondUnit)"
@@ -965,9 +978,10 @@ function drawCptLog(){
 
 function updateSounding(){
   el('sndDepthOut').textContent = num('sndDepth').toFixed(2)+' m ('+mToFt(num('sndDepth')).toFixed(1)+' ft)';
-  el('sndGammaOut').textContent = num('sndGamma').toFixed(1)+' kN/m³ ('+(num('sndGamma')*6.366).toFixed(0)+' pcf)';
-  el('sndWtOut').textContent = num('sndWt').toFixed(1)+' m ('+mToFt(num('sndWt')).toFixed(1)+' ft)';
+  el('sndGammaOut').textContent = num('sndGamma').toFixed(1)+' ('+(num('sndGamma')*6.366).toFixed(0)+')';
+  el('sndWtOut').textContent = num('sndWt').toFixed(1)+' ('+mToFt(num('sndWt')).toFixed(1)+')';
   el('sndKoOut').textContent = num('sndKo').toFixed(2);
+  el('sndHydOut').textContent = num('sndHyd').toFixed(0)+'%';
   var c = sndComputeAt(num('sndDepth'));
   if(c){
     var badge = c.psi<PSI_DIL_BOUNDARY ? '<span class="badge dilate">dilative (ψ&lt;−0.05)</span>' : '<span class="badge contract">contractive (ψ&ge;−0.05)</span>';
@@ -984,19 +998,19 @@ function updateSounding(){
     var sandNow = SANDS[+sndSandSel.value], kNow = kOf(sandNow.lambda10), mNow = mOf(sandNow.lambda10);
     var psiCol = c.psi<PSI_DIL_BOUNDARY ? 'var(--green-text)' : 'var(--red-text)';
     el('sndQpEq').innerHTML =
-      '<span class="step">1&middot; &sigma;&prime;<sub>vo</sub> = &sigma;<sub>vo</sub> &minus; u<sub>0</sub> = '+c.svTotal.toFixed(1)+' &minus; '+c.u0.toFixed(1)+' = <b>'+c.svEff.toFixed(1)+' kPa</b></span>'+
-      '<span class="step">2&middot; p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>(1+2K<sub>o</sub>)/3 = '+c.svEff.toFixed(1)+'(1+2&times;'+koNow.toFixed(2)+')/3 = <b>'+c.po.toFixed(1)+' kPa</b></span>'+
-      '<span class="step">3&middot; q<sub>t</sub> from the trace = '+c.qt.toFixed(2)+' MPa = <b>'+qtKpaNow.toFixed(0)+' kPa</b></span>'+
-      '<span class="step">4&middot; Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+'&minus;'+c.po.toFixed(1)+')/'+c.po.toFixed(1)+' = <b style="color:#c07d1c;font-size:14px">'+c.Qp.toFixed(1)+'</b></span>'+
+      '<span class="step">1&middot; u<sub>0</sub> = '+Math.round(c.hydFrac*100)+'% &times; '+c.u0Full.toFixed(1)+' = <b>'+c.u0.toFixed(1)+' kPa</b>'+(Math.abs(c.hydFrac-1)>0.001?' <span style="color:var(--muted)">(sub-hydrostatic)</span>':'')+'</span>'+'<span class="step">2&middot; &sigma;&prime;<sub>vo</sub> = &sigma;<sub>vo</sub> &minus; u<sub>0</sub> = '+c.svTotal.toFixed(1)+' &minus; '+c.u0.toFixed(1)+' = <b>'+c.svEff.toFixed(1)+' kPa</b></span>'+
+      '<span class="step">3&middot; p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>(1+2K<sub>o</sub>)/3 = '+c.svEff.toFixed(1)+'(1+2&times;'+koNow.toFixed(2)+')/3 = <b>'+c.po.toFixed(1)+' kPa</b></span>'+
+      '<span class="step">4&middot; q<sub>t</sub> from the trace = '+c.qt.toFixed(2)+' MPa = <b>'+qtKpaNow.toFixed(0)+' kPa</b></span>'+
+      '<span class="step">5&middot; Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+'&minus;'+c.po.toFixed(1)+')/'+c.po.toFixed(1)+' = <b style="color:#c07d1c;font-size:14px">'+c.Qp.toFixed(1)+'</b></span>'+
       '<span class="step-note" style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px">Q<sub>p</sub> &rarr; &psi; via Section 7, using &lambda;<sub>10</sub> = '+sandNow.lambda10.toFixed(3)+' ('+sandNow.name+'):</span>'+
-      '<span class="step">5&middot; k = 8 + 0.55/(&lambda;<sub>10</sub>&minus;0.01) = 8 + 0.55/('+sandNow.lambda10.toFixed(3)+'&minus;0.01) = <b>'+kNow.toFixed(2)+'</b></span>'+
-      '<span class="step">6&middot; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) = 8.1 &minus; 2.3&middot;log<sub>10</sub>('+sandNow.lambda10.toFixed(3)+') = <b>'+mNow.toFixed(2)+'</b></span>'+
-      '<span class="step">7&middot; &psi; = &minus;ln(Q<sub>p</sub>/k)/m = &minus;ln('+c.Qp.toFixed(1)+'/'+kNow.toFixed(2)+')/'+mNow.toFixed(2)+' = <b style="color:'+psiCol+';font-size:14px">'+(c.psi>=0?'+':'')+c.psi.toFixed(3)+'</b></span>'+
+      '<span class="step">6&middot; k = 8 + 0.55/(&lambda;<sub>10</sub>&minus;0.01) = 8 + 0.55/('+sandNow.lambda10.toFixed(3)+'&minus;0.01) = <b>'+kNow.toFixed(2)+'</b></span>'+
+      '<span class="step">7&middot; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) = 8.1 &minus; 2.3&middot;log<sub>10</sub>('+sandNow.lambda10.toFixed(3)+') = <b>'+mNow.toFixed(2)+'</b></span>'+
+      '<span class="step">8&middot; &psi; = &minus;ln(Q<sub>p</sub>/k)/m = &minus;ln('+c.Qp.toFixed(1)+'/'+kNow.toFixed(2)+')/'+mNow.toFixed(2)+' = <b style="color:'+psiCol+';font-size:14px">'+(c.psi>=0?'+':'')+c.psi.toFixed(3)+'</b></span>'+
       '<span class="step-note" style="color:'+psiCol+';font-weight:700">&rarr; '+(c.psi<PSI_DIL_BOUNDARY?'dilative (below &minus;0.05)':'contractive (at or above &minus;0.05)')+'</span>';
   }
   drawCptLog();
 }
-['sndDepth','sndGamma','sndWt','sndKo'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
+['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
 sndSandSel.addEventListener('change', updateSounding);
 
 el('sndUseDepthBtn').addEventListener('click', function(){
@@ -1101,10 +1115,10 @@ el('sndFileInput').addEventListener('change', function(ev){
 el('sndResetExample').addEventListener('click', function(){
   sndData = generateSyntheticSounding();
   sndIsUserData = false;
-  SND_MAX_Z = 16; SND_LAYER_Z = 8;
+  SND_MAX_Z = 54; SND_LAYER_Z = 30;
   var depthSlider = el('sndDepth');
-  depthSlider.min=0.1; depthSlider.max=16; depthSlider.value=4;
-  el('sndWt').max = 16;
+  depthSlider.min=0.5; depthSlider.max=54; depthSlider.value=20;
+  el('sndWt').max = 54;
   el('sndUploadStatus').style.display='none';
   el('sndViewResultsBtn').style.display='none';
   el('sndFileInput').value='';
@@ -1595,6 +1609,33 @@ window.runModule2SelfTests = function(){
 
   // 10. dilative/contractive badge threshold is -0.05, not 0
   check(PSI_DIL_BOUNDARY===-0.05, "PSI_DIL_BOUNDARY is exactly -0.05");
+
+  // 11. % hydrostatic scales u0 linearly and propagates into sigma'vo / p'o / Qp / psi
+  (function(){
+    var hydEl=el('sndHyd'), orig=hydEl.value, z=20;
+    function at(pct){ hydEl.value=pct; return sndComputeAt(z); }
+    var c100=at(100), c50=at(50), c0=at(0);
+    check(Math.abs(c50.u0 - 0.5*c100.u0)<1e-6, "50% hydrostatic gives exactly half the u0 of 100%");
+    check(Math.abs(c0.u0)<1e-9, "0% hydrostatic gives u0 = 0");
+    check(Math.abs(c100.u0 - c100.u0Full)<1e-9, "100% hydrostatic equals the full hydrostatic u0");
+    // less pore pressure -> more effective stress -> higher p'o -> lower Qp -> higher (more contractive) psi
+    check(c50.svEff > c100.svEff, "lowering % hydrostatic raises sigma'vo");
+    check(c50.po    > c100.po,    "lowering % hydrostatic raises p'o");
+    check(c50.Qp    < c100.Qp,    "lowering % hydrostatic lowers Qp at fixed qt");
+    check(c50.psi   > c100.psi,   "lowering % hydrostatic pushes psi toward contractive");
+    hydEl.value=orig;
+  })();
+
+  // 12. the derived default sounding is present and self-consistent
+  check(SND_DEFAULT_ROWS.length>200, "default sounding has a full-resolution profile ("+SND_DEFAULT_ROWS.length+" points)");
+  (function(){
+    var zs=SND_DEFAULT_ROWS.map(function(r){return r[0];});
+    var sorted=zs.every(function(v,i){ return i===0 || v>zs[i-1]; });
+    check(sorted, "default sounding depths are strictly increasing");
+    check(Math.abs(zs[zs.length-1]-SND_MAX_Z)<1e-6, "SND_MAX_Z matches the deepest default row");
+    check(SND_LAYER_Z>zs[0] && SND_LAYER_Z<zs[zs.length-1], "layer boundary lies inside the profile");
+    check(SND_DEFAULT_ROWS.every(function(r){ return r[1]>0 && r[2]>0; }), "default sounding has positive qt and fs everywhere");
+  })();
 
   var failed=results.filter(function(r){ return !r.pass; });
   console.log('[runModule2SelfTests] '+results.length+' checks, '+failed.length+' failed.');
