@@ -44,6 +44,21 @@ canvas{display:block;width:100%;height:260px}
 .badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:#1177b0;border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
 .badge.contract,.badge.warn{background:#fdeee9;color:var(--red-text)}
 .badge.dilate,.badge.ok{background:#e9f6ef;color:var(--green-text)}
+.badge.caution{background:#fdf4e3;color:#a26a12}
+.band-detail{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.band-head{padding:9px 12px;background:#f7fafb;border-bottom:1px solid var(--line);font-size:13px}
+.band-range{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+.band-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;padding:11px 12px}
+.band-grid>div{font-size:11.5px;line-height:1.5}
+.band-grid small{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+.band-grid strong{font-size:13px;color:var(--navy);font-family:"Courier New",monospace}
+.band-note{margin:0;padding:0 12px 12px;font-size:11.5px;line-height:1.6;color:var(--ink)}
+#icEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#icEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0}
+#icBoundaryTable tbody tr:hover{background:#f2f7f9}
+#icBoundaryTable tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#icBoundaryTable tbody tr.sel td{font-weight:700}
+#icChart:focus{outline:2px solid var(--blue);outline-offset:2px}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
 .callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0}
 .sources{font-size:11px;color:var(--muted);line-height:1.6}
@@ -475,25 +490,39 @@ body{padding-bottom:54px}
 <h2>6. Soil behaviour&ndash;type index, I<sub>c</sub></h2>
 <div class="explain"><p>Before trusting a &psi; estimate, the CPT itself tells you whether you're even in sand. Been &amp; Jefferies' index uses the piezometric channel (Eq. 4.13a); Robertson &amp; Wride's ignores it (Eq. 4.13b, and per the book, "best avoided" when pore pressure data exists):</p></div>
 <div class="eq">I<sub>c</sub> = &radic;[(3&minus;log(Q(1&minus;B<sub>q</sub>)+1))&sup2; + (1.5+1.3&middot;log(F))&sup2;] &nbsp;&nbsp; I<sub>c(R&amp;W)</sub> = &radic;[(3.47&minus;log(Q))&sup2; + (1.22+log(F))&sup2;]</div>
-<div class="statgrid n3" id="icStats"></div>
-<div class="grid2" style="margin-top:10px">
+<div class="statgrid" id="icStats"></div>
+<div class="hint" style="margin:8px 0 2px">Both indices are built from the same Q and F you set in Section 5 &mdash; the only difference is whether B<sub>q</sub> is allowed in. Here is that arithmetic at your current settings:</div>
+<div class="eq" id="icEq"></div>
+
+<h3>The behaviour&ndash;type bands &mdash; click any band</h3>
+<p class="explain" style="margin-top:-2px">Each band is a <i>behaviour</i> class, not a grain-size class. Click one to see what it usually is in USCS terms, what its CPT signature looks like, whether the cone drains in it, and whether Section 7's &psi;-inversion is defensible there.</p>
+<div class="chart-host"><canvas id="icChart" style="cursor:pointer" role="img" aria-label="Clickable scale of the six soil behaviour type bands showing where the current Ic value falls."></canvas></div>
+<div class="legend"><span><i style="background:#8a6d3b"></i>gravelly sands</span><span><i style="background:#e38a22"></i>sands, clean to silty</span><span><i style="background:#c9a227"></i>silty sand to sandy silt</span><span><i style="background:#7653a6"></i>clayey silt to silty clay</span><span><i style="background:#61737b"></i>clays</span><span><i style="background:#3d5157"></i>organic soils</span><span><i style="background:#123b4a"></i>current I<sub>c</sub> (Eq. 4.13a)</span><span><i style="background:#c64852"></i>the same depth via Eq. 4.13b</span></div>
+
+<div id="icBandDetail" class="band-detail" aria-live="polite"></div>
+
+<div class="grid2" style="margin-top:14px">
 <div>
 <table id="icBoundaryTable">
-<thead><tr><th>I<sub>c</sub> upper bound</th><th>Behaviour type</th></tr></thead>
+<thead><tr><th>I<sub>c</sub> upper bound</th><th>Behaviour type</th><th>Usually plots as</th></tr></thead>
 <tbody>
-<tr><td>1.25</td><td>Gravelly sands</td></tr>
-<tr><td>1.80</td><td>Sands: clean to silty</td></tr>
-<tr><td>2.40</td><td>Silty sand to sandy silt</td></tr>
-<tr><td>2.76</td><td>Clayey silt to silty clay</td></tr>
-<tr><td>3.22</td><td>Clays</td></tr>
-<tr><td>&mdash;</td><td>Organic soils (above 3.22)</td></tr>
+<tr data-band="0"><td>1.25</td><td>Gravelly sands</td><td>GW, GP, GM, SW</td></tr>
+<tr data-band="1"><td>1.80</td><td>Sands: clean to silty</td><td>SW, SP, SP-SM, SM</td></tr>
+<tr data-band="2"><td>2.40</td><td>Silty sand to sandy silt</td><td>SM, SC-SM, ML</td></tr>
+<tr data-band="3"><td>2.76</td><td>Clayey silt to silty clay</td><td>ML, MH, CL-ML</td></tr>
+<tr data-band="4"><td>3.22</td><td>Clays</td><td>CL, CH</td></tr>
+<tr data-band="5"><td>&mdash;</td><td>Organic soils (above 3.22)</td><td>OL, OH, Pt</td></tr>
 </tbody>
 </table>
+<p class="explain" style="font-size:11px;color:var(--muted);margin-top:6px">Rows are clickable too. The USCS column is <i>indicative</i>: those symbols come from grain size and Atterberg limits on a recovered sample, while I<sub>c</sub> is inferred from how the ground responded to the cone. They agree often enough to be useful and disagree often enough to be dangerous &mdash; a sensitive clay and a loose silt can swap places.</p>
 </div>
-<div><canvas id="icChart" role="img" aria-label="Horizontal scale showing where the current Ic value falls among the soil behaviour type boundaries."></canvas>
-<div class="legend"><span><i style="background:#e38a22"></i>gravelly &rarr; sand</span><span><i style="background:#c9a227"></i>silty sand/sandy silt</span><span><i style="background:#7653a6"></i>clayey silt</span><span><i style="background:#61737b"></i>clay</span><span><i style="background:#123b4a"></i>current I<sub>c</sub> marker</span></div>
+<div>
+<div class="chart-host"><canvas id="icProfileChart" role="img" aria-label="Ic plotted against depth for the whole Section 2 sounding, over shaded soil behaviour type bands, with both Eq. 4.13a and Eq. 4.13b traces."></canvas></div>
+<div class="legend"><span><i style="background:#123b4a"></i>I<sub>c</sub>, Eq. 4.13a (uses B<sub>q</sub>)</span><span><i style="background:#c64852"></i>I<sub>c(R&amp;W)</sub>, Eq. 4.13b (ignores B<sub>q</sub>)</span><span><i style="background:#1479b8"></i>your selected depth</span></div>
 </div>
 </div>
+
+<div class="warning" style="margin-top:12px" id="icScreenNote" aria-live="polite"></div>
 <div class="callout" style="margin-top:10px" id="icApplicability" aria-live="polite"></div>
 
 <div class="quiz-checkpoint" id="quizCheckB">
@@ -632,12 +661,6 @@ function icOf(Q,F,Bq){
 function icRWOf(Q,F){
   var Qp2 = Math.max(0.5,Q), Fp = Math.max(0.05,F);
   return Math.sqrt(Math.pow(3.47-Math.log10(Qp2),2) + Math.pow(1.22+Math.log10(Fp),2));
-}
-function classifyIc(ic){
-  var b = [1.25,1.80,2.40,2.76,3.22];
-  var names = ["Gravelly sands","Sands: clean to silty","Silty sand to sandy silt","Clayey silt to silty clay","Clays","Organic soils"];
-  for(var i=0;i<b.length;i++){ if(ic<b[i]) return names[i]; }
-  return names[5];
 }
 
 // ---------------- Live "mental model" concept map (flowSticky) ----------------
@@ -1051,6 +1074,10 @@ function updateSounding(){
       '<span class="step-note" style="color:'+psiCol+';font-weight:700">&rarr; '+(c.psi<PSI_DIL_BOUNDARY?'dilative (below &minus;0.05)':'contractive (at or above &minus;0.05)')+'</span>';
   }
   drawCptLog();
+  // Section 6's profile marks the selected depth and is built from this same sounding
+  // guard on the DATA, not the function: the declaration hoists, but IC_BANDS is
+  // assigned further down, and updateSounding() runs once before that point
+  if(window.IC_BANDS && window.drawIcProfileChart) drawIcProfileChart();
 }
 ['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
 // gamma / water table / Ko / % hydrostatic also drive Section 3's demo, so keep it in step
@@ -1696,52 +1723,323 @@ function drawKoChart(){
   ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
 }
 
-function updateIc(Q,F,Bq){
-  var IcBJ = icOf(Q,F,Bq);
-  var IcRW = icRWOf(Q,F);
-  el("icStats").innerHTML = `
-    <div class="stat hi"><small>I<sub>c</sub> (Been & Jefferies, Eq. 4.13a)</small><strong>${IcBJ.toFixed(2)}</strong></div>
-    <div class="stat"><small>I<sub>c(R&W)</sub> (Eq. 4.13b)</small><strong>${IcRW.toFixed(2)}</strong></div>
-    <div class="stat"><small>soil behaviour type</small><strong>${classifyIc(IcBJ)}</strong></div>`;
+// ---------------- Section 6: soil behaviour-type index ----------------
+// Ic sorts ground by how it BEHAVED against the cone, not by grain size. The USCS
+// symbols below are what each band usually turns out to be when a sample is recovered
+// and tested -- indicative, never a conversion. Keeping that distinction explicit is
+// the point of the panel: the two disagree often enough to matter.
+var IC_BANDS = [
+  {hi:1.25, name:'Gravelly sands', color:'#8a6d3b', tag:'Gravelly',
+   uscs:'GW, GP, GM, SW',
+   grain:'Gravel and gravelly sand — coarse, clean, essentially no fines.',
+   cpt:'Very high Q (often well past 150), very low F (under about 0.5%), B<sub>q</sub> ≈ 0.',
+   drain:'Fully drained. The cone advances far slower than this soil can shed pore pressure.',
+   psi:'ok', psiText:'Inside the calibrated range, but read the caveat first.',
+   note:'The risk here is the opposite of the usual one. Gravel can refuse or damage a cone, and a single large clast produces a spike that is an artefact rather than a layer — so treat isolated very-high-q<sub>t</sub> points as suspect until the neighbouring readings agree with them.'},
 
-  drawIcChart(IcBJ);
+  {hi:1.80, name:'Sands: clean to silty', color:'#e38a22', tag:'Sand',
+   uscs:'SW, SP, SP-SM, SM',
+   grain:'Clean sand through silty sand; fines typically under roughly 15%.',
+   cpt:'High Q, F around 0.3–1%, B<sub>q</sub> ≈ 0 because nothing builds up to measure.',
+   drain:'Fully drained.',
+   psi:'ok', psiText:'This is the band the whole method is built for.',
+   note:'Section 7&rsquo;s Q<sub>p</sub>=k·exp(−mψ) calibration came from calibration-chamber tests on sands like these, and Section 8&rsquo;s Nerlerk case is a sand fill. A ψ computed here is doing exactly what it was designed to do. Everything to the right of this band is extrapolation of one kind or another.'},
+
+  {hi:2.40, name:'Silty sand to sandy silt', color:'#c9a227', tag:'Silty sand/sandy silt',
+   uscs:'SM, SC-SM, ML',
+   grain:'Silty sand through non-plastic sandy silt.',
+   cpt:'Moderate Q, F around 1–2%, and B<sub>q</sub> anywhere between 0 and about 0.4 — that spread is the tell.',
+   drain:'PARTIALLY drained — the genuinely hard case.',
+   psi:'caution', psiText:'Screening only. Do not carry a ψ from here into design unaided.',
+   note:'Standard penetration theory assumes the response is either fully drained or fully undrained, and here it is neither: some pore pressure escapes during penetration and some does not. Section 5&rsquo;s |B<sub>q</sub>| ≲ 0.02 check exists for exactly this band. If B<sub>q</sub> has drifted off zero, the drained interpretation behind Q<sub>p</sub> is already partly broken, whatever the ψ number says.'},
+
+  {hi:2.76, name:'Clayey silt to silty clay', color:'#7653a6', tag:'Clayey silt',
+   uscs:'ML, MH, CL-ML',
+   grain:'Clayey silt and silty clay; low to intermediate plasticity.',
+   cpt:'Low Q (roughly 10–25), F around 2–5%, B<sub>q</sub> commonly 0.4–0.8.',
+   drain:'Essentially undrained.',
+   psi:'no', psiText:'Outside the calibration. A ψ here is not meaningful.',
+   note:'The state parameter is still a real property of this soil, but the CPT inversion that estimates it is not calibrated to recover it here. This is where you stop asking the cone for ψ and start asking it for undrained shear strength instead, via a bearing factor on q<sub>net</sub>.'},
+
+  {hi:3.22, name:'Clays', color:'#61737b', tag:'Clay',
+   uscs:'CL, CH',
+   grain:'Silty clay through fat clay.',
+   cpt:'Very low Q (often under 10), F around 3–8%, B<sub>q</sub> commonly 0.6–1.0.',
+   drain:'Fully undrained.',
+   psi:'no', psiText:'Not applicable.',
+   note:'A high B<sub>q</sub> here is the expected, correct reading rather than a warning — it is the cone measuring a pore pressure the ground cannot shed. Note that Eq. 4.13b, which throws B<sub>q</sub> away, is discarding its single most diagnostic channel precisely where that channel is strongest.'},
+
+  {hi:Infinity, name:'Organic soils', color:'#3d5157', tag:'Organic',
+   uscs:'OL, OH, Pt',
+   grain:'Organic silt and clay through peat.',
+   cpt:'Low Q with distinctly high F (often past 5–8%) — the friction ratio is what separates this band from ordinary clay.',
+   drain:'Undrained, and often highly compressible on top of that.',
+   psi:'no', psiText:'Not applicable.',
+   note:'Organic ground tends to be the settlement problem rather than the liquefaction problem, but it matters here for a procedural reason: it is easy to average an organic layer into a sand unit and quietly corrupt the characteristic ψ that Section 8 asks you to choose.'}
+];
+
+function icBandIndex(ic){
+  for(var i=0;i<IC_BANDS.length;i++){ if(ic<IC_BANDS[i].hi) return i; }
+  return IC_BANDS.length-1;
+}
+function classifyIc(ic){ return IC_BANDS[icBandIndex(ic)].name; }
+
+var IC_XMIN=0.8, IC_XMAX=4.0;
+var icSelectedBand=null;      // null = follow the current Ic instead of a manual pick
+
+function icBandRange(i){
+  var lo = i===0 ? IC_XMIN : IC_BANDS[i-1].hi;
+  var hi = Math.min(IC_BANDS[i].hi, IC_XMAX);
+  return [lo,hi];
+}
+
+function renderIcBandDetail(i){
+  var b=IC_BANDS[i], r=icBandRange(i);
+  var badge = b.psi==='ok'    ? '<span class="badge dilate">ψ-inversion applies</span>'
+            : b.psi==='caution'? '<span class="badge caution">ψ: screening only</span>'
+            :                    '<span class="badge contract">ψ-inversion does not apply</span>';
+  var range = i===0 ? ('I<sub>c</sub> &lt; '+IC_BANDS[0].hi.toFixed(2))
+            : (i===IC_BANDS.length-1 ? ('I<sub>c</sub> &gt; '+IC_BANDS[i-1].hi.toFixed(2))
+            : (r[0].toFixed(2)+' ≤ I<sub>c</sub> &lt; '+IC_BANDS[i].hi.toFixed(2)));
+  el('icBandDetail').innerHTML =
+    '<div class="band-head" style="border-left:5px solid '+b.color+'">'+
+      '<b>'+b.name+'</b> <span class="band-range">'+range+'</span> '+badge+
+    '</div>'+
+    '<div class="band-grid">'+
+      '<div><small>Usually plots as (USCS)</small><strong>'+b.uscs+'</strong></div>'+
+      '<div><small>What that is</small><span>'+b.grain+'</span></div>'+
+      '<div><small>CPT signature</small><span>'+b.cpt+'</span></div>'+
+      '<div><small>Drainage during penetration</small><span>'+b.drain+'</span></div>'+
+      '<div><small>Section 7&rsquo;s ψ-inversion here</small><span>'+b.psiText+'</span></div>'+
+    '</div>'+
+    '<p class="band-note">'+b.note+'</p>';
+  document.querySelectorAll('#icBoundaryTable tbody tr').forEach(function(tr){
+    tr.classList.toggle('sel', +tr.dataset.band===i);
+  });
+}
+
+function icSelectBand(i, manual){
+  icSelectedBand = manual ? i : icSelectedBand;
+  renderIcBandDetail(i);
+  drawIcChart(icLastBJ, icLastRW);
+}
+
+var icLastBJ=1.5, icLastRW=1.5;
+
+function updateIc(Q,F,Bq){
+  var IcBJ = icOf(Q,F,Bq), IcRW = icRWOf(Q,F);
+  icLastBJ=IcBJ; icLastRW=IcRW;
+
+  // how much of the real sounding the psi-inversion can actually be defended on
+  var sandLike=0, total=0;
+  sndData.forEach(function(r){ var c=sndComputeAtRow(r); if(isFinite(c.ic)){ total++; if(c.ic<1.80) sandLike++; } });
+  var pct = total ? Math.round(100*sandLike/total) : 0;
+
+  el("icStats").innerHTML =
+    '<div class="stat hi"><small>I<sub>c</sub> (Been &amp; Jefferies, Eq. 4.13a)</small><strong>'+IcBJ.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>I<sub>c(R&amp;W)</sub> (Eq. 4.13b)</small><strong>'+IcRW.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>behaviour type</small><strong style="font-size:13px">'+classifyIc(IcBJ)+'</strong></div>'+
+    '<div class="stat"><small>of this sounding with I<sub>c</sub>&lt;1.80</small><strong>'+pct+'%</strong></div>';
+
+  // the arithmetic, written out -- both indices from the same Q and F
+  var QBq=Math.max(0.5,Q*(1-Bq)+1), Fp=Math.max(0.05,F);
+  var t1=3-Math.log10(QBq), t2=1.5+1.3*Math.log10(Fp);
+  var r1=3.47-Math.log10(Math.max(0.5,Q)), r2=1.22+Math.log10(Fp);
+  var diff=Math.abs(IcBJ-IcRW);
+  el("icEq").innerHTML =
+    '<span class="step">1&middot; Q(1&minus;B<sub>q</sub>)+1 = '+Q.toFixed(1)+'(1&minus;'+Bq.toFixed(3)+')+1 = <b>'+QBq.toFixed(1)+'</b></span>'+
+    '<span class="step">2&middot; first term = 3 &minus; log<sub>10</sub>('+QBq.toFixed(1)+') = <b>'+t1.toFixed(3)+'</b></span>'+
+    '<span class="step">3&middot; second term = 1.5 + 1.3&middot;log<sub>10</sub>('+Fp.toFixed(2)+') = <b>'+t2.toFixed(3)+'</b></span>'+
+    '<span class="step">4&middot; I<sub>c</sub> = &radic;('+t1.toFixed(3)+'&sup2; + '+t2.toFixed(3)+'&sup2;) = <b style="color:#123b4a;font-size:14px">'+IcBJ.toFixed(2)+'</b></span>'+
+    '<span class="step-note" style="border-top:1px solid var(--line);padding-top:6px;margin-top:6px">Eq. 4.13b drops B<sub>q</sub> entirely and re-fits the constants:</span>'+
+    '<span class="step">5&middot; I<sub>c(R&amp;W)</sub> = &radic;(('+r1.toFixed(3)+')&sup2; + ('+r2.toFixed(3)+')&sup2;) = <b style="color:#c64852;font-size:14px">'+IcRW.toFixed(2)+'</b></span>'+
+    '<span class="step-note">The two differ by '+diff.toFixed(2)+' at this depth'+
+      (diff<0.05 ? ' &mdash; near-identical, because B<sub>q</sub> is close to zero here and there is nothing for Eq. 4.13a to use.'
+                 : ' &mdash; and that gap is B<sub>q</sub>: it is the information Eq. 4.13b threw away.')+
+      (classifyIc(IcBJ)!==classifyIc(IcRW) ? ' <b>They land in different bands, so at this depth the choice of formula changes the soil type you would report.</b>' : '')+
+    '</span>';
+
+  renderIcBandDetail(icSelectedBand===null ? icBandIndex(IcBJ) : icSelectedBand);
+  drawIcChart(IcBJ, IcRW);
+  drawIcProfileChart();
+
+  // What this sounding says about itself. The number can look like a bug on first
+  // sight, so name the cause rather than printing a bare percentage.
+  var Fs=[], Ics=[];
+  sndData.forEach(function(r){ var c=sndComputeAtRow(r); if(isFinite(c.F)) Fs.push(c.F); if(isFinite(c.ic)) Ics.push(c.ic); });
+  Fs.sort(function(a,b){return a-b;});
+  var Fmed = Fs.length ? Fs[Math.floor(0.5*(Fs.length-1))] : 0;
+  var pct240 = Ics.length ? Math.round(100*Ics.filter(function(v){return v<2.40;}).length/Ics.length) : 0;
+  el("icScreenNote").innerHTML =
+    '<b>What this particular sounding says about itself.</b> Its friction ratio sits around '+Fmed.toFixed(1)+'% through most of the profile '+
+    '&mdash; silty-sand territory rather than clean sand &mdash; so only <b>'+pct+'%</b> of it clears the I<sub>c</sub>&lt;1.80 bar, though '+pct240+'% stays below 2.40. '+
+    'That is not a fault in the data. It is what a great many real soundings look like, and it is the reason this section sits ahead of the inversion rather than after it. '+
+    'Sections 2 and 7 deliberately compute &psi; at every depth regardless, so you can see the whole profile first and then judge how much of it you would actually defend in a report. '+
+    'Upload your own sounding in Section 2 and this figure re-screens that instead.';
+
   var isSand = IcBJ < 1.80;
   el("icApplicability").innerHTML = isSand
-    ? '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' — sand-like.</b> Section 7\'s &psi;-inversion, calibrated on sand-like calibration-chamber data, applies here without extra caveats.'
-    : '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' — outside the clean-sand range.</b> Section 7\'s &psi;-inversion was calibrated on sand-like materials; treat a &psi; computed at this I<sub>c</sub> with real caution, or as not meaningful at all once well into silt/clay territory.';
+    ? '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' &mdash; sand-like.</b> Section 7&rsquo;s &psi;-inversion, calibrated on sand-like calibration-chamber data, applies here without extra caveats. Across the whole sounding, '+pct+'% of readings clear the same I<sub>c</sub>&lt;1.80 bar.'
+    : '<b>I<sub>c</sub> = '+IcBJ.toFixed(2)+' &mdash; outside the clean-sand range.</b> Section 7&rsquo;s &psi;-inversion was calibrated on sand-like materials; treat a &psi; computed at this I<sub>c</sub> with real caution, or as not meaningful at all once well into silt/clay territory. Across the whole sounding, only '+pct+'% of readings clear the I<sub>c</sub>&lt;1.80 bar.';
   updateFlow(undefined, undefined, 'Ic='+IcBJ.toFixed(2), undefined);
 }
 
-function drawIcChart(ic){
+function drawIcChart(ic, icRW){
   var host=el("icChart"); if(!host) return;
-  var W=host.clientWidth||420,H=250;
-  host.width=W; host.height=H;
-  var ctx=host.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=20,mr=20,mt=40,mb=60; var pw=W-ml-mr;
-  var xmin=0.8, xmax=4.0;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  var bounds=[1.25,1.80,2.40,2.76,3.22];
-  var names=["Gravelly","Sand","Silty snd/snd silt","Clayey silt","Clay","Organic"];
-  var colors=["#8a6d3b","#e38a22","#c9a227","#7653a6","#61737b","#3d5157"];
-  var y0=mt, barH=40;
-  var prev=xmin;
-  bounds.concat([xmax]).forEach(function(b,i){
-    ctx.fillStyle=colors[i];
-    ctx.fillRect(X(prev),y0,X(Math.min(b,xmax))-X(prev),barH);
-    ctx.fillStyle="#fff"; ctx.font="10px Arial"; ctx.textAlign="center";
-    var mid=(prev+Math.min(b,xmax))/2;
-    if(X(Math.min(b,xmax))-X(prev)>34) ctx.fillText(names[i],X(mid),y0+barH/2+3);
-    prev=b;
+  // Sized to its content. The old version reserved 250px for a 40px bar and left the
+  // bottom half of the canvas empty.
+  var cvp=prepCanvas(host, 132, 300), ctx=cvp.ctx, W=cvp.W;
+  var ml=14, mr=14, pw=W-ml-mr;
+  function X(v){ return ml+pw*(Math.max(IC_XMIN,Math.min(IC_XMAX,v))-IC_XMIN)/(IC_XMAX-IC_XMIN); }
+  var y0=34, barH=40;
+  var activeIdx = icSelectedBand===null ? icBandIndex(ic) : icSelectedBand;
+
+  IC_BANDS.forEach(function(b,i){
+    var r=icBandRange(i), x0=X(r[0]), x1=X(r[1]), w=x1-x0;
+    var on = (i===activeIdx);
+    ctx.globalAlpha = on ? 1 : 0.62;
+    ctx.fillStyle=b.color; ctx.fillRect(x0, on?y0-4:y0, w, on?barH+8:barH);
+    ctx.globalAlpha = 1;
+    if(on){ ctx.strokeStyle='#123b4a'; ctx.lineWidth=2; ctx.strokeRect(x0+1,y0-3,w-2,barH+6); }
+    ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font = on ? '700 10.5px Arial' : '10px Arial';
+    // step down to the short tag, then drop the label entirely, rather than overflow
+    var full=b.name, tag=b.tag;
+    var lab = ctx.measureText(full).width < w-8 ? full
+            : (ctx.measureText(tag).width < w-8 ? tag : '');
+    if(lab) ctx.fillText(lab, (x0+x1)/2, y0+barH/2);
   });
-  ctx.strokeStyle="#fff"; bounds.forEach(function(b){ ctx.beginPath(); ctx.moveTo(X(b),y0); ctx.lineTo(X(b),y0+barH); ctx.stroke(); });
-  ctx.fillStyle="#61737b"; ctx.font="10px Arial"; ctx.textAlign="center";
-  [1,1.5,2,2.5,3,3.5,4].forEach(function(v){ ctx.fillText(v.toFixed(1),X(v),y0+barH+14); });
-  ctx.fillText("Ic",X((xmin+xmax)/2),y0+barH+30);
-  var xc=X(Math.max(xmin,Math.min(xmax,ic)));
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(xc,y0-8); ctx.lineTo(xc,y0+barH+8); ctx.stroke();
-  ctx.fillStyle="#123b4a"; ctx.beginPath(); ctx.moveTo(xc,y0-8); ctx.lineTo(xc-6,y0-16); ctx.lineTo(xc+6,y0-16); ctx.closePath(); ctx.fill();
-  ctx.font="700 11px Arial"; ctx.fillText("Ic = "+ic.toFixed(2), xc, y0-20);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1;
+  IC_BANDS.slice(0,-1).forEach(function(b){
+    if(b.hi>=IC_XMAX) return;
+    ctx.beginPath(); ctx.moveTo(X(b.hi),y0); ctx.lineTo(X(b.hi),y0+barH); ctx.stroke();
+  });
+
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [1,1.5,2,2.5,3,3.5,4].forEach(function(v){ ctx.fillText(v.toFixed(1), X(v), y0+barH+16); });
+  ctx.font='10.5px Arial'; ctx.fillText('Ic', ml+pw/2, y0+barH+31);
+  // the band edges, marked on the axis so the numbers in the table are findable here
+  ctx.strokeStyle='#b9c6cc'; ctx.lineWidth=1;
+  IC_BANDS.slice(0,-1).forEach(function(b){
+    if(b.hi>=IC_XMAX) return;
+    var x=X(b.hi); ctx.beginPath(); ctx.moveTo(x,y0+barH); ctx.lineTo(x,y0+barH+5); ctx.stroke();
+  });
+
+  // Eq. 4.13a above the bar, Eq. 4.13b below it, so the two never collide
+  var xc=X(ic);
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.moveTo(xc,y0-10); ctx.lineTo(xc,y0+barH+2); ctx.stroke();
+  ctx.fillStyle='#123b4a'; ctx.beginPath();
+  ctx.moveTo(xc,y0-4); ctx.lineTo(xc-6,y0-13); ctx.lineTo(xc+6,y0-13); ctx.closePath(); ctx.fill();
+  ctx.font='700 11px Arial'; ctx.textBaseline='bottom';
+  var lx=Math.max(ml+30, Math.min(W-mr-30, xc));
+  ctx.textAlign='center'; haloText(ctx, 'Ic = '+ic.toFixed(2), lx, y0-15, '#123b4a');
+
+  if(isFinite(icRW)){
+    var xr=X(icRW);
+    ctx.strokeStyle='#c64852'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(xr,y0+barH-2); ctx.lineTo(xr,y0+barH+9); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='700 9.5px Arial'; ctx.textBaseline='top';
+    var rx=Math.max(ml+26, Math.min(W-mr-26, xr));
+    haloText(ctx, '4.13b: '+icRW.toFixed(2), rx, y0+barH+34, '#c64852');
+  }
+
+  ctx.fillStyle='#8a97a0'; ctx.font='9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText('click a band for its USCS equivalent and CPT signature', ml, 4);
 }
+
+function drawIcProfileChart(){
+  var host=el('icProfileChart'); if(!host) return;
+  var cvp=prepCanvas(host, 330, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var mt=18, mb=44, ml=46, mr=12;
+  var pw=W-ml-mr, ph=H-mt-mb;
+  var zMax=SND_MAX_Z;
+  function X(v){ return ml+pw*(Math.max(IC_XMIN,Math.min(IC_XMAX,v))-IC_XMIN)/(IC_XMAX-IC_XMIN); }
+  function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/zMax)); }
+
+  // the same bands as the strip above, washed out enough to read traces over
+  IC_BANDS.forEach(function(b,i){
+    var r=icBandRange(i);
+    ctx.globalAlpha=0.16; ctx.fillStyle=b.color;
+    ctx.fillRect(X(r[0]), mt, X(r[1])-X(r[0]), ph); ctx.globalAlpha=1;
+  });
+  // the 1.80 bar is the one that decides whether Section 7 applies, so draw it hard
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(X(1.80),mt); ctx.lineTo(X(1.80),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+  haloText(ctx,'Ic = 1.80', X(1.80)+3, mt+3, '#123b4a');
+
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+
+  var yt=niceTicks(0,zMax,5);
+  ctx.textAlign='right';
+  yt.values.forEach(function(v){
+    if(v>zMax) return;
+    var y=Y(v);
+    ctx.strokeStyle='#eef2f4'; ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10px Arial'; ctx.textBaseline='bottom';
+    ctx.fillText(v.toFixed(yt.dp), ml-6, y);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top';
+    ctx.fillText('('+Math.round(mToFt(v))+')', ml-6, y+1);
+  });
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('depth, m (ft)',0,0); ctx.restore();
+
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle='#61737b'; ctx.font='9.5px Arial';
+  [1,1.5,2,2.5,3,3.5,4].forEach(function(v){ ctx.fillText(v.toFixed(1), X(v), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('Ic', ml+pw/2, mt+ph+20);
+
+  function trace(getter,color,width,dash){
+    ctx.strokeStyle=color; ctx.lineWidth=width; if(dash) ctx.setLineDash(dash);
+    ctx.beginPath(); var started=false;
+    sndData.forEach(function(r){
+      var c=sndComputeAtRow(r), v=getter(c);
+      if(!isFinite(v)) return;
+      var x=X(v), y=Y(c.z);
+      if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y);
+    });
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  trace(function(c){ return icRWOf(c.Q,c.F); }, '#c64852', 1.1, [3,2]);
+  trace(function(c){ return c.ic; }, '#123b4a', 1.4, null);
+
+  var zSel=num('sndDepth'), cs=sndComputeAt(zSel);
+  if(cs){
+    var y=Y(zSel);
+    ctx.strokeStyle='#1479b8'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#123b4a'; ctx.beginPath(); ctx.arc(X(cs.ic),y,3.5,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(icRWOf(cs.Q,cs.F)),y,3,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
+  }
+}
+
+// ---- band interaction: canvas clicks, table rows, and keyboard ----
+(function(){
+  var cv=el('icChart'); if(!cv) return;
+  function bandFromEvent(e){
+    var r=cv.getBoundingClientRect();
+    var ml=14, mr=14, pw=r.width-ml-mr;
+    var t=(e.clientX-r.left-ml)/pw;
+    var ic=IC_XMIN+t*(IC_XMAX-IC_XMIN);
+    if(t<-0.02||t>1.02) return null;
+    return icBandIndex(Math.max(IC_XMIN,Math.min(IC_XMAX-0.001,ic)));
+  }
+  cv.addEventListener('click', function(e){ var i=bandFromEvent(e); if(i!==null) icSelectBand(i,true); });
+  cv.setAttribute('tabindex','0');
+  cv.addEventListener('keydown', function(e){
+    var cur = icSelectedBand===null ? icBandIndex(icLastBJ) : icSelectedBand;
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){ icSelectBand(Math.min(IC_BANDS.length-1,cur+1),true); e.preventDefault(); }
+    else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){ icSelectBand(Math.max(0,cur-1),true); e.preventDefault(); }
+    else if(e.key==='Escape'){ icSelectedBand=null; icSelectBand(icBandIndex(icLastBJ),false); }
+  });
+  document.querySelectorAll('#icBoundaryTable tbody tr').forEach(function(tr){
+    tr.style.cursor='pointer';
+    tr.addEventListener('click', function(){ icSelectBand(+tr.dataset.band,true); });
+  });
+})();
 
 function updateJaky(){
   var phi=num("jakyPhi");
@@ -1973,6 +2271,101 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- Section 6: the behaviour-type bands, and the USCS panel behind them ----
+  check(IC_BANDS.length===6, "S6: six behaviour-type bands");
+  (function(){
+    var b=[1.25,1.80,2.40,2.76,3.22];
+    for(var i=0;i<b.length;i++) check(IC_BANDS[i].hi===b[i], "S6: band "+i+" upper bound is "+b[i]+" (Table 4.4)");
+    check(IC_BANDS[5].hi===Infinity, "S6: the organic band is open-ended");
+    for(var j=1;j<IC_BANDS.length;j++) check(IC_BANDS[j].hi>IC_BANDS[j-1].hi, "S6: band bounds increase at index "+j);
+  })();
+  // every band must carry the full panel, or a click lands on a hole
+  IC_BANDS.forEach(function(b,i){
+    check(!!b.uscs && !!b.grain && !!b.cpt && !!b.drain && !!b.note, "S6: band "+i+" ("+b.name+") has a complete detail panel");
+    check(["ok","caution","no"].indexOf(b.psi)>=0, "S6: band "+i+" declares a psi-applicability verdict");
+    check(/^#[0-9a-f]{6}$/i.test(b.color), "S6: band "+i+" has a color");
+  });
+  // the applicability verdict must follow the 1.80 / 2.40 cutoffs the text asserts
+  check(IC_BANDS[0].psi==="ok" && IC_BANDS[1].psi==="ok", "S6: the two sand bands are inside the calibration");
+  check(IC_BANDS[2].psi==="caution", "S6: the partially-drained silty band is screening-only");
+  check(IC_BANDS[3].psi==="no" && IC_BANDS[4].psi==="no" && IC_BANDS[5].psi==="no", "S6: everything past 2.40 is outside the calibration");
+
+  // band lookup must agree with classifyIc across the boundaries, from both sides
+  (function(){
+    var cases=[[0.9,0],[1.24,0],[1.25,1],[1.79,1],[1.80,2],[2.39,2],[2.40,3],[2.75,3],[2.76,4],[3.21,4],[3.22,5],[9,5]];
+    cases.forEach(function(c){
+      check(icBandIndex(c[0])===c[1], "S6: Ic="+c[0]+" falls in band "+c[1]);
+      check(classifyIc(c[0])===IC_BANDS[c[1]].name, "S6: classifyIc agrees with the band table at Ic="+c[0]);
+    });
+  })();
+
+  // Ic itself: recompute Eq. 4.13a independently and check Bq is actually used
+  (function(){
+    var Qv=60, Fv=1.5, Bqv=0.3;
+    var hand=Math.sqrt(Math.pow(3-Math.log10(Qv*(1-Bqv)+1),2)+Math.pow(1.5+1.3*Math.log10(Fv),2));
+    check(Math.abs(icOf(Qv,Fv,Bqv)-hand)<1e-12, "S6: Eq. 4.13a matches an independent recompute");
+    check(Math.abs(icOf(Qv,Fv,0.3)-icOf(Qv,Fv,0.0))>0.05, "S6: Eq. 4.13a actually responds to Bq");
+    check(icRWOf(Qv,Fv)===icRWOf(Qv,Fv), "S6: Eq. 4.13b is deterministic");
+    check(icOf(Qv,Fv,0)!==icRWOf(Qv,Fv), "S6: the two indices are genuinely different formulas");
+    // rising fines content should push Ic up through the bands, not down
+    check(icOf(200,0.4,0) < icOf(20,3.0,0), "S6: a clean-sand signature reads lower Ic than a clayey one");
+  })();
+
+  // the clickable panel: selecting a band must move the detail and the table together
+  (function(){
+    var prev=icSelectedBand;
+    for(var i=0;i<IC_BANDS.length;i++){
+      icSelectBand(i,true);
+      var head=el('icBandDetail').querySelector('.band-head');
+      check(!!head && head.textContent.indexOf(IC_BANDS[i].name)>=0, "S6: clicking band "+i+" shows "+IC_BANDS[i].name);
+      var strong=el('icBandDetail').querySelector('.band-grid strong');
+      check(!!strong && strong.textContent.trim()===IC_BANDS[i].uscs, "S6: band "+i+" shows its USCS symbols ("+IC_BANDS[i].uscs+")");
+      var sel=document.querySelectorAll('#icBoundaryTable tbody tr.sel');
+      check(sel.length===1 && +sel[0].dataset.band===i, "S6: the boundary table highlights row "+i+" in step");
+    }
+    icSelectedBand=prev;
+  })();
+  check(document.querySelectorAll('#icBoundaryTable tbody tr[data-band]').length===IC_BANDS.length,
+        "S6: the boundary table has one clickable row per band");
+
+  // the USCS column must not silently drift from the panel it mirrors
+  (function(){
+    document.querySelectorAll('#icBoundaryTable tbody tr[data-band]').forEach(function(tr){
+      var i=+tr.dataset.band, cell=tr.cells[2];
+      check(!!cell && cell.textContent.trim()===IC_BANDS[i].uscs,
+            "S6: table row "+i+" USCS column matches the band panel");
+    });
+  })();
+
+  // the page must keep saying Ic is a behaviour index, not a grain-size conversion
+  (function(){
+    var t=document.body.textContent;
+    check(t.indexOf("behaviour")>=0 && /not a grain-size class|indicative/.test(t),
+          "S6: the USCS mapping is flagged as indicative rather than a conversion");
+    check(t.indexOf("USCS")>=0, "S6: USCS is named on the page");
+  })();
+
+  // the screening stat must be arithmetically what it claims to be
+  (function(){
+    var ics=sndData.map(function(r){ return sndComputeAtRow(r).ic; }).filter(isFinite);
+    var pct=Math.round(100*ics.filter(function(v){ return v<1.80; }).length/ics.length);
+    var shown=el('icStats').querySelectorAll('.stat strong');
+    check(shown.length===4, "S6: four summary stats");
+    check(shown[3].textContent.trim()===pct+"%", "S6: the sand-like percentage matches the sounding it counts");
+    check(el('icScreenNote').textContent.indexOf(pct+"%")>=0, "S6: the screening note quotes the same percentage");
+    check(pct>=0 && pct<=100, "S6: that percentage is a percentage");
+  })();
+
+  // both figures must actually be drawn, and sized to their content
+  (function(){
+    ['icChart','icProfileChart'].forEach(function(id){
+      var c=el(id);
+      check(!!c && c.width>0 && c.height>0, "S6: "+id+" has a backing store");
+      check(c.parentElement.classList.contains("figure-shell"), "S6: "+id+" got a how-to-read wrapper");
+    });
+    check(parseInt(el('icChart').style.height,10)<=140,
+          "S6: the band strip is sized to its bar, not left half empty");
+  })();
   // "Jaky" on its own is a surname; the module must name it as an equation everywhere
   (function(){
     var txt = document.body.textContent;
@@ -2384,7 +2777,9 @@ var figureInfo={
 'mmChart':['The same ground, denser or looser — qt and the psi it implies','Depth runs down the left in m with ft in parentheses, the same axis as the Section 2 log. <b>Left panel, qt:</b> raw tip resistance in MPa with tsf in parentheses. <b>Blue</b> is the measured Section 2 trace; <b>green</b> is that same trace multiplied by the density factor; <b>red</b> is it divided by the factor. <b>Right panel, psi:</b> the state each of those three traces implies, on the identical p′o profile, with the thin dashed line at critical (psi=0), the bold line at the −0.05 dilative/contractive cutoff, and green/red shading either side. A dashed blue horizontal line marks the water table; the dotted horizontal line and dots mark the depth you have selected.','Read one depth straight across. On the left the three qt traces fan apart as you go deeper — the raw MPa gap between denser and looser keeps widening. On the right the same three cases stay roughly the same distance apart in psi all the way down. That contrast is the whole point: the raw trace exaggerates how different these grounds are at depth, because it is responding to stress as much as to state, while psi answers the question you actually care about. Drag the density factor to change how different the two what-ifs are, and watch which panel reacts proportionately.'],
 'cptChart':['Qp against effective stress, in the same orientation as the log','Laid out like the Section 2 log: <b>σ′vo runs DOWN the left</b> in kPa with psf in parentheses, so deeper ground is lower on the figure, and <b>Qp runs across on a log scale</b>. <b>Orange:</b> the Section 2 sounding exactly as measured, one point per depth, drawn unsmoothed. <b>Red dashed:</b> what Qp would be at your current qt and Ko if only the stress changed. <b>Dark dashed horizontal line and red dot:</b> the σ′vo you have set on the slider.','Follow the red dashed curve first. qt is fixed all along it, yet Qp still falls by more than a decade from top to bottom, purely because the stress underneath it is growing — that alone is why a raw tip reading means nothing until the stress is pinned down. Now follow the orange trace. Real ground does not lie along that curve: going deeper raises qt as well as the stress, so the measured profile is markedly flatter than the fixed-qt line. The red curve isolates one variable; the orange trace shows both moving at once, which is what a sounding actually hands you.'],
 'koChart':['How much the Ko assumption is actually worth','Horizontal axis is Ko across its plausible range; vertical axis is Qp. <b>Red:</b> the exact Qp=(qt−p′o)/p′o at your current qt and σ′vo. <b>Blue:</b> Table 4.1\'s shortcut 3Q/(1+2Ko). <b>Dark dashed line and dots:</b> your current Ko. <b>Orange dashed line:</b> the Ko that Jaky\'s equation gives for the friction angle on the slider beside this figure.','Two things to take away. First, the red and blue curves stay close over the whole range, so Table 4.1\'s shortcut is a fair stand-in for the exact expression. Second, and more useful: compare how far Qp moves across this entire Ko range against how far it moved across the stress range in the figure above. Ko is the input you can least defend -- the book is openly sceptical of Jaky here -- but it is also the one that costs you least when you get it wrong. Drag the friction angle and watch the orange line move to see how much a whole degree of φ′ is really worth.'],
-'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
+'icChart':['The six behaviour-type bands, and where this depth sits in them','A colored band for each soil behaviour type, gravelly sands on the left through organic soils on the right, with the Ic scale beneath. The band containing the current reading is drawn slightly taller and outlined; clicking any band selects it instead and fills the panel below. <b>Dark navy arrow above the bar:</b> Ic from Eq. 4.13a, the index that uses Bq. <b>Red dashed tick below the bar:</b> the same depth through Eq. 4.13b, which ignores Bq.','Read the navy arrow first -- that is the value the rest of the module uses. Then look at where the red tick sits. When Bq is near zero the two nearly coincide and the choice of formula is academic. When they separate, the gap IS the pore-pressure information that Eq. 4.13b discards, and if they straddle a band boundary the two formulas would have you report different soil. Click through the bands left to right to see the drainage assumption change underneath you: fully drained in the sands, partially drained in the silty band where penetration theory is weakest, undrained in the clays.'],
+'icProfileChart':['Ic down the whole sounding, both formulas','Depth runs down the left in m with ft in parentheses, matching the Section 2 log; Ic runs across, over the same band colors as the strip above, washed out. <b>Navy solid:</b> Ic from Eq. 4.13a. <b>Red dashed:</b> Ic from Eq. 4.13b. <b>Bold navy dashed vertical line at Ic=1.80:</b> the sand-like cutoff that decides whether Section 7 applies. <b>Blue dotted horizontal line and dots:</b> the depth selected on the Section 2 slider.','This is the screening step done over the whole hole rather than at one point. Anything left of the 1.80 line is ground where the psi-inversion is defensible; anything right of it is not, however confident the psi panel in Section 2 looks. Check how much of the profile actually clears that line -- the stat above the figure counts it for you. Then watch the two traces: where they lie on top of each other, Bq is near zero and the ground is draining freely; where the red trace pulls away from the navy one, pore pressure is being generated and the formula that ignores it is guessing.'],
+
 'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
 'distChart':['The ψ distribution at a site, and where ψk sits in it','Navy curve: assumed-normal probability density of ψ across the sounding. Red shading: the weaker (higher-ψ) tail beyond the chosen ψk. Blue vertical line: the chosen characteristic value itself. Red dashed line: the Nerlerk case\'s real liquefiable threshold.','The mean sits at the peak of the curve — read ψk\'s line position relative to that peak to see how much conservatism the chosen percentile is actually buying, then compare ψk against the red liquefiable-threshold line.']
 };
