@@ -305,7 +305,7 @@ body{padding-bottom:54px}
 <button type="button" id="sndViewResultsBtn" style="margin-top:8px;display:none">&uarr; See your sounding on the log above</button>
 </div>
 
-<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is a <b>derived teaching dataset</b>, not anyone's project data: it was resampled from ~2200 points onto a clean 0.25&nbsp;m grid, rescaled, given a deterministic per-point perturbation, and had a few localized u<sub>2</sub> spikes clipped, so it keeps a realistic shape and scatter while carrying none of the original values. Treat it as illustrative only. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead. The &minus;0.05 dilative/contractive line on the &psi; panel is a practical rule of thumb used only for this log's shading and badge &mdash; the theoretical critical state is still exactly &psi;=0, shown as the thin dashed line beside it. Pore pressure (u<sub>2</sub>, and the hydrostatic reference u<sub>0</sub>) is expressed as head of water, in m with ft in parentheses, matching how a real cone's piezometric channel is usually reported &mdash; not as kPa or psi. Other secondary units in parentheses (tsf, ft) use the standard cone conversion 1&nbsp;tsf&nbsp;=&nbsp;95.76&nbsp;kPa; all internal calculations stay in metric (kPa) regardless of what's displayed.</div>
+<div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is a <b>derived teaching dataset</b>, not anyone's project data: it was resampled from ~2200 points onto a clean 0.25&nbsp;m grid, rescaled, given a deterministic per-point perturbation, and had a few localized u<sub>2</sub> spikes clipped, so it keeps a realistic shape and scatter while carrying none of the original values. Treat it as illustrative only. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead. The &minus;0.05 dilative/contractive line on the &psi; panel is a practical rule of thumb used only for this log's shading and badge &mdash; the theoretical critical state is still exactly &psi;=0, shown as the thin dashed line beside it. Pore pressure (u<sub>2</sub>, and the hydrostatic reference u<sub>0</sub>) is expressed as head of water, in m with ft in parentheses, matching how a real cone's piezometric channel is usually reported &mdash; not as kPa or psi. Tip and sleeve resistance (q<sub>t</sub>, f<sub>s</sub>) carry <b>tsf</b> in parentheses, the usual cone unit, at 1&nbsp;tsf&nbsp;=&nbsp;95.76&nbsp;kPa. Effective stresses (&sigma;&prime;<sub>vo</sub>) carry <b>psf</b> instead, at 1&nbsp;kPa&nbsp;=&nbsp;20.885&nbsp;psf, because a tsf value at these depths is an awkward small decimal. All internal calculations stay in metric (kPa) regardless of what's displayed.</div>
 <div class="callout" style="margin-top:8px"><b>Why does a deeper water table make the same reading look more contractive?</b> Try it: drag the water-table slider deeper while watching the &psi; panel at a fixed depth. A deeper water table means less pore pressure counteracts the overburden, so the estimated effective stress p&prime;<sub>o</sub> at that depth goes <i>up</i>. Since the raw q<sub>t</sub> reading hasn't changed, Q<sub>p</sub>=(q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> goes <i>down</i> &mdash; the same absolute resistance now looks weaker relative to a higher confining stress &mdash; and the Section 7 inversion reads that as a more positive (more contractive) &psi;. This is the exact same effect as Module 1's &psi;=e&minus;e<sub>c</sub>(p&prime;): raising p&prime; at constant e always pushes &psi; up, because the critical state line itself drops as stress rises. It isn't a quirk of this calculator &mdash; it's the same reason two identical soils at different depths can appear to have very different states.</div>
 </section>
 
@@ -427,7 +427,7 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="u0"><span>u<sub>0</sub>, kPa (m head)</span> <span class="readout" id="u0Out">150</span></label><input id="u0" type="range" min="0" max="400" step="1" value="150"></div>
 </div>
 <div class="snd-row2">
-<div class="slider-block"><label for="sv"><span>&sigma;&prime;<sub>vo</sub>, kPa (tsf)</span> <span class="readout" id="svOut">150</span></label><input id="sv" type="range" min="20" max="500" step="1" value="150"></div>
+<div class="slider-block"><label for="sv"><span>&sigma;&prime;<sub>vo</sub>, kPa (psf)</span> <span class="readout" id="svOut">150</span></label><input id="sv" type="range" min="20" max="500" step="1" value="150"></div>
 <div class="slider-block"><label for="ko"><span>K<sub>o</sub></span> <span class="readout" id="koOut">0.50</span></label><input id="ko" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
 </div>
 <div class="hint" style="margin:-2px 0 6px">&sigma;<sub>vo</sub> is taken as &sigma;&prime;<sub>vo</sub>+u<sub>0</sub>, so moving u<sub>0</sub> moves total stress with it. Section 2's <i>"use this depth"</i> button fills all six of these from a real depth on the log.</div>
@@ -441,11 +441,12 @@ body{padding-bottom:54px}
 </div>
 
 <h3>Where does K<sub>o</sub> actually come from? Section 4.9.1's answer: be skeptical</h3>
-<div class="explain"><p>The formula everyone reaches for is Jaky's equation, linking K<sub>o</sub> to the current friction angle:</p></div>
-<div class="eq">K<sub>o</sub> = 1 &minus; sin&phi;&prime; &nbsp; (Eq. 4.19)</div>
+<div class="explain"><p>The formula everyone reaches for is <b>Jaky's equation</b>, which ties K<sub>o</sub> to nothing but the current friction angle:</p></div>
+<div class="eq">K<sub>o</sub> = 1 &minus; sin&phi;&prime; &nbsp; (Jaky's equation &mdash; Eq. 4.19)</div>
+<div class="hint" style="margin:4px 0 8px"><b>What is Jaky's equation?</b> J&aacute;ky (1944) solved for the horizontal stress inside a heap of sand left to stand at its own angle of repose, and K<sub>o</sub> = 1 &minus; sin&phi;&prime; is the tidy simplification of what he got. <i>At rest</i> is what the K<sub>o</sub> subscript means: ground that has never been strained sideways, so the horizontal stress is whatever the deposition process left behind. Because it needs only &phi;&prime;, which everyone already estimates, it became the default guess for K<sub>o</sub> almost everywhere &mdash; well past the loose, normally consolidated sand it was derived for. That over-reach is what the book takes issue with below.</div>
 <div class="snd-layout" style="margin-top:8px">
 <div class="snd-controls">
-<div class="slider-block"><label for="jakyPhi"><span>&phi;&prime; for the Jaky estimate (&deg;)</span> <span class="readout" id="jakyPhiOut">33</span></label><input id="jakyPhi" type="range" min="28" max="42" step="0.5" value="33"></div>
+<div class="slider-block"><label for="jakyPhi"><span>&phi;&prime; for Jaky's equation (&deg;)</span> <span class="readout" id="jakyPhiOut">33</span></label><input id="jakyPhi" type="range" min="28" max="42" step="0.5" value="33"></div>
 <div class="statgrid n2" style="margin-top:8px">
 <div class="stat hi"><small>K<sub>o</sub> = 1 &minus; sin&phi;&prime;</small><strong id="jakyKoOut">0.46</strong></div>
 <div class="stat"><small>Q<sub>p</sub> if you used it</small><strong id="jakyQpOut">&mdash;</strong></div>
@@ -455,7 +456,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <div class="chart-host"><canvas id="koChart" style="height:250px" role="img" aria-label="Qp against Ko at the current qt and effective stress, with the exact expression and the Table 4.1 shortcut overlaid."></canvas></div>
-<div class="legend"><span><i style="background:#c64852"></i>exact Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub></span><span><i style="background:#1479b8"></i>3Q/(1+2K<sub>o</sub>), Table 4.1 shortcut</span><span><i style="background:#20343d"></i>your K<sub>o</sub></span><span><i style="background:#e38a22"></i>K<sub>o</sub> from Jaky's equation, 1&minus;sin&phi;&prime;</span></div>
+<div class="legend"><span><i style="background:#c64852"></i>exact Q<sub>p</sub> = (q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub></span><span><i style="background:#1479b8"></i>3Q/(1+2K<sub>o</sub>), Table 4.1 shortcut</span><span><i style="background:#20343d"></i>your K<sub>o</sub></span><span><i style="background:#e38a22"></i>K<sub>o</sub> from Jaky's equation (Eq. 4.19), 1&minus;sin&phi;&prime;</span></div>
 </div>
 </div>
 
@@ -660,6 +661,9 @@ var SND_MAX_Z = 54;
 // 1 tsf = 0.9576 bar = 95.76 kPa, matching the standard cone conversion factor.
 function mpaToTsf(v){ return v*1000/95.76; }
 function kpaToTsf(v){ return v/95.76; }
+  // effective stresses read in psf rather than tsf -- at CPT depths a tsf value is a
+  // small awkward decimal (1.6), where psf lands in the range engineers quote here
+  function kpaToPsf(v){ return v*20.885434; }
 function tsfToMpa(v){ return v*95.76/1000; }
 function tsfToKpa(v){ return v*95.76; }
 function mToFt(v){ return v*3.28084; }
@@ -1483,7 +1487,7 @@ function updateSection4(){
   el("qtOut").textContent = num("qt").toFixed(1)+' ('+mpaToTsf(num("qt")).toFixed(0)+')';
   el("fsOut").textContent = fs.toFixed(0)+' ('+kpaToTsf(fs).toFixed(2)+')';
   el("u2Out").textContent = u2.toFixed(0)+' ('+kpaToHeadM(u2).toFixed(1)+')';
-  el("svOut").textContent = svEff.toFixed(0)+' ('+kpaToTsf(svEff).toFixed(2)+')';
+  el("svOut").textContent = svEff.toFixed(0)+' ('+kpaToPsf(svEff).toFixed(0)+')';
   el("u0Out").textContent = u0.toFixed(0)+' ('+kpaToHeadM(u0).toFixed(1)+')';
   el("koOut").textContent = ko.toFixed(2);
 
@@ -1518,7 +1522,9 @@ function updateSection4(){
 function drawCptChart(qtKpa, Q, Qp){
   var host=el("cptChart"); if(!host) return;
   var cvp=prepCanvas(host, 340, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var mt=20, mb=48, ml=58, mr=14;
+  // ml is wider than the other charts here: the secondary tick reads psf, which runs to
+  // five digits at the bottom of the axis and needs room clear of the rotated title
+  var mt=20, mb=48, ml=72, mr=14;
   var pw=W-ml-mr, ph=H-mt-mb;
   var svNow=num('sv'), koNow=num('ko');
   function poOf(sv,ko){ return sv*(1+2*ko)/3; }
@@ -1541,18 +1547,18 @@ function drawCptChart(qtKpa, Q, Qp){
   ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
   ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
 
-  // vertical axis: sigma'vo, kPa with tsf beneath (bare numbers, units in the title)
+  // vertical axis: sigma'vo, kPa with psf beneath (bare numbers, units in the title)
   var yt=niceTicks(0,svMax,4);
   ctx.textAlign='right';
   yt.values.forEach(function(v){
     var y=Y(v);
     ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
     ctx.fillStyle='#3a4b52'; ctx.font='700 10px Arial'; ctx.textBaseline='bottom'; ctx.fillText(v.toFixed(yt.dp), ml-6, y);
-    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top'; ctx.fillText('('+kpaToTsf(v).toFixed(1)+')', ml-6, y+1);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top'; ctx.fillText('('+Math.round(kpaToPsf(v))+')', ml-6, y+1);
   });
   ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText("σ′vo, kPa (tsf)",0,0); ctx.restore();
+  ctx.fillText("σ′vo, kPa (psf)",0,0); ctx.restore();
 
   // horizontal axis: Qp by decades
   ctx.textAlign='center'; ctx.textBaseline='top';
@@ -1671,9 +1677,10 @@ function drawKoChart(){
     var xj=X(koJaky);
     ctx.strokeStyle='#e38a22'; ctx.setLineDash([5,3]); ctx.lineWidth=1.5;
     ctx.beginPath(); ctx.moveTo(xj,mt); ctx.lineTo(xj,mt+ph); ctx.stroke(); ctx.setLineDash([]);
-    // spell the label out -- "Jaky" alone means nothing without the equation beside it
+    // spell the label out -- a bare surname means nothing on a chart; say that it is an
+    // equation and show what it returns, so the marker needs no legend to be read
     ctx.font='700 10px Arial'; ctx.textBaseline='top';
-    var lab='Jaky: Ko = '+koJaky.toFixed(2);
+    var lab='Jaky Eq.: Ko = '+koJaky.toFixed(2);
     var lw=ctx.measureText(lab).width;
     ctx.textAlign='left';
     var lx=xj+5;
@@ -1945,6 +1952,36 @@ window.runModule2SelfTests = function(){
     check(Math.abs(headMToKpa(kpaToHeadM(v))-v)<1e-6, "kPa<->head(m) round trip at "+v);
   });
   check(Math.abs(kpaToTsf(95.76)-1)<1e-9, "1 tsf = 95.76 kPa exactly (standard cone conversion)");
+
+  // psf is the secondary unit on every effective stress the module shows, so pin the
+  // conversion and pin that nothing still offers an effective stress in tsf
+  check(Math.abs(kpaToPsf(1)-20.885434)<1e-6, "1 kPa = 20.885434 psf");
+  check(Math.abs(kpaToPsf(47.88026)-1000)<0.01, "1000 psf = 47.88 kPa (round trip through psf)");
+  check(Math.abs(kpaToPsf(95.76)-2000)<0.5, "1 tsf = 2000 psf, so psf and tsf stay consistent");
+  check(kpaToPsf(150)>3100 && kpaToPsf(150)<3140, "sigma-vo of 150 kPa reads about 3133 psf");
+  (function(){
+    var lab = el('sv').closest('.slider-block').querySelector('label span').textContent;
+    check(lab.indexOf('psf')>=0, "S5: the sigma-vo slider is labelled in psf");
+    check(lab.indexOf('tsf')<0,  "S5: the sigma-vo slider no longer says tsf");
+    var out = el('svOut').textContent;
+    var m = out.match(/\((\d+)\)/);
+    check(!!m, "S5: the sigma-vo readout carries a parenthesised secondary value");
+    if(m){
+      var kpa = num('sv');
+      check(Math.abs(+m[1]-kpaToPsf(kpa))<1.5, "S5: that secondary value is the psf equivalent of the kPa shown");
+      check(+m[1] > kpa, "S5: the psf number is larger than the kPa number, as psf must be");
+    }
+  })();
+
+  // "Jaky" on its own is a surname; the module must name it as an equation everywhere
+  (function(){
+    var txt = document.body.textContent;
+    check(/What is Jaky.{0,4}s equation/.test(txt), "S5: the page spells out what Jaky's equation is");
+    check(txt.indexOf('angle of repose')>=0, "S5: that definition says where Jaky derived it from");
+    check(txt.indexOf('normally consolidated')>=0, "S5: and states the condition it was derived for");
+    var jlab = el('jakyPhi').closest('.slider-block').querySelector('label span').textContent;
+    check(/Jaky.{0,3}s equation/.test(jlab), "S5: the friction-angle slider names Jaky's equation, not just \"Jaky\"");
+  })();
   check(Math.abs(mpaToTsf(0.09576)-1)<1e-6, "0.09576 MPa = 1 tsf");
 
   // 9. CSV parser: metric vs imperial input for the same physical reading agree after conversion
@@ -2345,7 +2382,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 var figureInfo={
 'cptLogChart':['CPT log: five channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> raw tip resistance, MPa (tsf). <b>Panel 2 (green, fs):</b> raw sleeve friction, kPa (tsf). <b>Panel 3 (purple, u2):</b> raw pore pressure, as head of water in m (ft), with a light gray dashed line showing the hydrostatic reference u0 for comparison. <b>Panel 4 (orange, Qp):</b> the dimensionless normalized tip resistance, Qp=(qt&minus;p′o)/p′o — this is the quantity actually built from Panel 1\'s trace plus the assumed stress profile (γ, water table, Ko), and it\'s what Section 7\'s equation inverts. It is plotted on a <b>log axis</b>, because p′o approaches zero at the ground surface, so Qp on any real sounding spans several orders of magnitude and a linear axis would crush the whole profile against one edge. <b>Panel 5 (red, ψ):</b> the resulting state parameter, with a thin dashed line at the theoretical critical state (ψ=0) and a bold line at ψ=−0.05, this module\'s practical dilative/contractive cutoff — shading and the stats badge split at that bold line. In Panels 1–3 the two background shades mark this sounding\'s two layers; in Panel 5 they mark dilative versus contractive instead. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across every panel. The dotted horizontal line and colored dots on each panel mark the currently selected depth.','This is the actual computation chain, left to right: Panel 1\'s raw qt trace, combined with the assumed stress profile, becomes Panel 4\'s Qp trace — read the "How Qp is built" box below the sliders for the exact live arithmetic at your selected depth. Panel 4\'s Qp then becomes Panel 5\'s ψ through Section 7\'s Qp=k·exp(−mψ) relationship — steps 5 to 7 of that same box show k and m being derived from the selected sand\'s λ10 and then inverted for ψ, so the whole chain from raw trace to state is written out numerically. So scan qt first to see where the layer break is, then compare the SAME depth\'s value in Qp — notice Qp does NOT simply track qt, because p′o (driven by depth, γ, and the water table) is changing too. Only after that does ψ make sense as "how Qp compares to what this sand\'s calibration predicts."'],
 'mmChart':['The same ground, denser or looser — qt and the psi it implies','Depth runs down the left in m with ft in parentheses, the same axis as the Section 2 log. <b>Left panel, qt:</b> raw tip resistance in MPa with tsf in parentheses. <b>Blue</b> is the measured Section 2 trace; <b>green</b> is that same trace multiplied by the density factor; <b>red</b> is it divided by the factor. <b>Right panel, psi:</b> the state each of those three traces implies, on the identical p′o profile, with the thin dashed line at critical (psi=0), the bold line at the −0.05 dilative/contractive cutoff, and green/red shading either side. A dashed blue horizontal line marks the water table; the dotted horizontal line and dots mark the depth you have selected.','Read one depth straight across. On the left the three qt traces fan apart as you go deeper — the raw MPa gap between denser and looser keeps widening. On the right the same three cases stay roughly the same distance apart in psi all the way down. That contrast is the whole point: the raw trace exaggerates how different these grounds are at depth, because it is responding to stress as much as to state, while psi answers the question you actually care about. Drag the density factor to change how different the two what-ifs are, and watch which panel reacts proportionately.'],
-'cptChart':['Qp against effective stress, in the same orientation as the log','Laid out like the Section 2 log: <b>σ′vo runs DOWN the left</b> in kPa with tsf in parentheses, so deeper ground is lower on the figure, and <b>Qp runs across on a log scale</b>. <b>Orange:</b> the Section 2 sounding exactly as measured, one point per depth, drawn unsmoothed. <b>Red dashed:</b> what Qp would be at your current qt and Ko if only the stress changed. <b>Dark dashed horizontal line and red dot:</b> the σ′vo you have set on the slider.','Follow the red dashed curve first. qt is fixed all along it, yet Qp still falls by more than a decade from top to bottom, purely because the stress underneath it is growing — that alone is why a raw tip reading means nothing until the stress is pinned down. Now follow the orange trace. Real ground does not lie along that curve: going deeper raises qt as well as the stress, so the measured profile is markedly flatter than the fixed-qt line. The red curve isolates one variable; the orange trace shows both moving at once, which is what a sounding actually hands you.'],
+'cptChart':['Qp against effective stress, in the same orientation as the log','Laid out like the Section 2 log: <b>σ′vo runs DOWN the left</b> in kPa with psf in parentheses, so deeper ground is lower on the figure, and <b>Qp runs across on a log scale</b>. <b>Orange:</b> the Section 2 sounding exactly as measured, one point per depth, drawn unsmoothed. <b>Red dashed:</b> what Qp would be at your current qt and Ko if only the stress changed. <b>Dark dashed horizontal line and red dot:</b> the σ′vo you have set on the slider.','Follow the red dashed curve first. qt is fixed all along it, yet Qp still falls by more than a decade from top to bottom, purely because the stress underneath it is growing — that alone is why a raw tip reading means nothing until the stress is pinned down. Now follow the orange trace. Real ground does not lie along that curve: going deeper raises qt as well as the stress, so the measured profile is markedly flatter than the fixed-qt line. The red curve isolates one variable; the orange trace shows both moving at once, which is what a sounding actually hands you.'],
 'koChart':['How much the Ko assumption is actually worth','Horizontal axis is Ko across its plausible range; vertical axis is Qp. <b>Red:</b> the exact Qp=(qt−p′o)/p′o at your current qt and σ′vo. <b>Blue:</b> Table 4.1\'s shortcut 3Q/(1+2Ko). <b>Dark dashed line and dots:</b> your current Ko. <b>Orange dashed line:</b> the Ko that Jaky\'s equation gives for the friction angle on the slider beside this figure.','Two things to take away. First, the red and blue curves stay close over the whole range, so Table 4.1\'s shortcut is a fair stand-in for the exact expression. Second, and more useful: compare how far Qp moves across this entire Ko range against how far it moved across the stress range in the figure above. Ko is the input you can least defend -- the book is openly sceptical of Jaky here -- but it is also the one that costs you least when you get it wrong. Drag the friction angle and watch the orange line move to see how much a whole degree of φ′ is really worth.'],
 'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
 'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
