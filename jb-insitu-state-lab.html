@@ -171,7 +171,7 @@ body{padding-bottom:54px}
 
 /* Section 2's CPT log: controls beside the log rather than stacked above it, so a
    slider and the five panels it drives stay visible together without scrolling. */
-.snd-layout{display:grid;grid-template-columns:minmax(290px,0.82fr) 1.18fr;gap:16px;align-items:start;margin-top:10px}
+.snd-layout{display:grid;grid-template-columns:minmax(270px,0.7fr) 1.3fr;gap:16px;align-items:start;margin-top:10px}
 .snd-layout>div{min-width:0}
 .snd-controls{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb)}
 .snd-controls .slider-block{margin:7px 0;padding:9px 11px}
@@ -262,7 +262,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="guided-panel">
-<h3 style="margin-top:0">How Q<sub>p</sub> is built from this depth's raw trace</h3>
+<h3 style="margin-top:0">From raw trace to Q<sub>p</sub> to &psi; &mdash; every step, at the selected depth</h3>
 <div class="eq" id="sndQpEq" style="white-space:normal;font-size:13px"></div>
 </div>
 
@@ -281,6 +281,7 @@ body{padding-bottom:54px}
 <button type="button" id="sndResetExample" class="alt">Reset to example sounding</button>
 </div>
 <div id="sndUploadStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
+<button type="button" id="sndViewResultsBtn" style="margin-top:8px;display:none">&uarr; See your sounding on the log above</button>
 </div>
 
 <div class="warning" style="margin-top:10px"><b>About this sounding.</b> The default profile above is fabricated for this module &mdash; not data from any real site or project &mdash; engineered specifically to show two contrasting layers. The &psi; panel and Sections 5/7's calculators use a simple assumed unit weight and hydrostatic water table (adjustable above) to estimate &sigma;&prime;<sub>vo</sub> and u<sub>0</sub> from depth alone; a real design would use an actual measured or estimated unit-weight profile instead. The &minus;0.05 dilative/contractive line on the &psi; panel is a practical rule of thumb used only for this log's shading and badge &mdash; the theoretical critical state is still exactly &psi;=0, shown as the thin dashed line beside it. Pore pressure (u<sub>2</sub>, and the hydrostatic reference u<sub>0</sub>) is expressed as head of water, in m with ft in parentheses, matching how a real cone's piezometric channel is usually reported &mdash; not as kPa or psi. Other secondary units in parentheses (tsf, ft) use the standard cone conversion 1&nbsp;tsf&nbsp;=&nbsp;95.76&nbsp;kPa; all internal calculations stay in metric (kPa) regardless of what's displayed.</div>
@@ -708,6 +709,46 @@ function sndComputeAtRow(row){ return sndComputeFromValues(row.z, row.qt, row.fs
 
 var PSI_DIL_BOUNDARY = -0.05;
 
+// ---- axis-label helpers for the CPT log ----
+// "Nice" round tick values (1/2/2.5/5/10 x 10^n) inside [min,max]. Round numbers keep
+// each label short, which is the first defence against neighbouring panels colliding.
+// Returns {values, dp} — dp is the decimal count the STEP needs, so every tick on an
+// axis is formatted alike ("0, 5, 10, 15", never "0.00, 5.0, 10, 15").
+function niceTicks(min, max, target){
+  var range = max-min;
+  if(!(range>0)) return {values:[min], dp:0};
+  var raw = range/Math.max(1,target);
+  var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  var norm = raw/mag, step;
+  if(norm<=1) step=1; else if(norm<=2) step=2; else if(norm<=2.5) step=2.5; else if(norm<=5) step=5; else step=10;
+  step *= mag;
+  var out=[];
+  for(var v=Math.ceil(min/step)*step; v<=max+step*1e-6; v+=step){
+    out.push(Math.abs(v)<step*1e-6 ? 0 : +v.toFixed(10));
+  }
+  var dp = Math.max(0, Math.min(3, -Math.floor(Math.log10(step))));
+  if(step >= 1 && Math.abs(step-Math.round(step))>1e-9) dp = 1;  // e.g. a 2.5 step
+  return {values: out.length?out:[min,max], dp:dp};
+}
+function fmtPrimary(panel, v, dp){
+  if(panel.isPsi) return (v>0?'+':'')+v.toFixed(dp);
+  if(v===0) return '0';
+  if(Math.abs(v)>=1000) return String(Math.round(v));
+  return v.toFixed(dp);
+}
+// Secondary (imperial) values are conversions of nice primary values, so they land on
+// awkward numbers; trim them to the fewest digits that still read correctly.
+function fmtSecondary(panel, v){
+  var s=panel.toSecond(v), a=Math.abs(s);
+  if(a<1e-9) return '(0)';
+  return '('+s.toFixed(a>=10 ? 0 : (a>=1 ? 1 : 2))+')';
+}
+// Keep a centered label fully inside its own panel instead of spilling into the gap.
+function clampLabelX(ctx, x, text, px, panelW){
+  var half = ctx.measureText(text).width/2 + 1;
+  return Math.min(Math.max(x, px+half), px+panelW-half);
+}
+
 function drawCptLog(){
   var host=el('cptLogChart'); if(!host) return;
   // Render at full device-pixel resolution (not just the CSS box size) so text and
@@ -723,7 +764,7 @@ function drawCptLog(){
   var ctx=host.getContext('2d');
   ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,H);
-  var mt=32, mb=50, ml=48, mr=10, gap=16;
+  var mt=32, mb=50, ml=48, mr=10, gap=20;
   var ph=H-mt-mb;
   var panelCount=5;
   var panelW=(W-ml-mr-gap*(panelCount-1))/panelCount;
@@ -745,20 +786,32 @@ function drawCptLog(){
   var fsMax = Math.max(80, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.fs;}))/20)*20 + 20);
   var u2HeadMax = Math.max(5, Math.ceil(Math.max.apply(null, u2HeadVals)) + 2);
   var u2HeadMin = Math.min(-2, Math.floor(Math.min.apply(null, u2HeadVals)) - 1);
-  var qpVals = sndData.map(function(r){ return sndComputeAtRow(r).Qp; });
-  var qpMax = Math.max(50, Math.ceil(Math.max.apply(null, qpVals)/20)*20 + 20);
-  var qpMin = Math.min(0, Math.floor(Math.min.apply(null, qpVals)/20)*20 - 10);
+  // Qp spans a huge dynamic range on any real sounding — p'o goes to nearly zero at the
+  // surface, so the topmost readings blow up (this example hits ~9400 in the first
+  // 10 cm against a median near 67). A linear axis would flatten every meaningful
+  // feature into the left edge, so Qp gets a fixed log axis, matching how Section 7's
+  // own Qp chart already plots it.
+  var qpMin = 10, qpMax = 10000;
   var panels=[
     {key:'qt', label:'qt', unit:'MPa', min:0, max:qtMax, color:'#1479b8', toSecond:mpaToTsf, secondUnit:'tsf', secondDp:2, getValue:function(row){ return row.qt; }},
     {key:'fs', label:'fs', unit:'kPa', min:0, max:fsMax, color:'#2d8b65', toSecond:kpaToTsf, secondUnit:'tsf', secondDp:2, getValue:function(row){ return row.fs; }},
     {key:'u2', label:'u2', unit:'m', min:u2HeadMin, max:u2HeadMax, color:'#7653a6', toSecond:mToFt, secondUnit:'ft', secondDp:1, zero:true, getValue:function(row){ return kpaToHeadM(row.u2); }},
-    {key:'Qp', label:'Qp', unit:'', min:qpMin, max:qpMax, color:'#e38a22', isQp:true, getValue:function(row){ return sndComputeAtRow(row).Qp; }},
+    {key:'Qp', label:'Qp (log)', unit:'', min:qpMin, max:qpMax, color:'#e38a22', isQp:true, isLog:true, getValue:function(row){ return sndComputeAtRow(row).Qp; }},
     {key:'psi', label:'ψ (est.)', unit:'', min:-0.3, max:0.3, color:'#c64852', isPsi:true, getValue:function(row){ return sndComputeAtRow(row).psi; }}
   ];
 
   panels.forEach(function(panel,pi){
     var px = ml+gap*pi+panelW*pi;
-    function X(v){ var t=(v-panel.min)/(panel.max-panel.min); return px+Math.max(0,Math.min(1,t))*panelW; }
+    function X(v){
+      var t;
+      if(panel.isLog){
+        var lo=Math.log10(panel.min), hi=Math.log10(panel.max);
+        t=(Math.log10(Math.max(v,panel.min))-lo)/(hi-lo);
+      } else {
+        t=(v-panel.min)/(panel.max-panel.min);
+      }
+      return px+Math.max(0,Math.min(1,t))*panelW;
+    }
 
     // ---- background: layer shading (raw channels) or dilative/contractive shading (psi) ----
     if(panel.isPsi){
@@ -805,22 +858,47 @@ function drawCptLog(){
     ctx.fillStyle='#20343d'; ctx.font='700 10.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
     ctx.fillText(panel.label+(panel.unit?', '+panel.unit+(panel.secondUnit?' ('+panel.secondUnit+')':''):''), px+panelW/2, mt-10);
 
-    // x-axis ticks: adaptive count by panel width, dual-unit where applicable
-    // Each tick prints a primary value and (for most panels) a bracketed secondary
-    // unit under it, so tick COUNT has to fall as the panel narrows or the labels
-    // collide — especially now that the log shares its row with the control column.
-    var nTicks = panelW<95 ? 2 : (panelW<150 ? 3 : 5);
-    for(var ti=0; ti<nTicks; ti++){
-      var v = panel.min + (panel.max-panel.min)*ti/(nTicks-1);
+    // ---- x-axis ticks ----
+    // Two things keep neighbouring panels' labels from running into each other:
+    // (a) tick VALUES are "nice" round numbers, so the text is short, and
+    // (b) every label is clamped to stay fully inside its own panel — a centered
+    //     label on an edge tick would otherwise spill half its width into the gap,
+    //     which is exactly where the next panel's edge label spills back.
+    var targetTicks = panelW<90 ? 2 : (panelW<140 ? 3 : 4);
+    var tickVals, tickDp;
+    if(panel.isLog){
+      tickVals=[]; tickDp=0;
+      for(var d=Math.round(Math.log10(panel.min)); d<=Math.round(Math.log10(panel.max))+1e-9; d++) tickVals.push(Math.pow(10,d));
+    } else {
+      var nt = niceTicks(panel.min, panel.max, targetTicks);
+      tickVals = nt.values;
+      tickDp = panel.isPsi ? 2 : nt.dp;
+    }
+    var primFont='700 10px Arial', secFont='9.5px Arial';
+    // Drop every other tick until even the widest label pair fits its share of the panel.
+    while(tickVals.length>2){
+      var widest=0;
+      tickVals.forEach(function(v){
+        ctx.font=primFont; var wv=ctx.measureText(fmtPrimary(panel,v,tickDp)).width;
+        if(panel.toSecond){ ctx.font=secFont; wv=Math.max(wv, ctx.measureText(fmtSecondary(panel,v)).width); }
+        if(wv>widest) widest=wv;
+      });
+      if(widest+6 <= panelW/tickVals.length) break;
+      tickVals = tickVals.filter(function(_,i){ return i%2===0; });
+    }
+    tickVals.forEach(function(v){
       var xt=X(v);
       ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xt,mt); ctx.lineTo(xt,mt+ph); ctx.stroke();
-      ctx.font='700 9.5px Arial'; ctx.fillStyle='#3a4b52'; ctx.textAlign='center'; ctx.textBaseline='top';
-      ctx.fillText(panel.isPsi ? (v>=0?'+':'')+v.toFixed(2) : v.toFixed(Math.abs(v)>=100?0:1), xt, mt+ph+4);
+      ctx.textAlign='center'; ctx.textBaseline='top';
+      ctx.font=primFont; ctx.fillStyle='#3a4b52';
+      var pTxt=fmtPrimary(panel,v,tickDp);
+      ctx.fillText(pTxt, clampLabelX(ctx, xt, pTxt, px, panelW), mt+ph+4);
       if(panel.toSecond && panelW>=70){
-        ctx.font='9px Arial'; ctx.fillStyle='#748086';
-        ctx.fillText('('+panel.toSecond(v).toFixed(panel.secondDp)+')', xt, mt+ph+16);
+        ctx.font=secFont; ctx.fillStyle='#748086';
+        var sTxt=fmtSecondary(panel,v);
+        ctx.fillText(sTxt, clampLabelX(ctx, xt, sTxt, px, panelW), mt+ph+16);
       }
-    }
+    });
 
     // trace
     ctx.beginPath(); ctx.strokeStyle=panel.color; ctx.lineWidth=1.6;
@@ -874,11 +952,18 @@ function updateSounding(){
     updateFlow(c.qt.toFixed(1)+' MPa', 'Qp='+c.Qp.toFixed(1), 'Ic='+c.ic.toFixed(2), (c.psi>=0?"+":"")+c.psi.toFixed(3));
 
     var qtKpaNow = c.qt*1000, koNow = num('sndKo');
+    var sandNow = SANDS[+sndSandSel.value], kNow = kOf(sandNow.lambda10), mNow = mOf(sandNow.lambda10);
     el('sndQpEq').innerHTML =
       '1&middot; &sigma;&prime;<sub>vo</sub> = &sigma;<sub>vo</sub> &minus; u<sub>0</sub> = '+c.svTotal.toFixed(1)+' &minus; '+c.u0.toFixed(1)+' = <b>'+c.svEff.toFixed(1)+' kPa</b><br>'+
       '2&middot; p&prime;<sub>o</sub> = &sigma;&prime;<sub>vo</sub>&middot;(1+2K<sub>o</sub>)/3 = '+c.svEff.toFixed(1)+'&middot;(1+2&times;'+koNow.toFixed(2)+')/3 = <b>'+c.po.toFixed(1)+' kPa</b><br>'+
       '3&middot; q<sub>t</sub> (from the raw trace) = '+c.qt.toFixed(2)+' MPa = <b>'+qtKpaNow.toFixed(0)+' kPa</b><br>'+
-      '4&middot; Q<sub>p</sub> = (q<sub>t</sub> &minus; p&prime;<sub>o</sub>) / p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+' &minus; '+c.po.toFixed(1)+') / '+c.po.toFixed(1)+' = <b style="color:var(--blue);font-size:15px">'+c.Qp.toFixed(1)+'</b>';
+      '4&middot; Q<sub>p</sub> = (q<sub>t</sub> &minus; p&prime;<sub>o</sub>) / p&prime;<sub>o</sub> = ('+qtKpaNow.toFixed(0)+' &minus; '+c.po.toFixed(1)+') / '+c.po.toFixed(1)+' = <b style="color:#c07d1c;font-size:15px">'+c.Qp.toFixed(1)+'</b>'+
+      '<hr style="border:0;border-top:1px solid var(--line);margin:9px 0">'+
+      '<span style="font-size:11px;color:var(--muted);font-family:Arial,Helvetica,sans-serif">…and Q<sub>p</sub> becomes &psi; through Section 7\'s calibration, using this sand\'s &lambda;<sub>10</sub> = '+sandNow.lambda10.toFixed(3)+' ('+sandNow.name+'):</span><br>'+
+      '5&middot; k = 8 + 0.55/(&lambda;<sub>10</sub> &minus; 0.01) = 8 + 0.55/('+sandNow.lambda10.toFixed(3)+' &minus; 0.01) = <b>'+kNow.toFixed(2)+'</b><br>'+
+      '6&middot; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) = 8.1 &minus; 2.3&middot;log<sub>10</sub>('+sandNow.lambda10.toFixed(3)+') = <b>'+mNow.toFixed(2)+'</b><br>'+
+      '7&middot; &psi; = &minus;ln(Q<sub>p</sub>/k)/m = &minus;ln('+c.Qp.toFixed(1)+'/'+kNow.toFixed(2)+')/'+mNow.toFixed(2)+' = <b style="color:'+(c.psi<PSI_DIL_BOUNDARY?'var(--green-text)':'var(--red-text)')+';font-size:15px">'+(c.psi>=0?'+':'')+c.psi.toFixed(3)+'</b> '+
+      '<span style="font-size:11px;color:var(--muted);font-family:Arial,Helvetica,sans-serif">&mdash; '+(c.psi<PSI_DIL_BOUNDARY?'dilative (below &minus;0.05)':'contractive (at or above &minus;0.05)')+'</span>';
   }
   drawCptLog();
 }
@@ -958,6 +1043,7 @@ el('sndFileInput').addEventListener('change', function(ev){
     if(rows.length < 5){
       status.className='warning';
       status.innerHTML = '<b>Couldn\'t read this file.</b> Found only '+rows.length+' row(s) with 4 readable numbers (depth, qt, fs, u2, in that order) on one line. Check the column-order guide above — a stray text column, a semicolon delimiter, the wrong unit system selected, or units baked into a cell\'s text are the most common causes.';
+      el('sndViewResultsBtn').style.display='none';
       return;
     }
     sndData = rows;
@@ -972,11 +1058,13 @@ el('sndFileInput').addEventListener('change', function(ev){
     if(+wtSlider.value > SND_MAX_Z) wtSlider.value = SND_MAX_Z;
     status.className='callout';
     status.innerHTML = '<b>Loaded '+rows.length+' depths from '+file.name+'</b> ('+(sndUnitSystem==='metric'?'read as metric':'read as imperial, converted to metric')+'), ranging '+rows[0].z.toFixed(2)+' m ('+mToFt(rows[0].z).toFixed(1)+' ft) to '+rows[rows.length-1].z.toFixed(2)+' m ('+mToFt(rows[rows.length-1].z).toFixed(1)+' ft). The layer shading above is specific to the built-in example, so it\'s hidden for uploaded data.';
+    el('sndViewResultsBtn').style.display='inline-block';
     updateSounding();
   };
   reader.onerror = function(){
     status.style.display='block'; status.className='warning';
     status.textContent="Couldn't read that file — try re-saving it as a plain CSV or TXT file.";
+    el('sndViewResultsBtn').style.display='none';
   };
   reader.readAsText(file);
 });
@@ -989,8 +1077,19 @@ el('sndResetExample').addEventListener('click', function(){
   depthSlider.min=0.1; depthSlider.max=16; depthSlider.value=4;
   el('sndWt').max = 16;
   el('sndUploadStatus').style.display='none';
+  el('sndViewResultsBtn').style.display='none';
   el('sndFileInput').value='';
   updateSounding();
+});
+
+// After an upload the log is off-screen above the upload box, so offer a jump back to it.
+el('sndViewResultsBtn').addEventListener('click', function(){
+  var chart = el('cptLogChart');
+  var target = chart.closest('.snd-layout') || chart;
+  var smooth = (window.prefersReducedMotion && window.prefersReducedMotion()) ? 'auto' : 'smooth';
+  target.scrollIntoView({behavior:smooth, block:'start'});
+  chart.classList.add('pulse-target');
+  setTimeout(function(){ chart.classList.remove('pulse-target'); }, 2600);
 });
 
 el('sndDownloadExample').addEventListener('click', function(){
@@ -1639,7 +1738,7 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
 // ---- maximize interaction throughout and strengthen figure legends (ported from Module 1) ----
 (function(){
 var figureInfo={
-'cptLogChart':['CPT log: five channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> raw tip resistance, MPa (tsf). <b>Panel 2 (green, fs):</b> raw sleeve friction, kPa (tsf). <b>Panel 3 (purple, u2):</b> raw pore pressure, as head of water in m (ft), with a light gray dashed line showing the hydrostatic reference u0 for comparison. <b>Panel 4 (orange, Qp):</b> the dimensionless normalized tip resistance, Qp=(qt&minus;p′o)/p′o — this is the quantity actually built from Panel 1\'s trace plus the assumed stress profile (γ, water table, Ko), and it\'s what Section 7\'s equation inverts. <b>Panel 5 (red, ψ):</b> the resulting state parameter, with a thin dashed line at the theoretical critical state (ψ=0) and a bold line at ψ=−0.05, this module\'s practical dilative/contractive cutoff — shading and the stats badge split at that bold line. In Panels 1–3 the two background shades mark this sounding\'s two layers; in Panel 5 they mark dilative versus contractive instead. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across every panel. The dotted horizontal line and colored dots on each panel mark the currently selected depth.','This is the actual computation chain, left to right: Panel 1\'s raw qt trace, combined with the assumed stress profile, becomes Panel 4\'s Qp trace — read the "How Qp is built" box below the sliders for the exact live arithmetic at your selected depth. Panel 4\'s Qp then becomes Panel 5\'s ψ through Section 7\'s Qp=k·exp(−mψ) relationship. So scan qt first to see where the layer break is, then compare the SAME depth\'s value in Qp — notice Qp does NOT simply track qt, because p′o (driven by depth, γ, and the water table) is changing too. Only after that does ψ make sense as "how Qp compares to what this sand\'s calibration predicts."'],
+'cptLogChart':['CPT log: five channels versus depth','Depth increases downward, in m with ft in parentheses. <b>Panel 1 (blue, qt):</b> raw tip resistance, MPa (tsf). <b>Panel 2 (green, fs):</b> raw sleeve friction, kPa (tsf). <b>Panel 3 (purple, u2):</b> raw pore pressure, as head of water in m (ft), with a light gray dashed line showing the hydrostatic reference u0 for comparison. <b>Panel 4 (orange, Qp):</b> the dimensionless normalized tip resistance, Qp=(qt&minus;p′o)/p′o — this is the quantity actually built from Panel 1\'s trace plus the assumed stress profile (γ, water table, Ko), and it\'s what Section 7\'s equation inverts. It is plotted on a <b>log axis</b>, because p′o approaches zero at the ground surface, so Qp on any real sounding spans several orders of magnitude and a linear axis would crush the whole profile against one edge. <b>Panel 5 (red, ψ):</b> the resulting state parameter, with a thin dashed line at the theoretical critical state (ψ=0) and a bold line at ψ=−0.05, this module\'s practical dilative/contractive cutoff — shading and the stats badge split at that bold line. In Panels 1–3 the two background shades mark this sounding\'s two layers; in Panel 5 they mark dilative versus contractive instead. A dashed horizontal blue line labeled "water table" tracks the water-table-depth slider across every panel. The dotted horizontal line and colored dots on each panel mark the currently selected depth.','This is the actual computation chain, left to right: Panel 1\'s raw qt trace, combined with the assumed stress profile, becomes Panel 4\'s Qp trace — read the "How Qp is built" box below the sliders for the exact live arithmetic at your selected depth. Panel 4\'s Qp then becomes Panel 5\'s ψ through Section 7\'s Qp=k·exp(−mψ) relationship — steps 5 to 7 of that same box show k and m being derived from the selected sand\'s λ10 and then inverted for ψ, so the whole chain from raw trace to state is written out numerically. So scan qt first to see where the layer break is, then compare the SAME depth\'s value in Qp — notice Qp does NOT simply track qt, because p′o (driven by depth, γ, and the water table) is changing too. Only after that does ψ make sense as "how Qp compares to what this sand\'s calibration predicts."'],
 'mmChart':['Raw tip resistance versus depth, at constant ψ','Green: a dense sand (ψ=−0.15) held at that same state all the way down. Red: a loose sand (ψ=+0.05), also held constant. Dashed vertical: the current depth slider position.','Compare the vertical gap between the two lines at a shallow depth versus a deep one — it widens even though neither line\'s ψ ever changes, which is the whole point: raw qt confounds state with stress level.'],
 'cptChart':['One depth\'s raw and normalized readings, side by side','Each bar is scaled to its own typical range (see the note under the chart), so compare each bar\'s height to its own axis, not to the others directly.','Read qt first (the raw MPa reading), then Q, then Qp — each step to the right is one more layer of stress-normalization applied to the same underlying measurement.'],
 'icChart':['Where this depth\'s Ic falls among the soil-type bands','Colored bands, left to right: gravelly/sand through clay and organic soil, using Table 4.4\'s boundaries. The dark marker and arrow show the current Ic value.','Lower Ic (left) is coarser and more sand-like; the ψ-inversion in Section 7 was calibrated on that end of the scale. Higher Ic (right) means treat any ψ computed at this depth with real caution.'],
