@@ -265,9 +265,9 @@ body{padding-bottom:54px}
 </div>
 <div class="snd-row2">
 <div class="slider-block"><label for="sndWt"><span>Water table, m (ft)</span> <span class="readout" id="sndWtOut">2.0</span></label><input id="sndWt" type="range" min="0" max="54" step="0.25" value="2"></div>
-<div class="slider-block"><label for="sndHyd"><span>% of hydrostatic</span> <span class="readout" id="sndHydOut">100%</span></label><input id="sndHyd" type="range" min="0" max="150" step="5" value="100"></div>
+<div class="slider-block"><label for="sndHyd"><span>% of hydrostatic</span> <span class="readout" id="sndHydOut">100%</span></label><input id="sndHyd" type="range" min="0" max="100" step="5" value="100"></div>
 </div>
-<div class="hint" style="margin:-2px 0 4px">&gamma; only estimates &sigma;&prime;<sub>vo</sub> for this preview; a real design uses a logged unit-weight profile. <b>% of hydrostatic</b> scales the equilibrium pore pressure u<sub>0</sub> at every depth &mdash; 100% is fully hydrostatic, below that is under-drained, above is artesian &mdash; and it feeds &sigma;&prime;<sub>vo</sub>, so it moves p&prime;<sub>o</sub>, Q<sub>p</sub> and &psi; too.</div>
+<div class="hint" style="margin:-2px 0 4px">&gamma; only estimates &sigma;&prime;<sub>vo</sub> for this preview; a real design uses a logged unit-weight profile. <b>% of hydrostatic</b> scales the equilibrium pore pressure u<sub>0</sub> at every depth: 100% is fully hydrostatic, lower values are under-drained (0% means no pore pressure at all). It feeds &sigma;&prime;<sub>vo</sub>, so it moves p&prime;<sub>o</sub>, Q<sub>p</sub> and &psi; too.</div>
 <label for="sndSandSelect" style="font-size:12px;font-weight:700;display:block;margin-top:8px">Sand for the &psi;-inversion preview (Section 7's method)</label>
 <select id="sndSandSelect"></select>
 <div class="statgrid" id="sndStats" style="margin-top:10px"></div>
@@ -687,7 +687,7 @@ function sndComputeFromValues(z, qt, fs, u2){
   var svTotal = gamma*z;
   // Full hydrostatic equilibrium pore pressure, then the fraction of it actually
   // assumed at this site. Below 100% is under-drained/partially drained (common under
-  // tailings and where there is downward seepage); above 100% is artesian. The scaled
+  // tailings and where there is downward seepage). The scaled
   // u0 — not the hydrostatic one — is what feeds sigma'vo, and therefore p'o, Qp and psi.
   var u0Full = z>wt ? 9.81*(z-wt) : 0;
   var u0 = u0Full*hydFrac;
@@ -813,7 +813,14 @@ function drawCptLog(){
   // range still plot — X() clamps them to the panel edge.
   var u2Sorted = u2HeadVals.slice().sort(function(a,b){ return a-b; });
   function u2Pct(p){ return u2Sorted[Math.min(u2Sorted.length-1, Math.max(0, Math.floor((u2Sorted.length-1)*p)))]; }
-  var u2HeadMax = Math.max(5, Math.ceil(u2Pct(0.98)) + 2);
+  // The u0 reference lines share this axis, so the axis has to reach them: a 100%
+  // hydrostatic profile runs to (SND_MAX_Z - water table) metres of head at the base.
+  // Without this the lines were clamped against the panel edge for their whole length,
+  // which made the % slider look broken (nothing moved until it dropped below ~15%).
+  // Deliberately sized on the 100% case, NOT the current %, so dragging the slider
+  // moves the line instead of rescaling the axis underneath it.
+  var u0HeadFull = Math.max(0, SND_MAX_Z - Math.min(Math.max(num('sndWt'),0), SND_MAX_Z));
+  var u2HeadMax = Math.max(5, Math.ceil(u2Pct(0.98)) + 2, Math.ceil(u0HeadFull*1.04));
   var u2HeadMin = Math.min(-2, Math.floor(u2Pct(0.02)) - 1);
   // Qp spans a huge dynamic range on any real sounding — p'o goes to nearly zero at the
   // surface, so the topmost readings blow up (this example hits ~9400 in the first
@@ -887,13 +894,14 @@ function drawCptLog(){
         ctx.lineTo(X(frac*(SND_MAX_Z-wtClamped)), Y(SND_MAX_Z));
         ctx.stroke(); ctx.restore();
       }
-      drawU0(1, '#aab6bb', [2,3], 1.3);                     // 100% hydrostatic reference
-      if(Math.abs(hydNow-1) > 0.001){
-        drawU0(hydNow, '#1479b8', [6,3], 1.8);              // the assumed profile in use
-        var yLab=Y(wtClamped+(SND_MAX_Z-wtClamped)*0.72);
-        ctx.font='700 8.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
-        haloText(ctx, Math.round(hydNow*100)+'%', X(hydNow*(SND_MAX_Z-wtClamped)*0.72), yLab, '#1479b8');
-      }
+      // Both are always drawn: at 100% the assumed line lands exactly on the
+      // reference, which is the visual confirmation that the slider is at full
+      // hydrostatic; at 0% it collapses onto the vertical u0 = 0 axis.
+      drawU0(1, '#aab6bb', [2,3], 1.4);                     // 100% hydrostatic reference
+      drawU0(hydNow, '#1479b8', [6,3], 1.8);                // the assumed profile in use
+      var yLab=Y(wtClamped+(SND_MAX_Z-wtClamped)*0.72);
+      ctx.font='700 8.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+      haloText(ctx, Math.round(hydNow*100)+'%', X(hydNow*(SND_MAX_Z-wtClamped)*0.72), yLab, '#1479b8');
     }
 
     // panel title, format "label, unit (secondUnit)"
@@ -1625,6 +1633,24 @@ window.runModule2SelfTests = function(){
     check(c50.psi   > c100.psi,   "lowering % hydrostatic pushes psi toward contractive");
     hydEl.value=orig;
   })();
+
+  // 11b. the u2 axis must actually contain the u0 reference lines drawn on it.
+  // (Regression: it was sized from the u2 data alone, so a 100% hydrostatic line
+  // needing ~52 m of head was clamped to the panel edge and the % slider looked dead.)
+  (function(){
+    var wtEl=el('sndWt'), hydEl=el('sndHyd'), ow=wtEl.value, oh=hydEl.value;
+    [0,2,10,30].forEach(function(wtTest){
+      wtEl.value=wtTest;
+      var heads=sndData.map(function(r){ return kpaToHeadM(r.u2); }).sort(function(a,b){ return a-b; });
+      function pc(x){ return heads[Math.min(heads.length-1,Math.max(0,Math.floor((heads.length-1)*x)))]; }
+      var full=Math.max(0, SND_MAX_Z-Math.min(Math.max(wtTest,0),SND_MAX_Z));
+      var axisMax=Math.max(5, Math.ceil(pc(0.98))+2, Math.ceil(full*1.04));
+      check(axisMax>=full, "u2 axis reaches the 100% hydrostatic line at water table "+wtTest+" m ("+full.toFixed(0)+" m head, axis "+axisMax+")");
+    });
+    wtEl.value=ow; hydEl.value=oh;
+  })();
+  check(+el('sndHyd').max===100, "% hydrostatic slider is capped at 100");
+  check(+el('sndHyd').min===0, "% hydrostatic slider reaches 0");
 
   // 12. the derived default sounding is present and self-consistent
   check(SND_DEFAULT_ROWS.length>200, "default sounding has a full-resolution profile ("+SND_DEFAULT_ROWS.length+" points)");
