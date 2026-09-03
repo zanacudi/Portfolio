@@ -792,7 +792,7 @@ function drawCptLog(){
   // Render at full device-pixel resolution (not just the CSS box size) so text and
   // thin lines stay crisp on high-DPI screens instead of looking soft/blurry.
   var cv=prepCanvas(host, 470, 320), ctx=cv.ctx, W=cv.W, H=cv.H;
-  var mt=32, mb=50, ml=48, mr=10, gap=20;
+  var mt=32, mb=50, ml=58, mr=10, gap=20;
   var ph=H-mt-mb;
   var panelCount=5;
   var panelW=(W-ml-mr-gap*(panelCount-1))/panelCount;
@@ -803,11 +803,14 @@ function drawCptLog(){
   for(var zt=0; zt<=SND_MAX_Z+1e-6; zt+=zStep){
     var yz=Y(zt);
     ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ml,yz); ctx.lineTo(ml+panelCount*panelW+(panelCount-1)*gap,yz); ctx.stroke();
+    // Bare numbers only — the units live in the rotated axis title, exactly as they do
+    // on the value panels. Carrying " m"/" ft" on every tick made the labels wide enough
+    // to run into that title.
     ctx.textAlign='right';
-    ctx.fillStyle='#3a4b52'; ctx.font='700 10.5px Arial'; ctx.textBaseline='bottom'; ctx.fillText(zt.toFixed(0)+' m', ml-6, yz);
-    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top'; ctx.fillText('('+mToFt(zt).toFixed(0)+' ft)', ml-6, yz+1);
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10.5px Arial'; ctx.textBaseline='bottom'; ctx.fillText(zt.toFixed(0), ml-6, yz);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top'; ctx.fillText('('+mToFt(zt).toFixed(0)+')', ml-6, yz+1);
   }
-  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillStyle='#61737b'; ctx.font='10.5px Arial'; ctx.fillText('depth, m (ft)',0,0); ctx.restore();
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillStyle='#61737b'; ctx.font='10.5px Arial'; ctx.fillText('depth, m (ft)',0,0); ctx.restore();
 
   var u2HeadVals = sndData.map(function(r){ return kpaToHeadM(r.u2); });
   var qtMax = Math.max(10, Math.ceil(Math.max.apply(null, sndData.map(function(r){return r.qt;}))/2)*2 + 2);
@@ -1208,7 +1211,7 @@ function updateMentalModel(){
 
   var host=el("mmChart");
   var cvp=prepCanvas(host, 250, 240), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=56,mr=16,mt=14,mb=44; var pw=W-ml-mr, ph=H-mt-mb;
+  var ml=78,mr=16,mt=14,mb=44; var pw=W-ml-mr, ph=H-mt-mb;
   var xmax=SND_MAX_Z;
   var ymax=Math.max(mmQtAt(xmax,MM_PSI_DENSE), 1)*1.08;
   function X(v){ return ml+pw*Math.max(0,Math.min(1,v/xmax)); }
@@ -1233,8 +1236,9 @@ function updateMentalModel(){
   // y ticks: qt in MPa with tsf beside
   ctx.textAlign="right"; ctx.textBaseline="middle";
   yt.values.forEach(function(v){
+    // Two right-aligned columns (MPa, then tsf), both kept clear of the rotated title.
     ctx.font="700 9.5px Arial"; ctx.fillStyle="#3a4b52";
-    ctx.fillText(v.toFixed(yt.dp), ml-26, Y(v));
+    ctx.fillText(v.toFixed(yt.dp), ml-36, Y(v));
     ctx.font="9px Arial"; ctx.fillStyle="#748086";
     ctx.fillText('('+mpaToTsf(v).toFixed(0)+')', ml-4, Y(v));
   });
@@ -1724,6 +1728,37 @@ window.runModule2SelfTests = function(){
     // and inverting the demo's own qt must return the psi it was built from
     var qpBack=(mmQtAt(z,MM_PSI_DENSE)*1000-mmPoAt(z))/mmPoAt(z);
     check(Math.abs(psiOfQp(MM_LAM,qpBack)-MM_PSI_DENSE)<1e-6, "S3: inverting the dense curve returns psi = "+MM_PSI_DENSE);
+  })();
+
+  // 11d. The rotated y-axis titles must not run into the tick labels beside them.
+  // (Regression: the CPT log's "depth, m (ft)" title sat under the "25 m / (82 ft)"
+  // labels because each tick carried its own unit suffix.)
+  (function(){
+    var host=el('cptLogChart'); if(!host) return;
+    var ctx=host.getContext('2d'), dpr=window.devicePixelRatio||1;
+    ctx.save(); ctx.setTransform(1,0,0,1,0,0);
+    // rotated title occupies roughly [x-ascent, x+descent] horizontally
+    function titleBand(x, px){ return {l:x-px*0.8, r:x+px*0.25}; }
+
+    // --- CPT log: ml=58, labels right-aligned at ml-6, title at x=13 (10.5px) ---
+    var mlLog=58, tb=titleBand(13,10.5);
+    ctx.font='700 10.5px Arial';
+    var wPrim=ctx.measureText('50').width;
+    ctx.font='9.5px Arial';
+    var wSec=ctx.measureText('('+mToFt(SND_MAX_Z).toFixed(0)+')').width;
+    var labelLeft=(mlLog-6)-Math.max(wPrim,wSec);
+    check(labelLeft > tb.r+2, "CPT log: depth ticks clear the rotated axis title (labels start at "+labelLeft.toFixed(1)+", title ends at "+tb.r.toFixed(1)+")");
+
+    // --- Section 3 chart: ml=78, MPa column at ml-36, tsf column at ml-4 ---
+    var mlMm=78, tbm=titleBand(12,10.5);
+    ctx.font='700 9.5px Arial';
+    var wY=ctx.measureText('17.5').width;
+    ctx.font='9px Arial';
+    var wY2=ctx.measureText('(999)').width;
+    var primLeft=(mlMm-36)-wY, secLeft=(mlMm-4)-wY2;
+    check(primLeft > tbm.r+2, "S3 chart: MPa tick column clears the rotated axis title");
+    check(secLeft > (mlMm-36)+2, "S3 chart: tsf tick column clears the MPa column");
+    ctx.restore();
   })();
 
   // 12. the derived default sounding is present and self-consistent
