@@ -186,6 +186,12 @@ body{padding-bottom:54px}
 .snd-row2 .slider-block{margin:6px 0;padding:8px 9px;min-width:0}
 .snd-row2 .slider-block label{font-size:11px;gap:4px;flex-wrap:wrap}
 .snd-row2 .readout{font-size:11px}
+/* Section 3's variant table: one column per visible trace, colour-matched to it. */
+.mm-stats{gap:7px}
+.mm-stats .stat{padding:7px 7px;text-align:left}
+.mm-stats .stat small{font-size:10px;font-weight:700;margin-bottom:3px}
+.mm-stats .stat strong{font-size:13px;display:block;line-height:1.25}
+.mm-stats .badge{font-size:9px;padding:1px 6px;margin:4px 0 0;display:inline-block}
 /* The worked example lives under the button, filling what was dead space beside the
    log. It wraps rather than scrolls, and each numbered step hangs-indents so a
    wrapped line stays visually attached to its own step. */
@@ -329,7 +335,8 @@ body{padding-bottom:54px}
 </div>
 <div class="hint" style="margin:-2px 0 6px">Denser = measured q<sub>t</sub> &times; factor, looser = measured q<sub>t</sub> &divide; factor, both on the same p&prime;<sub>o</sub> profile (same &gamma;, water table, K<sub>o</sub> and % hydrostatic as Section 2).</div>
 <div class="s2-presets" role="group" aria-label="Which traces to show"><button type="button" data-mmstate="both" class="on" aria-pressed="true">All three</button><button type="button" data-mmstate="dense" aria-pressed="false">Denser only</button><button type="button" data-mmstate="loose" aria-pressed="false">Looser only</button></div>
-<div class="statgrid" id="mmStats" style="margin-top:8px"></div>
+<div class="hint" id="mmStatsKey" style="margin:10px 0 3px"></div>
+<div class="statgrid mm-stats" id="mmStats"></div>
 <div id="mmStatus" class="callout" style="margin-top:8px" aria-live="polite"></div>
 <p class="explain" style="font-size:11.5px;margin:10px 0 0">Both what-ifs run through exactly the equation Section 7 inverts, Q<sub>p</sub>=k&middot;exp(&minus;m&psi;), using the sand selected in Section 2. Multiplying a q<sub>t</sub> trace is of course a crude stand-in for actually depositing the same soil denser &mdash; f<sub>s</sub> and u<sub>2</sub> would move too &mdash; but it isolates the one thing this page is about: what a change in raw tip resistance alone does to the state you infer. <b>This is why Section 5 exists:</b> before q<sub>t</sub> can say anything about density, it has to be normalized by the stress it was measured at.</p>
 </div>
@@ -1224,14 +1231,30 @@ function updateMentalModel(){
   var base=sndInterp(z); if(!base) return;
   var qtM=base.qt, qtD=qtM*f, qtL=qtM/f;
   var psiM=mmPsiFor(z,qtM), psiD=mmPsiFor(z,qtD), psiL=mmPsiFor(z,qtL);
-  function tag(ps){ return ps<PSI_DIL_BOUNDARY ? '<span class="badge dilate">dilative</span>' : '<span class="badge contract">contractive</span>'; }
-  el('mmStats').innerHTML =
-    '<div class="stat"><small>looser q<sub>t</sub>, MPa (tsf)</small><strong>'+qtL.toFixed(2)+' ('+mpaToTsf(qtL).toFixed(0)+')</strong></div>'+
-    '<div class="stat"><small>measured q<sub>t</sub>, MPa (tsf)</small><strong>'+qtM.toFixed(2)+' ('+mpaToTsf(qtM).toFixed(0)+')</strong></div>'+
-    '<div class="stat"><small>denser q<sub>t</sub>, MPa (tsf)</small><strong>'+qtD.toFixed(2)+' ('+mpaToTsf(qtD).toFixed(0)+')</strong></div>'+
-    '<div class="stat"><small>&psi; looser</small><strong>'+(psiL>=0?'+':'')+psiL.toFixed(3)+'</strong>'+tag(psiL)+'</div>'+
-    '<div class="stat"><small>&psi; measured</small><strong>'+(psiM>=0?'+':'')+psiM.toFixed(3)+'</strong>'+tag(psiM)+'</div>'+
-    '<div class="stat"><small>&psi; denser</small><strong>'+(psiD>=0?'+':'')+psiD.toFixed(3)+'</strong>'+tag(psiD)+'</div>';
+
+  // One column per visible variant, colour-matched to its trace; qt on the top row,
+  // the psi it implies directly beneath it. Hidden traces drop out of the table too,
+  // so the numbers always describe exactly what is drawn.
+  var shown = mmVariants().filter(mmShown);
+  var vals = {loose:{qt:qtL, psi:psiL}, meas:{qt:qtM, psi:psiM}, dense:{qt:qtD, psi:psiD}};
+  function qtCard(v){
+    var q=vals[v.key].qt;
+    return '<div class="stat" style="border-left:3px solid '+v.color+'">'+
+           '<small style="color:'+v.color+'">'+v.name+'</small>'+
+           '<strong>'+q.toFixed(2)+' <span style="font-weight:400;color:var(--muted)">('+mpaToTsf(q).toFixed(0)+')</span></strong></div>';
+  }
+  function psiCard(v){
+    var ps=vals[v.key].psi;
+    var badge = ps<PSI_DIL_BOUNDARY ? '<span class="badge dilate">dilative</span>' : '<span class="badge contract">contractive</span>';
+    return '<div class="stat" style="border-left:3px solid '+v.color+'">'+
+           '<small style="color:'+v.color+'">'+v.name+'</small>'+
+           '<strong>'+(ps>=0?'+':'')+ps.toFixed(3)+'</strong>'+badge+'</div>';
+  }
+  var grid=el('mmStats');
+  grid.className='statgrid mm-stats';
+  grid.style.gridTemplateColumns='repeat('+shown.length+',1fr)';
+  grid.innerHTML = shown.map(qtCard).join('') + shown.map(psiCard).join('');
+  el('mmStatsKey').innerHTML='top row: q<sub>t</sub> in MPa (tsf) &nbsp;·&nbsp; bottom row: the &psi; it implies';
 
   // the headline comparison: raw gap versus state gap, here and at a shallow depth
   var zRef=Math.max(+el('mmDepth').min, Math.min(5, z));
@@ -1836,6 +1859,31 @@ window.runModule2SelfTests = function(){
     var rawRatio=rawGap(deep)/rawGap(shallow), psiRatio=psiGap(deep)/psiGap(shallow);
     check(rawRatio > psiRatio, "S3: raw gap grows faster with depth than the psi gap (raw x"+rawRatio.toFixed(2)+" vs psi x"+psiRatio.toFixed(2)+")");
     fEl.value=of;
+  })();
+
+  // 11c-bis. The variant table must describe exactly the traces on screen: hiding a
+  // trace hides its numbers, and the grid stays one column per visible variant with
+  // qt on the top row and psi beneath it.
+  (function(){
+    var grid=el('mmStats'); if(!grid) return;
+    function press(mode){ document.querySelector('[data-mmstate="'+mode+'"]').click(); }
+    function names(){ return Array.prototype.map.call(grid.querySelectorAll('.stat small'), function(n){ return n.textContent; }); }
+    var orig=document.querySelector('[data-mmstate].on');
+    press('both');
+    var all=names();
+    check(all.length===6, "S3 table: all three variants give 6 cards (got "+all.length+")");
+    check(all.slice(0,3).join(',')==='looser,measured,denser', "S3 table: top row is qt for looser/measured/denser in order");
+    check(all.slice(3,6).join(',')==='looser,measured,denser', "S3 table: bottom row repeats the same variant order for psi");
+    check(/repeat\(3,/.test(grid.style.gridTemplateColumns), "S3 table: 3 columns when all three are shown");
+    press('dense');
+    var d=names();
+    check(d.indexOf('looser')===-1, "S3 table: 'Denser only' drops the looser numbers");
+    check(d.length===4 && /repeat\(2,/.test(grid.style.gridTemplateColumns), "S3 table: 'Denser only' leaves 2 columns of 2 cards");
+    press('loose');
+    var l=names();
+    check(l.indexOf('denser')===-1, "S3 table: 'Looser only' drops the denser numbers");
+    press('both');
+    if(orig) orig.click();
   })();
 
   // 11d. The rotated y-axis titles must not run into the tick labels beside them.
