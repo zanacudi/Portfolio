@@ -315,7 +315,10 @@ body{padding-bottom:54px}
 <input type="file" id="sndFileInput" accept=".csv,.txt">
 <button type="button" id="sndDownloadExample" class="alt">Download example CSV</button>
 <button type="button" id="sndResetExample" class="alt">Reset to example sounding</button>
+<button type="button" id="sndDownloadXlsx">Download Excel workbook (.xlsx)</button>
 </div>
+<div class="hint" style="margin-top:6px">The workbook carries the whole module: the sounding above, every derived column as a <b>live Excel formula</b> (Q, F, B<sub>q</sub>, p&prime;<sub>o</sub>, Q<sub>p</sub>, both I<sub>c</sub> formulas, &psi; and the behaviour-type band), an Inputs sheet driving all of it, four depth plots, and a Notes sheet with the equations and their limits. It exports whatever sounding is loaded &mdash; the example, or your own upload.</div>
+<div id="sndXlsxNote" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
 <div id="sndUploadStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
 <button type="button" id="sndViewResultsBtn" style="margin-top:8px;display:none">&uarr; See your sounding on the log above</button>
 </div>
@@ -1209,6 +1212,279 @@ el('sndViewResultsBtn').addEventListener('click', function(){
   target.scrollIntoView({behavior:smooth, block:'start'});
   chart.classList.add('pulse-target');
   setTimeout(function(){ chart.classList.remove('pulse-target'); }, 2600);
+});
+
+// ---------------- Excel export ----------------
+// Writes a real .xlsx by hand: a stored-entry ZIP of OOXML parts. No library, no CDN,
+// so the page stays a single file that works offline. Every derived column ships as a
+// LIVE FORMULA pointing at the Inputs sheet, not a pasted number -- change gamma or the
+// water table in Excel and the whole sheet, and the four charts, recalculate.
+// The XML here was validated against Excel 16 before being ported from the prototype.
+var XLSX_CRC = (function(){
+  var t=new Uint32Array(256);
+  for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c = (c&1) ? (0xEDB88320^(c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t;
+})();
+function xlsxCrc32(bytes){
+  var c=0xFFFFFFFF;
+  for(var i=0;i<bytes.length;i++) c = XLSX_CRC[(c^bytes[i])&0xFF] ^ (c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function xlsxZip(files){
+  var enc=new TextEncoder(), parts=[], central=[], offset=0;
+  function u16(v){ return [v&255,(v>>8)&255]; }
+  function u32(v){ return [v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255]; }
+  Object.keys(files).forEach(function(name){
+    var data=enc.encode(files[name]), nb=enc.encode(name), crc=xlsxCrc32(data);
+    var h=[].concat(u32(0x04034B50),u16(20),u16(0),u16(0),u16(0),u16(0),
+                    u32(crc),u32(data.length),u32(data.length),u16(nb.length),u16(0));
+    parts.push(new Uint8Array(h), nb, data);
+    central.push({nb:nb, crc:crc, len:data.length, off:offset});
+    offset += h.length + nb.length + data.length;
+  });
+  var cstart=offset, cparts=[];
+  central.forEach(function(e){
+    var h=[].concat(u32(0x02014B50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),
+                    u32(e.crc),u32(e.len),u32(e.len),u16(e.nb.length),u16(0),u16(0),
+                    u16(0),u16(0),u32(0),u32(e.off));
+    cparts.push(new Uint8Array(h), e.nb);
+    offset += h.length + e.nb.length;
+  });
+  var end=new Uint8Array([].concat(u32(0x06054B50),u16(0),u16(0),
+            u16(central.length),u16(central.length),u32(offset-cstart),u32(cstart),u16(0)));
+  var all=parts.concat(cparts,[end]), total=0;
+  all.forEach(function(p){ total+=p.length; });
+  var out=new Uint8Array(total), pos=0;
+  all.forEach(function(p){ out.set(p,pos); pos+=p.length; });
+  return out;
+}
+function xesc(t){
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function xlsxSheet(rows, cols){
+  var o=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'];
+  if(cols){ o.push('<cols>');
+    cols.forEach(function(c){ o.push('<col min="'+c[0]+'" max="'+c[1]+'" width="'+c[2]+'" customWidth="1"/>'); });
+    o.push('</cols>'); }
+  o.push('<sheetData>');
+  rows.forEach(function(r){
+    o.push('<row r="'+r[0]+'">');
+    r[1].forEach(function(c){
+      var ref=c[0]+r[0];
+      if(c[1]==='s') o.push('<c r="'+ref+'" t="inlineStr" s="'+(r[0]===1?1:0)+'"><is><t xml:space="preserve">'+xesc(c[2])+'</t></is></c>');
+      else if(c[1]==='n') o.push('<c r="'+ref+'"><v>'+c[2]+'</v></c>');
+      else o.push('<c r="'+ref+'"><f>'+xesc(c[2])+'</f></c>');
+    });
+    o.push('</row>');
+  });
+  o.push('</sheetData></worksheet>');
+  return o.join('');
+}
+var XLSX_HDR=["Depth z (m)","qt (MPa)","fs (kPa)","u2 (kPa)","sigma_vo (kPa)",
+  "u0 hydrostatic (kPa)","u0 applied (kPa)","sigma'vo (kPa)","qt (kPa)","qnet (kPa)",
+  "Q","F (%)","Bq","p'o (kPa)","Qp","Ic (Eq 4.13a)","Ic R&W (Eq 4.13b)","psi",
+  "Behaviour type","Sand-like?"];
+
+function xlsxChart(title,xcol,serName,n,logx){
+  var last=n+1;
+  var xref="'CPT Data'!$"+xcol+"$2:$"+xcol+"$"+last, yref="'CPT Data'!$A$2:$A$"+last;
+  var scal = logx ? '<c:scaling><c:logBase val="10"/><c:orientation val="minMax"/></c:scaling>'
+                  : '<c:scaling><c:orientation val="minMax"/></c:scaling>';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><c:chart>'+
+    '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>'+xesc(title)+'</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>'+
+    '<c:autoTitleDeleted val="0"/><c:plotArea><c:layout/>'+
+    '<c:scatterChart><c:scatterStyle val="lineMarker"/><c:varyColors val="0"/><c:ser>'+
+    '<c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>'+xesc(serName)+'</c:f></c:strRef></c:tx>'+
+    '<c:spPr><a:ln w="12700"><a:solidFill><a:srgbClr val="1479B8"/></a:solidFill></a:ln></c:spPr>'+
+    '<c:marker><c:symbol val="none"/></c:marker>'+
+    '<c:xVal><c:numRef><c:f>'+xesc(xref)+'</c:f></c:numRef></c:xVal>'+
+    '<c:yVal><c:numRef><c:f>'+xesc(yref)+'</c:f></c:numRef></c:yVal>'+
+    '<c:smooth val="0"/></c:ser><c:axId val="111111111"/><c:axId val="222222222"/></c:scatterChart>'+
+    '<c:valAx><c:axId val="111111111"/>'+scal+'<c:delete val="0"/><c:axPos val="t"/>'+
+    '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>'+xesc(title)+'</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>'+
+    '<c:crossAx val="222222222"/></c:valAx>'+
+    '<c:valAx><c:axId val="222222222"/><c:scaling><c:orientation val="maxMin"/></c:scaling>'+
+    '<c:delete val="0"/><c:axPos val="l"/>'+
+    '<c:title><c:tx><c:rich><a:bodyPr rot="-5400000" vert="horz"/><a:lstStyle/><a:p><a:r><a:t>Depth (m)</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>'+
+    '<c:crossAx val="111111111"/></c:valAx></c:plotArea>'+
+    '<c:legend><c:legendPos val="b"/><c:overlay val="0"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>';
+}
+
+function buildModule2Workbook(){
+  var rows=sndData, n=rows.length;
+  var sand=SANDS[+sndSandSel.value];
+  var G="Inputs!$B$2", WT="Inputs!$B$3", KO="Inputs!$B$4", HY="Inputs!$B$5",
+      KK="Inputs!$B$8", MM="Inputs!$B$9";
+
+  var inputRows=[
+    [1,[["A","s","Parameter"],["B","s","Value"],["C","s","Units / note"]]],
+    [2,[["A","s","Unit weight, gamma"],["B","n",num('sndGamma')],["C","s","kN/m3"]]],
+    [3,[["A","s","Water table depth"],["B","n",num('sndWt')],["C","s","m below ground"]]],
+    [4,[["A","s","K0"],["B","n",num('sndKo')],["C","s","at-rest earth pressure coefficient"]]],
+    [5,[["A","s","Fraction of hydrostatic"],["B","n",(num('sndHyd')/100)],["C","s","1.0 = fully hydrostatic"]]],
+    [6,[["A","s","Sand (calibration)"],["B","s",sand.name],["C","s","sets lambda10 below"]]],
+    [7,[["A","s","lambda10"],["B","n",sand.lambda10],["C","s","CSL slope, base-10"]]],
+    [8,[["A","s","k"],["B","f","8+0.55/(B7-0.01)"],["C","s","Qp = k*exp(-m*psi)"]]],
+    [9,[["A","s","m"],["B","f","8.1-2.3*LOG10(B7)"],["C","s","Qp = k*exp(-m*psi)"]]]
+  ];
+
+  var dataRows=[[1, XLSX_HDR.map(function(h,i){ return [String.fromCharCode(65+i),"s",h]; })]];
+  rows.forEach(function(rw,i){
+    var r=i+2, f=function(s){ return s.replace(/@/g, r); };
+    dataRows.push([r,[
+      ["A","n",rw.z],["B","n",rw.qt],["C","n",rw.fs],["D","n",rw.u2],
+      ["E","f",f(G+"*A@")],
+      ["F","f",f("IF(A@>"+WT+",9.81*(A@-"+WT+"),0)")],
+      ["G","f",f("F@*"+HY)],
+      ["H","f",f("MAX(0.5,E@-G@)")],
+      ["I","f",f("B@*1000")],
+      ["J","f",f("MAX(1,I@-E@)")],
+      ["K","f",f("J@/H@")],
+      ["L","f",f("C@/J@*100")],
+      ["M","f",f("(D@-G@)/J@")],
+      ["N","f",f("H@*(1+2*"+KO+")/3")],
+      ["O","f",f("(I@-N@)/N@")],
+      ["P","f",f("SQRT((3-LOG10(MAX(0.5,K@*(1-M@)+1)))^2+(1.5+1.3*LOG10(MAX(0.05,L@)))^2)")],
+      ["Q","f",f("SQRT((3.47-LOG10(MAX(0.5,K@)))^2+(1.22+LOG10(MAX(0.05,L@)))^2)")],
+      ["R","f",f("-LN(MAX(1,O@)/"+KK+")/"+MM)],
+      ["S","f",f('LOOKUP(P@,{0,1.25,1.8,2.4,2.76,3.22},{"Gravelly sands","Sands: clean to silty","Silty sand to sandy silt","Clayey silt to silty clay","Clays","Organic soils"})')],
+      ["T","f",f('IF(P@<1.8,"yes","no")')]
+    ]]);
+  });
+
+  var notes=[
+    "Module 2 - In-situ state from the CPT (Jefferies & Been, Chapters 4-5)","",
+    "Generated by the interactive companion at zanacudi.github.io/Portfolio",
+    "Exported "+new Date().toISOString().slice(0,10)+".  "+n+" data rows.","",
+    "HOW TO USE",
+    "Change any value on the Inputs sheet and the whole CPT Data sheet recalculates.",
+    "Every derived column is a live formula, not a pasted number.",
+    "The Charts sheet plots straight from CPT Data, so it follows those edits too.",
+    "Only columns A to D are typed numbers - that is your sounding.","",
+    "COLUMNS ON THE CPT DATA SHEET",
+    "A-D   z, qt, fs, u2 - the raw sounding.",
+    "E     sigma_vo = gamma * z                          total vertical stress",
+    "F     u0 hydrostatic = 9.81 * (z - water table)     zero above the water table",
+    "G     u0 applied = F * fraction of hydrostatic      sub-hydrostatic if < 1",
+    "H     sigma'vo = sigma_vo - u0 applied              vertical effective stress",
+    "J     qnet = qt - sigma_vo",
+    "K     Q  = qnet / sigma'vo                          Table 4.1",
+    "L     F  = fs / qnet * 100  (%)                     Table 4.1",
+    "M     Bq = (u2 - u0) / qnet                         Table 4.1",
+    "N     p'o = sigma'vo * (1 + 2*K0) / 3               mean effective stress",
+    "O     Qp = (qt - p'o) / p'o                         Table 4.1",
+    "P     Ic  = SQRT((3-log(Q(1-Bq)+1))^2 + (1.5+1.3*log(F))^2)     Eq. 4.13a",
+    "Q     Ic  = SQRT((3.47-log(Q))^2 + (1.22+log(F))^2)             Eq. 4.13b",
+    "R     psi = -ln(Qp/k)/m,  k = 8+0.55/(lambda10-0.01),  m = 8.1-2.3*log10(lambda10)","",
+    "SOIL BEHAVIOUR TYPE BANDS (Table 4.4)",
+    "Ic < 1.25    Gravelly sands              usually GW, GP, GM, SW",
+    "1.25 - 1.80  Sands: clean to silty       usually SW, SP, SP-SM, SM",
+    "1.80 - 2.40  Silty sand to sandy silt    usually SM, SC-SM, ML",
+    "2.40 - 2.76  Clayey silt to silty clay   usually ML, MH, CL-ML",
+    "2.76 - 3.22  Clays                       usually CL, CH",
+    "Ic > 3.22    Organic soils               usually OL, OH, Pt","",
+    "The USCS symbols are indicative only. They come from grain size and Atterberg",
+    "limits on a recovered sample; Ic is inferred from how the ground responded to the",
+    "cone. They agree often enough to be useful and disagree often enough to be",
+    "dangerous.","",
+    "WHERE psi CAN BE TRUSTED",
+    "The Qp-psi inversion was calibrated on sand-like materials. Below Ic = 1.80 it",
+    "applies as intended. Between 1.80 and 2.40 penetration is partially drained and the",
+    "result is a screening number only. Above 2.40 it is not meaningful - use an",
+    "undrained strength interpretation instead.","",
+    "A NOTE ON Bq",
+    "The drained interpretation behind Qp expects |Bq| to stay near zero. Where it does",
+    "not, the Qp and psi columns are still arithmetically correct but the assumption",
+    "underneath them is already partly broken.","",
+    "UNITS",
+    "All calculations are metric (kPa). 1 tsf = 95.76 kPa. 1 kPa = 20.885 psf.",
+    "1 m = 3.28084 ft. Pore pressure as head: 1 m of water = 9.81 kPa.","",
+    "This workbook reproduces the book's published relationships for study and checking.",
+    "It is not a design tool and carries no warranty."
+  ];
+  var noteRows=notes.map(function(t,i){ return [i+1,[["A","s",t]]]; });
+
+  var charts=[["qt (MPa)","B","Tip resistance qt",false],
+              ["Ic (Eq 4.13a)","P","Soil behaviour type index Ic",false],
+              ["Qp","O","Normalized resistance Qp",true],
+              ["psi (state parameter)","R","State parameter psi",false]];
+  var names=["Inputs","CPT Data","Charts","Notes"];
+  var f={};
+  var ct=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
+    '<Default Extension="xml" ContentType="application/xml"/>',
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'];
+  for(var i=1;i<=4;i++) ct.push('<Override PartName="/xl/worksheets/sheet'+i+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>');
+  ct.push('<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>');
+  charts.forEach(function(c,i){ ct.push('<Override PartName="/xl/charts/chart'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>'); });
+  ct.push('</Types>');
+  f['[Content_Types].xml']=ct.join('');
+
+  f['_rels/.rels']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+
+  f['xl/workbook.xml']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+    names.map(function(nm,i){ return '<sheet name="'+xesc(nm)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'; }).join('')+'</sheets></workbook>';
+
+  var wr=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'];
+  for(var j=0;j<4;j++) wr.push('<Relationship Id="rId'+(j+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(j+1)+'.xml"/>');
+  wr.push('<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+  f['xl/_rels/workbook.xml.rels']=wr.join('');
+
+  f['xl/styles.xml']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf xfId="0"/><xf fontId="1" applyFont="1" xfId="0"/></cellXfs></styleSheet>';
+
+  f['xl/worksheets/sheet1.xml']=xlsxSheet(inputRows,[[1,1,26],[2,2,16],[3,3,34]]);
+  f['xl/worksheets/sheet2.xml']=xlsxSheet(dataRows,[[1,4,13],[5,18,15],[19,19,26],[20,20,11]]);
+  f['xl/worksheets/sheet3.xml']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetData/><drawing r:id="rId1"/></worksheet>';
+  f['xl/worksheets/sheet4.xml']=xlsxSheet(noteRows,[[1,1,96]]);
+  f['xl/worksheets/_rels/sheet3.xml.rels']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>';
+
+  var dr=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'];
+  charts.forEach(function(c,i){
+    var c0=(i%2)*9, r0=Math.floor(i/2)*20;
+    dr.push('<xdr:twoCellAnchor><xdr:from><xdr:col>'+c0+'</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>'+r0+'</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>'+
+      '<xdr:to><xdr:col>'+(c0+8)+'</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>'+(r0+19)+'</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>'+
+      '<xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="'+(i+2)+'" name="Chart '+(i+1)+'"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr>'+
+      '<xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm>'+
+      '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart">'+
+      '<c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId'+(i+1)+'"/>'+
+      '</a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>');
+  });
+  dr.push('</xdr:wsDr>');
+  f['xl/drawings/drawing1.xml']=dr.join('');
+
+  var drr=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'];
+  charts.forEach(function(c,i){ drr.push('<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart'+(i+1)+'.xml"/>'); });
+  drr.push('</Relationships>');
+  f['xl/drawings/_rels/drawing1.xml.rels']=drr.join('');
+
+  charts.forEach(function(c,i){ f['xl/charts/chart'+(i+1)+'.xml']=xlsxChart(c[0],c[1],c[2],n,c[3]); });
+  return xlsxZip(f);
+}
+window.buildModule2Workbook = buildModule2Workbook;
+
+el('sndDownloadXlsx').addEventListener('click', function(){
+  var btn=this, old=btn.textContent;
+  btn.disabled=true; btn.textContent='Building workbook...';
+  setTimeout(function(){
+    try{
+      var bytes=buildModule2Workbook();
+      var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      var url=URL.createObjectURL(blob), a=document.createElement('a');
+      a.href=url; a.download='module2-cpt-workbook.xlsx';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+      el('sndXlsxNote').style.display='';
+      el('sndXlsxNote').innerHTML='<b>Workbook downloaded</b> &mdash; <code>module2-cpt-workbook.xlsx</code>, '+sndData.length+
+        ' rows across four sheets. Only columns A&ndash;D hold typed numbers; everything else is a live formula reading the <b>Inputs</b> sheet, '+
+        'so changing &gamma;, the water table, K<sub>0</sub>, % hydrostatic or &lambda;<sub>10</sub> in Excel recalculates every column and all four charts.';
+    }catch(err){
+      el('sndXlsxNote').style.display='';
+      el('sndXlsxNote').innerHTML='<b>Could not build the workbook:</b> '+xesc(err.message);
+    }
+    btn.disabled=false; btn.textContent=old;
+  },30);
 });
 
 el('sndDownloadExample').addEventListener('click', function(){
@@ -2353,6 +2629,69 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- Section 6 depth slider: one depth for the whole module ----
+  (function(){
+    var sl=el('icDepth'), before=+el('sndDepth').value;
+    check(!!sl, "S6: the section has its own depth slider");
+    check(sl.min===el('sndDepth').min && sl.max===el('sndDepth').max,
+          "S6: it spans the same depth range as the Section 2 slider");
+    [1.0, 12.5, 30.0, 48.0].forEach(function(z){
+      sl.value=z; sl.dispatchEvent(new Event("input",{bubbles:true}));
+      var c=sndComputeAt(z);
+      check(+el('sndDepth').value===z, "S6 slider: depth "+z+" propagates to Section 2");
+      var shown=+el('icStats').querySelector(".stat strong").textContent;
+      check(Math.abs(shown-c.ic)<0.005,
+            "S6 slider: the Ic stat at "+z+" m is the sounding's own Ic, not a quantized one");
+      var head=el('icBandDetail').querySelector(".band-head b").textContent;
+      check(head===classifyIc(c.ic), "S6 slider: the band panel follows to "+classifyIc(c.ic)+" at "+z+" m");
+      check(el('icDepthOut').textContent.indexOf(z.toFixed(2))>=0,
+            "S6 slider: the readout shows "+z.toFixed(2)+" m");
+    });
+    sl.value=before; sl.dispatchEvent(new Event("input",{bubbles:true}));
+  })();
+
+  // ---- the Excel export ----
+  (function(){
+    var bytes=buildModule2Workbook();
+    check(bytes instanceof Uint8Array && bytes.length>1000, "XLSX: the workbook builds to bytes");
+    check(bytes[0]===0x50 && bytes[1]===0x4B && bytes[2]===0x03 && bytes[3]===0x04,
+          "XLSX: it starts with the PK zip signature");
+    // the end-of-central-directory record must close the archive
+    var eocd=-1;
+    for(var i=bytes.length-22;i>=0 && i>bytes.length-70000;i--){
+      if(bytes[i]===0x50&&bytes[i+1]===0x4B&&bytes[i+2]===0x05&&bytes[i+3]===0x06){ eocd=i; break; }
+    }
+    check(eocd>=0, "XLSX: it ends with a central-directory record");
+    if(eocd>=0){
+      var count=bytes[eocd+10]|(bytes[eocd+11]<<8);
+      check(count===16, "XLSX: all 16 package parts are present (got "+count+")");
+    }
+    var txt=new TextDecoder().decode(bytes);
+    ['[Content_Types].xml', 'xl/workbook.xml', 'xl/worksheets/sheet1.xml', 'xl/worksheets/sheet2.xml', 'xl/worksheets/sheet3.xml', 'xl/worksheets/sheet4.xml', 'xl/charts/chart1.xml', 'xl/charts/chart4.xml', 'xl/drawings/drawing1.xml', 'xl/styles.xml'].forEach(function(part){
+      check(txt.indexOf(part)>=0, "XLSX: contains "+part);
+    });
+    // one row per sounding point, plus the header
+    var m=txt.match(/<row r="(\d+)"/g)||[];
+    var maxRow=0; m.forEach(function(t){ var v=+t.match(/\d+/)[0]; if(v>maxRow) maxRow=v; });
+    check(maxRow>=sndData.length+1, "XLSX: a row for every sounding point ("+sndData.length+")");
+    // the derived columns must ship as formulas, not baked values
+    check(txt.indexOf("SQRT((3-LOG10(MAX(0.5,K2*(1-M2)+1)))^2")>=0, "XLSX: Ic ships as a live Eq. 4.13a formula");
+    check(txt.indexOf("SQRT((3.47-LOG10(MAX(0.5,K2)))^2")>=0,    "XLSX: Ic(R&W) ships as a live Eq. 4.13b formula");
+    check(txt.indexOf("-LN(MAX(1,O2)/Inputs!$B$8)/Inputs!$B$9")>=0, "XLSX: psi ships as a live inversion formula");
+    check(txt.indexOf("8+0.55/(B7-0.01)")>=0 && txt.indexOf("8.1-2.3*LOG10(B7)")>=0,
+          "XLSX: k and m are derived on the Inputs sheet, not hardcoded");
+    check(txt.indexOf("Inputs!$B$2*A2")>=0, "XLSX: the stress column reads gamma from Inputs");
+    // the inputs written must be the ones currently on screen
+    check(txt.indexOf(">"+num('sndGamma')+"<")>=0, "XLSX: it exports the gamma currently set");
+    check(txt.indexOf(SANDS[+sndSandSel.value].name)>=0, "XLSX: it exports the selected calibration sand");
+    // four charts, each bound to a real column of the data sheet
+    ['$B$2:$B$', '$P$2:$P$', '$O$2:$O$', '$R$2:$R$'].forEach(function(ref){
+      check(txt.indexOf(ref)>=0, "XLSX: a chart plots "+ref);
+    });
+    check((txt.match(/<c:scatterChart>/g)||[]).length===4, "XLSX: four depth plots");
+    check(txt.indexOf('<c:orientation val="maxMin"/>')>=0, "XLSX: the depth axis is reversed so it reads downward");
+    check(txt.indexOf('<c:logBase val="10"/>')>=0, "XLSX: Qp gets a log axis, as it does on the page");
+  })();
   // ---- Section 6: the behaviour-type bands, and the USCS panel behind them ----
   check(IC_BANDS.length===6, "S6: six behaviour-type bands");
   (function(){
