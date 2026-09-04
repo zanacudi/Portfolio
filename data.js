@@ -174,6 +174,16 @@ const LITREVIEW = [
   }
 ];
 
+const MISC = [
+  {
+    title: "How Food Affects the Brain",
+    meta: "A seven-day eating plan, and what the evidence actually supports",
+    description: "An illustrated week of meals built around the foods that keep appearing in cognitive-health research — oily fish, berries, leafy greens, nuts, legumes and fermented foods — with the reasoning behind each one, a per-day shopping list, and meat-free alternatives throughout. Deliberately careful about the evidence: the mechanisms that are well established are separated from the gut–brain research that is still developing, and nothing is presented as preventing or treating any condition.",
+    tags: ["Nutrition", "Interactive"],
+    link: "brain-healthy-diet.html"
+  }
+];
+
 const CONTACT = [
   { label: "Email", href: "mailto:zanacudi@gmail.com" },
   { label: "Phone", href: "tel:+13035207197" },

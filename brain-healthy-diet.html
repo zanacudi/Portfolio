@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>7-Day Brain-Healthy Diet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F6F0;
+  --card:#FFFFFF;
+  --ink:#1F2419;
+  --ink-soft:#5A6152;
+  --olive:#4C5F3E;
+  --olive-deep:#2F3D25;
+  --indigo:#2E3A63;
+  --blueberry:#4C5A8F;
+  --salmon:#E4907A;
+  --walnut:#8A6A4F;
+  --line:rgba(31,36,25,.14);
+  --line-soft:rgba(31,36,25,.07);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Karla",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:17px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Fraunces","Iowan Old Style",Georgia,serif;font-weight:600;margin:0;line-height:1.12;letter-spacing:-.01em}
+p{margin:0 0 1em}
+p:last-child{margin-bottom:0}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+.sprite{position:absolute;width:0;height:0;overflow:hidden}
+
+/* ---------- HERO ---------- */
+.hero{background:var(--olive-deep);color:#F2F3EC;padding:64px 0 0;position:relative;overflow:hidden}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:end}
+.hero h1{font-size:clamp(46px,7.2vw,86px);font-weight:600;letter-spacing:-.025em;color:#FBFBF6}
+.hero h1 em{font-style:italic;font-weight:400}
+.hero .sub{font-family:"Fraunces",Georgia,serif;font-size:clamp(19px,2.2vw,25px);color:#C9D3B8;margin-top:18px;line-height:1.35}
+.hero .lede{margin-top:26px;max-width:46ch;color:#DDE0D3;font-size:16.5px}
+.hero .source{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.18);font-size:14px;color:#AFBCA0;max-width:44ch}
+.hero-art{margin-bottom:-6px}
+.hero-art svg{width:100%;height:auto;display:block}
+.hero-foot{margin-top:52px;border-top:1px solid rgba(255,255,255,.16);display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.hero-foot div{padding:20px 22px 30px;border-right:1px solid rgba(255,255,255,.16)}
+.hero-foot div:last-child{border-right:0}
+.hero-foot b{display:block;font-family:"Fraunces",serif;font-size:26px;font-weight:600;color:#E8EBDF}
+.hero-foot span{font-size:13.5px;color:#A9B79B;line-height:1.45;display:block;margin-top:4px}
+
+/* ---------- SECTIONS ---------- */
+section{padding:72px 0}
+.sec-head{max-width:60ch;margin-bottom:40px}
+.sec-head h2{font-size:clamp(30px,4.2vw,42px)}
+.sec-head p{margin-top:14px;color:var(--ink-soft);font-size:17px}
+.rule{height:1px;background:var(--line);border:0;margin:0}
+
+/* ---------- EVIDENCE NOTE ---------- */
+.evidence{background:#EDEFE4;border-left:4px solid var(--olive);padding:26px 30px;border-radius:0 14px 14px 0;max-width:78ch}
+.evidence h3{font-size:21px;margin-bottom:10px}
+.evidence p{color:#48503F;font-size:16px}
+
+/* ---------- PRINCIPLES ---------- */
+.principles{display:grid;grid-template-columns:repeat(2,1fr);gap:0 56px}
+.principle{padding:26px 0;border-top:1px solid var(--line)}
+.principle:nth-child(1),.principle:nth-child(2){border-top:2px solid var(--olive)}
+.principle-top{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.principle-top svg{width:42px;height:42px;flex:0 0 42px}
+.principle h3{font-size:21px}
+.principle p{color:var(--ink-soft);font-size:16px;max-width:44ch}
+
+/* ---------- DAYS ---------- */
+.day{border-top:1px solid var(--line);padding:34px 0}
+.day:first-of-type{border-top:2px solid var(--ink)}
+.day-grid{display:grid;grid-template-columns:132px 1fr;gap:28px}
+.day-name{font-family:"Fraunces",serif;font-size:27px;font-weight:600;line-height:1.05;position:sticky;top:20px;align-self:start}
+.day-name span{display:block;font-family:"Karla",sans-serif;font-size:13.5px;font-weight:400;line-height:1.45;color:var(--ink-soft);margin-top:10px}
+.day-tick{width:34px;height:4px;border-radius:2px;margin-top:12px;display:block}
+.meals{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.meal{background:var(--card);border-radius:16px;padding:16px 18px 20px;border:1px solid var(--line-soft)}
+.meal figure{margin:0 0 12px}
+.meal figure svg{width:100%;height:auto;display:block;border-radius:11px;background:#F1F1E9}
+.meal .slot{font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--ink-soft)}
+.meal h4{font-size:18.5px;margin:5px 0 8px;line-height:1.2}
+.meal .ing{font-size:14.5px;color:var(--ink-soft);line-height:1.5}
+.meal .hi{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--olive);line-height:1.45}
+.meal .hi b{color:var(--olive-deep);font-weight:700}
+
+/* ---------- WHY THESE FOODS ---------- */
+.why{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.why-card{background:var(--card);border-radius:16px;padding:24px;border:1px solid var(--line-soft)}
+.why-card svg{width:56px;height:56px;display:block;margin-bottom:14px}
+.why-card h3{font-size:20px}
+.why-card .foods{font-size:14.5px;color:var(--ink);margin:7px 0 10px}
+.why-card p{font-size:14.5px;color:var(--ink-soft);line-height:1.5}
+
+/* ---------- MORE / LESS ---------- */
+.balance{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.col{border-radius:18px;padding:30px 30px 34px}
+.col.more{background:#E7EDDD;border:1px solid #CBD8B8}
+.col.less{background:#F0EDE6;border:1px solid #DFD8CB}
+.col h3{font-size:24px;margin-bottom:6px}
+.col .note{font-size:14.5px;color:var(--ink-soft);margin-bottom:18px}
+.col ul{list-style:none;margin:0;padding:0;column-count:2;column-gap:24px}
+.col li{font-size:15.5px;padding:7px 0;break-inside:avoid;display:flex;gap:9px;align-items:baseline}
+.col li::before{content:"";width:7px;height:7px;border-radius:50%;flex:0 0 7px;transform:translateY(-1px)}
+.col.more li::before{background:var(--olive)}
+.col.less li::before{background:#B9AE9B}
+
+/* ---------- FOOTER ---------- */
+footer{background:var(--olive-deep);color:#D6DBCA;padding:56px 0}
+footer h3{color:#F4F5EE;font-size:22px;margin-bottom:12px}
+footer p{font-size:15px;max-width:74ch;color:#C3CBB4}
+.disclaimer{margin-top:26px;padding-top:22px;border-top:1px solid rgba(255,255,255,.18);font-size:14.5px;color:#AEBCA0;max-width:74ch}
+
+@media(max-width:880px){
+  .hero-grid{grid-template-columns:1fr;gap:30px}
+  .hero-foot{grid-template-columns:1fr 1fr}
+  .hero-foot div:nth-child(2){border-right:0}
+  .hero-foot div:nth-child(1),.hero-foot div:nth-child(2){border-bottom:1px solid rgba(255,255,255,.16)}
+  .principles{grid-template-columns:1fr;gap:0}
+  .principle:nth-child(2){border-top:1px solid var(--line)}
+  .day-grid{grid-template-columns:1fr;gap:16px}
+  .day-name{position:static}
+  .day-tick{margin-top:10px}
+  .meals{grid-template-columns:1fr}
+  .why{grid-template-columns:1fr}
+  .balance{grid-template-columns:1fr}
+  .col ul{column-count:1}
+  section{padding:52px 0}
+}
+@media print{
+  body{background:#fff;font-size:11pt}
+  .hero,footer{background:#2F3D25 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  section{padding:26px 0;page-break-inside:avoid}
+  .day{page-break-inside:avoid}
+  .day-name{position:static}
+}
+/* ---------- PLANNER CONTROLS ---------- */
+.planbar{position:sticky;top:0;z-index:20;background:rgba(247,246,240,.94);backdrop-filter:blur(8px);
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:34px}
+.planbar-inner{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;padding:12px 0}
+.daytabs{display:flex;gap:6px;flex-wrap:wrap}
+.daytab{font-family:"Karla",sans-serif;font-size:14.5px;font-weight:600;color:var(--ink-soft);
+  background:transparent;border:1px solid transparent;border-radius:999px;padding:8px 15px;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;position:relative}
+.daytab:hover{background:#ECEBE1;color:var(--ink)}
+.daytab[aria-selected="true"]{background:var(--ink);color:#F7F6F0;border-color:var(--ink)}
+.daytab .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.daytab[aria-selected="true"] .dot{box-shadow:0 0 0 2px rgba(255,255,255,.35)}
+.daytab.done::after{content:"✓";margin-left:7px;font-size:12px;color:var(--olive)}
+.daytab[aria-selected="true"].done::after{color:#B8CE96}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.switch{display:inline-flex;align-items:center;gap:9px;font-size:14px;color:var(--ink-soft);cursor:pointer;user-select:none}
+.switch input{position:absolute;opacity:0;width:1px;height:1px}
+.track{width:38px;height:22px;border-radius:999px;background:#D5D3C4;position:relative;transition:background .18s;flex:0 0 38px}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.18)}
+.switch input:checked + .track{background:var(--olive)}
+.switch input:checked + .track::after{transform:translateX(16px)}
+.switch input:focus-visible + .track{outline:2px solid var(--indigo);outline-offset:2px}
+.btn{font-family:"Karla",sans-serif;font-size:14px;font-weight:600;border-radius:999px;padding:9px 17px;cursor:pointer;
+  border:1px solid var(--ink);background:transparent;color:var(--ink);transition:background .15s,color .15s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.ghost{border-color:var(--line);color:var(--ink-soft);font-weight:500}
+.btn.ghost:hover{background:#ECEBE1;color:var(--ink)}
+.progress{display:flex;align-items:center;gap:12px;margin-bottom:28px;font-size:14px;color:var(--ink-soft)}
+.progress .bar{flex:1;max-width:280px;height:6px;border-radius:3px;background:#E3E1D4;overflow:hidden}
+.progress .bar i{display:block;height:100%;width:0;background:var(--olive);border-radius:3px;transition:width .3s ease}
+
+/* ---------- DAY PANELS ---------- */
+.day[hidden]{display:none}
+.day{scroll-margin-top:96px}
+.day-name .count{display:block;font-size:13px;color:var(--ink-soft);margin-top:6px;font-family:"Karla",sans-serif;font-weight:500}
+.meal{display:flex;flex-direction:column;transition:border-color .15s,box-shadow .15s}
+.meal:hover{box-shadow:0 4px 18px rgba(31,36,25,.07)}
+.meal.ticked{background:#F4F6EC;border-color:#CBD8B8}
+.meal.ticked figure svg{opacity:.55}
+.meal-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.meal .time{font-size:12.5px;color:var(--ink-soft);white-space:nowrap}
+.meal .swapped{display:inline-block;font-size:11.5px;font-weight:700;color:var(--olive);border:1px solid #C3D3A6;
+  background:#EAF0DE;border-radius:999px;padding:2px 9px;margin-bottom:8px}
+.meal .spacer{flex:1}
+.meal-actions{display:flex;gap:8px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid var(--line-soft)}
+.link-btn{font-family:"Karla",sans-serif;font-size:13.5px;font-weight:600;background:none;border:0;padding:6px 0;
+  color:var(--olive);cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.link-btn:hover{color:var(--olive-deep);text-decoration:underline}
+.link-btn .chev{transition:transform .2s}
+.link-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.tick{margin-left:auto;font-family:"Karla",sans-serif;font-size:13px;font-weight:600;border:1px solid var(--line);
+  background:#fff;color:var(--ink-soft);border-radius:999px;padding:6px 13px;cursor:pointer;transition:all .15s}
+.tick:hover{border-color:var(--olive);color:var(--olive)}
+.tick[aria-pressed="true"]{background:var(--olive);border-color:var(--olive);color:#fff}
+.detail{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s ease}
+.detail.open{grid-template-rows:1fr}
+.detail > div{overflow:hidden}
+.detail ol{margin:14px 0 0;padding-left:20px;font-size:14.5px;color:var(--ink);line-height:1.55}
+.detail ol li{margin-bottom:7px}
+.detail .hi{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--olive);line-height:1.45}
+button:focus-visible,.daytab:focus-visible{outline:2px solid var(--indigo);outline-offset:2px;border-radius:999px}
+
+/* ---------- SHOPPING LIST ---------- */
+.shopping{scroll-margin-top:96px;margin-top:40px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:30px}
+.shopping[hidden]{display:none}
+.shopping-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.shopping h3{font-size:24px}
+.shopping .scope{font-size:14px;color:var(--ink-soft);margin-bottom:22px}
+.aisles{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+.aisle h4{font-family:"Karla",sans-serif;font-size:13px;font-weight:700;letter-spacing:.03em;color:var(--olive);margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.aisle ul{list-style:none;margin:0;padding:0}
+.aisle li{font-size:15px;padding:5px 0;color:var(--ink)}
+.aisle label{display:flex;gap:9px;align-items:flex-start;cursor:pointer}
+.aisle input{margin-top:5px;accent-color:var(--olive)}
+.aisle input:checked + span{color:#A9AA9C;text-decoration:line-through}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#F7F6F0;
+  padding:11px 20px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:60}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media(max-width:880px){
+  .planbar-inner{padding:10px 0}
+  .daytabs{width:100%;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .daytabs::-webkit-scrollbar{display:none}
+  .daytab{white-space:nowrap}
+  .tools{width:100%;justify-content:space-between}
+  .aisles{grid-template-columns:1fr}
+}
+@media print{
+  .planbar,.tools,.meal-actions,.progress,.shopping{display:none !important}
+  .day[hidden]{display:block !important}
+  .detail{grid-template-rows:1fr !important}
+  .meal{break-inside:avoid}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important}
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============ INGREDIENT SPRITE ============ -->
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-salmon" viewBox="0 0 40 40">
+    <path d="M5 22c4-11 16-15 26-13 4 .8 5 3 4 6-2 7-11 13-21 13-6 0-11-2-9-6z" fill="#E88A6E"/>
+    <path d="M8 21c4-8 14-11 22-10" stroke="#F6C0AC" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M11 27c5-7 14-10 21-9.5" stroke="#F6C0AC" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M6 32c5-2 12-2 17 0" stroke="#C96A50" stroke-width="2" fill="none" stroke-linecap="round" opacity=".55"/>
+  </symbol>
+  <symbol id="i-whitefish" viewBox="0 0 40 40">
+    <path d="M5 23c3-10 15-14 25-12 4 .8 5 3 4 6-2 7-11 12-20 12-6 0-11-2-9-6z" fill="#F0EAD9"/>
+    <path d="M9 22c5-7 14-10 21-9" stroke="#DCD2B8" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M12 28c5-6 13-9 19-8.5" stroke="#DCD2B8" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <path d="M28 12c3 2 5 5 5 8" stroke="#B9C48F" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-sardine" viewBox="0 0 40 40">
+    <path d="M4 16c5-5 16-6 22-2l6-3-2 5 2 5-6-3c-6 4-17 3-22-2z" fill="#B9C2C9"/>
+    <path d="M4 30c5-5 16-6 22-2l6-3-2 5 2 5-6-3c-6 4-17 3-22-2z" fill="#CBD3D8"/>
+    <circle cx="9" cy="16" r="1.6" fill="#4A5560"/><circle cx="9" cy="30" r="1.6" fill="#4A5560"/>
+  </symbol>
+  <symbol id="i-tuna" viewBox="0 0 40 40">
+    <path d="M7 14h12l3 5-3 5H7l-3-5z" fill="#D9A08C"/>
+    <path d="M20 22h12l3 5-3 5H20l-3-5z" fill="#E0AC98"/>
+    <path d="M9 16h9M9 20h8M22 25h9M22 29h8" stroke="#B87A66" stroke-width="1.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-chicken" viewBox="0 0 40 40">
+    <rect x="4" y="9" width="31" height="8" rx="4" fill="#E5C08A"/>
+    <rect x="6" y="21" width="29" height="8" rx="4" fill="#DFB77E"/>
+    <path d="M8 11.5h23M8 14.5h20M10 23.5h21M10 26.5h18" stroke="#B9884D" stroke-width="1.5" stroke-linecap="round" opacity=".7"/>
+  </symbol>
+  <symbol id="i-redmeat" viewBox="0 0 40 40">
+    <path d="M6 20c0-7 7-12 15-12s13 5 13 11-6 12-14 12S6 27 6 20z" fill="#9C5A48"/>
+    <path d="M12 15c5-3 12-3 16 0M11 21c6-3 13-3 18 0M13 27c5-2 10-2 14 0" stroke="#7A4234" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-egg" viewBox="0 0 40 40">
+    <path d="M20 4c8 0 15 9 15 18S28 37 20 37 5 31 5 22 12 4 20 4z" fill="#FCFAF2" stroke="#E1DCC8" stroke-width="1.2"/>
+    <circle cx="20" cy="20" r="7.5" fill="#F0B23F"/>
+    <circle cx="17.5" cy="17.5" r="2.4" fill="#F7CE72"/>
+  </symbol>
+  <symbol id="i-eggboiled" viewBox="0 0 40 40">
+    <ellipse cx="13" cy="20" rx="10" ry="12" fill="#FBF8EE" stroke="#E1DCC8" stroke-width="1.2"/>
+    <ellipse cx="28" cy="22" rx="9" ry="11" fill="#F6F2E4" stroke="#E1DCC8" stroke-width="1.2"/>
+    <ellipse cx="13" cy="20" rx="4.6" ry="5.6" fill="#EFAE45"/>
+    <ellipse cx="28" cy="22" rx="4.2" ry="5.2" fill="#E9A23A"/>
+  </symbol>
+  <symbol id="i-avocado" viewBox="0 0 40 40">
+    <path d="M20 3c8 0 13 8 13 17s-6 17-13 17S7 29 7 20 12 3 20 3z" fill="#8FAE55"/>
+    <path d="M20 7c6 0 10 6 10 13s-4 13-10 13-10-6-10-13S14 7 20 7z" fill="#C9DC93"/>
+    <ellipse cx="20" cy="21" rx="5.5" ry="6.2" fill="#8A6A4F"/>
+  </symbol>
+  <symbol id="i-blueberry" viewBox="0 0 40 40">
+    <circle cx="13" cy="14" r="7" fill="#4C5A8F"/><circle cx="27" cy="17" r="7.5" fill="#3E4B7C"/>
+    <circle cx="19" cy="28" r="7" fill="#56659B"/>
+    <path d="M13 11l1.6 1.6L13 14.4l-1.6-1.4zM27 14l1.6 1.6L27 17.4l-1.6-1.4zM19 25l1.6 1.6L19 28.4l-1.6-1.4z" fill="#8E9BC4"/>
+  </symbol>
+  <symbol id="i-strawberry" viewBox="0 0 40 40">
+    <path d="M20 12c8 0 12 5 12 11s-6 12-12 12S8 29 8 23s4-11 12-11z" fill="#CF4B4B"/>
+    <path d="M13 10h14l-4 4h-6z" fill="#6E8F42"/>
+    <circle cx="16" cy="20" r="1.2" fill="#F2C4A2"/><circle cx="24" cy="21" r="1.2" fill="#F2C4A2"/>
+    <circle cx="20" cy="26" r="1.2" fill="#F2C4A2"/><circle cx="26" cy="27" r="1.2" fill="#F2C4A2"/>
+    <circle cx="14" cy="27" r="1.2" fill="#F2C4A2"/>
+  </symbol>
+  <symbol id="i-banana" viewBox="0 0 40 40">
+    <circle cx="12" cy="14" r="7" fill="#F5E9B8"/><circle cx="26" cy="16" r="7" fill="#F2E4AB"/>
+    <circle cx="19" cy="27" r="7" fill="#F5E9B8"/>
+    <circle cx="12" cy="14" r="2.4" fill="#DFCE8A"/><circle cx="26" cy="16" r="2.4" fill="#DFCE8A"/>
+    <circle cx="19" cy="27" r="2.4" fill="#DFCE8A"/>
+  </symbol>
+  <symbol id="i-apple" viewBox="0 0 40 40">
+    <path d="M20 8l11 6v3l-11 6-11-6v-3z" fill="#F6EFDC"/>
+    <path d="M20 8l11 6-11 6-11-6z" fill="#EFE5CB"/>
+    <path d="M9 14l11 6v9L9 23z" fill="#F6EFDC"/>
+    <path d="M31 14l-11 6v9l11-6z" fill="#EDE2C4"/>
+    <path d="M9 14l1-2 10 5 10-5 1 2" stroke="#C4453F" stroke-width="2.2" fill="none" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="i-oats" viewBox="0 0 40 40">
+    <ellipse cx="20" cy="22" rx="17" ry="13" fill="#E8DBBC"/>
+    <ellipse cx="14" cy="18" rx="4" ry="2.4" fill="#D6C49C" transform="rotate(-18 14 18)"/>
+    <ellipse cx="24" cy="17" rx="4" ry="2.4" fill="#D6C49C" transform="rotate(14 24 17)"/>
+    <ellipse cx="19" cy="25" rx="4" ry="2.4" fill="#D6C49C" transform="rotate(-6 19 25)"/>
+    <ellipse cx="28" cy="25" rx="3.4" ry="2.2" fill="#D6C49C" transform="rotate(22 28 25)"/>
+    <ellipse cx="11" cy="26" rx="3.4" ry="2.2" fill="#D6C49C" transform="rotate(-24 11 26)"/>
+  </symbol>
+  <symbol id="i-quinoa" viewBox="0 0 40 40">
+    <ellipse cx="20" cy="23" rx="17" ry="12" fill="#EDE3CA"/>
+    <g fill="#D3C39C">
+      <circle cx="12" cy="20" r="2"/><circle cx="19" cy="18" r="2"/><circle cx="26" cy="20" r="2"/>
+      <circle cx="15" cy="25" r="2"/><circle cx="23" cy="25" r="2"/><circle cx="30" cy="25" r="2"/>
+      <circle cx="9" cy="26" r="2"/><circle cx="19" cy="29" r="2"/><circle cx="27" cy="30" r="2"/>
+    </g>
+  </symbol>
+  <symbol id="i-rice" viewBox="0 0 40 40">
+    <ellipse cx="20" cy="23" rx="17" ry="12" fill="#DFD0B0"/>
+    <g fill="#C4B08A">
+      <ellipse cx="13" cy="19" rx="3.4" ry="1.8" transform="rotate(-20 13 19)"/>
+      <ellipse cx="22" cy="18" rx="3.4" ry="1.8" transform="rotate(15 22 18)"/>
+      <ellipse cx="29" cy="23" rx="3.4" ry="1.8" transform="rotate(-8 29 23)"/>
+      <ellipse cx="17" cy="25" rx="3.4" ry="1.8" transform="rotate(8 17 25)"/>
+      <ellipse cx="25" cy="28" rx="3.4" ry="1.8" transform="rotate(-16 25 28)"/>
+      <ellipse cx="10" cy="27" rx="3.4" ry="1.8" transform="rotate(22 10 27)"/>
+    </g>
+  </symbol>
+  <symbol id="i-bread" viewBox="0 0 40 40">
+    <path d="M7 15c0-5 5-8 13-8s13 3 13 8v16c0 2-1 3-3 3H10c-2 0-3-1-3-3z" fill="#D8B98A"/>
+    <path d="M10 16c0-3 4-5 10-5s10 2 10 5v13H10z" fill="#EBD4AC"/>
+    <g fill="#C9A87A"><circle cx="15" cy="20" r="1.4"/><circle cx="23" cy="22" r="1.4"/><circle cx="18" cy="26" r="1.4"/><circle cx="26" cy="27" r="1.2"/></g>
+  </symbol>
+  <symbol id="i-pita" viewBox="0 0 40 40">
+    <path d="M20 6a17 17 0 0 1 15 9 17 17 0 0 1-30 0A17 17 0 0 1 20 6z" fill="#E5CDA1" transform="translate(0,4)"/>
+    <path d="M20 20a17 17 0 0 0 15-9 17 17 0 0 0-30 0 17 17 0 0 0 15 9z" fill="#EFDBB6" transform="translate(0,14)"/>
+    <path d="M5 24h30" stroke="#D2B685" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="i-broccoli" viewBox="0 0 40 40">
+    <circle cx="14" cy="14" r="8" fill="#5C7E3E"/><circle cx="26" cy="16" r="7.5" fill="#4E6F34"/>
+    <circle cx="20" cy="25" r="7" fill="#658A45"/>
+    <g fill="#7DA357" opacity=".8"><circle cx="11" cy="12" r="2.2"/><circle cx="17" cy="16" r="2"/><circle cx="24" cy="13" r="2.2"/><circle cx="29" cy="18" r="2"/><circle cx="18" cy="24" r="2.2"/><circle cx="23" cy="27" r="2"/></g>
+    <path d="M14 21v6M26 23v5" stroke="#A8BE7E" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-greens" viewBox="0 0 40 40">
+    <path d="M20 34C10 30 4 22 6 12c9-1 15 4 17 11 2-8 8-12 16-10-1 10-8 18-19 21z" fill="#557A3A"/>
+    <path d="M20 33c-1-8-5-14-12-18M20 33c2-8 7-13 14-16" stroke="#8FB367" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-sprouts" viewBox="0 0 40 40">
+    <circle cx="13" cy="15" r="8" fill="#6C8B45"/><circle cx="27" cy="19" r="8" fill="#5B7A38"/>
+    <circle cx="18" cy="29" r="7" fill="#77954E"/>
+    <path d="M13 7v16M6 15h14M27 11v16M20 19h14M18 22v14M11 29h14" stroke="#A6C07C" stroke-width="1.3" opacity=".65"/>
+  </symbol>
+  <symbol id="i-carrot" viewBox="0 0 40 40">
+    <circle cx="12" cy="13" r="6.5" fill="#DE8039"/><circle cx="26" cy="14" r="6" fill="#D57630"/>
+    <circle cx="18" cy="25" r="6.5" fill="#E28A45"/><circle cx="30" cy="27" r="5.5" fill="#D57630"/>
+    <circle cx="12" cy="13" r="2.6" fill="#EFAE72"/><circle cx="26" cy="14" r="2.4" fill="#EFAE72"/>
+    <circle cx="18" cy="25" r="2.6" fill="#EFAE72"/><circle cx="30" cy="27" r="2.2" fill="#EFAE72"/>
+  </symbol>
+  <symbol id="i-tomato" viewBox="0 0 40 40">
+    <circle cx="13" cy="15" r="8" fill="#C7443C"/><circle cx="27" cy="20" r="8.5" fill="#B93C36"/>
+    <circle cx="16" cy="29" r="7" fill="#CE4E44"/>
+    <path d="M13 8l2 2-2 2-2-2zM27 13l2 2-2 2-2-2z" fill="#6D8B44"/>
+  </symbol>
+  <symbol id="i-cucumber" viewBox="0 0 40 40">
+    <circle cx="13" cy="16" r="7.5" fill="#D9E4BD"/><circle cx="27" cy="20" r="7.5" fill="#CEDCAE"/>
+    <circle cx="17" cy="29" r="7" fill="#D9E4BD"/>
+    <circle cx="13" cy="16" r="4" fill="#EDF3DD"/><circle cx="27" cy="20" r="4" fill="#EDF3DD"/>
+    <circle cx="17" cy="29" r="3.6" fill="#EDF3DD"/>
+  </symbol>
+  <symbol id="i-pepper" viewBox="0 0 40 40">
+    <path d="M8 12h5v20H8zM16 12h5v20h-5z" fill="#D8474A" rx="2"/>
+    <rect x="24" y="12" width="5" height="20" rx="2.4" fill="#E9A93A"/>
+    <rect x="31" y="12" width="5" height="20" rx="2.4" fill="#7EA344"/>
+    <rect x="8" y="12" width="5" height="20" rx="2.4" fill="#D8474A"/>
+    <rect x="16" y="12" width="5" height="20" rx="2.4" fill="#E0605C"/>
+  </symbol>
+  <symbol id="i-sweetpotato" viewBox="0 0 40 40">
+    <rect x="5" y="11" width="12" height="12" rx="3" fill="#E08B4E" transform="rotate(-12 11 17)"/>
+    <rect x="20" y="9" width="12" height="12" rx="3" fill="#D98046" transform="rotate(9 26 15)"/>
+    <rect x="12" y="23" width="12" height="12" rx="3" fill="#E3945A" transform="rotate(6 18 29)"/>
+    <rect x="26" y="22" width="10" height="10" rx="3" fill="#D6793F" transform="rotate(-14 31 27)"/>
+  </symbol>
+  <symbol id="i-potato" viewBox="0 0 40 40">
+    <rect x="5" y="12" width="13" height="11" rx="3" fill="#EBDCB4" transform="rotate(-10 11 17)"/>
+    <rect x="21" y="10" width="13" height="11" rx="3" fill="#E3D3A9" transform="rotate(12 27 15)"/>
+    <rect x="13" y="24" width="13" height="11" rx="3" fill="#EBDCB4" transform="rotate(4 19 29)"/>
+    <path d="M8 16h7M25 14h6M17 28h7" stroke="#C9B784" stroke-width="1.5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-lentil" viewBox="0 0 40 40">
+    <g fill="#C97542"><circle cx="10" cy="14" r="3.4"/><circle cx="18" cy="11" r="3.4"/><circle cx="26" cy="14" r="3.4"/><circle cx="32" cy="19" r="3.4"/></g>
+    <g fill="#D98A55"><circle cx="14" cy="20" r="3.4"/><circle cx="22" cy="19" r="3.4"/><circle cx="29" cy="26" r="3.4"/><circle cx="10" cy="26" r="3.4"/><circle cx="18" cy="27" r="3.4"/><circle cx="25" cy="32" r="3.2"/></g>
+  </symbol>
+  <symbol id="i-chickpea" viewBox="0 0 40 40">
+    <g fill="#DCC189"><circle cx="11" cy="13" r="4.6"/><circle cx="21" cy="11" r="4.6"/><circle cx="30" cy="15" r="4.6"/></g>
+    <g fill="#D2B679"><circle cx="15" cy="22" r="4.6"/><circle cx="25" cy="21" r="4.6"/><circle cx="32" cy="27" r="4.4"/><circle cx="9" cy="27" r="4.4"/><circle cx="20" cy="30" r="4.6"/></g>
+  </symbol>
+  <symbol id="i-whitebean" viewBox="0 0 40 40">
+    <g fill="#F0E8D4" stroke="#D9CEB2" stroke-width="1.1"><ellipse cx="12" cy="14" rx="5.4" ry="4" transform="rotate(-18 12 14)"/><ellipse cx="24" cy="12" rx="5.4" ry="4" transform="rotate(12 24 12)"/><ellipse cx="31" cy="20" rx="5.4" ry="4" transform="rotate(-6 31 20)"/><ellipse cx="15" cy="23" rx="5.4" ry="4" transform="rotate(8 15 23)"/><ellipse cx="26" cy="27" rx="5.4" ry="4" transform="rotate(-14 26 27)"/><ellipse cx="10" cy="30" rx="5.2" ry="3.8" transform="rotate(16 10 30)"/></g>
+  </symbol>
+  <symbol id="i-hummus" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="16" fill="#E3D3A5"/>
+    <path d="M20 8a12 12 0 0 1 0 24 8 8 0 0 0 0-16 4 4 0 0 1 0-8z" fill="#D7C48F" opacity=".8"/>
+    <circle cx="20" cy="20" r="4" fill="#7E9C4A"/>
+  </symbol>
+  <symbol id="i-yogurt" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="16" fill="#FCFBF6" stroke="#DCD8C6" stroke-width="1.4"/>
+    <path d="M20 7a13 13 0 0 1 8.5 22.5" stroke="#E4E0CE" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M12 24a10 10 0 0 1 14-11" stroke="#E4E0CE" stroke-width="4" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-walnut" viewBox="0 0 40 40">
+    <path d="M20 6c8 0 13 6 13 14s-6 14-13 14S7 28 7 20 12 6 20 6z" fill="#B78E5E"/>
+    <path d="M20 7v26M20 12c-5 1-8 4-9 8M20 12c5 1 8 4 9 8M20 22c-4 1-6 3-7 6M20 22c4 1 6 3 7 6" stroke="#8A6A4F" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="i-almond" viewBox="0 0 40 40">
+    <path d="M13 5c5 0 8 8 8 14s-3 12-8 12-8-6-8-12S8 5 13 5z" fill="#C9A075"/>
+    <path d="M28 12c4 0 7 7 7 12s-3 10-7 10-7-5-7-10 3-12 7-12z" fill="#BB9166"/>
+  </symbol>
+  <symbol id="i-seeds" viewBox="0 0 40 40">
+    <g fill="#4E4438"><ellipse cx="10" cy="12" rx="2.4" ry="1.6" transform="rotate(20 10 12)"/><ellipse cx="20" cy="9" rx="2.4" ry="1.6" transform="rotate(-15 20 9)"/><ellipse cx="29" cy="13" rx="2.4" ry="1.6" transform="rotate(30 29 13)"/><ellipse cx="14" cy="20" rx="2.4" ry="1.6" transform="rotate(-8 14 20)"/><ellipse cx="25" cy="21" rx="2.4" ry="1.6" transform="rotate(18 25 21)"/><ellipse cx="9" cy="28" rx="2.4" ry="1.6" transform="rotate(-22 9 28)"/><ellipse cx="19" cy="29" rx="2.4" ry="1.6" transform="rotate(10 19 29)"/><ellipse cx="30" cy="28" rx="2.4" ry="1.6" transform="rotate(-30 30 28)"/></g>
+  </symbol>
+  <symbol id="i-oliveoil" viewBox="0 0 40 40">
+    <path d="M17 4h6v5l6 7v18a2 2 0 0 1-2 2H13a2 2 0 0 1-2-2V16l6-7z" fill="#B4C57E" opacity=".55"/>
+    <path d="M13 20h14v13a2 2 0 0 1-2 2H15a2 2 0 0 1-2-2z" fill="#93A94F"/>
+  </symbol>
+  <symbol id="i-soup" viewBox="0 0 40 40">
+    <path d="M4 15h32c0 11-7 18-16 18S4 26 4 15z" fill="#C97A3E"/>
+    <path d="M4 15h32c0 3-1 5-2 7H6c-1-2-2-4-2-7z" fill="#D98F4E"/>
+    <circle cx="14" cy="20" r="2.2" fill="#E8A85F"/>
+    <circle cx="23" cy="22" r="2" fill="#7E9C4A"/><circle cx="19" cy="26" r="2" fill="#E8A85F"/>
+  </symbol>
+  <symbol id="i-cinnamon" viewBox="0 0 40 40">
+    <rect x="6" y="14" width="28" height="6" rx="3" fill="#A9714A" transform="rotate(-12 20 17)"/>
+    <rect x="6" y="24" width="28" height="6" rx="3" fill="#96613D" transform="rotate(8 20 27)"/>
+  </symbol>
+  <symbol id="i-lemon" viewBox="0 0 40 40">
+    <circle cx="20" cy="20" r="15" fill="#EDCF57"/>
+    <circle cx="20" cy="20" r="11" fill="#F7E894"/>
+    <path d="M20 9v22M9 20h22M12 12l16 16M28 12L12 28" stroke="#E5CB63" stroke-width="1.6"/>
+  </symbol>
+  <symbol id="i-cauli" viewBox="0 0 40 40">
+    <g stroke="#D9D3BC" stroke-width="1.2"><circle cx="14" cy="15" r="8" fill="#F2EDDE"/><circle cx="26" cy="17" r="7.5" fill="#E9E3D1"/>
+    <circle cx="20" cy="26" r="7" fill="#F2EDDE"/></g>
+    <g fill="#DAD3BD"><circle cx="12" cy="13" r="2"/><circle cx="18" cy="17" r="2"/><circle cx="27" cy="15" r="2"/><circle cx="19" cy="25" r="2"/></g>
+  </symbol>
+</svg>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <h1>7-Day<br>Brain-Healthy<br><em>Diet</em></h1>
+        <p class="sub">Eat well. Nourish your brain. Support your gut.</p>
+        <p class="lede">The idea running through the documentary is simple: the brain is an organ, and like every other organ it is built and maintained from what you eat. Food supplies more than energy — fats, fibre, vitamins, minerals and plant compounds all feed into how the brain works, and much of that traffic passes through the gut.</p>
+        <p class="lede">There is no single magic brain food. What appears to matter is the overall pattern: varied, mostly minimally processed, rich in plants and healthy fats. This guide turns that pattern into seven ordinary days of cooking.</p>
+        <p class="source">Inspired by the documentary <i>A Healthy Diet for a Healthy Brain</i>, also released as <i>Better Brain Health: We Are What We Eat</i>, and by wider nutrition research.</p>
+      </div>
+      <div class="hero-art">
+        <svg viewBox="0 0 420 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Overhead arrangement of brain-friendly foods: salmon, berries, leafy greens, walnuts, avocado, grains, legumes and olive oil">
+          <circle cx="210" cy="200" r="185" fill="#3A4A2D"/>
+          <circle cx="210" cy="200" r="150" fill="#44562F" opacity=".55"/>
+          <use href="#i-salmon" x="140" y="150" width="140" height="140"/>
+          <use href="#i-greens" x="68" y="92" width="92" height="92"/>
+          <use href="#i-blueberry" x="243" y="82" width="86" height="86"/>
+          <use href="#i-avocado" x="72" y="206" width="78" height="78"/>
+          <use href="#i-walnut" x="248" y="212" width="76" height="76"/>
+          <use href="#i-quinoa" x="152" y="66" width="88" height="88"/>
+          <use href="#i-lentil" x="152" y="266" width="86" height="86"/>
+          <use href="#i-oliveoil" x="304" y="152" width="66" height="66"/>
+          <use href="#i-tomato" x="52" y="156" width="72" height="72"/>
+          <use href="#i-almond" x="278" y="288" width="62" height="62"/>
+          <use href="#i-broccoli" x="82" y="278" width="72" height="72"/>
+        </svg>
+      </div>
+    </div>
+    <div class="hero-foot">
+      <div><b>21</b><span>meals mapped out, breakfast through dinner</span></div>
+      <div><b>5</b><span>fish meals, including oily fish twice</span></div>
+      <div><b>7</b><span>days with legumes, greens and whole grains</span></div>
+      <div><b>0</b><span>supplements, powders or forbidden foods</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ WHAT THE EVIDENCE DOES AND DOESN'T SAY ============ -->
+<section>
+  <div class="wrap">
+    <div class="evidence">
+      <h3>What this plan claims — and what it doesn't</h3>
+      <p>Diet is <b>associated</b> with brain and cognitive health across large population studies, and some of the mechanisms (omega-3 fats in cell membranes, fibre feeding gut bacteria, B vitamins in nerve function) are well established. Much of the rest — particularly the gut–brain axis and the microbiome's role in mood — is active, promising, still-developing research rather than settled fact.</p>
+      <p>So: no food here will make you smarter, prevent dementia, or treat depression, and none is presented that way. What a pattern like this reliably does is supply the nutrients a brain needs, in a way that is also good for the heart and the rest of the body. If you have a diagnosed condition, are pregnant, or take medication, talk to a clinician or dietitian before changing how you eat.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ============ PRINCIPLES ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Six principles for brain-friendly eating</h2>
+      <p>Everything in the week ahead comes back to these. Get the pattern right and the individual meals become interchangeable.</p>
+    </div>
+    <div class="principles">
+      <div class="principle">
+        <div class="principle-top"><svg viewBox="0 0 40 40"><use href="#i-quinoa" width="40" height="40"/></svg><h3>Eat a variety of whole foods</h3></div>
+        <p>The brain draws on dozens of nutrients, and no single food carries them all. Variety across the week does more than perfecting any one meal.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-top"><svg viewBox="0 0 40 40"><use href="#i-pepper" width="40" height="40"/></svg><h3>Fill the plate with colour</h3></div>
+        <p>Different pigments in vegetables and fruit come with different plant compounds. Aim for several colours a day rather than the same two vegetables on repeat.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-top"><svg viewBox="0 0 40 40"><use href="#i-salmon" width="40" height="40"/></svg><h3>Choose fats that work for you</h3></div>
+        <p>Roughly 60% of the brain's dry weight is fat. Oily fish, olive oil, nuts and seeds supply the kinds of fat the body can't make well on its own.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-top"><svg viewBox="0 0 40 40"><use href="#i-lentil" width="40" height="40"/></svg><h3>Eat fibre at every meal</h3></div>
+        <p>Legumes, whole grains, vegetables and fruit feed the bacteria in your gut. Most people eat around half the fibre they need.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-top"><svg viewBox="0 0 40 40"><use href="#i-yogurt" width="40" height="40"/></svg><h3>Look after the gut</h3></div>
+        <p>The gut and brain are in constant two-way conversation. Fermented foods like plain yogurt and kefir add to the diversity of what lives down there.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-top"><svg viewBox="0 0 40 40"><use href="#i-bread" width="40" height="40"/></svg><h3>Lean away from ultra-processed</h3></div>
+        <p>Not banned — just less often. Diets dominated by ultra-processed food tend to crowd out the fibre, fats and micronutrients everything above depends on.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+<!-- ============ INTERACTIVE WEEK ============ -->
+<section id="plan">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Your seven days</h2>
+      <p>Pick a day, open any meal for the method, and tick things off as you cook them. Swap days around freely — the pattern matters more than the order. Snacks aren't listed; fruit, plain yogurt, a handful of nuts or leftover hummus with vegetables all fit.</p>
+    </div>
+  </div>
+
+  <div class="planbar">
+    <div class="wrap planbar-inner">
+      <div class="daytabs" role="tablist" aria-label="Day of the week">
+        <button class="daytab" type="button" role="tab" aria-selected="true">Whole week</button>
+        <button class="daytab" type="button" role="tab" data-day="0" aria-selected="false"><span class="dot" style="background:#D2795E"></span>Mon</button><button class="daytab" type="button" role="tab" data-day="1" aria-selected="false"><span class="dot" style="background:#7E9C4A"></span>Tue</button><button class="daytab" type="button" role="tab" data-day="2" aria-selected="false"><span class="dot" style="background:#C24A48"></span>Wed</button><button class="daytab" type="button" role="tab" data-day="3" aria-selected="false"><span class="dot" style="background:#4C5A8F"></span>Thu</button><button class="daytab" type="button" role="tab" data-day="4" aria-selected="false"><span class="dot" style="background:#C8A24E"></span>Fri</button><button class="daytab" type="button" role="tab" data-day="5" aria-selected="false"><span class="dot" style="background:#5C7E3E"></span>Sat</button><button class="daytab" type="button" role="tab" data-day="6" aria-selected="false"><span class="dot" style="background:#8A6A4F"></span>Sun</button>
+      </div>
+      <div class="tools">
+        <label class="switch"><input type="checkbox" id="swap"><span class="track"></span>Meat-free swaps</label>
+        <button class="btn" type="button" id="makelist">Shopping list</button>
+        <button class="btn ghost" type="button" id="reset" hidden>Clear ticks</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="progress">
+      <span id="prog-text">Nothing ticked off yet — 21 meals ahead</span>
+      <span class="bar"><i id="prog-bar"></i></span>
+    </div>
+
+    <div id="week"></div>
+
+    <div class="shopping" id="shopping" hidden>
+      <div class="shopping-head">
+        <h3>Shopping list</h3>
+        <button class="btn ghost" type="button" id="copylist">Copy to clipboard</button>
+      </div>
+      <p class="scope" id="scope"></p>
+      <div class="aisles" id="aisles"></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+<!-- ============ WHY THESE FOODS ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Why these foods keep appearing</h2>
+      <p>Six groups do most of the work in the week above. None of them is a cure for anything; together they cover the nutrients the brain and body draw on.</p>
+    </div>
+    <div class="why">
+      <div class="why-card">
+        <svg viewBox="0 0 40 40"><use href="#i-salmon" width="40" height="40"/></svg>
+        <h3>Oily fish</h3>
+        <p class="foods">Salmon, sardines, trout, mackerel, canned tuna</p>
+        <p>The main food source of EPA and DHA, the long-chain omega-3 fats concentrated in brain tissue. Two servings a week is the usual public-health advice.</p>
+      </div>
+      <div class="why-card">
+        <svg viewBox="0 0 40 40"><use href="#i-blueberry" width="40" height="40"/></svg>
+        <h3>Berries</h3>
+        <p class="foods">Blueberries, strawberries, blackberries, raspberries</p>
+        <p>Fibre, vitamin C and the pigments called anthocyanins. Frozen berries are just as good nutritionally and cost far less out of season.</p>
+      </div>
+      <div class="why-card">
+        <svg viewBox="0 0 40 40"><use href="#i-greens" width="40" height="40"/></svg>
+        <h3>Leafy greens</h3>
+        <p class="foods">Spinach, kale, arugula, chard, romaine</p>
+        <p>Dense in folate, vitamin K, lutein and magnesium for very few calories. The vegetable group most consistently linked with slower cognitive decline in observational studies.</p>
+      </div>
+      <div class="why-card">
+        <svg viewBox="0 0 40 40"><use href="#i-walnut" width="40" height="40"/></svg>
+        <h3>Nuts and seeds</h3>
+        <p class="foods">Walnuts, almonds, chia, flax, pumpkin seeds</p>
+        <p>Unsaturated fats, vitamin E, magnesium and fibre in a form that needs no preparation. A small handful is a portion.</p>
+      </div>
+      <div class="why-card">
+        <svg viewBox="0 0 40 40"><use href="#i-chickpea" width="40" height="40"/></svg>
+        <h3>Legumes</h3>
+        <p class="foods">Lentils, chickpeas, black, kidney and white beans</p>
+        <p>The cheapest fibre and plant protein on the shelf, plus folate and iron. Canned and rinsed works fine when time is short.</p>
+      </div>
+      <div class="why-card">
+        <svg viewBox="0 0 40 40"><use href="#i-yogurt" width="40" height="40"/></svg>
+        <h3>Fermented foods</h3>
+        <p class="foods">Plain yogurt, kefir, sauerkraut, kimchi, miso</p>
+        <p>They add live microbes and variety to the diet. The gut–brain research here is genuinely interesting and genuinely unfinished — eat them because they're good food, not as medicine.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- ============ MORE / LESS ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>More of this, less of that</h2>
+      <p>Nothing on the right is banned. Birthday cake is still birthday cake. The question is what fills most plates, most weeks.</p>
+    </div>
+    <div class="balance">
+      <div class="col more">
+        <h3>Room for plenty</h3>
+        <p class="note">The base of the pattern — most meals, most days.</p>
+        <ul>
+          <li>Vegetables of every colour</li>
+          <li>Fruit, fresh or frozen</li>
+          <li>Lentils, beans and chickpeas</li>
+          <li>Oats, quinoa, brown rice</li>
+          <li>Whole-grain bread and pita</li>
+          <li>Oily and white fish</li>
+          <li>Nuts and seeds</li>
+          <li>Extra virgin olive oil</li>
+          <li>Eggs</li>
+          <li>Plain yogurt and kefir</li>
+          <li>Herbs and spices</li>
+          <li>Water, tea, coffee</li>
+        </ul>
+      </div>
+      <div class="col less">
+        <h3>Smaller share</h3>
+        <p class="note">Fine occasionally — just not the foundation.</p>
+        <ul>
+          <li>Sugary drinks and juice</li>
+          <li>Candy and sweets</li>
+          <li>Packaged snack foods</li>
+          <li>White bread and refined grains</li>
+          <li>Deep-fried fast food</li>
+          <li>Bacon, salami, hot dogs</li>
+          <li>Ready meals and instant noodles</li>
+          <li>Pastries and sweetened cereals</li>
+          <li>Foods high in added sugar</li>
+          <li>Heavy drinking</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer>
+  <div class="wrap">
+    <h3>Before you start</h3>
+    <p>Change one meal at a time rather than the whole week at once — a swapped breakfast that lasts a year beats a perfect plan abandoned by Thursday. Costs stay manageable if you lean on lentils, eggs, frozen vegetables, frozen berries and canned fish, and save fresh salmon for once a week. No supplements are needed to follow this plan.</p>
+    <p class="disclaimer">This meal plan is a general healthy-eating guide inspired by the nutritional principles discussed in the documentary and broader nutrition research. It is not medical advice or a treatment plan.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script id="plan-data" type="application/json">[{"day": "Monday", "short": "Mon", "colour": "#D2795E", "note": "Make double the lentil soup — Wednesday thanks you.", "meals": [{"slot": "Breakfast", "name": "Overnight oats with blueberries and walnuts", "ing": "Rolled oats, plain yogurt, blueberries, chopped walnuts, chia seeds", "hi": "Soaked overnight, so there is nothing to cook. Oats and chia bring soluble fibre; walnuts are the best nut source of plant omega-3.", "time": "5 min, night before", "method": ["Stir oats, yogurt, milk and chia together in a jar.", "Leave in the fridge overnight.", "Top with blueberries and walnuts in the morning."], "sym": ["oats", "blueberry", "walnut", "seeds", "yogurt"], "shop": [["Rolled oats", "Pantry"], ["Chia seeds", "Pantry"], ["Walnuts", "Pantry"], ["Blueberries", "Produce"], ["Plain Greek yogurt", "Dairy"], ["Milk", "Dairy"]]}, {"slot": "Lunch", "name": "Lentil soup, bread and a big salad", "ing": "Red lentils, carrot, onion, garlic; whole-grain bread; mixed leaves, tomato, olive oil", "hi": "A cup of lentils covers a large share of a day's fibre and costs very little.", "time": "35 min", "method": ["Soften onion, carrot and garlic in olive oil.", "Add red lentils and stock; simmer 25 minutes.", "Blend half for body. Serve with bread and a dressed salad."], "sym": ["soup", "lentil", "bread", "greens", "oliveoil"], "shop": [["Red lentils", "Pantry"], ["Onions", "Produce"], ["Carrots", "Produce"], ["Garlic", "Produce"], ["Vegetable stock", "Pantry"], ["Mixed salad leaves", "Produce"], ["Tomatoes", "Produce"], ["Olive oil", "Pantry"], ["Whole-grain bread", "Bakery"]]}, {"slot": "Dinner", "name": "Baked salmon with quinoa, broccoli and carrots", "ing": "Salmon fillet, quinoa, broccoli florets, carrots, lemon, olive oil", "hi": "Oily fish is the main dietary source of the long-chain omega-3 fats EPA and DHA, which are built into brain cell membranes.", "time": "25 min", "method": ["Simmer quinoa for 15 minutes.", "Roast salmon at 200°C / 400°F for 12–15 minutes with the carrots.", "Steam the broccoli. Finish everything with lemon and olive oil."], "sym": ["salmon", "quinoa", "broccoli", "carrot", "lemon"], "shop": [["Salmon fillets", "Fish, meat & eggs"], ["Quinoa", "Pantry"], ["Broccoli", "Produce"], ["Carrots", "Produce"], ["Lemons", "Produce"]]}]}, {"day": "Tuesday", "short": "Tue", "colour": "#7E9C4A", "note": "A 10-minute breakfast and a bowl built from Monday's leftovers.", "meals": [{"slot": "Breakfast", "name": "Avocado toast with two eggs and berries", "ing": "Whole-grain toast, avocado, two eggs, blackberries or strawberries", "hi": "Eggs are one of the richest everyday sources of choline, a nutrient used to make the neurotransmitter acetylcholine.", "time": "10 min", "method": ["Toast the bread and mash avocado over it with salt and lemon.", "Fry or poach two eggs and slide them on top.", "Berries on the side."], "sym": ["egg", "avocado", "bread", "strawberry"], "shop": [["Avocados", "Produce"], ["Eggs", "Fish, meat & eggs"], ["Strawberries or blackberries", "Produce"], ["Whole-grain bread", "Bakery"]]}, {"slot": "Lunch", "name": "Chicken, chickpea and roasted vegetable bowl", "ing": "Brown rice, chicken breast, chickpeas, roasted peppers and carrots, olive oil", "hi": "Pairing beans with the meat stretches the portion and adds fibre the meat doesn't have.", "time": "15 min with cooked rice", "method": ["Reheat brown rice as the base.", "Add sliced chicken, rinsed chickpeas and roasted peppers and carrots.", "Dress with olive oil, lemon and cumin."], "sym": ["rice", "chicken", "chickpea", "pepper", "oliveoil"], "shop": [["Brown rice", "Pantry"], ["Chicken breast (halal)", "Fish, meat & eggs"], ["Chickpeas, canned", "Pantry"], ["Bell peppers", "Produce"], ["Carrots", "Produce"]], "alt": {"name": "Chickpea and roasted vegetable bowl", "ing": "Brown rice, chickpeas, roasted peppers and carrots, spinach, olive oil, tahini", "sym": ["rice", "chickpea", "pepper", "greens", "oliveoil"], "shop": [["Brown rice", "Pantry"], ["Chickpeas, canned", "Pantry"], ["Bell peppers", "Produce"], ["Carrots", "Produce"], ["Spinach", "Produce"], ["Tahini", "Pantry"]]}}, {"slot": "Dinner", "name": "Skillet turkey with sweet potato and spinach", "ing": "Lean ground turkey or beef, roasted sweet potato, spinach salad, tomatoes", "hi": "Red and dark meats supply iron, zinc and B12 — worth having, in moderate amounts, once or twice a week.", "time": "35 min", "method": ["Roast sweet potato wedges at 200°C / 400°F for 25 minutes.", "Brown the mince with onion, garlic and paprika.", "Serve over a spinach and tomato salad."], "sym": ["redmeat", "sweetpotato", "greens", "tomato"], "shop": [["Ground turkey or beef (halal)", "Fish, meat & eggs"], ["Sweet potatoes", "Produce"], ["Spinach", "Produce"], ["Tomatoes", "Produce"], ["Paprika", "Pantry"]], "alt": {"name": "Black bean and sweet potato skillet", "ing": "Black beans, roasted sweet potato, onion, cumin and paprika, spinach salad, tomatoes", "sym": ["whitebean", "sweetpotato", "greens", "tomato"], "shop": [["Black beans, canned", "Pantry"], ["Sweet potatoes", "Produce"], ["Spinach", "Produce"], ["Tomatoes", "Produce"], ["Cumin and paprika", "Pantry"]]}}]}, {"day": "Wednesday", "short": "Wed", "colour": "#C24A48", "note": "No cooking at lunch. Meat-free dinner from the pantry.", "meals": [{"slot": "Breakfast", "name": "Yogurt bowl with strawberries and oats", "ing": "Plain Greek yogurt, strawberries, rolled oats, walnuts, chia seeds", "hi": "Plain yogurt is a fermented food; live cultures add to the mix of microbes reaching the gut.", "time": "5 min", "method": ["Spoon yogurt into a bowl.", "Scatter oats, walnuts and chia over the top.", "Finish with sliced strawberries."], "sym": ["yogurt", "strawberry", "oats", "walnut", "seeds"], "shop": [["Strawberries", "Produce"], ["Plain Greek yogurt", "Dairy"], ["Rolled oats", "Pantry"], ["Walnuts", "Pantry"]]}, {"slot": "Lunch", "name": "Tuna and white bean salad on toast", "ing": "Canned tuna, white beans, red onion, parsley, lemon, olive oil, whole-grain bread", "hi": "Canned fish is the cheapest way to eat fish regularly, and needs no cooking at all.", "time": "10 min", "method": ["Drain the tuna and rinse the beans.", "Toss with thin red onion, parsley, lemon juice and olive oil.", "Pile onto toasted whole-grain bread."], "sym": ["tuna", "whitebean", "lemon", "bread", "oliveoil"], "shop": [["Canned tuna", "Fish, meat & eggs"], ["White beans, canned", "Pantry"], ["Red onion", "Produce"], ["Parsley", "Produce"], ["Lemons", "Produce"], ["Whole-grain bread", "Bakery"]]}, {"slot": "Dinner", "name": "Lentil and vegetable stew with brown rice", "ing": "Brown or green lentils, tomatoes, carrots, celery, cumin and paprika; brown rice", "hi": "Lentils plus a grain give a complete protein — no meat needed for a filling plate.", "time": "40 min", "method": ["Soften onion, carrot and celery; add cumin and paprika.", "Add lentils and chopped tomatoes; simmer 30 minutes.", "Serve over brown rice."], "sym": ["lentil", "tomato", "carrot", "rice", "cinnamon"], "shop": [["Green or brown lentils", "Pantry"], ["Chopped tomatoes, canned", "Pantry"], ["Celery", "Produce"], ["Carrots", "Produce"], ["Brown rice", "Pantry"], ["Cumin", "Pantry"]]}]}, {"day": "Thursday", "short": "Thu", "colour": "#4C5A8F", "note": "White fish cooks in 15 minutes. Good for a busy evening.", "meals": [{"slot": "Breakfast", "name": "Banana cinnamon oatmeal", "ing": "Oats cooked in milk, sliced banana, walnuts, cinnamon, spoon of plain yogurt", "hi": "Warm oats with fruit keep energy steadier than a sugary cereal through the morning.", "time": "10 min", "method": ["Simmer oats in milk for 5 minutes with a pinch of salt.", "Stir in cinnamon.", "Top with banana, walnuts and a spoon of yogurt."], "sym": ["oats", "banana", "walnut", "cinnamon", "yogurt"], "shop": [["Bananas", "Produce"], ["Cinnamon", "Pantry"], ["Rolled oats", "Pantry"], ["Milk", "Dairy"], ["Walnuts", "Pantry"]]}, {"slot": "Lunch", "name": "Grilled chicken and quinoa salad", "ing": "Quinoa, chicken, spinach, tomatoes, cucumber, olive oil and lemon", "hi": "Extra virgin olive oil is the signature fat of the Mediterranean pattern, the diet with the most cognitive research behind it.", "time": "15 min", "method": ["Use leftover quinoa and chicken, or grill a fresh breast for 8 minutes.", "Toss with spinach, tomato and cucumber.", "Dress with olive oil and lemon."], "sym": ["quinoa", "chicken", "greens", "cucumber", "tomato", "oliveoil"], "shop": [["Chicken breast (halal)", "Fish, meat & eggs"], ["Quinoa", "Pantry"], ["Spinach", "Produce"], ["Cucumber", "Produce"], ["Tomatoes", "Produce"]], "alt": {"name": "Quinoa and white bean salad", "ing": "Quinoa, white beans, spinach, tomatoes, cucumber, olive oil and lemon", "sym": ["quinoa", "whitebean", "greens", "cucumber", "tomato", "oliveoil"], "shop": [["White beans, canned", "Pantry"], ["Quinoa", "Pantry"], ["Spinach", "Produce"], ["Cucumber", "Produce"], ["Tomatoes", "Produce"]]}}, {"slot": "Dinner", "name": "Baked cod with herbed potatoes and broccoli", "ing": "Cod fillet, new potatoes, broccoli, garlic, parsley, olive oil", "hi": "White fish is lean protein and iodine; potatoes with the skin on add potassium and fibre.", "time": "30 min", "method": ["Boil halved new potatoes for 15 minutes.", "Bake cod at 200°C / 400°F for 12 minutes with garlic and olive oil.", "Steam broccoli; toss the potatoes in parsley."], "sym": ["whitefish", "potato", "broccoli", "oliveoil"], "shop": [["Cod fillets", "Fish, meat & eggs"], ["New potatoes", "Produce"], ["Broccoli", "Produce"], ["Parsley", "Produce"], ["Garlic", "Produce"]]}]}, {"day": "Friday", "short": "Fri", "colour": "#C8A24E", "note": "Assemble-only lunch. Roast the vegetables while the fish bakes.", "meals": [{"slot": "Breakfast", "name": "Spinach and tomato scramble on toast", "ing": "Two eggs, spinach, cherry tomatoes, whole-grain toast, side of fruit", "hi": "Wilting a handful of spinach into eggs is the easiest vegetable of the day.", "time": "10 min", "method": ["Wilt spinach and halved cherry tomatoes in a little olive oil.", "Pour in beaten eggs and stir gently over low heat.", "Serve on toast with fruit alongside."], "sym": ["egg", "greens", "tomato", "bread", "apple"], "shop": [["Eggs", "Fish, meat & eggs"], ["Spinach", "Produce"], ["Cherry tomatoes", "Produce"], ["Apples", "Produce"], ["Whole-grain bread", "Bakery"]]}, {"slot": "Lunch", "name": "Hummus and vegetable pita plate", "ing": "Hummus, whole-grain pita, cucumber, peppers, carrots, olives", "hi": "Built from chickpeas, hummus turns raw vegetables into an actual meal with no cooking.", "time": "10 min", "method": ["Warm the pita and cut into wedges.", "Cut cucumber, peppers and carrots into sticks.", "Spread hummus on a plate, drizzle olive oil, add olives."], "sym": ["hummus", "pita", "cucumber", "pepper", "carrot"], "shop": [["Hummus", "Dairy"], ["Cucumber", "Produce"], ["Bell peppers", "Produce"], ["Carrots", "Produce"], ["Olives", "Pantry"], ["Whole-grain pita", "Bakery"]]}, {"slot": "Dinner", "name": "Roast salmon or sardines with rice and vegetables", "ing": "Salmon fillet or tinned sardines, brown rice, roasted cauliflower and peppers", "hi": "Sardines are small, cheap and low in mercury — an easy second oily-fish meal for the week.", "time": "30 min", "method": ["Roast cauliflower and peppers at 200°C / 400°F for 25 minutes.", "Add the salmon for the last 12 minutes, or warm sardines through at the end.", "Serve over brown rice with olive oil and lemon."], "sym": ["sardine", "rice", "cauli", "pepper", "oliveoil"], "shop": [["Salmon fillets or tinned sardines", "Fish, meat & eggs"], ["Cauliflower", "Produce"], ["Bell peppers", "Produce"], ["Brown rice", "Pantry"]]}]}, {"day": "Saturday", "short": "Sat", "colour": "#5C7E3E", "note": "Soup freezes well. Roast everything on one tray at dinner.", "meals": [{"slot": "Breakfast", "name": "Blueberry and almond yogurt bowl", "ing": "Greek yogurt, blueberries, oats, toasted almonds, chia seeds", "hi": "Berries carry the plant pigments most often studied in relation to memory — promising, not proven.", "time": "5 min", "method": ["Toast a handful of almonds in a dry pan for 2 minutes.", "Spoon yogurt into a bowl with oats and chia.", "Top with blueberries and the warm almonds."], "sym": ["yogurt", "blueberry", "oats", "almond", "seeds"], "shop": [["Blueberries", "Produce"], ["Almonds", "Pantry"], ["Plain Greek yogurt", "Dairy"], ["Rolled oats", "Pantry"]]}, {"slot": "Lunch", "name": "White bean minestrone with bread and salad", "ing": "White beans, tomatoes, carrots, celery, kale, small pasta or barley; bread, green salad", "hi": "A different bean and a different soup from Monday, so the week doesn't repeat itself.", "time": "40 min", "method": ["Soften onion, carrot and celery in olive oil.", "Add tomatoes, stock, beans and barley; simmer 25 minutes.", "Stir kale through at the end. Serve with bread and salad."], "sym": ["whitebean", "soup", "greens", "carrot", "bread"], "shop": [["White beans, canned", "Pantry"], ["Chopped tomatoes, canned", "Pantry"], ["Kale", "Produce"], ["Celery", "Produce"], ["Barley or small pasta", "Pantry"], ["Whole-grain bread", "Bakery"]]}, {"slot": "Dinner", "name": "Roast chicken with sweet potato and Brussels sprouts", "ing": "Chicken thighs or breast, sweet potato wedges, Brussels sprouts, avocado, olive oil", "hi": "Brussels sprouts belong to the same family as broccoli and kale — worth rotating through all three.", "time": "45 min, one tray", "method": ["Toss sweet potato and halved sprouts in olive oil on a large tray.", "Nestle in the chicken; roast at 200°C / 400°F for 35–40 minutes.", "Serve with sliced avocado and lemon."], "sym": ["chicken", "sweetpotato", "sprouts", "avocado"], "shop": [["Chicken thighs (halal)", "Fish, meat & eggs"], ["Sweet potatoes", "Produce"], ["Brussels sprouts", "Produce"], ["Avocados", "Produce"]], "alt": {"name": "Roast chickpeas with sweet potato and sprouts", "ing": "Chickpeas, sweet potato wedges, Brussels sprouts, avocado, olive oil, smoked paprika", "sym": ["chickpea", "sweetpotato", "sprouts", "avocado"], "shop": [["Chickpeas, canned", "Pantry"], ["Sweet potatoes", "Produce"], ["Brussels sprouts", "Produce"], ["Avocados", "Produce"], ["Smoked paprika", "Pantry"]]}}]}, {"day": "Sunday", "short": "Sun", "colour": "#8A6A4F", "note": "Cook once, eat twice: extra grains and eggs set up Monday.", "meals": [{"slot": "Breakfast", "name": "Apple cinnamon oatmeal with walnuts", "ing": "Oats, grated or diced apple, walnuts, cinnamon, plain yogurt", "hi": "Whole fruit rather than juice keeps the fibre that slows sugar absorption.", "time": "10 min", "method": ["Grate an apple straight into the pan with the oats and milk.", "Simmer 5 minutes with cinnamon.", "Top with walnuts and a spoon of yogurt."], "sym": ["oats", "apple", "walnut", "cinnamon", "yogurt"], "shop": [["Apples", "Produce"], ["Rolled oats", "Pantry"], ["Walnuts", "Pantry"], ["Cinnamon", "Pantry"]]}, {"slot": "Lunch", "name": "Mediterranean chickpea salad with jammy eggs", "ing": "Chickpeas, cucumber, tomato, red onion, parsley, soft-boiled eggs, olives, bread", "hi": "Cold bean salads keep for three days in the fridge and travel well to work.", "time": "20 min", "method": ["Boil eggs for 7 minutes, then cool in cold water.", "Toss chickpeas with chopped cucumber, tomato, onion and parsley.", "Halve the eggs over the top; olive oil, lemon and olives."], "sym": ["chickpea", "eggboiled", "cucumber", "tomato", "bread"], "shop": [["Chickpeas, canned", "Pantry"], ["Cucumber", "Produce"], ["Tomatoes", "Produce"], ["Red onion", "Produce"], ["Parsley", "Produce"], ["Eggs", "Fish, meat & eggs"], ["Olives", "Pantry"]]}, {"slot": "Dinner", "name": "Grilled trout with quinoa and greens", "ing": "Trout fillet, quinoa, sautéed spinach, mixed vegetables, lemon, olive oil", "hi": "Trout is a freshwater oily fish — same fats as salmon, often a little cheaper.", "time": "25 min", "method": ["Cook extra quinoa now — it becomes Monday and Thursday's lunch base.", "Pan-grill the trout skin-side down for 4 minutes, then flip for 2.", "Wilt spinach with garlic; squeeze lemon over everything."], "sym": ["salmon", "quinoa", "greens", "lemon", "carrot"], "shop": [["Trout fillets", "Fish, meat & eggs"], ["Quinoa", "Pantry"], ["Spinach", "Produce"], ["Lemons", "Produce"]]}]}]</script>
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("plan-data").textContent);
+  var LAYOUTS = {
+    4: [[14,12,52],[74,8,54],[134,14,52],[72,60,58]],
+    5: [[10,8,50],[75,4,52],[140,10,50],[40,56,56],[104,58,56]],
+    6: [[8,6,48],[76,2,50],[144,8,48],[20,54,52],[74,58,52],[128,54,52]]
+  };
+  var state = { view: "all", swap: false, ticked: {} };
+
+  function plate(syms, alt) {
+    var slots = LAYOUTS[syms.length] || LAYOUTS[5];
+    var uses = syms.map(function (s, i) {
+      var p = slots[i];
+      return '<use href="#i-' + s + '" x="' + p[0] + '" y="' + p[1] + '" width="' + p[2] + '" height="' + p[2] + '"/>';
+    }).join("");
+    return '<svg viewBox="0 0 200 130" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' +
+      alt.replace(/"/g, "&quot;") + '">' +
+      '<ellipse cx="100" cy="66" rx="90" ry="60" fill="#E4E3D3"/>' +
+      '<ellipse cx="100" cy="66" rx="76" ry="50" fill="#F3F2E8"/>' + uses + "</svg>";
+  }
+
+  // Returns the meal as it should currently appear, applying the legume swap if active.
+  function resolve(meal) {
+    if (state.swap && meal.alt) {
+      return { slot: meal.slot, name: meal.alt.name, ing: meal.alt.ing, sym: meal.alt.sym,
+               hi: meal.hi, time: meal.time, method: meal.method, shop: meal.alt.shop, swapped: true };
+    }
+    return { slot: meal.slot, name: meal.name, ing: meal.ing, sym: meal.sym, hi: meal.hi,
+             time: meal.time, method: meal.method, shop: meal.shop, swapped: false };
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  /* ---------- render ---------- */
+  var week = document.getElementById("week");
+
+  function render() {
+    week.innerHTML = DATA.map(function (day, di) {
+      var meals = day.meals.map(function (meal, mi) {
+        var m = resolve(meal);
+        var key = di + "-" + mi;
+        var on = !!state.ticked[key];
+        return '' +
+          '<div class="meal' + (on ? " ticked" : "") + '" data-key="' + key + '">' +
+            "<figure>" + plate(m.sym, m.name + ": " + m.ing) + "</figure>" +
+            '<div class="meal-top"><div class="slot" style="color:' + day.colour + '">' + m.slot + "</div>" +
+              '<span class="time">' + esc(m.time) + "</span></div>" +
+            (m.swapped ? '<span class="swapped">legume swap</span>' : "") +
+            "<h4>" + esc(m.name) + "</h4>" +
+            '<p class="ing">' + esc(m.ing) + "</p>" +
+            '<div class="detail" id="d-' + key + '"><div>' +
+              "<ol>" + m.method.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ol>" +
+              '<p class="hi">' + esc(m.hi) + "</p>" +
+            "</div></div>" +
+            '<div class="spacer"></div>' +
+            '<div class="meal-actions">' +
+              '<button class="link-btn" type="button" data-expand="' + key + '" aria-expanded="false" aria-controls="d-' + key + '">' +
+                'How to make it <span class="chev" aria-hidden="true">⌄</span></button>' +
+              '<button class="tick" type="button" data-tick="' + key + '" aria-pressed="' + on + '">' +
+                (on ? "Cooked" : "Tick off") + "</button>" +
+            "</div>" +
+          "</div>";
+      }).join("");
+
+      var done = day.meals.filter(function (_, mi) { return state.ticked[di + "-" + mi]; }).length;
+      var hide = state.view !== "all" && state.view !== di;
+      return '<article class="day"' + (hide ? " hidden" : "") + ' data-day="' + di + '">' +
+        '<div class="day-grid">' +
+          '<div class="day-name">' + day.day +
+            '<span class="day-tick" style="background:' + day.colour + '"></span>' +
+            "<span>" + esc(day.note) + "</span>" +
+            '<span class="count">' + done + " of 3 cooked</span>" +
+          "</div>" +
+          '<div class="meals">' + meals + "</div>" +
+        "</div></article>";
+    }).join("");
+
+    updateProgress();
+  }
+
+  function updateProgress() {
+    var total = 21, done = Object.keys(state.ticked).filter(function (k) { return state.ticked[k]; }).length;
+    document.getElementById("prog-text").textContent =
+      done === 0 ? "Nothing ticked off yet — 21 meals ahead" : done + " of " + total + " meals cooked";
+    document.getElementById("prog-bar").style.width = (done / total * 100) + "%";
+    document.querySelectorAll(".daytab[data-day]").forEach(function (t) {
+      var di = t.getAttribute("data-day");
+      var all = [0, 1, 2].every(function (mi) { return state.ticked[di + "-" + mi]; });
+      t.classList.toggle("done", all);
+    });
+    document.getElementById("reset").hidden = done === 0;
+  }
+
+  /* ---------- events ---------- */
+  document.querySelector(".daytabs").addEventListener("click", function (e) {
+    var t = e.target.closest(".daytab");
+    if (!t) return;
+    var v = t.getAttribute("data-day");
+    state.view = v === null ? "all" : parseInt(v, 10);
+    document.querySelectorAll(".daytab").forEach(function (b) {
+      b.setAttribute("aria-selected", b === t ? "true" : "false");
+    });
+    document.querySelectorAll(".day").forEach(function (d) {
+      d.hidden = state.view !== "all" && state.view !== parseInt(d.dataset.day, 10);
+    });
+    if (!document.getElementById("shopping").hidden) buildList();
+  });
+
+  week.addEventListener("click", function (e) {
+    var ex = e.target.closest("[data-expand]");
+    if (ex) {
+      var panel = document.getElementById("d-" + ex.getAttribute("data-expand"));
+      var open = panel.classList.toggle("open");
+      ex.setAttribute("aria-expanded", open ? "true" : "false");
+      ex.childNodes[0].nodeValue = open ? "Hide the method " : "How to make it ";
+      return;
+    }
+    var tk = e.target.closest("[data-tick]");
+    if (tk) {
+      var key = tk.getAttribute("data-tick");
+      state.ticked[key] = !state.ticked[key];
+      var card = tk.closest(".meal");
+      card.classList.toggle("ticked", state.ticked[key]);
+      tk.setAttribute("aria-pressed", String(!!state.ticked[key]));
+      tk.textContent = state.ticked[key] ? "Cooked" : "Tick off";
+      var dayEl = tk.closest(".day");
+      var di = dayEl.dataset.day;
+      var n = [0, 1, 2].filter(function (mi) { return state.ticked[di + "-" + mi]; }).length;
+      dayEl.querySelector(".count").textContent = n + " of 3 cooked";
+      updateProgress();
+    }
+  });
+
+  document.getElementById("swap").addEventListener("change", function (e) {
+    state.swap = e.target.checked;
+    render();
+    if (!document.getElementById("shopping").hidden) buildList();
+  });
+
+  document.getElementById("reset").addEventListener("click", function () {
+    state.ticked = {};
+    render();
+    toast("Ticks cleared");
+  });
+
+  /* ---------- shopping list ---------- */
+  var ORDER = ["Produce", "Fish, meat & eggs", "Dairy", "Pantry", "Bakery"];
+
+  function buildList() {
+    var days = state.view === "all" ? DATA.map(function (_, i) { return i; }) : [state.view];
+    var byAisle = {};
+    days.forEach(function (di) {
+      DATA[di].meals.forEach(function (meal) {
+        resolve(meal).shop.forEach(function (pair) {
+          var item = pair[0], aisle = pair[1];
+          (byAisle[aisle] = byAisle[aisle] || {})[item] = true;
+        });
+      });
+    });
+    var html = ORDER.filter(function (a) { return byAisle[a]; }).map(function (a) {
+      var items = Object.keys(byAisle[a]).sort();
+      return '<div class="aisle"><h4>' + a + "</h4><ul>" + items.map(function (it) {
+        return "<li><label><input type=checkbox><span>" + esc(it) + "</span></label></li>";
+      }).join("") + "</ul></div>";
+    }).join("");
+    document.getElementById("aisles").innerHTML = html;
+    var count = ORDER.reduce(function (n, a) { return n + (byAisle[a] ? Object.keys(byAisle[a]).length : 0); }, 0);
+    document.getElementById("scope").textContent =
+      count + " items for " + (state.view === "all" ? "the whole week" : DATA[state.view].day) +
+      (state.swap ? ", with the legume swaps" : "") + ". Duplicates across meals are merged.";
+    document.getElementById("shopping").hidden = false;
+  }
+
+  document.getElementById("makelist").addEventListener("click", function () {
+    var panel = document.getElementById("shopping");
+    if (!panel.hidden) { panel.hidden = true; return; }
+    buildList();
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  document.getElementById("copylist").addEventListener("click", function () {
+    var text = Array.prototype.map.call(document.querySelectorAll("#aisles .aisle"), function (a) {
+      return a.querySelector("h4").textContent + "\n" +
+        Array.prototype.map.call(a.querySelectorAll("span"), function (s) { return "- " + s.textContent; }).join("\n");
+    }).join("\n\n");
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { toast("Shopping list copied"); },
+        function () { toast("Couldn't copy — select and copy manually"); });
+    } else {
+      toast("Copying isn't available in this browser");
+    }
+  });
+
+  var toastEl = document.getElementById("toast"), toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+
+  render();
+})();
+
+</script>
+</body>
+</html>

@@ -33,6 +33,7 @@ renderTimeline("resume-list", RESUME);
 renderCards("project-grid", PROJECTS);
 renderCards("litreview-grid", LITREVIEW);
 renderCards("tutorial-grid", TUTORIALS, { showDate: true });
+renderCards("misc-grid", MISC);
 renderContact();
 
 document.getElementById("year").textContent = new Date().getFullYear();
