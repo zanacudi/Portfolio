@@ -494,6 +494,12 @@ body{padding-bottom:54px}
 <div class="hint" style="margin:8px 0 2px">Both indices are built from the same Q and F you set in Section 5 &mdash; the only difference is whether B<sub>q</sub> is allowed in. Here is that arithmetic at your current settings:</div>
 <div class="eq" id="icEq"></div>
 
+<h3>Where I<sub>c</sub> comes from, depth by depth</h3>
+<p class="explain" style="margin-top:-2px">Drag the depth and watch the whole chain move at once: the three dimensionless groups on the left are the only inputs Eq. 4.13a has, and the I<sub>c</sub> panel on the right is what they produce. The band strip, the detail panel and the arithmetic above all follow this slider, and so do Sections 2 and 5 &mdash; it is the same selected depth throughout the module.</p>
+<div class="slider-block"><label for="icDepth"><span>Selected depth</span> <span class="readout" id="icDepthOut">20.00 m (65.6 ft)</span></label><input id="icDepth" type="range" min="0.5" max="54" step="0.25" value="20"><div class="hint">Moving this also moves Section 2&rsquo;s depth slider and refills Section 5&rsquo;s six inputs from the sounding at that depth, so every number in the module refers to the same place in the ground.</div></div>
+<div class="chart-host"><canvas id="icProfileChart" role="img" aria-label="Four panels against depth: normalized resistance Q on a log axis, friction ratio F, pore pressure ratio Bq, and the resulting Ic over shaded soil behaviour type bands."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>Q &mdash; normalized tip resistance</span><span><i style="background:#2d8b65"></i>F &mdash; friction ratio, %</span><span><i style="background:#7653a6"></i>B<sub>q</sub> &mdash; pore pressure ratio</span><span><i style="background:#123b4a"></i>I<sub>c</sub>, Eq. 4.13a (uses B<sub>q</sub>)</span><span><i style="background:#c64852"></i>I<sub>c(R&amp;W)</sub>, Eq. 4.13b (ignores B<sub>q</sub>)</span><span><i style="background:#e38a22"></i>your selected depth</span></div>
+
 <h3>The behaviour&ndash;type bands &mdash; click any band</h3>
 <p class="explain" style="margin-top:-2px">Each band is a <i>behaviour</i> class, not a grain-size class. Click one to see what it usually is in USCS terms, what its CPT signature looks like, whether the cone drains in it, and whether Section 7's &psi;-inversion is defensible there.</p>
 <div class="chart-host"><canvas id="icChart" style="cursor:pointer" role="img" aria-label="Clickable scale of the six soil behaviour type bands showing where the current Ic value falls."></canvas></div>
@@ -501,9 +507,7 @@ body{padding-bottom:54px}
 
 <div id="icBandDetail" class="band-detail" aria-live="polite"></div>
 
-<div class="grid2" style="margin-top:14px">
-<div>
-<table id="icBoundaryTable">
+<table id="icBoundaryTable" style="margin-top:14px">
 <thead><tr><th>I<sub>c</sub> upper bound</th><th>Behaviour type</th><th>Usually plots as</th></tr></thead>
 <tbody>
 <tr data-band="0"><td>1.25</td><td>Gravelly sands</td><td>GW, GP, GM, SW</td></tr>
@@ -515,12 +519,6 @@ body{padding-bottom:54px}
 </tbody>
 </table>
 <p class="explain" style="font-size:11px;color:var(--muted);margin-top:6px">Rows are clickable too. The USCS column is <i>indicative</i>: those symbols come from grain size and Atterberg limits on a recovered sample, while I<sub>c</sub> is inferred from how the ground responded to the cone. They agree often enough to be useful and disagree often enough to be dangerous &mdash; a sensitive clay and a loose silt can swap places.</p>
-</div>
-<div>
-<div class="chart-host"><canvas id="icProfileChart" role="img" aria-label="Ic plotted against depth for the whole Section 2 sounding, over shaded soil behaviour type bands, with both Eq. 4.13a and Eq. 4.13b traces."></canvas></div>
-<div class="legend"><span><i style="background:#123b4a"></i>I<sub>c</sub>, Eq. 4.13a (uses B<sub>q</sub>)</span><span><i style="background:#c64852"></i>I<sub>c(R&amp;W)</sub>, Eq. 4.13b (ignores B<sub>q</sub>)</span><span><i style="background:#1479b8"></i>your selected depth</span></div>
-</div>
-</div>
 
 <div class="warning" style="margin-top:12px" id="icScreenNote" aria-live="polite"></div>
 <div class="callout" style="margin-top:10px" id="icApplicability" aria-live="polite"></div>
@@ -1078,6 +1076,7 @@ function updateSounding(){
   // guard on the DATA, not the function: the declaration hoists, but IC_BANDS is
   // assigned further down, and updateSounding() runs once before that point
   if(window.IC_BANDS && window.drawIcProfileChart) drawIcProfileChart();
+  if(window.icSyncDepthSlider) icSyncDepthSlider();
 }
 ['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
 // gamma / water table / Ko / % hydrostatic also drive Section 3's demo, so keep it in step
@@ -1950,33 +1949,37 @@ function drawIcChart(ic, icRW){
 
 function drawIcProfileChart(){
   var host=el('icProfileChart'); if(!host) return;
-  var cvp=prepCanvas(host, 330, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var mt=18, mb=44, ml=46, mr=12;
-  var pw=W-ml-mr, ph=H-mt-mb;
+  var cvp=prepCanvas(host, 340, 320), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var mt=20, mb=46, ml=48, mr=10, gap=16;
+  var ph=H-mt-mb;
   var zMax=SND_MAX_Z;
-  function X(v){ return ml+pw*(Math.max(IC_XMIN,Math.min(IC_XMAX,v))-IC_XMIN)/(IC_XMAX-IC_XMIN); }
   function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/zMax)); }
 
-  // the same bands as the strip above, washed out enough to read traces over
-  IC_BANDS.forEach(function(b,i){
-    var r=icBandRange(i);
-    ctx.globalAlpha=0.16; ctx.fillStyle=b.color;
-    ctx.fillRect(X(r[0]), mt, X(r[1])-X(r[0]), ph); ctx.globalAlpha=1;
-  });
-  // the 1.80 bar is the one that decides whether Section 7 applies, so draw it hard
-  ctx.strokeStyle='#123b4a'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
-  ctx.beginPath(); ctx.moveTo(X(1.80),mt); ctx.lineTo(X(1.80),mt+ph); ctx.stroke(); ctx.setLineDash([]);
-  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
-  haloText(ctx,'Ic = 1.80', X(1.80)+3, mt+3, '#123b4a');
+  var rows=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.Q)&&isFinite(c.F)&&isFinite(c.ic); });
+  function span(get,lo,hi){
+    var v=rows.map(get).filter(isFinite);
+    return [Math.min(lo, Math.min.apply(null,v)), Math.max(hi, Math.max.apply(null,v))];
+  }
+  var qSpan=span(function(c){return c.Q;},1,10);
+  var fSpan=span(function(c){return c.F;},0,1);
+  var bSpan=span(function(c){return c.Bq;},-0.1,0.1);
 
-  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  // Q spans a decade or more on any real sounding, so it gets the log axis; the
+  // other two are near-linear and read better straight.
+  var panels=[
+    {key:'Q',  title:'Q',  sub:'(log)', color:'#1479b8', log:true,  min:Math.max(1,Math.pow(10,Math.floor(Math.log10(Math.max(1,qSpan[0]))))), max:Math.pow(10,Math.ceil(Math.log10(qSpan[1]))), get:function(c){return c.Q;}},
+    {key:'F',  title:'F',  sub:'%',     color:'#2d8b65', min:0, max:Math.ceil(fSpan[1]*1.05*10)/10, get:function(c){return c.F;}},
+    {key:'Bq', title:'Bq', sub:'',      color:'#7653a6', min:Math.min(-0.05,bSpan[0]), max:Math.max(0.05,bSpan[1]), zero:true, get:function(c){return c.Bq;}},
+    {key:'Ic', title:'Ic', sub:'',      color:'#123b4a', min:IC_XMIN, max:IC_XMAX, bands:true, get:function(c){return c.ic;}}
+  ];
+  var panelW=(W-ml-mr-gap*(panels.length-1))/panels.length;
 
+  // shared depth axis, drawn once on the left
   var yt=niceTicks(0,zMax,5);
   ctx.textAlign='right';
   yt.values.forEach(function(v){
     if(v>zMax) return;
     var y=Y(v);
-    ctx.strokeStyle='#eef2f4'; ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke();
     ctx.fillStyle='#3a4b52'; ctx.font='700 10px Arial'; ctx.textBaseline='bottom';
     ctx.fillText(v.toFixed(yt.dp), ml-6, y);
     ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top';
@@ -1986,35 +1989,114 @@ function drawIcProfileChart(){
   ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
   ctx.fillText('depth, m (ft)',0,0); ctx.restore();
 
-  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle='#61737b'; ctx.font='9.5px Arial';
-  [1,1.5,2,2.5,3,3.5,4].forEach(function(v){ ctx.fillText(v.toFixed(1), X(v), mt+ph+5); });
-  ctx.font='10.5px Arial'; ctx.fillText('Ic', ml+pw/2, mt+ph+20);
+  var zSel=num('sndDepth'), cSel=sndComputeAt(zSel);
 
-  function trace(getter,color,width,dash){
-    ctx.strokeStyle=color; ctx.lineWidth=width; if(dash) ctx.setLineDash(dash);
-    ctx.beginPath(); var started=false;
-    sndData.forEach(function(r){
-      var c=sndComputeAtRow(r), v=getter(c);
-      if(!isFinite(v)) return;
-      var x=X(v), y=Y(c.z);
-      if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y);
+  panels.forEach(function(p,pi){
+    var px=ml+(panelW+gap)*pi;
+    function X(v){
+      var t;
+      if(p.log){ var lo=Math.log10(p.min), hi=Math.log10(p.max);
+                 t=(Math.log10(Math.max(p.min,Math.min(p.max,v)))-lo)/(hi-lo); }
+      else t=(Math.max(p.min,Math.min(p.max,v))-p.min)/(p.max-p.min);
+      return px+panelW*Math.max(0,Math.min(1,t));
+    }
+    ctx.fillStyle='#f7fafb'; ctx.fillRect(px,mt,panelW,ph);
+
+    if(p.bands){
+      IC_BANDS.forEach(function(b,bi){
+        var r=icBandRange(bi);
+        ctx.globalAlpha=0.18; ctx.fillStyle=b.color;
+        ctx.fillRect(X(r[0]),mt,X(r[1])-X(r[0]),ph); ctx.globalAlpha=1;
+      });
+    }
+    ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+    yt.values.forEach(function(v){ if(v>zMax) return; var y=Y(v);
+      ctx.beginPath(); ctx.moveTo(px,y); ctx.lineTo(px+panelW,y); ctx.stroke(); });
+    ctx.strokeStyle='#d7e1e5'; ctx.strokeRect(px+0.5,mt+0.5,panelW-1,ph-1);
+
+    if(p.zero && p.min<0 && p.max>0){
+      ctx.strokeStyle='#b9c6cc'; ctx.setLineDash([3,3]); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(X(0),mt); ctx.lineTo(X(0),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    }
+    if(p.bands){
+      ctx.strokeStyle='#123b4a'; ctx.lineWidth=1.5; ctx.setLineDash([5,3]);
+      ctx.beginPath(); ctx.moveTo(X(1.80),mt); ctx.lineTo(X(1.80),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    }
+
+    // x ticks: decades for the log panel, nice round numbers otherwise, and every
+    // label clamped inside its own panel so none spills into the gutter
+    ctx.font='9px Arial'; ctx.textBaseline='top'; ctx.textAlign='center';
+    var ticks=[];
+    if(p.log){ for(var d=Math.log10(p.min); d<=Math.log10(p.max)+1e-9; d++) ticks.push(Math.pow(10,d)); }
+    else { var nt=niceTicks(p.min,p.max,3); ticks=nt.values.filter(function(v){return v>=p.min&&v<=p.max;}); p._dp=nt.dp; }
+    ticks.forEach(function(v){
+      var lab = p.log ? (v>=1000? (v/1000)+'k' : String(v)) : v.toFixed(p._dp!==undefined?p._dp:1);
+      ctx.fillStyle='#8a97a0';
+      ctx.fillText(lab, clampLabelX(ctx, X(v), lab, px, panelW), mt+ph+5);
     });
-    ctx.stroke(); ctx.setLineDash([]);
-  }
-  trace(function(c){ return icRWOf(c.Q,c.F); }, '#c64852', 1.1, [3,2]);
-  trace(function(c){ return c.ic; }, '#123b4a', 1.4, null);
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10.5px Arial'; ctx.textBaseline='bottom';
+    ctx.fillText(p.title+(p.sub?' '+p.sub:''), px+panelW/2, mt-6);
 
-  var zSel=num('sndDepth'), cs=sndComputeAt(zSel);
-  if(cs){
-    var y=Y(zSel);
-    ctx.strokeStyle='#1479b8'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
-    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle='#123b4a'; ctx.beginPath(); ctx.arc(X(cs.ic),y,3.5,0,7); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
-    ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(icRWOf(cs.Q,cs.F)),y,3,0,7); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
-  }
+    function trace(get,color,width,dash){
+      ctx.strokeStyle=color; ctx.lineWidth=width; if(dash) ctx.setLineDash(dash);
+      ctx.beginPath(); var started=false;
+      rows.forEach(function(c){ var v=get(c); if(!isFinite(v)) return;
+        var x=X(v), y=Y(c.z);
+        if(!started){ ctx.moveTo(x,y); started=true; } else ctx.lineTo(x,y); });
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    if(p.bands) trace(function(c){ return icRWOf(c.Q,c.F); }, '#c64852', 1.1, [3,2]);
+    trace(p.get, p.color, 1.4, null);
+
+    // the selected depth, marked identically in every panel
+    if(cSel){
+      var y=Y(zSel);
+      ctx.strokeStyle='#e38a22'; ctx.lineWidth=1.2; ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(px,y); ctx.lineTo(px+panelW,y); ctx.stroke(); ctx.setLineDash([]);
+      var v=p.get(cSel);
+      if(isFinite(v)){
+        ctx.fillStyle=p.color; ctx.beginPath(); ctx.arc(X(v),y,3.5,0,7); ctx.fill();
+        ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
+        var lab=(p.key==='Q'? v.toFixed(0) : p.key==='Bq'? v.toFixed(3) : v.toFixed(2));
+        ctx.font='700 9.5px Arial'; ctx.textBaseline='bottom'; ctx.textAlign='center';
+        haloText(ctx, lab, clampLabelX(ctx, X(v), lab, px, panelW), y-6, p.color);
+      }
+    }
+  });
 }
+
+// ---- Section 6's depth slider: one selected depth for the whole module ----
+// It drives sndDepth rather than keeping its own, then refills Section 5 from that
+// depth exactly as the Section 2 button does, so no two panels can disagree.
+(function(){
+  var sl=el('icDepth'); if(!sl) return;
+  sl.min = el('sndDepth').min; sl.max = el('sndDepth').max; sl.step = el('sndDepth').step;
+  function syncOut(z){ el('icDepthOut').textContent = z.toFixed(2)+' m ('+mToFt(z).toFixed(1)+' ft)'; }
+  window.icSyncDepthSlider = function(){
+    var z=num('sndDepth');
+    if(+sl.value!==z) sl.value=z;
+    syncOut(z);
+  };
+  sl.addEventListener('input', function(){
+    var z=+sl.value;
+    el('sndDepth').value=z;
+    updateSounding();                       // keeps Section 2's log and stats in step
+    var c=sndComputeAt(z);
+    if(c){
+      function setClamped(id,val){ var x=el(id); x.value=Math.max(+x.min,Math.min(+x.max,val)); }
+      setClamped('qt',c.qt); setClamped('fs',c.fs); setClamped('u2',c.u2);
+      setClamped('sv',c.svEff); setClamped('u0',c.u0); setClamped('ko',num('sndKo'));
+      updateSection4();                     // refills Section 5 and redraws it
+      // Report the SOUNDING's own Q, F and Bq, not the values after they have been
+      // round-tripped through Section 5's range inputs. Those inputs quantize to their
+      // step, which shifted Ic by up to 0.01 -- invisible most places, but enough to
+      // put the stat and the profile trace on opposite sides of a band boundary.
+      updateIc(c.Q, c.F, c.Bq);
+    }
+    syncOut(z);
+  });
+  icSyncDepthSlider();
+})();
 
 // ---- band interaction: canvas clicks, table rows, and keyboard ----
 (function(){
@@ -2778,7 +2860,8 @@ var figureInfo={
 'cptChart':['Qp against effective stress, in the same orientation as the log','Laid out like the Section 2 log: <b>σ′vo runs DOWN the left</b> in kPa with psf in parentheses, so deeper ground is lower on the figure, and <b>Qp runs across on a log scale</b>. <b>Orange:</b> the Section 2 sounding exactly as measured, one point per depth, drawn unsmoothed. <b>Red dashed:</b> what Qp would be at your current qt and Ko if only the stress changed. <b>Dark dashed horizontal line and red dot:</b> the σ′vo you have set on the slider.','Follow the red dashed curve first. qt is fixed all along it, yet Qp still falls by more than a decade from top to bottom, purely because the stress underneath it is growing — that alone is why a raw tip reading means nothing until the stress is pinned down. Now follow the orange trace. Real ground does not lie along that curve: going deeper raises qt as well as the stress, so the measured profile is markedly flatter than the fixed-qt line. The red curve isolates one variable; the orange trace shows both moving at once, which is what a sounding actually hands you.'],
 'koChart':['How much the Ko assumption is actually worth','Horizontal axis is Ko across its plausible range; vertical axis is Qp. <b>Red:</b> the exact Qp=(qt−p′o)/p′o at your current qt and σ′vo. <b>Blue:</b> Table 4.1\'s shortcut 3Q/(1+2Ko). <b>Dark dashed line and dots:</b> your current Ko. <b>Orange dashed line:</b> the Ko that Jaky\'s equation gives for the friction angle on the slider beside this figure.','Two things to take away. First, the red and blue curves stay close over the whole range, so Table 4.1\'s shortcut is a fair stand-in for the exact expression. Second, and more useful: compare how far Qp moves across this entire Ko range against how far it moved across the stress range in the figure above. Ko is the input you can least defend -- the book is openly sceptical of Jaky here -- but it is also the one that costs you least when you get it wrong. Drag the friction angle and watch the orange line move to see how much a whole degree of φ′ is really worth.'],
 'icChart':['The six behaviour-type bands, and where this depth sits in them','A colored band for each soil behaviour type, gravelly sands on the left through organic soils on the right, with the Ic scale beneath. The band containing the current reading is drawn slightly taller and outlined; clicking any band selects it instead and fills the panel below. <b>Dark navy arrow above the bar:</b> Ic from Eq. 4.13a, the index that uses Bq. <b>Red dashed tick below the bar:</b> the same depth through Eq. 4.13b, which ignores Bq.','Read the navy arrow first -- that is the value the rest of the module uses. Then look at where the red tick sits. When Bq is near zero the two nearly coincide and the choice of formula is academic. When they separate, the gap IS the pore-pressure information that Eq. 4.13b discards, and if they straddle a band boundary the two formulas would have you report different soil. Click through the bands left to right to see the drainage assumption change underneath you: fully drained in the sands, partially drained in the silty band where penetration theory is weakest, undrained in the clays.'],
-'icProfileChart':['Ic down the whole sounding, both formulas','Depth runs down the left in m with ft in parentheses, matching the Section 2 log; Ic runs across, over the same band colors as the strip above, washed out. <b>Navy solid:</b> Ic from Eq. 4.13a. <b>Red dashed:</b> Ic from Eq. 4.13b. <b>Bold navy dashed vertical line at Ic=1.80:</b> the sand-like cutoff that decides whether Section 7 applies. <b>Blue dotted horizontal line and dots:</b> the depth selected on the Section 2 slider.','This is the screening step done over the whole hole rather than at one point. Anything left of the 1.80 line is ground where the psi-inversion is defensible; anything right of it is not, however confident the psi panel in Section 2 looks. Check how much of the profile actually clears that line -- the stat above the figure counts it for you. Then watch the two traces: where they lie on top of each other, Bq is near zero and the ground is draining freely; where the red trace pulls away from the navy one, pore pressure is being generated and the formula that ignores it is guessing.'],
+'icProfileChart':['The three inputs to Ic, and the Ic they produce','Depth runs down the shared axis on the left in m with ft in parentheses. Four panels, left to right, are the whole of Eq. 4.13a. <b>Q (blue, log axis):</b> normalized tip resistance -- log-scaled because Q spans more than a decade on any real sounding. <b>F (green):</b> friction ratio in percent. <b>Bq (purple):</b> pore pressure ratio, with a grey dashed line at zero. <b>Ic (navy):</b> the result, over the same washed band colors as the strip below, with the red dashed trace being Eq. 4.13b for comparison and the bold navy dashed line the Ic=1.80 sand-like cutoff. An orange dashed line marks the depth on the slider in every panel, with a labelled dot on each trace.','Read one depth straight across all four panels: that is the calculation, left to right, at that point in the ground. Then drag the slider and watch which input is actually driving Ic. Q falling with depth pushes Ic up; F rising pushes it up harder, because the friction-ratio term carries the 1.3 multiplier. Where Bq sits near zero the navy and red Ic traces coincide and the choice of formula does not matter; where Bq departs from zero they separate, and that separation is the pore-pressure information Eq. 4.13b discards. Watch for depths where the two traces sit on opposite sides of the 1.80 line -- there the two formulas disagree about whether Section 7 may be used at all.'],
+
 
 'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
 'distChart':['The ψ distribution at a site, and where ψk sits in it','Navy curve: assumed-normal probability density of ψ across the sounding. Red shading: the weaker (higher-ψ) tail beyond the chosen ψk. Blue vertical line: the chosen characteristic value itself. Red dashed line: the Nerlerk case\'s real liquefiable threshold.','The mean sits at the peak of the curve — read ψk\'s line position relative to that peak to see how much conservatism the chosen percentile is actually buying, then compare ψk against the red liquefiable-threshold line.']
