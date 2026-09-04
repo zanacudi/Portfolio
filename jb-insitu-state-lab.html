@@ -59,6 +59,10 @@ canvas{display:block;width:100%;height:260px}
 #icBoundaryTable tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
 #icBoundaryTable tbody tr.sel td{font-weight:700}
 #icChart:focus{outline:2px solid var(--blue);outline-offset:2px}
+/* the depth profile and the band strip sit side by side so both are on screen at once */
+.ic-figs{display:grid;grid-template-columns:1.12fr 0.88fr;gap:18px;align-items:start;margin-top:8px}
+.ic-figs .band-detail{margin-top:8px}
+@media(max-width:1080px){.ic-figs{grid-template-columns:1fr}}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
 .callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0}
 .sources{font-size:11px;color:var(--muted);line-height:1.6}
@@ -110,6 +114,10 @@ th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
 @media(max-width:520px){.module-path{grid-template-columns:1fr}}
 
 .guided-panel{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb);margin:12px 0}.guided-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.guided-step{display:block;width:100%;text-align:left;font-family:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;line-height:1.4;cursor:pointer;color:var(--ink)}.guided-step.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(20,121,184,.15);background:#eef8fc}.guided-step b{display:block;color:var(--navy);margin-bottom:3px}.experiment-status{font-size:11.5px;background:#eef8fc;border-radius:7px;padding:8px;margin-top:8px}
+/* The toggle button has always set .open and aria-expanded, but no rule ever acted
+   on it, so every figure rendered with its help text permanently expanded. */
+.figure-help{display:none}
+.figure-help.open{display:block;font-size:11.5px;line-height:1.6;color:var(--ink);background:#f7fafb;border-left:3px solid var(--blue);padding:9px 11px;margin:8px 0 0;border-radius:0 8px 8px 0}
 .chart-reading-mode canvas{outline:3px solid rgba(20,121,184,.16);outline-offset:3px}.pulse-target{animation:targetPulse 1.25s ease 2}@keyframes targetPulse{50%{box-shadow:0 0 0 7px rgba(20,121,184,.18)}}
 @media(max-width:820px){.guided-steps{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.guided-steps{grid-template-columns:1fr}}
@@ -497,18 +505,20 @@ body{padding-bottom:54px}
 <div class="hint" style="margin:8px 0 2px">Both indices are built from the same Q and F you set in Section 5 &mdash; the only difference is whether B<sub>q</sub> is allowed in. Here is that arithmetic at your current settings:</div>
 <div class="eq" id="icEq"></div>
 
-<h3>Where I<sub>c</sub> comes from, depth by depth</h3>
-<p class="explain" style="margin-top:-2px">Drag the depth and watch the whole chain move at once: the three dimensionless groups on the left are the only inputs Eq. 4.13a has, and the I<sub>c</sub> panel on the right is what they produce. The band strip, the detail panel and the arithmetic above all follow this slider, and so do Sections 2 and 5 &mdash; it is the same selected depth throughout the module.</p>
+<h3>Where I<sub>c</sub> comes from, and which band it lands in</h3>
+<p class="explain" style="margin-top:-2px">Drag the depth and watch the whole chain move at once. On the left, the three dimensionless groups are the only inputs Eq. 4.13a has and the fourth panel is what they produce. On the right, that same I<sub>c</sub> is placed among the six behaviour&ndash;type bands &mdash; click any band for what it usually is in USCS terms, its CPT signature, whether the cone drains in it, and whether Section 7&rsquo;s &psi;-inversion is defensible there. Each band is a <i>behaviour</i> class, not a grain-size class.</p>
 <div class="slider-block"><label for="icDepth"><span>Selected depth</span> <span class="readout" id="icDepthOut">20.00 m (65.6 ft)</span></label><input id="icDepth" type="range" min="0.5" max="54" step="0.25" value="20"><div class="hint">Moving this also moves Section 2&rsquo;s depth slider and refills Section 5&rsquo;s six inputs from the sounding at that depth, so every number in the module refers to the same place in the ground.</div></div>
+<div class="ic-figs">
+<div>
 <div class="chart-host"><canvas id="icProfileChart" role="img" aria-label="Four panels against depth: normalized resistance Q on a log axis, friction ratio F, pore pressure ratio Bq, and the resulting Ic over shaded soil behaviour type bands."></canvas></div>
 <div class="legend"><span><i style="background:#1479b8"></i>Q &mdash; normalized tip resistance</span><span><i style="background:#2d8b65"></i>F &mdash; friction ratio, %</span><span><i style="background:#7653a6"></i>B<sub>q</sub> &mdash; pore pressure ratio</span><span><i style="background:#123b4a"></i>I<sub>c</sub>, Eq. 4.13a (uses B<sub>q</sub>)</span><span><i style="background:#c64852"></i>I<sub>c(R&amp;W)</sub>, Eq. 4.13b (ignores B<sub>q</sub>)</span><span><i style="background:#e38a22"></i>your selected depth</span></div>
-
-<h3>The behaviour&ndash;type bands &mdash; click any band</h3>
-<p class="explain" style="margin-top:-2px">Each band is a <i>behaviour</i> class, not a grain-size class. Click one to see what it usually is in USCS terms, what its CPT signature looks like, whether the cone drains in it, and whether Section 7's &psi;-inversion is defensible there.</p>
+</div>
+<div>
 <div class="chart-host"><canvas id="icChart" style="cursor:pointer" role="img" aria-label="Clickable scale of the six soil behaviour type bands showing where the current Ic value falls."></canvas></div>
 <div class="legend"><span><i style="background:#8a6d3b"></i>gravelly sands</span><span><i style="background:#e38a22"></i>sands, clean to silty</span><span><i style="background:#c9a227"></i>silty sand to sandy silt</span><span><i style="background:#7653a6"></i>clayey silt to silty clay</span><span><i style="background:#61737b"></i>clays</span><span><i style="background:#3d5157"></i>organic soils</span><span><i style="background:#123b4a"></i>current I<sub>c</sub> (Eq. 4.13a)</span><span><i style="background:#c64852"></i>the same depth via Eq. 4.13b</span></div>
-
 <div id="icBandDetail" class="band-detail" aria-live="polite"></div>
+</div>
+</div>
 
 <table id="icBoundaryTable" style="margin-top:14px">
 <thead><tr><th>I<sub>c</sub> upper bound</th><th>Behaviour type</th><th>Usually plots as</th></tr></thead>
@@ -2004,7 +2014,7 @@ function drawKoChart(){
 // and tested -- indicative, never a conversion. Keeping that distinction explicit is
 // the point of the panel: the two disagree often enough to matter.
 var IC_BANDS = [
-  {hi:1.25, name:'Gravelly sands', color:'#8a6d3b', tag:'Gravelly',
+  {hi:1.25, name:'Gravelly sands', color:'#8a6d3b', tag:'Gravelly', mini:'Gravel',
    uscs:'GW, GP, GM, SW',
    grain:'Gravel and gravelly sand — coarse, clean, essentially no fines.',
    cpt:'Very high Q (often well past 150), very low F (under about 0.5%), B<sub>q</sub> ≈ 0.',
@@ -2012,7 +2022,7 @@ var IC_BANDS = [
    psi:'ok', psiText:'Inside the calibrated range, but read the caveat first.',
    note:'The risk here is the opposite of the usual one. Gravel can refuse or damage a cone, and a single large clast produces a spike that is an artefact rather than a layer — so treat isolated very-high-q<sub>t</sub> points as suspect until the neighbouring readings agree with them.'},
 
-  {hi:1.80, name:'Sands: clean to silty', color:'#e38a22', tag:'Sand',
+  {hi:1.80, name:'Sands: clean to silty', color:'#e38a22', tag:'Sand', mini:'Sand',
    uscs:'SW, SP, SP-SM, SM',
    grain:'Clean sand through silty sand; fines typically under roughly 15%.',
    cpt:'High Q, F around 0.3–1%, B<sub>q</sub> ≈ 0 because nothing builds up to measure.',
@@ -2020,7 +2030,7 @@ var IC_BANDS = [
    psi:'ok', psiText:'This is the band the whole method is built for.',
    note:'Section 7&rsquo;s Q<sub>p</sub>=k·exp(−mψ) calibration came from calibration-chamber tests on sands like these, and Section 8&rsquo;s Nerlerk case is a sand fill. A ψ computed here is doing exactly what it was designed to do. Everything to the right of this band is extrapolation of one kind or another.'},
 
-  {hi:2.40, name:'Silty sand to sandy silt', color:'#c9a227', tag:'Silty sand/sandy silt',
+  {hi:2.40, name:'Silty sand to sandy silt', color:'#c9a227', tag:'Silty sand/silt', mini:'Silt+sd',
    uscs:'SM, SC-SM, ML',
    grain:'Silty sand through non-plastic sandy silt.',
    cpt:'Moderate Q, F around 1–2%, and B<sub>q</sub> anywhere between 0 and about 0.4 — that spread is the tell.',
@@ -2028,7 +2038,7 @@ var IC_BANDS = [
    psi:'caution', psiText:'Screening only. Do not carry a ψ from here into design unaided.',
    note:'Standard penetration theory assumes the response is either fully drained or fully undrained, and here it is neither: some pore pressure escapes during penetration and some does not. Section 5&rsquo;s |B<sub>q</sub>| ≲ 0.02 check exists for exactly this band. If B<sub>q</sub> has drifted off zero, the drained interpretation behind Q<sub>p</sub> is already partly broken, whatever the ψ number says.'},
 
-  {hi:2.76, name:'Clayey silt to silty clay', color:'#7653a6', tag:'Clayey silt',
+  {hi:2.76, name:'Clayey silt to silty clay', color:'#7653a6', tag:'Clayey silt', mini:'Cl silt',
    uscs:'ML, MH, CL-ML',
    grain:'Clayey silt and silty clay; low to intermediate plasticity.',
    cpt:'Low Q (roughly 10–25), F around 2–5%, B<sub>q</sub> commonly 0.4–0.8.',
@@ -2036,7 +2046,7 @@ var IC_BANDS = [
    psi:'no', psiText:'Outside the calibration. A ψ here is not meaningful.',
    note:'The state parameter is still a real property of this soil, but the CPT inversion that estimates it is not calibrated to recover it here. This is where you stop asking the cone for ψ and start asking it for undrained shear strength instead, via a bearing factor on q<sub>net</sub>.'},
 
-  {hi:3.22, name:'Clays', color:'#61737b', tag:'Clay',
+  {hi:3.22, name:'Clays', color:'#61737b', tag:'Clay', mini:'Clay',
    uscs:'CL, CH',
    grain:'Silty clay through fat clay.',
    cpt:'Very low Q (often under 10), F around 3–8%, B<sub>q</sub> commonly 0.6–1.0.',
@@ -2044,7 +2054,7 @@ var IC_BANDS = [
    psi:'no', psiText:'Not applicable.',
    note:'A high B<sub>q</sub> here is the expected, correct reading rather than a warning — it is the cone measuring a pore pressure the ground cannot shed. Note that Eq. 4.13b, which throws B<sub>q</sub> away, is discarding its single most diagnostic channel precisely where that channel is strongest.'},
 
-  {hi:Infinity, name:'Organic soils', color:'#3d5157', tag:'Organic',
+  {hi:Infinity, name:'Organic soils', color:'#3d5157', tag:'Organic', mini:'Org',
    uscs:'OL, OH, Pt',
    grain:'Organic silt and clay through peat.',
    cpt:'Low Q with distinctly high F (often past 5–8%) — the friction ratio is what separates this band from ordinary clay.',
@@ -2163,8 +2173,8 @@ function drawIcChart(ic, icRW){
   var host=el("icChart"); if(!host) return;
   // Sized to its content. The old version reserved 250px for a 40px bar and left the
   // bottom half of the canvas empty.
-  var cvp=prepCanvas(host, 132, 300), ctx=cvp.ctx, W=cvp.W;
-  var ml=14, mr=14, pw=W-ml-mr;
+  var cvp=prepCanvas(host, 128, 240), ctx=cvp.ctx, W=cvp.W;
+  var ml=10, mr=10, pw=W-ml-mr;
   function X(v){ return ml+pw*(Math.max(IC_XMIN,Math.min(IC_XMAX,v))-IC_XMIN)/(IC_XMAX-IC_XMIN); }
   var y0=34, barH=40;
   var activeIdx = icSelectedBand===null ? icBandIndex(ic) : icSelectedBand;
@@ -2179,9 +2189,12 @@ function drawIcChart(ic, icRW){
     ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.font = on ? '700 10.5px Arial' : '10px Arial';
     // step down to the short tag, then drop the label entirely, rather than overflow
-    var full=b.name, tag=b.tag;
-    var lab = ctx.measureText(full).width < w-8 ? full
-            : (ctx.measureText(tag).width < w-8 ? tag : '');
+    // step down through three lengths before giving up, so a narrower strip keeps
+    // naming its bands instead of silently going blank
+    var lab='';
+    [b.name, b.tag, b.mini].forEach(function(cand){
+      if(!lab && cand && ctx.measureText(cand).width < w-6) lab=cand;
+    });
     if(lab) ctx.fillText(lab, (x0+x1)/2, y0+barH/2);
   });
   ctx.strokeStyle='#fff'; ctx.lineWidth=1;
@@ -2225,8 +2238,9 @@ function drawIcChart(ic, icRW){
 
 function drawIcProfileChart(){
   var host=el('icProfileChart'); if(!host) return;
-  var cvp=prepCanvas(host, 340, 320), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var mt=20, mb=46, ml=48, mr=10, gap=16;
+  var cvp=prepCanvas(host, 300, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  // tighter gutters and gaps: the profile shares the row with the band strip now
+  var mt=18, mb=42, ml=44, mr=8, gap=11;
   var ph=H-mt-mb;
   var zMax=SND_MAX_Z;
   function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/zMax)); }
@@ -2379,7 +2393,7 @@ function drawIcProfileChart(){
   var cv=el('icChart'); if(!cv) return;
   function bandFromEvent(e){
     var r=cv.getBoundingClientRect();
-    var ml=14, mr=14, pw=r.width-ml-mr;
+    var ml=10, mr=10, pw=r.width-ml-mr;
     var t=(e.clientX-r.left-ml)/pw;
     var ic=IC_XMIN+t*(IC_XMAX-IC_XMIN);
     if(t<-0.02||t>1.02) return null;
@@ -2629,6 +2643,53 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- figure help must start collapsed and toggle ----
+  // It shipped expanded for a while because the .open class had no rule behind it,
+  // which cost ~250px of height on every figure in the module.
+  (function(){
+    var shells=document.querySelectorAll(".figure-shell");
+    check(shells.length>=8, "figures: every canvas got a how-to-read wrapper");
+    var openByDefault=0;
+    shells.forEach(function(sh){
+      var h=sh.querySelector(".figure-help");
+      if(h && getComputedStyle(h).display!=="none") openByDefault++;
+    });
+    check(openByDefault===0, "figures: no help panel is expanded before it is asked for");
+    var sh=el('icChart').closest(".figure-shell");
+    var h=sh.querySelector(".figure-help"), btn=sh.querySelector(".figure-tools button");
+    btn.click();
+    check(getComputedStyle(h).display!=="none", "figures: the button opens the help panel");
+    check(btn.getAttribute("aria-expanded")==="true", "figures: aria-expanded tracks the open state");
+    btn.click();
+    check(getComputedStyle(h).display==="none", "figures: clicking again closes it");
+    check(btn.getAttribute("aria-expanded")==="false", "figures: and aria-expanded goes back");
+  })();
+
+  // ---- the two Section 6 figures share one row so both are on screen ----
+  (function(){
+    var g=document.querySelector(".ic-figs");
+    check(!!g, "S6: the profile and the band strip share a layout container");
+    check(g.contains(el('icProfileChart')) && g.contains(el('icChart')),
+          "S6: both figures live inside it");
+    if(innerWidth>1080){
+      var a=el('icProfileChart').getBoundingClientRect();
+      var b=el('icChart').getBoundingClientRect();
+      check(Math.abs(a.top-b.top)<160, "S6: on a wide screen they sit side by side, not stacked");
+      check(b.left>a.left+a.width-40, "S6: the band strip is to the right of the profile");
+    }
+    // all six bands must still be named at the narrower strip width
+    var cv=el('icChart'), ctx=cv.getContext("2d");
+    var W=parseFloat(cv.style.width)||cv.width, ml=10, mr=10, pw=W-ml-mr;
+    var unlabelled=0;
+    IC_BANDS.forEach(function(bd,i){
+      var r=icBandRange(i), w=pw*(r[1]-r[0])/(IC_XMAX-IC_XMIN), lab="";
+      ctx.font="10px Arial";
+      [bd.name,bd.tag,bd.mini].forEach(function(c){ if(!lab && c && ctx.measureText(c).width<w-6) lab=c; });
+      if(!lab) unlabelled++;
+      check(!!bd.mini, "S6: band "+i+" has a short label for a narrow strip");
+    });
+    check(unlabelled===0, "S6: every band is still named at the current strip width");
+  })();
   // ---- Section 6 depth slider: one depth for the whole module ----
   (function(){
     var sl=el('icDepth'), before=+el('sndDepth').value;
