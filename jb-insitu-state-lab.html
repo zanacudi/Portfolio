@@ -63,6 +63,10 @@ canvas{display:block;width:100%;height:260px}
 .ic-figs{display:grid;grid-template-columns:1.12fr 0.88fr;gap:18px;align-items:start;margin-top:8px}
 .ic-figs .band-detail{margin-top:8px}
 @media(max-width:1080px){.ic-figs{grid-template-columns:1fr}}
+.inv-figs{display:grid;grid-template-columns:1.05fr 0.95fr;gap:18px;align-items:start;margin-top:10px}
+@media(max-width:1080px){.inv-figs{grid-template-columns:1fr}}
+#invEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#invEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
 .callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0}
 .sources{font-size:11px;color:var(--muted);line-height:1.6}
@@ -551,18 +555,30 @@ body{padding-bottom:54px}
 <div class="eq">Q<sub>p</sub> = k&middot;exp(&minus;m&psi;) &nbsp;&nbsp; &psi; = &minus;ln(Q<sub>p</sub>/k)/m</div>
 <div class="eq">k = 8 + 0.55/(&lambda;<sub>10</sub> &minus; 0.01) &nbsp;&nbsp; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>(&lambda;<sub>10</sub>) &nbsp; (Eqs. 4.11a, 4.11b)</div>
 
-<label for="sandSelect" style="font-size:12.5px;font-weight:700">Sand (same Table 2.1 database as Module 1)</label><br>
-<select id="sandSelect"></select>
+<div class="snd-row2" style="margin-top:8px">
+<div class="slider-block" style="margin:0"><label for="sandSelect" style="display:block"><span>Sand &mdash; sets &lambda;<sub>10</sub>, and so k and m</span></label><select id="sandSelect" style="width:100%;margin-top:6px"></select><div class="hint">This is the same choice as Section 2&rsquo;s sand list. Changing either one changes both, so the module cannot report two different &psi; for the same reading.</div></div>
+<div class="slider-block" style="margin:0"><label for="invDepth"><span>Selected depth</span> <span class="readout" id="invDepthOut">20.00 m (65.6 ft)</span></label><input id="invDepth" type="range" min="0.5" max="54" step="0.25" value="20"><div class="hint">The same selected depth as Sections 2, 5 and 6. Q<sub>p</sub> at this depth is what gets inverted below.</div></div>
+</div>
 
-<div class="bayes-grid2" style="margin-top:10px">
+<div class="statgrid" id="invStats"></div>
+<div class="hint" style="margin:8px 0 2px">The inversion, written out at this depth:</div>
+<div class="eq" id="invEq"></div>
+
+<div class="inv-figs">
 <div>
-<div class="statgrid n3" id="invStats"></div>
-<div class="callout"><b>This chapter's method recovers &psi; to about &plusmn;0.05</b> against the calibration-chamber database using &lambda;<sub>10</sub> alone &mdash; but Section 4.6.2&ndash;4.6.4 shows it's <i>biased with stress level</i> because it ignores elastic rigidity I<sub>r</sub>=G/p&prime;. The book's own example: for Ticino sand at Q<sub>p</sub>=100, the overall trend gives &psi;=&minus;0.14, but splitting the same data by stress level gives &psi;&asymp;&minus;0.19 at p&prime;=400&nbsp;kPa versus &psi;&asymp;&minus;0.10 at p&prime;=40&nbsp;kPa &mdash; a real &Delta;&psi;&asymp;0.05 hidden inside the "simple" fit. Shuttle &amp; Jefferies (1998) traced this to I<sub>r</sub>, then to NorSand's own H, M, N, &lambda; (in roughly that order of importance, per Fig. 4.25) &mdash; the fully-corrected inversion (Eq. 4.12, Table 4.3) removes the bias but needs those extra properties, so it isn't reproduced here as a calculator (see disclosure on the last page).</div>
+<div class="chart-host"><canvas id="qpChart" role="img" aria-label="Qp against state parameter on a log axis for the selected sand, with the plus or minus 0.05 accuracy band, the other sands' curves behind, and the three real Ticino stress-level anchors at Qp of 100."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) for this sand</span><span><i style="background:#cfe0ea"></i>the &plusmn;0.05 the method claims</span><span><i style="background:#e6ecef"></i>the other 16 sands in Table 2.1</span><span><i style="background:#c64852"></i>this depth&rsquo;s Q<sub>p</sub></span><span><i style="background:#687a82"></i>real Ticino stress-level anchors at Q<sub>p</sub>=100 (Fig. 4.20)</span></div>
 </div>
-<div class="bayes-chart-box"><canvas id="qpChart" role="img" aria-label="Chart of Qp versus state parameter psi for the selected sand, showing the current point and real Ticino stress-bias anchors."></canvas>
-<div class="legend"><span><i style="background:var(--blue)"></i>Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) for this sand's &lambda;<sub>10</sub></span><span><i style="background:var(--red)"></i>current Q<sub>p</sub></span><span><i style="background:#687a82"></i>real Ticino stress-bias anchors at Q<sub>p</sub>=100 (Fig. 4.20)</span></div>
+<div>
+<div class="chart-host"><canvas id="psiProfileChart" role="img" aria-label="State parameter against depth for the whole sounding, with the plus or minus 0.05 uncertainty envelope, the critical state line at zero and the practical dilative cutoff at minus 0.05."></canvas></div>
+<div class="legend"><span><i style="background:#c64852"></i>&psi; from the inversion</span><span><i style="background:#f0d5d2"></i>&plusmn;0.05 envelope</span><span><i style="background:#268160"></i>dilative side</span><span><i style="background:#b03a44"></i>contractive side</span><span><i style="background:#e38a22"></i>your selected depth</span></div>
 </div>
 </div>
+
+<div class="callout" id="invBiasNote" style="margin-top:10px" aria-live="polite"></div>
+<div class="warning" id="invSandSpread" style="margin-top:10px" aria-live="polite"></div>
+
+<div class="callout" style="margin-top:10px"><b>Why the fully-corrected inversion is not offered here as a calculator.</b> Section 4.6.2&ndash;4.6.4 traces the stress-level bias to elastic rigidity I<sub>r</sub>=G/p&prime;, which this two-constant fit ignores entirely. Shuttle &amp; Jefferies (1998) then traced it further to NorSand&rsquo;s H, M, N and &lambda; in roughly that order of importance (Fig. 4.25). The corrected inversion (Eq. 4.12, Table 4.3) removes the bias, but it needs those extra properties &mdash; measuring them is a different exercise from reading a cone log, so reproducing it here would suggest a precision the inputs on this page cannot support.</div>
 
 <div class="quiz-checkpoint" id="quizCheckC">
 <h3>Quick check &mdash; before moving on</h3>
@@ -1090,11 +1106,12 @@ function updateSounding(){
   // assigned further down, and updateSounding() runs once before that point
   if(window.IC_BANDS && window.drawIcProfileChart) drawIcProfileChart();
   if(window.icSyncDepthSlider) icSyncDepthSlider();
+  if(window.invSyncDepthSlider) invSyncDepthSlider();
 }
 ['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
 // gamma / water table / Ko / % hydrostatic also drive Section 3's demo, so keep it in step
 ['sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', function(){ if(window.updateMentalModel) updateMentalModel(); }); });
-sndSandSel.addEventListener('change', updateSounding);
+sndSandSel.addEventListener('change', function(){ syncSandSelectors(sndSandSel); updateSounding(); updateSection4(); });
 
 el('sndUseDepthBtn').addEventListener('click', function(){
   var z=num('sndDepth');
@@ -2427,61 +2444,254 @@ updateJaky();
 
 // ---------------- Section 7: inversion ----------------
 var sandSel = el("sandSelect");
+// Sections 2 and 7 each had their own sand list. Changing one left the other alone and
+// the module then reported two different psi for the same depth and the same Qp -- a gap
+// as large as the +/-0.05 the method claims. They are now one choice with two controls.
+function syncSandSelectors(fromEl){
+  var v = fromEl.value;
+  [sandSel, sndSandSel].forEach(function(sel){ if(sel && sel.value!==v) sel.value=v; });
+}
 sandSel.innerHTML = SANDS.map(function(s,i){ return '<option value="'+i+'"'+(i===8?" selected":"")+'>'+s.name+' (λ10='+s.lambda10+')</option>'; }).join("");
 sandSel.addEventListener("change", updateSection4);
 var lastQp=100;
 
+// The three real Ticino anchors of Fig. 4.20: the same Qp=100 read at three stress
+// levels, giving three different psi. They span 0.09 -- about the whole accuracy the
+// two-constant fit claims -- which is the point Section 4.6.2 is making.
+var TICINO_BIAS = [{psi:-0.10, label:'p′ = 40 kPa'},
+                   {psi:-0.14, label:'overall trend'},
+                   {psi:-0.19, label:'p′ = 400 kPa'}];
+var PSI_BAND = 0.05;          // the accuracy the method claims against the chamber database
+var lastQp = 100;
+
 function updateInversionFromQp(Qp){
-  lastQp=Qp;
-  var sand = SANDS[+sandSel.value];
-  var lam10 = sand.lambda10;
-  var k = kOf(lam10), m = mOf(lam10);
-  var psi = psiOfQp(lam10,Qp);
-  var badge = psi<0 ? '<span class="badge dilate">dense of critical</span>' : '<span class="badge contract">loose of critical</span>';
+  lastQp = Qp;
+  var sand = SANDS[+sandSel.value], lam10 = sand.lambda10;
+  var k = kOf(lam10), m = mOf(lam10), psi = psiOfQp(lam10, Qp);
+  var badge = psi < PSI_DIL_BOUNDARY
+      ? '<span class="badge dilate">dilative (&psi;&lt;&minus;0.05)</span>'
+      : '<span class="badge contract">contractive (&psi;&ge;&minus;0.05)</span>';
 
-  el("invStats").innerHTML = `
-    <div class="stat"><small>k</small><strong>${k.toFixed(2)}</strong></div>
-    <div class="stat"><small>m</small><strong>${m.toFixed(2)}</strong></div>
-    <div class="stat hi"><small>&psi; from Q<sub>p</sub>=${Qp.toFixed(1)}</small><strong>${psi>=0?"+":""}${psi.toFixed(3)}</strong>${badge}</div>`;
+  el("invStats").innerHTML =
+    '<div class="stat"><small>k = 8+0.55/(&lambda;<sub>10</sub>&minus;0.01)</small><strong>'+k.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>m = 8.1&minus;2.3&middot;log<sub>10</sub>&lambda;<sub>10</sub></small><strong>'+m.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>Q<sub>p</sub> at this depth</small><strong>'+Qp.toFixed(1)+'</strong></div>'+
+    '<div class="stat hi"><small>&psi; (&plusmn;0.05)</small><strong>'+(psi>=0?'+':'')+psi.toFixed(3)+'</strong>'+badge+'</div>';
 
-  var W=el("qpChart").clientWidth||420,H=230;
-  var cv=el("qpChart"); cv.width=W; cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var mlx=60,mr=14,mt=14,mb=30; var pw=W-mlx-mr, ph=H-mt-mb;
-  var xmin=-0.3,xmax=0.05;
-  function X(v){ return mlx+pw*(v-xmin)/(xmax-xmin); }
-  var ymin=Math.log(5), ymax=Math.log(1000);
-  function Y(qp){ return mt+ph*(1-(Math.log(Math.max(qp,5))-ymin)/(ymax-ymin)); }
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  ctx.textBaseline="top";
-  for(var xv=-0.3;xv<=0.05001;xv+=0.05){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.textAlign="center"; ctx.fillText(xv.toFixed(2),x,mt+ph+8); }
-  ctx.textAlign="right"; ctx.textBaseline="middle";
-  [10,100,1000].forEach(function(qv){ var y=Y(qv); ctx.beginPath();ctx.moveTo(mlx,y);ctx.lineTo(mlx+pw,y);ctx.stroke(); ctx.fillText(String(qv),mlx-8,y); });
-  ctx.textBaseline="alphabetic";
-  ctx.textAlign="center"; ctx.fillText("state parameter, ψ", mlx+pw/2, H-2);
-  ctx.save(); ctx.translate(14,mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("Qp (log scale)",0,0); ctx.restore();
-  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
-  for(var xv2=xmin;xv2<=xmax+1e-9;xv2+=0.005){
-    var qpv = qpOf(lam10,xv2);
-    var x=X(xv2), y=Y(qpv);
-    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  el("invEq").innerHTML =
+    '<span class="step">1&middot; &lambda;<sub>10</sub> for '+sand.name+' = <b>'+lam10.toFixed(3)+'</b></span>'+
+    '<span class="step">2&middot; k = 8 + 0.55/('+lam10.toFixed(3)+'&minus;0.01) = <b>'+k.toFixed(2)+'</b> &nbsp;(Eq. 4.11a)</span>'+
+    '<span class="step">3&middot; m = 8.1 &minus; 2.3&middot;log<sub>10</sub>('+lam10.toFixed(3)+') = <b>'+m.toFixed(2)+'</b> &nbsp;(Eq. 4.11b)</span>'+
+    '<span class="step">4&middot; &psi; = &minus;ln(Q<sub>p</sub>/k)/m = &minus;ln('+Qp.toFixed(1)+'/'+k.toFixed(2)+')/'+m.toFixed(2)+
+      ' = <b style="color:'+(psi<PSI_DIL_BOUNDARY?'var(--green-text)':'var(--red-text)')+';font-size:14px">'+(psi>=0?'+':'')+psi.toFixed(3)+'</b></span>'+
+    '<span class="step-note">Only &lambda;<sub>10</sub> and Q<sub>p</sub> go in. Nothing about stress level, rigidity or fabric reaches this arithmetic &mdash; which is exactly why it carries the bias described below.</span>';
+
+  // What the sand choice alone is worth, at this same Qp. This is the cheapest
+  // sensitivity on the page and it usually dwarfs the reader's expectation.
+  var all = SANDS.map(function(s){ return {name:s.name, psi:psiOfQp(s.lambda10,Qp), lam:s.lambda10}; })
+                 .sort(function(a,b){ return a.psi-b.psi; });
+  var lo=all[0], hi=all[all.length-1], spread=hi.psi-lo.psi;
+  var flips = (lo.psi<PSI_DIL_BOUNDARY) !== (hi.psi<PSI_DIL_BOUNDARY);
+  el("invSandSpread").innerHTML =
+    '<b>What the sand choice alone is worth.</b> Hold Q<sub>p</sub> = '+Qp.toFixed(1)+' fixed and invert it through every sand in Table 2.1: &psi; runs from '+
+    '<b>'+lo.psi.toFixed(3)+'</b> ('+lo.name+', &lambda;<sub>10</sub>='+lo.lam.toFixed(3)+') to <b>'+(hi.psi>=0?'+':'')+hi.psi.toFixed(3)+'</b> ('+hi.name+
+    ', &lambda;<sub>10</sub>='+hi.lam.toFixed(3)+') &mdash; a spread of <b>'+spread.toFixed(3)+'</b>, against the &plusmn;0.05 the method claims. '+
+    (flips ? '<b>Those two answers fall on opposite sides of the &minus;0.05 dilative/contractive line</b>, so at this Q<sub>p</sub> the choice of &lambda;<sub>10</sub> decides the engineering conclusion, not just the number. '
+           : 'At this Q<sub>p</sub> they at least agree on which side of the &minus;0.05 line the soil sits. ')+
+    'Getting &lambda;<sub>10</sub> from a laboratory CSL on the actual material is not optional detail; it is most of the answer.';
+
+  // How much of THIS sounding the method can actually resolve. The envelope either
+  // clears the dilative/contractive cutoff or it does not, and counting that is a far
+  // more concrete statement of "read psi as a band" than asking the reader to eyeball it.
+  var prof = sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
+  var straddle = prof.filter(function(c){
+    return (c.psi-PSI_BAND) < PSI_DIL_BOUNDARY && (c.psi+PSI_BAND) > PSI_DIL_BOUNDARY;
+  }).length;
+  var pctAmb = prof.length ? Math.round(100*straddle/prof.length) : 0;
+
+  var dPsi = TICINO_BIAS[0].psi - TICINO_BIAS[2].psi;
+  el("invBiasNote").innerHTML =
+    '<b>The bias this fit cannot see.</b> The three grey points on the left are real Ticino sand data (Fig. 4.20), all at the same Q<sub>p</sub>=100. '+
+    'Split by stress level they give &psi; = &minus;0.10 at p&prime;=40&nbsp;kPa and &minus;0.19 at p&prime;=400&nbsp;kPa, against &minus;0.14 for the overall trend '+
+    '&mdash; a spread of <b>'+dPsi.toFixed(2)+'</b> in &psi; from stress level alone, which is as large as the &plusmn;0.05 the whole method claims. '+
+    'The cause is elastic rigidity I<sub>r</sub>=G/p&prime;, which Q<sub>p</sub>=k&middot;exp(&minus;m&psi;) has no term for. Read your &psi; as a band, never a figure.'+
+    '<br><br><b>What that costs on this sounding.</b> Carry the &plusmn;0.05 through the profile on the right and ask, at each depth, whether the band lands wholly on one side of the &minus;0.05 line. '+
+    'It does at only <b>'+(prof.length-straddle)+'</b> of '+prof.length+' depths. At the other <b>'+straddle+' ('+pctAmb+'%)</b> the envelope straddles the cutoff, so the honest answer there is not '+
+    '&ldquo;dilative&rdquo; or &ldquo;contractive&rdquo; but <i>the cone cannot tell you</i>. Those are the depths that justify a laboratory CSL on the actual material, or a second sounding &mdash; '+
+    'and they are invisible if you read the &psi; trace as a line.';
+
+  drawQpChart(Qp, psi, lam10);
+  drawPsiProfileChart();
+  updateFlow(undefined, undefined, undefined, (psi>=0?'+':'')+psi.toFixed(3));
+}
+
+function drawQpChart(Qp, psi, lam10){
+  var host=el('qpChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=52, mr=12, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.30, xmax=0.10;
+  var qLo=5, qHi=1000;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(q){
+    var lo=Math.log(qLo), hi=Math.log(qHi);
+    return mt+ph*(1-(Math.log(Math.max(qLo,Math.min(qHi,q)))-lo)/(hi-lo));
   }
-  ctx.stroke();
-  var biasPts=[{psi:-0.10,label:"40 kPa"},{psi:-0.14,label:"overall"},{psi:-0.19,label:"400 kPa"}];
-  var yBias=Y(100);
-  ctx.fillStyle="#687a82"; ctx.font="10px Arial"; ctx.textAlign="center"; ctx.textBaseline="bottom";
-  biasPts.forEach(function(bp){
-    var xx=X(bp.psi);
-    ctx.beginPath(); ctx.arc(xx,yBias,3.5,0,7); ctx.fill();
-    ctx.fillText(bp.label,xx,yBias-8);
-  });
-  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(Math.max(xmin,Math.min(xmax,psi))),Y(Qp),5.5,0,7); ctx.fill();
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
 
-  updateFlow(undefined, undefined, undefined, (psi>=0?"+":"")+psi.toFixed(3));
+  // the +/-0.05 the method claims, drawn as a band around this sand's curve
+  ctx.fillStyle='#cfe0ea'; ctx.globalAlpha=0.65; ctx.beginPath();
+  for(var a=xmin;a<=xmax+1e-9;a+=0.005) ctx.lineTo(X(a), Y(qpOf(lam10,a-PSI_BAND)));
+  for(var b=xmax;b>=xmin-1e-9;b-=0.005) ctx.lineTo(X(b), Y(qpOf(lam10,b+PSI_BAND)));
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var xv=xmin;xv<=xmax+1e-9;xv+=0.05){ var x=X(xv); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); }
+  [10,100,1000].forEach(function(q){ var y=Y(q); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+
+  // every other sand faintly behind, so the spread quoted below is visible not asserted
+  ctx.strokeStyle='#e6ecef'; ctx.lineWidth=1;
+  SANDS.forEach(function(s){
+    if(Math.abs(s.lambda10-lam10)<1e-9) return;
+    ctx.beginPath();
+    for(var v=xmin;v<=xmax+1e-9;v+=0.01){ var xx=X(v), yy=Y(qpOf(s.lambda10,v)); if(v===xmin) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+    ctx.stroke();
+  });
+
+  ctx.strokeStyle='#d7e1e5'; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var xt=xmin;xt<=xmax+1e-9;xt+=0.05) ctx.fillText(xt.toFixed(2), clampLabelX(ctx,X(xt),xt.toFixed(2),ml,pw), mt+ph+5);
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  [10,100,1000].forEach(function(q){ ctx.fillText(String(q), ml-7, Y(q)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('Qp (log scale)',0,0); ctx.restore();
+
+  // the critical-state line and the practical cutoff, named in place
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(X(0),mt); ctx.lineTo(X(0),mt+ph); ctx.stroke();
+  ctx.strokeStyle='#268160'; ctx.lineWidth=1.4;
+  ctx.beginPath(); ctx.moveTo(X(PSI_DIL_BOUNDARY),mt); ctx.lineTo(X(PSI_DIL_BOUNDARY),mt+ph); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+  haloText(ctx,'ψ=0', X(0)+3, mt+3, '#6b7880');
+  haloText(ctx,'−0.05', X(PSI_DIL_BOUNDARY)-32, mt+3, '#268160');
+
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.4; ctx.beginPath();
+  for(var v2=xmin;v2<=xmax+1e-9;v2+=0.005){ var x2=X(v2), y2=Y(qpOf(lam10,v2)); if(v2===xmin) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2); }
+  ctx.stroke();
+
+  // the three Ticino anchors, with the span between them called out as a bracket
+  var yB=Y(100), xA=X(TICINO_BIAS[2].psi), xC=X(TICINO_BIAS[0].psi);
+  ctx.strokeStyle='#687a82'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.moveTo(xA,yB+16); ctx.lineTo(xC,yB+16);
+  ctx.moveTo(xA,yB+12); ctx.lineTo(xA,yB+20); ctx.moveTo(xC,yB+12); ctx.lineTo(xC,yB+20); ctx.stroke();
+  ctx.font='700 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  haloText(ctx,'Δψ = '+(TICINO_BIAS[0].psi-TICINO_BIAS[2].psi).toFixed(2)+' from stress level alone', (xA+xC)/2, yB+22, '#4c5b62');
+  TICINO_BIAS.forEach(function(bp,i){
+    var xx=X(bp.psi);
+    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(xx,yB,4,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.font='9px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    haloText(ctx, bp.label, clampLabelX(ctx,xx,bp.label,ml,pw), yB-7-(i===1?11:0), '#4c5b62');
+  });
+
+  var px=X(Math.max(xmin,Math.min(xmax,psi))), py=Y(Qp);
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(px,py,5.5,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.6; ctx.stroke();
+  ctx.font='700 10px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  var lab='ψ = '+(psi>=0?'+':'')+psi.toFixed(3);
+  haloText(ctx, lab, Math.min(px+8, ml+pw-ctx.measureText(lab).width-3), py-7, '#a8323d');
+}
+
+function drawPsiProfileChart(){
+  var host=el('psiProfileChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 250), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=46, mr=12, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
+  var zMax=SND_MAX_Z, xmin=-0.35, xmax=0.25;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/zMax)); }
+
+  // dilative / contractive sides, split at the practical cutoff rather than at zero
+  ctx.fillStyle='#eef7f2'; ctx.fillRect(ml,mt,X(PSI_DIL_BOUNDARY)-ml,ph);
+  ctx.fillStyle='#fdf1ef'; ctx.fillRect(X(PSI_DIL_BOUNDARY),mt,ml+pw-X(PSI_DIL_BOUNDARY),ph);
+
+  var rows=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
+
+  // the +/-0.05 envelope, so psi is read as a band from the outset
+  ctx.fillStyle='#f0d5d2'; ctx.globalAlpha=0.7; ctx.beginPath();
+  rows.forEach(function(c,i){ var x=X(c.psi-PSI_BAND), y=Y(c.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  for(var i=rows.length-1;i>=0;i--) ctx.lineTo(X(rows[i].psi+PSI_BAND), Y(rows[i].z));
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var yt=niceTicks(0,zMax,5);
+  yt.values.forEach(function(v){ if(v>zMax) return; var y=Y(v);
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#d7e1e5'; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(X(0),mt); ctx.lineTo(X(0),mt+ph); ctx.stroke();
+  ctx.setLineDash([]); ctx.strokeStyle='#268160'; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.moveTo(X(PSI_DIL_BOUNDARY),mt); ctx.lineTo(X(PSI_DIL_BOUNDARY),mt+ph); ctx.stroke();
+
+  ctx.strokeStyle='#c64852'; ctx.lineWidth=1.5; ctx.beginPath();
+  rows.forEach(function(c,i){ var x=X(c.psi), y=Y(c.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+
+  ctx.textAlign='right'; ctx.textBaseline='bottom';
+  yt.values.forEach(function(v){ if(v>zMax) return; var y=Y(v);
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10px Arial'; ctx.fillText(v.toFixed(yt.dp), ml-6, y);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top';
+    ctx.fillText('('+Math.round(mToFt(v))+')', ml-6, y+1); ctx.textBaseline='bottom'; });
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('depth, m (ft)',0,0); ctx.restore();
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.font='9.5px Arial'; ctx.fillStyle='#61737b';
+  [-0.3,-0.2,-0.1,0,0.1,0.2].forEach(function(v){ ctx.fillText(v.toFixed(1), clampLabelX(ctx,X(v),v.toFixed(1),ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
+  ctx.font='700 9px Arial'; ctx.textAlign='left';
+  haloText(ctx,'−0.05', X(PSI_DIL_BOUNDARY)+3, mt+3, '#268160');
+
+  var zSel=num('sndDepth'), cSel=sndComputeAt(zSel);
+  if(cSel && isFinite(cSel.psi)){
+    var y=Y(zSel);
+    ctx.strokeStyle='#e38a22'; ctx.lineWidth=1.2; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(cSel.psi),y,4,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke();
+  }
 }
 
 updateSection4();
 window.addEventListener("resize",function(){ updateSection4(); updateMentalModel(); updateSection7(); updateSounding(); });
+
+// ---- Section 7's depth slider and sand list: the module's one selected depth
+// and one sand choice, surfaced again here rather than duplicated.
+(function(){
+  var sl=el('invDepth'); if(!sl) return;
+  sl.min=el('sndDepth').min; sl.max=el('sndDepth').max; sl.step=el('sndDepth').step;
+  window.invSyncDepthSlider=function(){
+    var z=num('sndDepth');
+    if(+sl.value!==z) sl.value=z;
+    el('invDepthOut').textContent=z.toFixed(2)+' m ('+mToFt(z).toFixed(1)+' ft)';
+  };
+  sl.addEventListener('input', function(){
+    el('sndDepth').value=+sl.value;
+    if(window.icSyncDepthSlider) icSyncDepthSlider();
+    updateSounding();
+    var c=sndComputeAt(+sl.value);
+    if(c) updateInversionFromQp(c.Qp);
+    invSyncDepthSlider();
+  });
+  sandSel.addEventListener('change', function(){
+    syncSandSelectors(sandSel);
+    updateSounding();
+    var c=sndComputeAt(num('sndDepth'));
+    if(c) updateInversionFromQp(c.Qp);
+  });
+  invSyncDepthSlider();
+})();
 
 // ---------------- Section 8: variability / characteristic value ----------------
 function invNorm(p){
@@ -2643,6 +2853,94 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- Section 7: one sand choice, one depth, and the inversion ----
+  // Sections 2 and 7 used to hold separate sand lists, so the module could report two
+  // different psi for the same depth and the same Qp. Hold them to a single choice.
+  (function(){
+    var a=el('sndSandSelect'), b=el('sandSelect');
+    check(!!a && !!b, "S7: both sand controls exist");
+    check(a.options.length===SANDS.length && b.options.length===SANDS.length,
+          "S7: each lists the whole Table 2.1 database");
+    var keep=a.value;
+    [0, 5, 12].forEach(function(idx){
+      b.value=String(idx); b.dispatchEvent(new Event("change",{bubbles:true}));
+      check(a.value===String(idx), "S7: choosing "+SANDS[idx].name+" in Section 7 moves Section 2 too");
+      a.value=String(idx===0?3:0); a.dispatchEvent(new Event("change",{bubbles:true}));
+      check(b.value===a.value, "S7: and the reverse direction syncs as well");
+      var c=sndComputeAt(num("sndDepth"));
+      var sec7=psiOfQp(SANDS[+b.value].lambda10, c.Qp);
+      check(Math.abs(c.psi-sec7)<1e-12,
+            "S7: Section 2 and Section 7 agree on psi for the same depth ("+SANDS[+b.value].name+")");
+    });
+    a.value=keep; a.dispatchEvent(new Event("change",{bubbles:true}));
+  })();
+
+  (function(){
+    var sl=el('invDepth'), keep=+el('sndDepth').value;
+    check(!!sl, "S7: the section has its own depth slider");
+    check(sl.min===el('sndDepth').min && sl.max===el('sndDepth').max,
+          "S7: over the same depth range as the rest of the module");
+    [3, 15, 35, 50].forEach(function(z){
+      sl.value=z; sl.dispatchEvent(new Event("input",{bubbles:true}));
+      var c=sndComputeAt(z), st=el('invStats').querySelectorAll(".stat strong");
+      check(+el('sndDepth').value===z, "S7 slider: depth "+z+" reaches Section 2");
+      check(Math.abs(+st[2].textContent-c.Qp)<0.15, "S7 slider: Qp at "+z+" m is the sounding's own");
+      check(Math.abs(parseFloat(st[3].textContent)-c.psi)<0.0015, "S7 slider: psi at "+z+" m matches the sounding");
+    });
+    el('sndDepth').value=keep; sl.value=keep;
+    sl.dispatchEvent(new Event("input",{bubbles:true}));
+  })();
+
+  // the inversion itself, and the two claims the section makes about its accuracy
+  (function(){
+    var lam=0.03, k=kOf(lam), m=mOf(lam);
+    check(Math.abs(k-(8+0.55/(lam-0.01)))<1e-12, "S7: k follows Eq. 4.11a");
+    check(Math.abs(m-(8.1-2.3*Math.log10(lam)))<1e-12, "S7: m follows Eq. 4.11b");
+    // the inversion must undo the forward relation exactly
+    [-0.2,-0.05,0,0.1].forEach(function(p){
+      check(Math.abs(psiOfQp(lam,qpOf(lam,p))-p)<1e-12, "S7: psi->Qp->psi round trips at psi="+p);
+    });
+    check(qpOf(lam,-0.2)>qpOf(lam,0.1), "S7: denser states give higher Qp");
+    check(PSI_BAND===0.05, "S7: the claimed accuracy band is +/-0.05");
+    // the Ticino anchors must actually span what the note says they span
+    check(TICINO_BIAS.length===3, "S7: three real Ticino stress-level anchors");
+    var span=TICINO_BIAS[0].psi-TICINO_BIAS[2].psi;
+    check(Math.abs(span-0.09)<1e-9, "S7: they span 0.09 in psi (-0.10 to -0.19)");
+    check(span>=PSI_BAND, "S7: that spread is at least as large as the claimed accuracy -- the section's point");
+    check(el('invBiasNote').textContent.indexOf(span.toFixed(2))>=0,
+          "S7: the bias note quotes the span it actually computed");
+    // the sand-spread claim must be the real spread across the database
+    var Qp=+el('invStats').querySelectorAll(".stat strong")[2].textContent;
+    var ps=SANDS.map(function(sd){ return psiOfQp(sd.lambda10,Qp); });
+    var real=Math.max.apply(null,ps)-Math.min.apply(null,ps);
+    check(el('invSandSpread').textContent.indexOf(real.toFixed(3))>=0,
+          "S7: the quoted lambda10 spread is the real one across Table 2.1");
+  })();
+
+  // the resolution claim must be the real count, not a rounded guess
+  (function(){
+    var prof=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
+    var straddle=prof.filter(function(c){
+      return (c.psi-PSI_BAND)<PSI_DIL_BOUNDARY && (c.psi+PSI_BAND)>PSI_DIL_BOUNDARY; }).length;
+    var txt=el('invBiasNote').textContent;
+    check(txt.indexOf(String(straddle))>=0, "S7: the note quotes the real count of unresolved depths");
+    check(txt.indexOf(String(prof.length-straddle))>=0, "S7: and the real count of resolved ones");
+    check(straddle+(prof.length-straddle)===prof.length, "S7: resolved and unresolved account for every depth");
+    // a band wider than the gap it must clear cannot resolve everything -- sanity on the logic
+    check(prof.some(function(c){ return (c.psi-PSI_BAND)<PSI_DIL_BOUNDARY && (c.psi+PSI_BAND)>PSI_DIL_BOUNDARY; }),
+          "S7: at least some depths are genuinely unresolved at +/-0.05");
+  })();
+  (function(){
+    ['qpChart', 'psiProfileChart'].forEach(function(id){
+      var c=el(id);
+      check(!!c && c.width>0, "S7: "+id+" is drawn");
+      check(c.parentElement.classList.contains("figure-shell"), "S7: "+id+" has a how-to-read wrapper");
+      // prepCanvas backs the canvas at device resolution; the old chart did not
+      var ratio=c.width/parseFloat(c.style.width||c.width);
+      check(Math.abs(ratio-(window.devicePixelRatio||1))<0.01, "S7: "+id+" is backed at device resolution");
+    });
+    check(!!document.querySelector(".inv-figs"), "S7: the two figures share a layout container");
+  })();
   // ---- figure help must start collapsed and toggle ----
   // It shipped expanded for a while because the .open class had no rule behind it,
   // which cost ~250px of height on every figure in the module.
@@ -3263,7 +3561,9 @@ var figureInfo={
 'icProfileChart':['The three inputs to Ic, and the Ic they produce','Depth runs down the shared axis on the left in m with ft in parentheses. Four panels, left to right, are the whole of Eq. 4.13a. <b>Q (blue, log axis):</b> normalized tip resistance -- log-scaled because Q spans more than a decade on any real sounding. <b>F (green):</b> friction ratio in percent. <b>Bq (purple):</b> pore pressure ratio, with a grey dashed line at zero. <b>Ic (navy):</b> the result, over the same washed band colors as the strip below, with the red dashed trace being Eq. 4.13b for comparison and the bold navy dashed line the Ic=1.80 sand-like cutoff. An orange dashed line marks the depth on the slider in every panel, with a labelled dot on each trace.','Read one depth straight across all four panels: that is the calculation, left to right, at that point in the ground. Then drag the slider and watch which input is actually driving Ic. Q falling with depth pushes Ic up; F rising pushes it up harder, because the friction-ratio term carries the 1.3 multiplier. Where Bq sits near zero the navy and red Ic traces coincide and the choice of formula does not matter; where Bq departs from zero they separate, and that separation is the pore-pressure information Eq. 4.13b discards. Watch for depths where the two traces sit on opposite sides of the 1.80 line -- there the two formulas disagree about whether Section 7 may be used at all.'],
 
 
-'qpChart':['The Qp–ψ calibration curve for the selected sand','Blue curve: Qp=k·exp(−mψ) for this sand\'s λ10. Red dot: the current Qp/ψ pair. Gray dots: the book\'s own real Ticino stress-level-bias anchors, all at Qp=100.','Find the red dot on the curve, then read ψ straight down to the horizontal axis. The three gray dots at different real stress levels show how much ψ the simple inversion can be off by, at one fixed Qp.'],
+'qpChart':['The Qp-psi calibration curve, and how much it can be trusted','Horizontal axis is the state parameter; vertical is Qp on a log scale. <b>Blue:</b> Qp=k&middot;exp(-m&psi;) for the selected sand. <b>Pale blue band:</b> the &plusmn;0.05 in psi that the method claims against the calibration-chamber database. <b>Faint grey curves:</b> the same relationship for the other 16 sands in Table 2.1, so the effect of the lambda10 choice is visible rather than asserted. <b>Red dot:</b> this depth&rsquo;s Qp and the psi it inverts to. <b>Grey dots at Qp=100 with the bracket beneath:</b> the three real Ticino readings of Fig. 4.20, split by stress level. A grey dashed line marks psi=0 and a green dashed line the -0.05 practical cutoff.','Start with the red dot, then look at how much room there is around it. The pale band is the method&rsquo;s own stated accuracy, and it is wide -- read psi off this chart as a range, not a number. Then look at the three grey Ticino points: identical Qp, three different psi, purely because the stress level differed. That spread is as large as the claimed accuracy, and this equation has no term that could see it. Finally, sweep the sand selector and watch the blue curve move through the grey ones. If that motion changes which side of the -0.05 line your red dot sits on, then lambda10 -- a laboratory measurement on the actual soil -- is deciding your engineering conclusion, and no amount of care with the cone log will substitute for it.'],
+'psiProfileChart':['psi down the sounding, read as a band','Depth runs down the left in m with ft in parentheses; psi runs across. <b>Red trace:</b> psi from the inversion at every depth. <b>Pink envelope:</b> the same trace plus and minus the method&rsquo;s claimed 0.05. <b>Green ground:</b> dilative, left of the -0.05 cutoff. <b>Pink ground:</b> contractive, right of it. A grey dashed line marks the theoretical critical state at psi=0, and the solid green line the -0.05 practical cutoff used throughout this module. An orange dashed line marks the selected depth.','Do not read the red line on its own -- read the envelope. Wherever the pink band straddles the green cutoff, the sounding does not actually tell you whether that depth is dilative or contractive; it tells you the answer is inside the noise. Those are the depths worth a laboratory CSL or a second sounding. Where the whole band sits clear on one side, the conclusion is robust to the method&rsquo;s own stated error. Change the sand and watch the entire profile shift bodily left or right: that motion is the lambda10 sensitivity, and it moves the whole hole at once rather than adding scatter.'],
+
 'distChart':['The ψ distribution at a site, and where ψk sits in it','Navy curve: assumed-normal probability density of ψ across the sounding. Red shading: the weaker (higher-ψ) tail beyond the chosen ψk. Blue vertical line: the chosen characteristic value itself. Red dashed line: the Nerlerk case\'s real liquefiable threshold.','The mean sits at the peak of the curve — read ψk\'s line position relative to that peak to see how much conservatism the chosen percentile is actually buying, then compare ψk against the red liquefiable-threshold line.']
 };
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
