@@ -71,6 +71,10 @@ canvas{display:block;width:100%;height:260px}
 #psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 #table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
 #table54 tbody tr.sel td{font-weight:700}
+.quiz-breakdown{width:100%;margin:10px 0 0;font-size:12px}
+.quiz-breakdown th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.quiz-breakdown td{vertical-align:middle}
+.quiz-breakdown button{padding:4px 10px;font-size:11px}
 #invEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
 #invEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
@@ -657,7 +661,7 @@ body{padding-bottom:54px}
 
 <section id="knowledge-check" class="card">
 <h2>9. Check learning</h2>
-<p class="explain">You've already met all four blocks (A&ndash;D) along the way, right after the section that taught them. <b>"Check my understanding" below grades every block together</b>, wherever it appeared on the page, so it's fine to submit even if you skimmed or skipped some.</p>
+<p class="explain">You've already met all four blocks (A&ndash;D) along the way, right after the section that taught them. <b>"Check my understanding" below grades every block together</b>, wherever it appeared on the page, so it's fine to submit even if you skimmed or skipped some. You get a score per block, a button to jump back to the section each block was taught in, and a filter that hides everything except the questions you missed.</p>
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 40 answered</div>
 <div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
 
@@ -3047,6 +3051,80 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- Section 9: the quiz must say what to revisit, not just a total ----
+  (function(){
+    var qs=Array.from(document.querySelectorAll(".quiz-q"));
+    check(qs.length===40, "S9: forty questions are rendered");
+    check(QUIZ_40.length===40, "S9: forty questions are defined");
+    check(BLOCK_NAMES.length===4 && QUIZ_BLOCK_SECTION.length===4,
+          "S9: four blocks, each mapped to a section");
+    QUIZ_BLOCK_SECTION.forEach(function(bs,i){
+      check(!!document.getElementById(bs.id),
+            "S9: block "+i+" points at a section that exists ("+bs.id+")");
+      check(/^Section \d$/.test(bs.label), "S9: block "+i+" carries a readable section label");
+    });
+    // every question must have a correct answer that is actually one of its options
+    qs.forEach(function(qd,i){
+      var vals=Array.from(qd.querySelectorAll("input")).map(function(x){ return x.value; });
+      check(vals.length>=2, "S9: question "+(i+1)+" offers at least two options");
+      check(vals.indexOf(qd.dataset.correct)>=0,
+            "S9: question "+(i+1)+" has a correct answer among its options");
+    });
+    check(QUIZ_40.every(function(it){ return it.exp && it.exp.length>20; }),
+          "S9: every question carries an explanation");
+
+    // grade a known pattern and check the breakdown reports it exactly
+    var saved=qs.map(function(qd){ var p=qd.querySelector("input:checked"); return p?p.value:null; });
+    qs.forEach(function(qd,i){
+      var block=Math.floor(i/10), c=qd.dataset.correct;
+      var want = block===0 ? c : (block===2 ? (c==="a"?"b":"a") : (i%2 ? c : (c==="a"?"c":"a")));
+      var t=Array.from(qd.querySelectorAll("input")).filter(function(x){ return x.value===want; })[0];
+      if(t){ t.checked=true; }
+    });
+    el('gradeQuiz').click();
+    var res=el('quizResult');
+    check(res.style.display!=="none", "S9: grading reveals the result panel");
+    var rows=res.querySelectorAll(".quiz-breakdown tbody tr");
+    check(rows.length===4, "S9: the result breaks the score down by block");
+    check(res.querySelectorAll(".quiz-jump").length===4,
+          "S9: each block offers a jump back to the section that taught it");
+    // block A was answered entirely correctly, block C entirely wrongly
+    check(rows[0].cells[1].textContent.indexOf("10 / 10")>=0, "S9: block A reports 10 of 10");
+    check(rows[2].cells[1].textContent.indexOf("0 / 10")>=0,  "S9: block C reports 0 of 10");
+    check((res.querySelector("p")||{textContent:""}).textContent.indexOf("Weakest")>=0,
+          "S9: the result names the weakest block");
+    check(res.textContent.indexOf("Section 7")>=0,
+          "S9: and points at the section behind it");
+    // the totals across blocks must equal the headline score
+    var sum=0;
+    rows.forEach(function(tr){ sum += parseInt(tr.cells[1].textContent,10); });
+    var m=res.textContent.match(/(\d+) of 40 correct/);
+    check(!!m && +m[1]===sum, "S9: the per-block scores add up to the headline total");
+
+    // the missed-only filter must show exactly the missed questions
+    var missed=qs.filter(function(qd){ var p=qd.querySelector("input:checked"); return !p||p.value!==qd.dataset.correct; });
+    el('reviewMissed').click();
+    var vis=qs.filter(function(qd){ return qd.style.display!=="none"; });
+    check(vis.length===missed.length && vis.length>0,
+          "S9: the review filter shows exactly the questions that were missed");
+    el('reviewAll').click();
+    check(qs.filter(function(qd){ return qd.style.display!=="none"; }).length===40,
+          "S9: showing everything again restores all forty");
+    // reset must clear the filter as well as the answers
+    el('reviewMissed').click();
+    el('resetQuiz').click();
+    check(qs.every(function(qd){ return qd.style.display!=="none"; }),
+          "S9: reset clears the missed-only filter, not just the answers");
+    check(qs.every(function(qd){ return !qd.querySelector("input:checked"); }),
+          "S9: reset clears every answer");
+
+    // put back whatever the reader had
+    qs.forEach(function(qd,i){
+      if(!saved[i]) return;
+      var t=Array.from(qd.querySelectorAll("input")).filter(function(x){ return x.value===saved[i]; })[0];
+      if(t) t.checked=true;
+    });
+  })();
   // ---- Section 8: fitting the psi distribution to the real sounding ----
   (function(){
     var t0=+el('fitTop').value, b0=+el('fitBot').value;
@@ -3728,6 +3806,16 @@ if(!fill||!count) return;
 var BLOCK_NAMES=['A — Dimensionless CPT groups & Ko','B — Soil behaviour-type index Ic','C — Inverting for ψ','D — How variable is ψ, really'];
 var letters=['a','b','c'];
 var SLOT_FOR_BLOCK=['quizSlotA','quizSlotB','quizSlotC','quizSlotD'];
+// where each block was taught, so a wrong answer can point somewhere useful
+var QUIZ_BLOCK_SECTION=[
+  {id:'cpt-groups-section', label:'Section 5'},
+  {id:'ic-section',         label:'Section 6'},
+  {id:'inversion-section',  label:'Section 7'},
+  {id:'variability-section',label:'Section 8'}
+];
+// The quiz lives in an IIFE. Expose its data the way SANDS and IC_BANDS already are, so
+// the self-tests can check the questions themselves rather than only the rendered DOM.
+window.QUIZ_40=QUIZ_40; window.BLOCK_NAMES=BLOCK_NAMES; window.QUIZ_BLOCK_SECTION=QUIZ_BLOCK_SECTION;
 var slotHtml={};
 BLOCK_NAMES.forEach(function(name,blockIdx){
   var blockItems = QUIZ_40.slice(blockIdx*10, blockIdx*10+10);
@@ -3808,9 +3896,81 @@ grade.addEventListener('click',function(){
   document.querySelectorAll('.quiz-block').forEach(function(d){ d.open=true; });
   var result=document.getElementById('quizResult');
   result.style.display='block';
-  result.textContent = unanswered
-    ? score+' of '+qs.length+' correct so far, '+unanswered+' still unanswered — their explanations stay hidden until answered.'
-    : 'Final score: '+score+' of '+qs.length+' correct.';
+
+  // A bare total tells a reader they got 14 of 40 and nothing about what to do next.
+  // Break it down by block, name the section each block came from, and offer to jump.
+  var perBlock = BLOCK_NAMES.map(function(name, idx){
+    var blockQs = qs.slice(idx*10, idx*10+10), got=0, blank=0;
+    blockQs.forEach(function(q){
+      var pick=q.querySelector('input:checked');
+      if(!pick) blank++;
+      else if(pick.value===q.dataset.correct) got++;
+    });
+    return {idx:idx, name:name, got:got, blank:blank, n:blockQs.length,
+            section:QUIZ_BLOCK_SECTION[idx]};
+  });
+
+  var head = unanswered
+    ? '<b>'+score+' of '+qs.length+' correct so far</b>, '+unanswered+' still unanswered — their explanations stay hidden until answered.'
+    : '<b>Final score: '+score+' of '+qs.length+' correct.</b>';
+
+  var rows = perBlock.map(function(b){
+    var pct = b.n ? Math.round(100*b.got/b.n) : 0;
+    var tone = b.got>=8 ? 'dilate' : (b.got>=6 ? 'caution' : 'contract');
+    return '<tr>'+
+      '<td>'+b.name+'</td>'+
+      '<td style="white-space:nowrap"><b>'+b.got+' / '+b.n+'</b>'+(b.blank?' <span style="color:var(--muted)">('+b.blank+' blank)</span>':'')+'</td>'+
+      '<td><span class="badge '+tone+'">'+pct+'%</span></td>'+
+      '<td><button type="button" class="alt quiz-jump" data-section="'+b.section.id+'">Revisit '+b.section.label+'</button></td>'+
+    '</tr>';
+  }).join('');
+
+  // Point at the weakest block rather than making the reader compare four numbers.
+  var answered = perBlock.filter(function(b){ return b.n-b.blank>0; });
+  var advice = '';
+  if(answered.length){
+    var worst = answered.slice().sort(function(a,b){ return (a.got/a.n)-(b.got/b.n); })[0];
+    var best  = answered.slice().sort(function(a,b){ return (b.got/b.n)-(a.got/a.n); })[0];
+    advice = worst.got===best.got
+      ? '<p style="margin:8px 0 0">Your blocks are even. If you want one thing to reread, take the explanations under any question you got wrong — every one of them names the equation and section it came from.</p>'
+      : '<p style="margin:8px 0 0"><b>Weakest block: '+worst.name+'</b> ('+worst.got+' of '+worst.n+'). That is '+worst.section.label+
+        '. Strongest was '+best.name.split(' — ')[0]+' at '+best.got+' of '+best.n+'.</p>';
+  }
+
+  result.innerHTML = head +
+    '<table class="quiz-breakdown"><thead><tr><th>Block</th><th>Score</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    advice +
+    '<div class="quiz-actions" style="margin-top:10px"><button type="button" class="alt" id="reviewMissed">Show only the ones I missed</button>'+
+    '<button type="button" class="alt" id="reviewAll" style="display:none">Show every question again</button></div>';
+
+  // jump straight to the section a block came from
+  result.querySelectorAll('.quiz-jump').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target=document.getElementById(btn.dataset.section);
+      if(target && window.gotoPageForElement){ gotoPageForElement(target); target.scrollIntoView({block:'start'}); }
+    });
+  });
+
+  // With 40 questions, hunting for the red ones by eye is the tedious part.
+  function setMissedOnly(on){
+    qs.forEach(function(q){
+      var pick=q.querySelector('input:checked');
+      var missed = !pick || pick.value!==q.dataset.correct;
+      q.style.display = (on && !missed) ? 'none' : '';
+    });
+    document.querySelectorAll('.quiz-block').forEach(function(d){
+      var anyVisible = Array.from(d.querySelectorAll('.quiz-q')).some(function(q){ return q.style.display!=='none'; });
+      d.style.display = anyVisible ? '' : (on ? 'none' : '');
+      if(anyVisible) d.open = true;
+    });
+    var a=document.getElementById('reviewMissed'), b=document.getElementById('reviewAll');
+    if(a) a.style.display = on ? 'none' : '';
+    if(b) b.style.display = on ? '' : 'none';
+  }
+  var rm=document.getElementById('reviewMissed'), ra=document.getElementById('reviewAll');
+  if(rm) rm.addEventListener('click', function(){ setMissedOnly(true); });
+  if(ra) ra.addEventListener('click', function(){ setMissedOnly(false); });
+
   updateQuizProgress();
 });
 document.getElementById('resetQuiz').addEventListener('click',function(){
@@ -3818,7 +3978,9 @@ document.getElementById('resetQuiz').addEventListener('click',function(){
     q.querySelectorAll('input').forEach(function(i){ i.checked=false; });
     q.classList.remove('review','unanswered');
     q.style.background='';
+    q.style.display='';                       // clear the missed-only filter
   });
+  document.querySelectorAll('.quiz-block').forEach(function(d){ d.style.display=''; });
   document.querySelectorAll('[data-blockscore]').forEach(function(e){ e.style.display='none'; });
   document.querySelectorAll('[data-blockresult]').forEach(function(e){ e.style.display='none'; });
   document.getElementById('quizResult').style.display='none';
