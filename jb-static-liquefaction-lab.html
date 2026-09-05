@@ -2,30 +2,37 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 3)</title>
 <style>
-:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+/* ===== 1. Base layout, reset & typography ===== */
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#268160;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5;
+  --red-text:#b03a44;--green-text:#1f7a4c}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion: reduce){.pulse-target{animation:none!important}}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);font-size:16px}
 header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
 header h1{margin:0;font-size:22px}
 header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
 header a{color:#bfe6f5}
 .view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
-.wrap{max-width:1200px;margin:auto;padding:16px}
+.wrap{max-width:1400px;margin:auto;padding:16px}
 .back{font-size:12px}
 .card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
 .card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
 .card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
-.explain{font-size:13px;line-height:1.6}
-select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+.explain{font-size:14.5px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px;max-width:100%}
 button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
-.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+button.alt{background:#647680}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:8px 0;overflow-x:auto;white-space:nowrap;position:relative}
+@media(max-width:520px){.eq::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:linear-gradient(to right,rgba(242,247,249,0),#f2f7f9);pointer-events:none}}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px}
 canvas{display:block;width:100%;height:260px}
 .slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
 .slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
 .slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.slider-block .hint{font-size:11px;color:var(--muted);font-weight:400;margin-top:5px;line-height:1.4}
 .readout{color:var(--blue);font-weight:700}
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .statgrid.n3{grid-template-columns:repeat(3,1fr)}
@@ -34,343 +41,1530 @@ canvas{display:block;width:100%;height:260px}
 .stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
 .stat strong{font-size:15px}
 .stat.hi strong{color:var(--blue)}
-.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
-.badge.warn{background:#fdeee9;color:var(--red)}
-.badge.ok{background:#e9f6ef;color:var(--green)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:#1177b0;border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.contract,.badge.warn{background:#fdeee9;color:var(--red-text)}
+.badge.dilate,.badge.ok{background:#e9f6ef;color:var(--green-text)}
+.badge.caution{background:#fdf4e3;color:#a26a12}
+.band-detail{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.band-head{padding:9px 12px;background:#f7fafb;border-bottom:1px solid var(--line);font-size:13px}
+.band-range{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+.band-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;padding:11px 12px}
+.band-grid>div{font-size:11.5px;line-height:1.5}
+.band-grid small{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+.band-grid strong{font-size:13px;color:var(--navy);font-family:"Courier New",monospace}
+.band-note{margin:0;padding:0 12px 12px;font-size:11.5px;line-height:1.6;color:var(--ink)}
+#icEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#icEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0}
+#icBoundaryTable tbody tr:hover{background:#f2f7f9}
+#icBoundaryTable tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#icBoundaryTable tbody tr.sel td{font-weight:700}
+#icChart:focus{outline:2px solid var(--blue);outline-offset:2px}
+/* the depth profile and the band strip sit side by side so both are on screen at once */
+.ic-figs{display:grid;grid-template-columns:1.12fr 0.88fr;gap:18px;align-items:start;margin-top:8px}
+.ic-figs .band-detail{margin-top:8px}
+@media(max-width:1080px){.ic-figs{grid-template-columns:1fr}}
+.inv-figs{display:grid;grid-template-columns:1.05fr 0.95fr;gap:18px;align-items:start;margin-top:10px}
+@media(max-width:1080px){.inv-figs{grid-template-columns:1fr}}
+.dist-figs{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;align-items:start;margin-top:10px}
+@media(max-width:1080px){.dist-figs{grid-template-columns:1fr}}
+.mc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.two-problems{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
+.s8-split{display:grid;grid-template-columns:0.92fr 1.08fr;gap:16px;align-items:start;margin-top:8px}
+.mc-split{display:grid;grid-template-columns:0.88fr 1.12fr;gap:16px;align-items:start;margin-top:6px}
+.note-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.note-grid>details{margin-top:0}
+.diag{border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;background:#fff}
+.diag.diag-warn{border-left-color:var(--orange)}
+.diag>summary{cursor:pointer;padding:8px 10px;font-size:11.5px;font-weight:700;line-height:1.4}
+.diag>summary span{font-weight:400;color:var(--muted)}
+.diag[open]>summary{border-bottom:1px solid var(--line)}
+.diag>div{padding:9px 11px;font-size:11px;line-height:1.6}
+@media(max-width:1080px){.s8-split,.mc-split{grid-template-columns:1fr}.note-grid{grid-template-columns:1fr}}
+.prob{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.prob.prob-var{border-left:5px solid #c64852}
+.prob.prob-unc{border-left:5px solid #7653a6}
+.prob>b{font-size:13.5px;display:block}
+.prob>small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:2px 0 8px}
+.prob p{font-size:11px;line-height:1.55;margin:0 0 6px}
+.prob p.fix{margin:0;padding-top:6px;border-top:1px solid var(--line);color:var(--ink)}
+#psikEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
+#table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#table54 tbody tr.sel td{font-weight:700}
+.quiz-breakdown{width:100%;margin:10px 0 0;font-size:12px}
+.quiz-breakdown th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.quiz-breakdown td{vertical-align:middle}
+.quiz-breakdown button{padding:4px 10px;font-size:11px}
+#invEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#invEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
-.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0}
 .sources{font-size:11px;color:var(--muted);line-height:1.6}
 .sources a{color:var(--blue)}
 table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
 th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
 th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
-.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
-.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;padding:6px 8px;background:#f7fafb;border:1px solid var(--line);border-radius:7px}
+.legend span{display:inline-flex;align-items:center;gap:5px;padding:3px 5px;border-radius:5px}
 .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
-table.notation{min-width:640px}
-table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
-table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
-.case-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.case-card{border:1px solid var(--line);border-radius:8px;padding:12px;background:#fafcfd}
-.case-card h4{margin:0 0 6px;font-size:13px;color:var(--navy)}
-.case-card .yr{color:var(--muted);font-size:11px;margin-bottom:6px}
-.case-card p{font-size:12px;line-height:1.5;margin:4px 0}
-.case-card .num{color:var(--blue);font-weight:700}
-@media(max-width:900px){.case-cards{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}.case-cards{grid-template-columns:1fr}}
-</style></head>
+.notation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.notation-group-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 1px}
+.notation-group-label:first-child{margin-top:0}
+.notation-swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.notation-card{text-align:left;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:8px;padding:9px 10px;transition:.15s}
+.notation-card:hover{box-shadow:0 5px 14px rgba(12,44,58,.12)}
+.notation-card b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.notation-card small{display:block;line-height:1.4;color:var(--muted);font-size:11px}
+@media(max-width:820px){.notation-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.notation-grid{grid-template-columns:1fr}}
+@media(max-width:1100px){.grid4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}}
+
+/* ===== 3. Interactive/behavioral additions ===== */
+.sticky-nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(7px);border-bottom:1px solid var(--line);box-shadow:0 2px 9px rgba(12,44,58,.07)}
+.sticky-nav .wrap{padding-top:8px;padding-bottom:8px;display:flex;gap:7px;align-items:center;overflow-x:auto}
+.sticky-nav a{white-space:nowrap;text-decoration:none;color:var(--navy);font-size:11.5px;font-weight:700;border:1px solid var(--line);padding:6px 9px;border-radius:999px;background:#fff}
+.sticky-nav a:hover,.sticky-nav a.active{background:var(--navy);color:#fff}
+.sticky-nav a.on-page{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+.progress-shell{min-width:120px;height:6px;background:#dde8ec;border-radius:20px;overflow:hidden;margin-left:auto}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:center}.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);font-weight:800}.lead{font-size:15px;line-height:1.65;color:#29434e}.goal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.goal{border:0;text-align:left;width:100%;cursor:pointer;font-family:inherit;transition:.15s;border:1px solid var(--line);border-radius:9px;padding:11px;background:linear-gradient(145deg,#fff,#f5fafb);font-size:12px;line-height:1.45;color:var(--ink)}.goal:hover{box-shadow:0 5px 14px rgba(12,44,58,.12);border-color:var(--blue)}.goal b{display:block;color:var(--navy);margin-bottom:4px}.goal-num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;margin-bottom:7px}
+.big-idea{background:linear-gradient(135deg,#0f4052,#167494);color:#fff;border-radius:12px;padding:17px}.big-idea .formula{font:700 24px Georgia,serif;text-align:center;padding:15px 4px}.big-idea p{font-size:12px;color:#dff2f7;line-height:1.55}
+.flow-map{display:grid;grid-template-columns:repeat(7,auto);align-items:center;justify-content:center;gap:7px;padding:18px 5px}.flow-node{min-width:112px;padding:12px 10px;border-radius:10px;text-align:center;color:#fff;font-weight:800;font-size:12px;box-shadow:0 4px 10px rgba(0,0,0,.10);position:relative;transition:box-shadow .2s,padding .15s,min-width .15s}.flow-node small{display:block;font-weight:400;opacity:.9;margin-top:4px;min-height:14px}.flow-arrow{font-size:23px;color:var(--muted)}
+.visual-panel{background:#f7fafb;border:1px solid var(--line);border-radius:10px;padding:12px}.visual-panel h3{margin-top:0}.two-state{display:grid;grid-template-columns:1fr 1fr;gap:10px}.state-box{border-radius:9px;padding:12px;color:#fff;min-height:150px}.state-box.dense{background:linear-gradient(145deg,#237657,#35a47a)}.state-box.loose{background:linear-gradient(145deg,#a83b46,#d9616b)}.particles{height:70px;position:relative;border-bottom:2px solid rgba(255,255,255,.55);margin:4px 0 8px}.grain{position:absolute;width:19px;height:19px;background:linear-gradient(145deg,#f8dca8,#e0ab5f);box-shadow:inset -2px -2px 3px rgba(64,44,20,.3),inset 1px 1px 2px rgba(255,255,255,.45)}
+.grain.v1{clip-path:polygon(20% 0%,70% 5%,100% 35%,90% 80%,55% 100%,10% 85%,0% 45%)}
+.grain.v2{clip-path:polygon(35% 0%,80% 15%,100% 55%,75% 95%,30% 100%,0% 65%,5% 20%)}
+.grain.v3{clip-path:polygon(10% 10%,60% 0%,100% 30%,95% 75%,60% 100%,15% 90%,0% 50%)}
+.grain.v4{clip-path:polygon(25% 5%,75% 0%,100% 45%,85% 90%,40% 100%,5% 70%,0% 25%)}
+.lesson-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.lesson-tabs button{background:#eef4f6;color:var(--navy);border:1px solid var(--line);font-size:11.5px}.lesson-tabs button.on{background:var(--navy);color:#fff}.lesson-pane{display:none}.lesson-pane.on{display:block}.choice-row{display:flex;gap:8px;flex-wrap:wrap}.choice-row button{background:#fff;color:var(--navy);border:1px solid var(--line)}.choice-row button.correct{background:var(--green);color:#fff}.choice-row button.wrong{background:var(--red);color:#fff}.feedback{min-height:42px;margin-top:9px;padding:9px;border-radius:7px;background:#f2f7f9;font-size:12px;line-height:1.5}
+.quiz-q{border-top:1px solid var(--line);padding:12px 0}.quiz-q:first-child{border-top:0}.quiz-q p{font-weight:700;font-size:12.5px}.quiz-q label{display:block;padding:5px 8px;font-size:12px;border-radius:6px}.quiz-q label:hover{background:#f2f7f9}.quiz-result{padding:11px;border-radius:8px;background:#eef8fc;font-weight:700;margin-top:8px}
+.glossary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.term{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;font-size:11.5px;line-height:1.45}.term b{display:block;color:var(--blue);font-size:13px;margin-bottom:3px}.concept-line{display:flex;align-items:stretch;gap:7px;overflow-x:auto;padding:6px 0;transition:.2s}.concept-step{min-width:155px;border-radius:8px;padding:10px;background:#f2f7f9;border-top:4px solid var(--blue);font-size:11.5px;transition:transform .25s,box-shadow .25s,background .25s,border-color .25s}.concept-step b{display:block;color:var(--navy);margin-bottom:4px}.concept-step.walking{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 6px 16px rgba(20,121,184,.22);background:#eef8fc}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}.goal-grid{grid-template-columns:repeat(2,1fr)}.flow-map{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg);text-align:center}.glossary-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.goal-grid,.two-state,.glossary-grid{grid-template-columns:1fr}.progress-shell{display:none}}
+
+.quiz-progress{height:7px;background:#e4edf0;border-radius:20px;overflow:hidden;margin:8px 0 16px}.quiz-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .2s}.quiz-q.unanswered{outline:2px solid #e9a52b;outline-offset:2px}.quiz-explanation{font-size:11.5px;color:var(--muted);padding:6px 8px 9px;display:none}.quiz-q.review .quiz-explanation{display:block}.quiz-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.quiz-count{font-size:11.5px;color:var(--muted)}
+.module-path{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0}.module-link{display:block;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;color:var(--ink);transition:.15s}.module-link:hover{box-shadow:0 5px 14px rgba(12,44,58,.12)}.module-link.current{background:var(--navy);color:#fff}.module-link b{display:block;margin-bottom:4px}.module-link small{display:block;line-height:1.4;opacity:.85}.module-link.disabled{opacity:.6;cursor:not-allowed;pointer-events:none}.module-link.disabled .badge{margin-top:6px}
+.s2-lab{border:1px solid #bcd7e2;background:linear-gradient(145deg,#f7fcfe,#eef7fa);border-radius:12px;padding:14px;margin:12px 0}.s2-presets{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.s2-presets button{font-size:11px;background:#647680}.s2-presets button.on{background:var(--navy);color:#fff}
+@media(max-width:900px){.module-path{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.module-path{grid-template-columns:1fr}}
+
+.guided-panel{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb);margin:12px 0}.guided-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.guided-step{display:block;width:100%;text-align:left;font-family:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;line-height:1.4;cursor:pointer;color:var(--ink)}.guided-step.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(20,121,184,.15);background:#eef8fc}.guided-step b{display:block;color:var(--navy);margin-bottom:3px}.experiment-status{font-size:11.5px;background:#eef8fc;border-radius:7px;padding:8px;margin-top:8px}
+/* The toggle button has always set .open and aria-expanded, but no rule ever acted
+   on it, so every figure rendered with its help text permanently expanded. */
+.figure-help{display:none}
+.figure-help.open{display:block;font-size:11.5px;line-height:1.6;color:var(--ink);background:#f7fafb;border-left:3px solid var(--blue);padding:9px 11px;margin:8px 0 0;border-radius:0 8px 8px 0}
+.chart-reading-mode canvas{outline:3px solid rgba(20,121,184,.16);outline-offset:3px}.pulse-target{animation:targetPulse 1.25s ease 2}@keyframes targetPulse{50%{box-shadow:0 0 0 7px rgba(20,121,184,.18)}}
+@media(max-width:820px){.guided-steps{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.guided-steps{grid-template-columns:1fr}}
+
+.fn{cursor:pointer;color:var(--blue);font-size:.72em;vertical-align:super;font-weight:700;margin:0 1px;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.fn:hover{color:var(--navy)}
+.fn-note{display:none;font-size:11.5px;color:var(--muted);background:#f2f7f9;border-left:3px solid var(--blue);padding:7px 10px;border-radius:0 6px 6px 0;margin:4px 0 8px;line-height:1.55}
+.fn-note.open{display:block}
+
+#flowStickyMarker{height:1px}
+.flow-sticky{position:sticky;top:var(--nav-h,46px);z-index:15;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 10px rgba(12,44,58,.08);margin:2px 0 14px;transition:box-shadow .2s}
+.flow-sticky .flow-map{display:flex;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;gap:7px;padding:12px 10px;-webkit-overflow-scrolling:touch}
+@media(max-width:820px){
+  .flow-sticky::after{content:'';position:absolute;top:1px;right:1px;bottom:1px;width:26px;border-radius:0 9px 9px 0;background:linear-gradient(to right,rgba(255,255,255,0),#fff);pointer-events:none}
+}
+.flow-sticky .flow-node{min-width:126px;flex:0 0 auto}
+.flow-sticky.is-stuck{box-shadow:0 6px 16px rgba(12,44,58,.16)}
+.flow-sticky.is-stuck .flow-map{padding:7px 10px}
+.flow-sticky.is-stuck .flow-node{min-width:104px;padding:7px 8px;font-size:11px}
+.flow-sticky.is-stuck .flow-node small{margin-top:2px}
+.flow-sticky .flow-arrow{flex:0 0 auto}
+.chart-host{position:relative}
+
+.quiz-block-controls{display:flex;gap:8px;margin-bottom:8px}
+.quiz-block-controls button{font-size:11px;padding:6px 9px;background:#647680}
+.quiz-block{border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:#fafcfd;overflow:hidden}
+.quiz-block summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:13px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+.quiz-block summary::-webkit-details-marker{display:none}
+.quiz-block summary:before{content:'▸';font-size:11px;color:var(--muted);transition:transform .15s}
+.quiz-block[open] summary:before{transform:rotate(90deg)}
+.quiz-block summary .badge{margin-left:auto}
+.quiz-block-body{padding:0 13px 4px}
+.quiz-block-check{margin:4px 0 8px;font-size:11.5px;padding:7px 11px}
+.quiz-block-score{background:#eef8fc;color:var(--navy)}
+.quiz-block-result{margin:0 13px 12px;padding:9px 11px;border-radius:7px;background:#f2f7f9;font-size:12px;font-weight:700;line-height:1.4}
+@media(max-width:520px){.quiz-block summary{font-size:12px}}
+.disclosure{border:1px solid var(--line);border-radius:10px;margin:14px 0;background:#fafcfd;overflow:hidden}
+.disclosure>summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:14px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+.disclosure>summary::-webkit-details-marker{display:none}
+.disclosure>summary:before{content:'▸';font-size:11px;color:var(--muted);transition:transform .15s}
+.disclosure[open]>summary:before{transform:rotate(90deg)}
+.disclosure>summary small{font-weight:400;color:var(--muted);margin-left:auto;font-size:11px}
+.disclosure>.disclosure-body{padding:0 13px 13px}
+.back-float{position:fixed;left:16px;bottom:70px;z-index:60;background:var(--navy);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 4px 14px rgba(12,44,58,.3);cursor:pointer;transition:transform .15s,box-shadow .15s;display:none;align-items:center;gap:6px}
+.back-float:hover{box-shadow:0 6px 18px rgba(12,44,58,.35)}
+@media(max-width:520px){.back-float{left:8px;bottom:60px;padding:9px 13px;font-size:11.5px;max-width:calc(100vw - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+
+body{padding-bottom:54px}
+.page-stepper{position:fixed;left:0;right:0;bottom:0;z-index:55;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(12,44,58,.1);padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:12.5px}
+.page-stepper-nav{background:var(--navy);color:#fff;border:0;border-radius:20px;padding:8px 14px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+.page-stepper-nav:disabled{opacity:.35;cursor:default}
+.page-stepper-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.page-stepper-label{font-weight:700;color:var(--navy);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.page-dots{display:flex;gap:2px}
+.page-dot{width:34px;height:34px;padding:0;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.page-dot:hover{background:#f2f7f9}
+.page-dot::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:var(--line);transition:width .15s,border-radius .15s}
+.page-dot.active::before{background:var(--blue);width:18px;border-radius:4px}
+.page-dot[aria-current="page"]::before{background:var(--blue)}
+@media(max-width:640px){.page-stepper{gap:7px;padding:7px 8px}.page-stepper-nav{padding:7px 10px;font-size:11px}.page-stepper-label{max-width:34vw;font-size:10.5px}}
+
+.page-next-prompt{margin:20px 0 6px}
+.page-next-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#0f4052,#167494);color:#fff;border-radius:12px;padding:16px 18px}
+.page-next-inner span{font-size:13px;line-height:1.5}
+.page-next-btn{background:#fff;color:var(--navy);border:0;border-radius:22px;padding:10px 18px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;transition:transform .15s}
+.page-next-btn:hover{box-shadow:0 3px 10px rgba(0,0,0,.15)}
+@media(max-width:520px){.page-next-inner{flex-direction:column;align-items:stretch;text-align:center}}
+.goal:focus-visible,.notation-card:focus-visible,.guided-step:focus-visible,.fn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.bayes-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.bayes-chart-box{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fbfdfe}
+.bayes-chart-box canvas{display:block;width:100%;height:230px}
+@media(max-width:900px){.bayes-grid2{grid-template-columns:1fr}}
+
+/* Section 2's CPT log: controls beside the log rather than stacked above it, so a
+   slider and the five panels it drives stay visible together without scrolling. */
+.snd-layout{display:grid;grid-template-columns:minmax(270px,0.7fr) 1.3fr;gap:16px;align-items:start;margin-top:10px}
+.snd-layout>div{min-width:0}
+.snd-controls{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb)}
+.snd-controls .slider-block{margin:7px 0;padding:9px 11px}
+.snd-controls .slider-block .hint{font-size:10px;line-height:1.35;margin-top:4px}
+.snd-controls .statgrid{grid-template-columns:repeat(2,1fr);gap:7px}
+.snd-controls .stat{padding:8px 7px}
+.snd-controls .stat strong{font-size:13.5px}
+.snd-controls h3{margin:12px 0 5px}
+.snd-controls select{width:100%;margin-top:3px}
+/* Paired half-width sliders (gamma|Ko, water table|% hydrostatic) */
+.snd-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.snd-row2 .slider-block{margin:6px 0;padding:8px 9px;min-width:0}
+.snd-row2 .slider-block label{font-size:11px;gap:4px;flex-wrap:wrap}
+.snd-row2 .readout{font-size:11px}
+/* Section 3's variant table: one column per visible trace, colour-matched to it. */
+.mm-stats{gap:7px}
+.mm-stats .stat{padding:7px 7px;text-align:left}
+.mm-stats .stat small{font-size:10px;font-weight:700;margin-bottom:3px}
+.mm-stats .stat strong{font-size:13px;display:block;line-height:1.25}
+.mm-stats .badge{font-size:9px;padding:1px 6px;margin:4px 0 0;display:inline-block}
+/* The worked example lives under the button, filling what was dead space beside the
+   log. It wraps rather than scrolls, and each numbered step hangs-indents so a
+   wrapped line stays visually attached to its own step. */
+.snd-eq-title{margin:14px 0 5px;font-size:12.5px}
+.snd-controls .eq{font-size:11.5px;line-height:1.65;padding:9px 11px;white-space:normal;overflow-x:visible}
+.snd-controls .eq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+.snd-controls .eq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:2px 0 3px}
+.snd-controls .eq b{white-space:nowrap}
+@media(max-width:1000px){.snd-layout{grid-template-columns:1fr}.snd-controls .statgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.snd-controls .statgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
 <body>
 <header><div class="wrap">
 <p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
-<h1>Soil Liquefaction: A Critical State Approach — Interactive Companion</h1>
-<p><b>Module 3: Static Liquefaction &amp; Post-Liquefaction Strength</b> (Chapter 6, with Chapter 1's flow-failure case histories). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press. Continues from <a href="jb-critical-state-lab.html">Module 1</a> and <a href="jb-insitu-state-lab.html">Module 2</a>.</p>
+<h1>Soil Liquefaction: A Critical State Approach &mdash; Interactive Companion</h1>
+<p><b>Module 3: Static Liquefaction and Post-Liquefaction Strength</b> (Chapter 6, with Chapter 1's flow-failure case histories). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press.</p>
+<p class="prepared">Prepared by: Zana Taher</p>
 </div></header>
+
+<nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
+<a href="#start">1. Start here</a><a href="#case-histories">2. Four failures</a><a href="#brittleness">3. Brittleness</a><a href="#notation">4. Notation</a><a href="#undrained-path">5. Undrained path</a><a href="#collapse-surface">6. Collapse surface</a><a href="#residual-strength">7. Residual strength</a><a href="#case-check">8. Against the record</a><a href="#knowledge-check">9. Check learning</a>
+<div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
+</div></nav>
+<button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
+<div id="pageAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <div class="wrap">
 
-<div class="card">
+<div class="card" id="start">
+<h2>Companion learning path</h2>
+<p class="explain">Complete the modules in sequence. Each opens independently, so you can return to Module 1's critical-state foundation or Module 2's CPT machinery whenever this module leans on them.</p>
+<div class="module-path">
+<a class="module-link" href="jb-critical-state-lab.html"><b>Module 1</b><small>Critical state, &psi;, dilatancy, and NorSand</small></a>
+<a class="module-link" href="jb-insitu-state-lab.html"><b>Module 2</b><small>Determine in-situ state from CPT</small></a>
+<a class="module-link current" href="#start"><b>Module 3</b><small>Static liquefaction and post-liquefaction strength</small></a>
+<div class="module-link disabled" aria-disabled="true"><b>Module 4</b><small>Cyclic liquefaction and cyclic mobility</small><span class="badge">In progress</span></div>
+</div>
+
+<h2 style="margin-top:16px">1. The chapter the book has been building toward</h2>
+<div class="explain">
+<p>Modules 1 and 2 were about <i>measuring</i> state. This one is about what state <i>does</i>. A contractive soil sheared undrained does not simply reach a lower strength &mdash; it reaches a peak, then sheds most of that strength on the way to critical state, and it is that <b>drop</b>, not the final value, that turns a slope into a flowslide.</p>
+<p>Everything here runs on the &psi; you learned to estimate in Module 2. Where Module 2 ended by asking which characteristic &psi;<sub>k</sub> to carry forward, this module answers what that number buys you: a residual strength, a brittleness, and a judgement about whether the ground is dense enough to leave alone.</p>
+</div>
+<div class="callout"><b>What you will be able to do by the end.</b> Read a flow failure and say which of its features were predictable. Compute residual strength from &psi; and say how brittle the soil is. Explain, with the book's own data, why the &ldquo;collapse surface&rdquo; picture is wrong and what replaces it. Run the book's published design function and check it against eleven real failures.</p></div>
+</div>
+
+<div class="card" id="about-module">
 <h2>About this module</h2>
-<div class="explain">
-<p>This is the chapter the whole book has been building toward: what actually happens when a contractive soil is sheared undrained, and how much strength survives on the other side. It opens with four real flow failures the book documents in detail &mdash; two static, two triggered by other events &mdash; because static liquefaction isn't a laboratory curiosity.</p>
-</div>
-<div class="case-cards">
-<div class="case-card"><h4>Fort Peck Dam</h4><div class="yr">Montana, USA &middot; 1938</div><p>Upstream slope of a hydraulic-fill dam failed near the end of construction, preceded by <span class="num">12+ hours</span> of visible bulging. The flowslide moved material up to <span class="num">450 m</span>, involving about <span class="num">7.5 million m&sup3;</span> of fill, and killed <span class="num">8</span> workers.</p></div>
-<div class="case-card"><h4>Nerlerk Berm</h4><div class="yr">Beaufort Sea, Canada &middot; 1983</div><p>An offshore sand berm for oil exploration liquefied under its own static loading during construction, repeatedly falling short of design elevation. Cost overruns exceeded <span class="num">$100 million</span>. Extensively re-analyzed since &mdash; used as a real validation case throughout this book.</p></div>
-<div class="case-card"><h4>Aberfan</h4><div class="yr">Wales, UK &middot; 1966</div><p>A colliery spoil tip liquefied and flowed downhill, engulfing a village school. <span class="num">144</span> people were killed, <span class="num">116</span> of them children &mdash; from only about <span class="num">107,000 m&sup3;</span> of material. One of the deadliest liquefaction failures on record.</p></div>
-<div class="case-card"><h4>Merriespruit</h4><div class="yr">South Africa &middot; 1994</div><p>A gold tailings dam was overtopped during a thunderstorm; erosion exposed loose saturated tailings inside the wall, which then liquefied. About <span class="num">600,000 m&sup3;</span> of tailings flowed <span class="num">3 km</span> through the village below.</p></div>
-</div>
+<div class="explain"><p>The interactive parts use the book's own equations and its own published case-history table. Where a figure could not be digitised point by point, the page says so on the figure rather than presenting an interpolation as data. The final page carries the full disclosure.</p></div>
 </div>
 
-<div class="card">
-<h2>Notation used in this module</h2>
-<p class="explain" style="font-size:12px">Symbols in roughly the order they first appear below &mdash; use this as a lookup while reading Chapter 6.</p>
-<div style="overflow-x:auto"><table class="notation">
-<tr><td><b>s<sub>u</sub></b></td><td>peak undrained shear strength (the strength <i>before</i> any post-peak strength loss)</td><td><b>&eta;<sub>L</sub></b></td><td>mobilized stress ratio at "instability" or "collapse" &mdash; where undrained strength loss begins</td></tr>
-<tr><td><b>s<sub>r</sub></b></td><td>residual (post-liquefaction, critical-state) undrained shear strength &mdash; what's left after brittle failure</td><td><b>H/I<sub>r</sub></b></td><td>ratio of plastic hardening modulus to elastic rigidity &mdash; controls where &eta;<sub>L</sub> actually sits</td></tr>
-<tr><td><b>I<sub>B</sub></b></td><td>Bishop's brittleness index, (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> (Eq. 6.5) &mdash; 0 = no strength loss, 1 = total loss</td><td><b>&sigma;&prime;<sub>vo</sub></b></td><td>in-situ vertical effective stress</td></tr>
-<tr><td><b>&lambda;<sub>e</sub></b></td><td>natural-log CSL slope used inside Eq. 6.4, &lambda;<sub>e</sub>=&lambda;<sub>10</sub>/2.303</td><td><b>Q<sub>tn,cs</sub></b></td><td>clean-sand-equivalent normalized CPT resistance (Robertson 2010) &mdash; a penetration-resistance proxy for &psi;</td></tr>
-</table></div>
-</div>
+<div class="card" id="case-histories">
+<h2>2. Four flow failures, and what they have in common</h2>
+<div class="explain"><p>Static liquefaction is not a laboratory curiosity. The book opens with real failures, and it is worth sitting with them before any equations: two happened under static loading alone, two were triggered by something else and then ran as flowslides. Select one to see what it cost and what the book draws from it.</p></div>
 
-<div class="card">
-<h2>1. Peak strength, residual strength, and why brittleness is the real danger</h2>
-<div class="explain"><p>The peak undrained strength of even very loose liquefiable sand isn't unusually low &mdash; typically s<sub>u</sub>/p&prime;<sub>o</sub> &asymp; 0.15&ndash;0.30 (Fig. 6.10), comparable to normally consolidated clay. What makes static liquefaction dangerous is what happens <i>after</i> the peak: a large, brittle strength drop to the residual (critical-state) strength, which follows directly from the CSL definition:</p></div>
-<div class="eq">s<sub>r</sub>/p&prime;<sub>o</sub> = (M/2)&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) &nbsp; (Eq. 6.4) &nbsp;&nbsp; I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> &nbsp; (Bishop's brittleness index, Eq. 6.5)</div>
+<div class="case-picker" id="casePicker" role="tablist" aria-label="Flow failure case histories"></div>
+<div id="caseDetail" class="case-detail" aria-live="polite"></div>
 
-<div class="grid3">
-<div class="slider-block"><label>Critical friction ratio, M<sub>tc</sub> <span class="readout" id="s1MOut">1.25</span></label><input id="s1M" type="range" min="1.0" max="1.6" step="0.01" value="1.25"></div>
-<div class="slider-block"><label>&lambda;<sub>10</sub> (CSL slope) <span class="readout" id="s1LOut">0.05</span></label><input id="s1L" type="range" min="0.01" max="0.20" step="0.005" value="0.05"></div>
-<div class="slider-block"><label>State parameter, &psi;<sub>o</sub> <span class="readout" id="s1PsiOut">0.068</span></label><input id="s1Psi" type="range" min="-0.05" max="0.20" step="0.001" value="0.068"></div>
-</div>
-<div class="slider-block" style="max-width:340px"><label>Peak strength ratio, s<sub>u</sub>/p&prime;<sub>o</sub> &mdash; for the I<sub>B</sub> calculation below <span class="readout" id="s1SuOut">0.20</span></label><input id="s1Su" type="range" min="0.10" max="0.40" step="0.005" value="0.20"><div style="font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4">Typical range 0.15&ndash;0.30 (Fig. 6.10) &mdash; not predicted by Eq. 6.4, set it directly.</div></div>
-<div class="grid2">
+<div class="grid2" style="margin-top:12px">
 <div>
-<div class="statgrid" id="s1Stats"></div>
-<div class="callout">Test G609 on Erksak 330/0.7 sand — the loosest clean-sand liquefaction test in the book's database (e<sub>o</sub>=0.800, p&prime;<sub>o</sub>=500 kPa, &psi;<sub>o</sub>=+0.068) — is plotted as the reference point (default slider values). It showed an <b>80% peak-to-residual strength drop</b>, with a smoothly mobilized stress ratio and pore pressure through the whole test — no sudden "collapse," which is the book's key evidence against the traditional collapse-surface picture (Section 2 below). Brittleness only develops once &psi;<sub>o</sub>/&lambda;<sub>e</sub> &gt; 0.7 (the boundary of "normal consolidation" behavior, Fig. 6.14) — the badge below flags it.</div>
+<div class="chart-host"><canvas id="caseScaleChart" role="img" aria-label="Runout distance against volume for the four flow failures, on log axes, with the selected case highlighted."></canvas></div>
+<div class="legend"><span><i style="background:#c64852"></i>lives lost</span><span><i style="background:#1479b8"></i>no lives lost</span><span><i style="background:#123b4a"></i>selected case</span></div>
 </div>
-<div><canvas id="brittleChart"></canvas>
-<div class="legend"><span><i style="background:var(--blue)"></i>s<sub>r</sub>/p&prime;<sub>o</sub> (Eq. 6.4)</span><span><i style="background:var(--red)"></i>current state</span></div>
+<div>
+<div class="callout" style="margin-top:0"><b>The pattern worth noticing.</b> Volume and death toll are barely related. Aberfan killed 144 people with roughly 107,000&nbsp;m&sup3; &mdash; about a seventieth of Fort Peck's volume, which killed eight. What decides the harm is not how much moved but <b>how far it ran and what was in the way</b>, and runout is governed by the residual strength this module computes.</div>
+<div class="warning"><b>All four share one thing.</b> In every case the material was loose enough to be contractive at its in-situ stress, and in every case the failure ran further than a drained analysis would predict. That is the whole subject of Chapter 6: not whether the soil is strong enough to stand, but how much strength survives once it starts to move.</div>
 </div>
 </div>
 </div>
 
-<div class="card">
-<h2>2. Why "collapse surface" is the wrong picture</h2>
+<div class="card" id="brittleness">
+<h2>3. Peak strength, residual strength, and why brittleness is the real danger</h2>
 <div class="explain">
-<p>The traditional explanation for static liquefaction is a "collapse surface" or "instability line" &mdash; the idea that loose sand holds together in a metastable particle arrangement until a critical stress ratio triggers a sudden rearrangement. The book tested this directly against Test G609's data: the stress ratio and excess pore pressure both mobilize <b>smoothly</b> with strain, with no inflection at peak strength (&eta;<sub>L</sub>=0.62 at collapse) that would indicate a sudden structural event. A companion drained test on an even looser sample (e=0.820) showed no change in behavior at all when its stress path crossed that same "collapse" ratio.</p>
-<p>NorSand simulations confirm why the collapse-surface idea is misleading: the stress ratio at instability isn't a fixed soil property at all. For the same critical friction ratio M<sub>tc</sub>, varying only the ratio of plastic hardening to elastic rigidity (H/I<sub>r</sub>) shifted the instability stress ratio &eta;<sub>L</sub> from <b>0.75 to 1.0</b> in simulations of real Guindon silty sand (33% fines, &psi;<sub>o</sub>=+0.065, Fig. 6.27). Liquefaction isn't a structural collapse &mdash; it's ordinary strain-softening plasticity that becomes catastrophic only when drainage can't keep up with pore pressure generation (Drucker's instability postulate, Eq. 6.20).</p>
+<p>The peak undrained strength of even very loose liquefiable sand is not unusually low &mdash; typically s<sub>u</sub>/p&prime;<sub>o</sub> &asymp; 0.15&ndash;0.30 (Fig. 6.10), comparable to normally consolidated clay. What makes static liquefaction dangerous is what happens <i>after</i> the peak: a large, brittle drop to the residual (critical-state) strength. That residual follows directly from the definition of the CSL, so it is not an empirical fit &mdash; it is a consequence of where the soil started relative to critical:</p>
+</div>
+<div class="eq">s<sub>r</sub>/p&prime;<sub>o</sub> = (M<sub>tc</sub>/2)&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) &nbsp; (Eq. 6.4) &nbsp;&nbsp;&nbsp; I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> &nbsp; (Bishop's brittleness index, Eq. 6.5)</div>
+
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="s1M"><span>Critical friction ratio, M<sub>tc</sub></span> <span class="readout" id="s1MOut">1.25</span></label><input id="s1M" type="range" min="1.1" max="1.5" step="0.01" value="1.25"></div>
+<div class="slider-block"><label for="s1L"><span>&lambda;<sub>10</sub> (CSL slope, base 10)</span> <span class="readout" id="s1LOut">0.050</span></label><input id="s1L" type="range" min="0.01" max="0.20" step="0.005" value="0.05"></div>
+<div class="slider-block"><label for="s1Psi"><span>State parameter, &psi;<sub>o</sub></span> <span class="readout" id="s1PsiOut">+0.068</span></label><input id="s1Psi" type="range" min="-0.05" max="0.20" step="0.001" value="0.068"></div>
+<div class="slider-block"><label for="s1Su"><span>Peak strength ratio, s<sub>u</sub>/p&prime;<sub>o</sub></span> <span class="readout" id="s1SuOut">0.200</span></label><input id="s1Su" type="range" min="0.10" max="0.40" step="0.005" value="0.20"><div class="hint">Typical range 0.15&ndash;0.30 (Fig. 6.10). Eq. 6.4 predicts the <i>residual</i>, not the peak, so the peak is set directly here.</div></div>
+<div class="statgrid n2" id="s1Stats"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="brittleChart" role="img" aria-label="Residual strength ratio against state parameter, with the brittleness gap to the peak strength shaded and the current state marked."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>s<sub>r</sub>/p&prime;<sub>o</sub> from Eq. 6.4</span><span><i style="background:#e9b7bb"></i>the brittleness gap</span><span><i style="background:#268160"></i>peak s<sub>u</sub>/p&prime;<sub>o</sub></span><span><i style="background:#c64852"></i>current state</span><span><i style="background:#8a97a0"></i>&psi;<sub>o</sub>=0.7&lambda;<sub>e</sub> brittleness onset</span></div>
+</div>
 </div>
 
-<h3>If &eta;<sub>L</sub> isn't a soil property, what does move it?</h3>
-<div class="explain"><p>Drag H/I<sub>r</sub> across the same range Figure 6.27 explores, for the book's own real Guindon silty sand parameters (&Gamma;=0.902, &lambda;<sub>10</sub>=0.05, M<sub>tc</sub>=1.25, N=0.5, &chi;<sub>tc</sub>=6.0, &psi;<sub>o</sub>=+0.065, OCR=1.15, K<sub>o</sub>=1.0, &nu;=0.2):</p></div>
-<div class="slider-block" style="max-width:420px"><label>H/I<sub>r</sub> <span class="readout" id="hirOut">1.0</span></label><input id="hirSlide" type="range" min="0" max="4" step="0.05" value="1.0"></div>
+<div class="eq" id="s1Eq" style="margin-top:10px"></div>
+<div class="callout" id="s1Note" aria-live="polite"></div>
+<div class="warning"><b>The reference point.</b> Test G609 on Erksak 330/0.7 sand &mdash; the loosest clean-sand liquefaction test in the book's database (e<sub>o</sub>=0.800, p&prime;<sub>o</sub>=500&nbsp;kPa, &psi;<sub>o</sub>=+0.068) &mdash; is the default slider state. It showed an <b>80% peak-to-residual strength drop</b>, with stress ratio and pore pressure both mobilising smoothly through the whole test. No sudden collapse. That smoothness is the book's key evidence against the traditional picture, which is Section 6.</div>
+
+<div class="quiz-checkpoint" id="quizCheckA">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on brittleness, residual strength and Eq. 6.4.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotA">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotA">Hide questions</button></div>
+<div id="quizSlotA"></div>
+</div>
+</div>
+
+<div class="card" id="notation">
+<h2>4. Notation used in this module</h2>
+<p class="explain">Symbols in roughly the order they first appear. &psi;, &Gamma;, &lambda;<sub>10</sub> and M<sub>tc</sub> carry over unchanged from Modules 1 and 2. Choose any card to jump to where it is used.</p>
+<div class="notation-grid" id="notationGrid"></div>
+</div>
+
+<div class="card" id="undrained-path">
+<h2>5. What undrained shearing actually does to a contractive soil</h2>
+<div class="explain">
+<p>Before arguing about mechanisms it helps to watch the process. Shear a contractive soil with no drainage and it wants to contract but cannot, so the pore pressure rises and the mean effective stress falls. The stress path climbs, turns over at a peak, and then walks down the critical state line to the residual. The peak is not a material constant &mdash; it is where the path happens to turn.</p>
+</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="upPsi"><span>State parameter, &psi;<sub>o</sub></span> <span class="readout" id="upPsiOut">+0.068</span></label><input id="upPsi" type="range" min="-0.08" max="0.18" step="0.001" value="0.068"></div>
+<div class="slider-block"><label for="upM"><span>Critical friction ratio, M<sub>tc</sub></span> <span class="readout" id="upMOut">1.25</span></label><input id="upM" type="range" min="1.1" max="1.5" step="0.01" value="1.25"></div>
+<div class="slider-block"><label for="upL"><span>&lambda;<sub>10</sub></span> <span class="readout" id="upLOut">0.050</span></label><input id="upL" type="range" min="0.01" max="0.20" step="0.005" value="0.05"></div>
+<div class="slider-block"><label for="upP"><span>Initial mean effective stress, p&prime;<sub>o</sub> (kPa)</span> <span class="readout" id="upPOut">500</span></label><input id="upP" type="range" min="50" max="1000" step="10" value="500"></div>
+<div class="statgrid n2" id="upStats"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="pathChart" role="img" aria-label="Undrained effective stress path in q against mean effective stress, with the critical state line, the peak, and the residual marked."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>effective stress path</span><span><i style="background:#268160"></i>critical state line, q = M&middot;p&prime;</span><span><i style="background:#c64852"></i>peak (instability)</span><span><i style="background:#123b4a"></i>residual at critical state</span><span><i style="background:#e38a22"></i>the strength that is lost</span></div>
+</div>
+</div>
+<div class="callout" id="upNote" aria-live="polite"></div>
+<div class="warning"><b>Read the shape, not just the numbers.</b> Drag &psi;<sub>o</sub> from positive to negative and the whole character changes: a contractive soil turns over early and ends far to the left, while a dilative one climbs the critical state line and ends stronger than it started. The peak stops being a peak. That transition &mdash; not a threshold stress ratio &mdash; is what separates a flowslide from a slump. This is a schematic of the mechanism, drawn from the critical-state relationships rather than integrated from NorSand; Module 1 has the full constitutive simulator.</div>
+</div>
+
+<div class="card" id="collapse-surface">
+<h2>6. Why &ldquo;collapse surface&rdquo; is the wrong picture</h2>
+<div class="explain">
+<p>The traditional explanation for static liquefaction is a &ldquo;collapse surface&rdquo; or &ldquo;instability line&rdquo;: loose sand supposedly holds together in a metastable particle arrangement until a critical stress ratio triggers a sudden rearrangement. The book tested that directly against Test G609. Stress ratio and excess pore pressure both mobilise <b>smoothly</b> with strain, with no inflection at peak strength (&eta;<sub>L</sub>=0.62) that would mark a structural event. A companion drained test on an even looser sample (e=0.820) showed no change in behaviour at all when its stress path crossed the same ratio.</p>
+<p>NorSand simulations show why the idea misleads: the stress ratio at instability is not a soil property. Holding M<sub>tc</sub> fixed and varying only the ratio of plastic hardening modulus to elastic rigidity, H/I<sub>r</sub>, moved &eta;<sub>L</sub> from <b>0.75 to 1.0</b> in simulations of real Guindon silty sand (33% fines, &psi;<sub>o</sub>=+0.065, Fig. 6.27). Liquefaction is ordinary strain-softening plasticity that becomes catastrophic only when drainage cannot keep up with pore pressure generation &mdash; Drucker's instability postulate (Eq. 6.20).</p>
+</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="hirSlide"><span>H/I<sub>r</sub> &mdash; plastic hardening over elastic rigidity</span> <span class="readout" id="hirOut">1.00</span></label><input id="hirSlide" type="range" min="0" max="4" step="0.05" value="1"><div class="hint">The same range Fig. 6.27 explores, for the book's own Guindon silty sand parameters (&Gamma;=0.902, &lambda;<sub>10</sub>=0.05, M<sub>tc</sub>=1.25, N=0.5, &chi;<sub>tc</sub>=6.0, &psi;<sub>o</sub>=+0.065, OCR=1.15, K<sub>o</sub>=1.0, &nu;=0.2).</div></div>
 <div class="statgrid n2" id="hirStats"></div>
-<canvas id="hirChart" style="height:200px"></canvas>
-<p class="explain" style="font-size:11px;color:var(--muted)">The curve is a smooth illustrative interpolation between Figure 6.27's two explicitly-stated endpoint values (&eta;<sub>L</sub>&asymp;0.75 at H/I<sub>r</sub>&asymp;0, &eta;<sub>L</sub>&asymp;1.0 at H/I<sub>r</sub>&asymp;4) &mdash; the figure itself wasn't available to digitize point-by-point, so treat the curve's shape as illustrative and the two endpoints as the real, cited result.</p>
+<div class="callout" style="font-size:11.5px">If &eta;<sub>L</sub> were a soil property it could not move at all while the soil stays the same. It moves by a third. That is the argument.</div>
+</div>
+<div>
+<div class="chart-host"><canvas id="hirChart" role="img" aria-label="Instability stress ratio against the ratio of plastic hardening modulus to elastic rigidity, between the two endpoint values cited in Figure 6.27."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>&eta;<sub>L</sub> across the H/I<sub>r</sub> range</span><span><i style="background:#c64852"></i>current H/I<sub>r</sub></span><span><i style="background:#687a82"></i>Fig. 6.27's two cited endpoints</span></div>
+</div>
+</div>
+<div class="warning"><b>What is real here and what is drawn.</b> The two endpoint values (&eta;<sub>L</sub>&asymp;0.75 at H/I<sub>r</sub>&asymp;0 and &asymp;1.0 at H/I<sub>r</sub>&asymp;4) are the book's own explicitly stated results and are marked on the figure. The curve between them is a smooth monotonic interpolation &mdash; Fig. 6.27 was not available to digitise point by point, so treat its <i>shape</i> as illustrative and the endpoints as the cited result.</div>
+
+<div class="quiz-checkpoint" id="quizCheckB">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on the mechanism and why the collapse surface is the wrong picture.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotB">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotB">Hide questions</button></div>
+<div id="quizSlotB"></div>
+</div>
 </div>
 
-<div class="card">
-<h2>3. Predicting post-liquefaction residual strength — theory vs. current practice</h2>
-<div class="explain"><p>The book's own recommended design tool (reproduced here exactly as the VBA function published in Fig. 6.48) blends the exact critical-state theory result (Eq. 6.4/6.17) for very loose soils with a conservative linear fit anchored to the case-history record for everything else:</p></div>
-<div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;(M<sub>tc</sub>/2)&middot;exp(&minus;&psi;/&lambda;<sub>e</sub>) &nbsp; if &psi; &gt; &lambda;<sub>10</sub></div>
-<div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;0.0501&middot;M<sub>tc</sub> + 0.8&middot;(&lambda;<sub>10</sub> &minus; &psi;) &nbsp; otherwise</div>
+<div class="card" id="residual-strength">
+<h2>7. Predicting post-liquefaction residual strength</h2>
+<div class="explain"><p>The book's recommended design tool, reproduced here exactly as the VBA function published in Fig. 6.48, blends the exact critical-state result for very loose soils with a conservative linear fit anchored to the case-history record for everything else. The switch happens at &psi;=&lambda;<sub>10</sub>:</p></div>
+<div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;(M<sub>tc</sub>/2)&middot;exp(&minus;&psi;/&lambda;<sub>e</sub>) &nbsp;&nbsp; if &psi; &gt; &lambda;<sub>10</sub><br>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;0.0501&middot;M<sub>tc</sub> + 0.8&middot;(&lambda;<sub>10</sub> &minus; &psi;) &nbsp;&nbsp; otherwise</div>
 
-<div class="grid4">
-<div class="slider-block"><label>M<sub>tc</sub> <span class="readout" id="s3MOut">1.25</span></label><input id="s3M" type="range" min="1.0" max="1.6" step="0.01" value="1.25"></div>
-<div class="slider-block"><label>K<sub>o</sub> <span class="readout" id="s3KOut">0.70</span></label><input id="s3K" type="range" min="0.4" max="1.2" step="0.01" value="0.70"></div>
-<div class="slider-block"><label>&lambda;<sub>10</sub> <span class="readout" id="s3LOut">0.08</span></label><input id="s3L" type="range" min="0.01" max="0.25" step="0.005" value="0.08"></div>
-<div class="slider-block"><label>&psi; (characteristic) <span class="readout" id="s3PsiOut">-0.02</span></label><input id="s3Psi" type="range" min="-0.15" max="0.15" step="0.001" value="-0.02"></div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="s3M"><span>M<sub>tc</sub></span> <span class="readout" id="s3MOut">1.25</span></label><input id="s3M" type="range" min="1.1" max="1.5" step="0.01" value="1.25"></div>
+<div class="slider-block"><label for="s3K"><span>K<sub>o</sub></span> <span class="readout" id="s3KOut">0.70</span></label><input id="s3K" type="range" min="0.35" max="1.1" step="0.01" value="0.70"></div>
+<div class="slider-block"><label for="s3L"><span>&lambda;<sub>10</sub></span> <span class="readout" id="s3LOut">0.080</span></label><input id="s3L" type="range" min="0.01" max="0.20" step="0.005" value="0.08"></div>
+<div class="slider-block"><label for="s3Psi"><span>&psi; (characteristic)</span> <span class="readout" id="s3PsiOut">-0.020</span></label><input id="s3Psi" type="range" min="-0.15" max="0.25" step="0.001" value="-0.02"><div class="hint">This is Module 2's &psi;<sub>k</sub> &mdash; the characteristic value you chose from the distribution, not a mean.</div></div>
+<div class="statgrid n2" id="s3Stats"></div>
 </div>
-<div class="statgrid n3" id="s3Stats"></div>
+<div>
+<div class="chart-host"><canvas id="caseChart" role="img" aria-label="Residual strength ratio against characteristic state parameter, with the book's design function and eleven real case histories shown as range bars."></canvas></div>
+<div class="legend"><span><i style="background:#123b4a"></i>the book's design function</span><span><i style="background:#687a82"></i>real case histories (Table 6.5)</span><span><i style="background:#c64852"></i>current slider state</span><span><i style="background:#8a97a0"></i>&psi;=&minus;0.05 threshold</span></div>
+</div>
+</div>
+<div class="eq" id="s3Eq" style="margin-top:10px"></div>
+<div class="callout" id="denseFlag" aria-live="polite"></div>
+<div class="callout"><b>How dense is dense enough?</b> Laboratory and case-history evidence converge on a practical threshold: soils denser than about <b>&psi; &lt; &minus;0.05</b> do not show the phase-transformation behaviour that leads to damaging strength loss (Section 6.11). Robertson's independent CPT-based criterion (Q<sub>tn,cs</sub> &asymp; 70) lines up with the same boundary. Below that line the engineering conversation is about ground improvement; above it, about tolerable movements. It is the same &minus;0.05 that Module 2 used to shade its logs.</div>
 
-<canvas id="caseChart" style="height:320px;margin-top:12px"></canvas>
-<div class="legend"><span><i style="background:var(--navy)"></i>book's best-practice function (this &lambda;10, M, Ko)</span><span><i style="background:#9aa9ae"></i>real case histories (Table 6.5, range bars)</span><span><i style="background:var(--red)"></i>current slider state</span></div>
-
-<div class="callout"><b>How dense is dense enough?</b> Laboratory and case-history evidence converge on a practical threshold: soils denser than about <b>&psi; &lt; &minus;0.05</b> don't show the phase-transformation behavior that leads to damaging strength loss (Section 6.11) &mdash; Robertson's independent CPT-based criterion (Q<sub>tn,cs</sub> &asymp; 70) lines up with the same boundary. Below this line the book frames the engineering conversation as "ground improvement"; above it, as "tolerable movements." <span id="denseFlag"></span></div>
-
-<h3>Comparison: current U.S. practice (Robertson 2010, Eq. 6.15) — direct from CPT, no &psi; needed</h3>
-<p class="explain" style="font-size:12px">This is the other method in common use, applied directly to normalized clean-sand-equivalent CPT resistance rather than through &psi;. It's plotted separately (not on the chart above) because converting Q<sub>tn,cs</sub> to &psi; needs the full I<sub>c</sub>/K<sub>c</sub> normalization chain (Eqs. 6.11&ndash;6.14), which this tool doesn't reproduce — see disclosure below.</p>
+<h3>The other method in common use &mdash; Robertson (2010), direct from CPT</h3>
+<div class="explain"><p>This one is applied directly to normalized clean-sand-equivalent CPT resistance rather than through &psi;. It is plotted on its own axis rather than on the chart above, because converting Q<sub>tn,cs</sub> to &psi; needs the full I<sub>c</sub>/K<sub>c</sub> normalization chain (Eqs. 6.11&ndash;6.14) that this tool does not reproduce.</p></div>
 <div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = 0.0055&middot;exp(0.05&middot;Q<sub>tn,cs</sub>) &nbsp; (Eq. 6.15)</div>
-<div class="slider-block"><label>Q<sub>tn,cs</sub> <span class="readout" id="s3bQOut">40</span></label><input id="s3bQ" type="range" min="0" max="100" step="1" value="40"></div>
+<div class="grid2">
+<div class="slider-block"><label for="s3bQ"><span>Q<sub>tn,cs</sub></span> <span class="readout" id="s3bQOut">40</span></label><input id="s3bQ" type="range" min="10" max="120" step="1" value="40"></div>
 <div class="statgrid n2" id="s3bStats"></div>
 </div>
 
-<div class="card">
-<div class="warning"><b>About this tool.</b> Section 1 uses Eq. 6.4 with the sign resolved from first principles (p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows directly from the CSL definition, Eq. 2.1, and the book's own restatement at Eq. 6.16/6.4 confirms the minus sign) — this correction was cross-checked against the book's own quoted result that peak &asymp; residual strength at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub> and matches to within the stated approximation. Section 3's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly and internally verified (the two branches agree to within 0.03% at their anchor point &psi;=&lambda;<sub>10</sub>). Robertson's comparison curve (Eq. 6.15) is plotted directly against Q<sub>tn,cs</sub> without deriving the full I<sub>c</sub>/K<sub>c</sub> normalization chain (Eqs. 6.11&ndash;6.14) — those are real, cited equations but weren't needed for this comparison. Case-history markers are representative midpoints of the ranges in Table 6.5 (Zeeland Coast, Wachusett, Sheffield, Fort Peck, Hokkaido, Lower San Fernando, Nerlerk, La Marquesa, La Palma, Sullivan, Jamuna River Bank); Calaveras Dam and the Mochikoshi dams are omitted as the book itself flags them as unreliable or outlier data.</div>
-<p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
+<div class="quiz-checkpoint" id="quizCheckC">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on the design function and the case-history record.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotC">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotC">Hide questions</button></div>
+<div id="quizSlotC"></div>
+</div>
 </div>
 
+<div class="card" id="case-check">
+<h2>8. Checking the design function against the record</h2>
+<div class="explain"><p>A design function that cannot reproduce the failures it was fitted to is not worth much. Table 6.5 gives eleven flow failures with back-figured residual strength ratios and estimated state parameters, both as ranges rather than points. Here the function is run at each case's own &lambda;<sub>10</sub> and compared against what actually happened.</p></div>
+<div class="grid2">
+<div>
+<div class="chart-host"><canvas id="residChart" role="img" aria-label="Predicted against observed residual strength ratio for eleven case histories, with the line of equality."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>a case history</span><span><i style="background:#123b4a"></i>line of equality</span><span><i style="background:#e9b7bb"></i>within a factor of two</span></div>
+</div>
+<div>
+<div class="statgrid n2" id="fitStats"></div>
+<div class="callout" id="fitNote" aria-live="polite"></div>
+</div>
+</div>
+<div style="overflow-x:auto"><table id="caseTable">
+<thead><tr><th>Case history</th><th>&psi; range</th><th>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> observed</th><th>&lambda;<sub>10</sub></th><th>predicted</th><th>ratio</th></tr></thead>
+<tbody id="caseTableBody"></tbody>
+</table></div>
+<div class="warning"><b>Read the scatter honestly.</b> Both axes are uncertain: the observed strengths are back-figured from failures whose geometry and pore pressures were themselves reconstructed, and the state parameters are ranges the book itself declines to sharpen. A factor of two either way, on data like this, is not a poor fit &mdash; but it is also not precision, and the function should be read as a design envelope rather than a prediction. Calaveras Dam and the Mochikoshi dams are omitted because the book flags them as unreliable.</div>
+</div>
+
+<div class="card" id="knowledge-check">
+<h2>9. Check learning</h2>
+<p class="explain">Three blocks of questions, each placed after the section that taught it. <b>&ldquo;Check my understanding&rdquo; grades every block together</b>, so it is fine to submit even if you skipped some. You get a score per block, a button back to the section behind it, and a filter that shows only what you missed.</p>
+<div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 30 answered</div>
+<div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
+
+<div class="callout" style="margin-top:14px"><b>Where this leaves you.</b> Module 1 gave you &psi; and what it means. Module 2 gave you &psi; from a cone, and how much to trust it. This module turned &psi; into a residual strength and a brittleness, and checked that against eleven real failures. <a href="jb-cyclic-liquefaction-lab.html">Module 4</a> takes the last step: what happens when the trigger is an earthquake rather than static loading.</div>
+
+<h3>Quick-reference glossary</h3><div class="glossary-grid" id="glossaryGrid"></div>
+</div>
+
+<div class="card" id="about-tool">
+<div class="warning"><b>About this tool.</b> Section 3 uses Eq. 6.4 with the sign resolved from first principles &mdash; p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows from the CSL definition (Eq. 2.1), and the book's restatement at Eq. 6.16/6.4 confirms the minus sign. It was cross-checked against the book's own result that peak &asymp; residual at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub>. Section 5's stress path is a schematic built from the critical-state relationships, not a NorSand integration; Module 1 has the real simulator. Section 6's &eta;<sub>L</sub> curve interpolates between Fig. 6.27's two explicitly cited endpoints, which are marked. Section 7's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly; its two branches agree to within 0.03% at the &psi;=&lambda;<sub>10</sub> anchor. Robertson's Eq. 6.15 is plotted against Q<sub>tn,cs</sub> directly, without deriving the I<sub>c</sub>/K<sub>c</sub> chain. Case-history values are the ranges published in Table 6.5.</div>
+<p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
+</div>
 
 <div id="commentsSection"></div>
 </div>
 
-
 <script>
 function el(id){ return document.getElementById(id); }
 function num(id){ return +el(id).value; }
-
-// ---------------- Section 1 ----------------
-var s1ids=["s1M","s1L","s1Psi","s1Su"];
-s1ids.forEach(id=>el(id).addEventListener("input",updateSection1));
-
-function srOverPoBasic(Mtc, lam10, psi){
-  var lamE = lam10/2.303;
-  return 0.5*Mtc*Math.exp(-psi/lamE);
+function prepCanvas(host, cssH, minW){
+  var dpr = window.devicePixelRatio || 1;
+  var box = host.parentElement;
+  var W = Math.max(minW||260, (box && box.clientWidth) || host.clientWidth || 520);
+  host.width = Math.round(W*dpr); host.height = Math.round(cssH*dpr);
+  host.style.width = W+'px'; host.style.height = cssH+'px';
+  var ctx = host.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,cssH);
+  return {ctx:ctx, W:W, H:cssH};
 }
-
-function updateSection1(){
-  var Mtc=num("s1M"), lam10=num("s1L"), psi=num("s1Psi"), su=num("s1Su");
-  el("s1MOut").textContent=Mtc.toFixed(2);
-  el("s1LOut").textContent=lam10.toFixed(3);
-  el("s1PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
-  el("s1SuOut").textContent=su.toFixed(3);
-
-  var lamE = lam10/2.303;
-  var srRatio = srOverPoBasic(Mtc,lam10,psi);
-  var psiOverLam = psi/lamE;
-  var brittle = psiOverLam>0.7;
-  var badge = brittle ? '<span class="badge warn">brittle regime (&psi;/&lambda;e &gt; 0.7)</span>' : '<span class="badge ok">near-ductile (&psi;/&lambda;e &le; 0.7)</span>';
-  var IB = (su-srRatio)/su;
-  var IBclamped = Math.max(0,Math.min(1,IB));
-  var IBbadge = IB>=0.8 ? '<span class="badge warn">very brittle</span>' : (IB>=0.3 ? '<span class="badge">moderate</span>' : '<span class="badge ok">ductile</span>');
-
-  el("s1Stats").innerHTML = `
-    <div class="stat"><small>&lambda;<sub>e</sub> (natural)</small><strong>${lamE.toFixed(4)}</strong></div>
-    <div class="stat hi"><small>s<sub>r</sub>/p&prime;<sub>o</sub></small><strong>${srRatio.toFixed(3)}</strong></div>
-    <div class="stat"><small>&psi;<sub>o</sub>/&lambda;<sub>e</sub></small><strong>${psiOverLam.toFixed(2)}</strong>${badge}</div>
-    <div class="stat hi"><small>I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub></small><strong>${IBclamped.toFixed(2)}</strong>${IBbadge}</div>`;
-
-  var W=el("brittleChart").clientWidth||520,H=260;
-  var cv=el("brittleChart"); cv.width=W;cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=56,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=-0.05,xmax=0.20;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  var ymin=0,ymax=0.8;
-  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  for(var xv=-0.05;xv<=0.20;xv+=0.05){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(2),x-14,mt+ph+13); }
-  ctx.textAlign="right";
-  for(var yv=0;yv<=0.8;yv+=0.2){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(1),ml-8,y+3); }
-  ctx.textAlign="left";
-  ctx.fillText("state parameter, ψo", ml+pw/2-40, H-2);
-  ctx.save(); ctx.translate(14,mt+ph/2+20); ctx.rotate(-Math.PI/2); ctx.fillText("sr / p'o",0,0); ctx.restore();
-  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
-  for(var xv2=xmin;xv2<=xmax;xv2+=0.005){
-    var sr=srOverPoBasic(Mtc,lam10,xv2);
-    var x=X(xv2), y=Y(Math.min(ymax,sr));
-    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+function niceTicks(min, max, target){
+  var range = max-min;
+  if(!(range>0)) return {values:[min], dp:0};
+  var raw = range/Math.max(1,target);
+  var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  var norm = raw/mag, step;
+  if(norm<=1) step=1; else if(norm<=2) step=2; else if(norm<=2.5) step=2.5; else if(norm<=5) step=5; else step=10;
+  step *= mag;
+  var out=[];
+  for(var v=Math.ceil(min/step)*step; v<=max+step*1e-6; v+=step){
+    out.push(Math.abs(v)<step*1e-6 ? 0 : +v.toFixed(10));
   }
-  ctx.stroke();
-  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,srRatio)),5.5,0,7); ctx.fill();
+  var dp = Math.max(0, Math.min(3, -Math.floor(Math.log10(step))));
+  if(step >= 1 && Math.abs(step-Math.round(step))>1e-9) dp = 1;  // e.g. a 2.5 step
+  return {values: out.length?out:[min,max], dp:dp};
 }
-updateSection1();
-window.addEventListener("resize",updateSection1);
-
-// ---------------- Section 2: H/Ir vs etaL (illustrative interpolation between Fig. 6.27's two cited endpoints) ----------------
-function etaLFromHIr(hir){
-  var t = Math.max(0,Math.min(1, hir/4)); // 0..4 range per Fig. 6.27's axis
-  var smooth = t*t*(3-2*t); // smoothstep, monotonic, flattens at the endpoints
-  return 0.75 + 0.25*smooth;
+function clampLabelX(ctx, x, text, px, panelW){
+  var half = ctx.measureText(text).width/2 + 1;
+  return Math.min(Math.max(x, px+half), px+panelW-half);
 }
-function updateHIr(){
-  var hir=+el("hirSlide").value;
-  el("hirOut").textContent=hir.toFixed(2);
-  var etaL=etaLFromHIr(hir);
-  el("hirStats").innerHTML = `
-    <div class="stat hi"><small>&eta;<sub>L</sub> at instability</small><strong>${etaL.toFixed(3)}</strong></div>
-    <div class="stat"><small>vs. M<sub>tc</sub>=1.25 (unchanged)</small><strong>${etaL>1.25?"above":"below"} critical</strong></div>`;
-
-  var W=el("hirChart").clientWidth||520,H=200;
-  var cv=el("hirChart"); cv.width=W;cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=50,mr=14,mt=14,mb=28; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=0,xmax=4,ymin=0.65,ymax=1.1;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  for(var xv=0;xv<=4;xv+=1){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(0),x-4,mt+ph+14); }
-  ctx.textAlign="right";
-  for(var yv=0.7;yv<=1.1;yv+=0.1){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(2),ml-8,y+3); }
-  ctx.textAlign="left";
-  ctx.fillText("H / Ir", ml+pw/2-20, H-2);
-  ctx.save(); ctx.translate(12,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText("ηL",0,0); ctx.restore();
-  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
-  for(var xv2=xmin;xv2<=xmax;xv2+=0.05){
-    var yv2=etaLFromHIr(xv2); var x=X(xv2),y=Y(yv2);
-    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.stroke();
-  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(hir),Y(etaL),5.5,0,7); ctx.fill();
+function haloText(ctx, text, x, y, color){
+  ctx.save();
+  ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=3;
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle=color; ctx.fillText(text, x, y);
+  ctx.restore();
 }
-el("hirSlide").addEventListener("input",updateHIr);
-updateHIr();
-window.addEventListener("resize",updateHIr);
+function invNorm(p){
+  var a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  var b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  var c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  var d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  var plow=0.02425, phigh=1-plow, q,r;
+  if(p<plow){ q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if(p>phigh){ q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  q=p-0.5; r=q*q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+function normPdf(x,mu,sig){ return Math.exp(-0.5*Math.pow((x-mu)/sig,2))/(sig*Math.sqrt(2*Math.PI)); }
 
-// ---------------- Section 3 ----------------
+// ============================ Module 3 ============================
+var LN10 = Math.log(10);          // lambda_e = lambda_10 / ln(10); the draft used 2.3 in
+                                  // one place and 2.303 in another, which disagreed in
+                                  // the third decimal of every residual strength.
+function lamE(lam10){ return lam10/LN10; }
+
+// Eq. 6.4 -- residual strength ratio follows from the CSL definition, not a fit
+function srOverPoBasic(Mtc, lam10, psi){ return 0.5*Mtc*Math.exp(-psi/lamE(lam10)); }
+// Bishop's brittleness index, Eq. 6.5
+function brittleness(su, sr){ return su>0 ? (su-sr)/su : 0; }
+// Fig. 6.48, the book's published design function, both branches
 function srOverSigV(Mtc, ko, lam10, psi){
-  var k0Factor = (1+2*ko)/3;
-  if(psi > lam10){
-    var lamE = lam10/2.3;
-    return k0Factor*0.5*Mtc*Math.exp(-psi/lamE);
-  } else {
-    var srSigVOrigin = k0Factor*0.0501*Mtc;
-    var slope=0.8;
-    return srSigVOrigin + slope*(lam10-psi);
-  }
+  var k0Factor=(1+2*ko)/3;
+  if(psi > lam10) return k0Factor*0.5*Mtc*Math.exp(-psi/lamE(lam10));
+  return k0Factor*0.0501*Mtc + 0.8*(lam10-psi);
 }
 function robertsonEq615(Qtncs){ return 0.0055*Math.exp(0.05*Qtncs); }
+// Fig. 6.27: eta_L is not a soil property. Two cited endpoints, smooth between them.
+var ETA_L_LO=0.75, ETA_L_HI=1.00, ETA_L_HIR_MAX=4;
+function etaLFromHIr(hir){
+  var t=Math.max(0,Math.min(1,hir/ETA_L_HIR_MAX));
+  return ETA_L_LO + (ETA_L_HI-ETA_L_LO)*(t*t*(3-2*t));
+}
+var PSI_DENSE_ENOUGH = -0.05;     // Section 6.11's practical threshold, as in Module 2
 
 var CASE_HISTORIES = [
- {name:"Zeeland Coast", psiLo:-0.09, psiHi:-0.02, srLo:0.13, srHi:0.13, lam10:0.06},
- {name:"Wachusett Dam", psiLo:-0.05, psiHi:0.07, srLo:0.07, srHi:0.13, lam10:0.08},
- {name:"Sheffield Dam", psiLo:0.04, psiHi:0.15, srLo:0.04, srHi:0.07, lam10:0.125},
- {name:"Fort Peck Dam", psiLo:-0.05, psiHi:-0.01, srLo:0.04, srHi:0.06, lam10:0.19},
- {name:"Hokkaido Dam", psiLo:0.07, psiHi:0.12, srLo:0.08, srHi:0.12, lam10:0.15},
- {name:"Lower San Fernando", psiLo:0.0, psiHi:0.07, srLo:0.07, srHi:0.12, lam10:0.10},
- {name:"Nerlerk Berm", psiLo:-0.05, psiHi:-0.03, srLo:0.09, srHi:0.15, lam10:0.045},
- {name:"La Marquesa Dam", psiLo:-0.05, psiHi:0.05, srLo:0.08, srHi:0.10, lam10:0.10},
- {name:"La Palma Dam", psiLo:0.01, psiHi:0.08, srLo:0.12, srHi:0.15, lam10:0.12},
- {name:"Sullivan Dam", psiLo:0.05, psiHi:0.1, srLo:0.07, srHi:0.13, lam10:0.15},
- {name:"Jamuna River Bank", psiLo:-0.04, psiHi:0.05, srLo:0.12, srHi:0.20, lam10:0.15}
+ {name:"Zeeland Coast",     psiLo:-0.09, psiHi:-0.02, srLo:0.13, srHi:0.13, lam10:0.06,  year:"1800s-1900s", where:"Netherlands"},
+ {name:"Wachusett Dam",     psiLo:-0.05, psiHi: 0.07, srLo:0.07, srHi:0.13, lam10:0.08,  year:"1907", where:"Massachusetts"},
+ {name:"Sheffield Dam",     psiLo: 0.04, psiHi: 0.15, srLo:0.04, srHi:0.07, lam10:0.125, year:"1925", where:"California"},
+ {name:"Fort Peck Dam",     psiLo:-0.05, psiHi:-0.01, srLo:0.04, srHi:0.06, lam10:0.19,  year:"1938", where:"Montana"},
+ {name:"Hokkaido Dam",      psiLo: 0.07, psiHi: 0.12, srLo:0.08, srHi:0.12, lam10:0.15,  year:"1968", where:"Japan"},
+ {name:"Lower San Fernando",psiLo: 0.00, psiHi: 0.07, srLo:0.07, srHi:0.12, lam10:0.10,  year:"1971", where:"California"},
+ {name:"Nerlerk Berm",      psiLo:-0.05, psiHi:-0.03, srLo:0.09, srHi:0.15, lam10:0.045, year:"1983", where:"Beaufort Sea"},
+ {name:"La Marquesa Dam",   psiLo:-0.05, psiHi: 0.05, srLo:0.08, srHi:0.10, lam10:0.10,  year:"1985", where:"Chile"},
+ {name:"La Palma Dam",      psiLo: 0.01, psiHi: 0.08, srLo:0.12, srHi:0.15, lam10:0.12,  year:"1985", where:"Chile"},
+ {name:"Sullivan Dam",      psiLo: 0.05, psiHi: 0.10, srLo:0.07, srHi:0.13, lam10:0.15,  year:"1991", where:"British Columbia"},
+ {name:"Jamuna River Bank", psiLo:-0.04, psiHi: 0.05, srLo:0.12, srHi:0.20, lam10:0.15,  year:"1994", where:"Bangladesh"}
 ];
 
-var s3ids=["s3M","s3K","s3L","s3Psi"];
-s3ids.forEach(id=>el(id).addEventListener("input",updateSection3));
+// Chapter 1's four failures, as the book documents them
+var FLOW_FAILURES = [
+ {key:'fortpeck', name:'Fort Peck Dam', place:'Montana, USA', year:1938, deaths:8, volume:7.5e6, runout:450,
+  trigger:'Static &mdash; end of construction',
+  what:'The upstream slope of a hydraulic-fill dam failed near the end of construction, preceded by more than twelve hours of visible bulging.',
+  lesson:'The warning signs were there for half a day and were not read as imminent failure. Bulging is deformation at roughly constant volume; the flowslide begins when the soil finally sheds strength faster than the slope can shed load.'},
+ {key:'nerlerk', name:'Nerlerk Berm', place:'Beaufort Sea, Canada', year:1983, deaths:0, volume:2.5e6, runout:200,
+  trigger:'Static &mdash; own construction loading',
+  what:'An offshore sand berm built for oil exploration liquefied under its own static loading during construction, repeatedly failing to reach design elevation. Cost overruns exceeded $100 million.',
+  lesson:'The most re-analysed case in the book, and the one Module 2 used for its characteristic-value example. Nobody died, which is precisely why it could be studied so thoroughly &mdash; it is the closest thing the field has to a controlled full-scale experiment.'},
+ {key:'aberfan', name:'Aberfan', place:'Wales, UK', year:1966, deaths:144, volume:1.07e5, runout:600,
+  trigger:'Rainfall and spring water in a colliery spoil tip',
+  what:'A colliery spoil tip liquefied and flowed downhill into a village, engulfing a primary school. 144 people were killed, 116 of them children.',
+  lesson:'The smallest volume of the four by a wide margin, and by far the deadliest. Consequence is set by runout and by what lies in the path, not by how much material moves.'},
+ {key:'merriespruit', name:'Merriespruit', place:'South Africa', year:1994, deaths:17, volume:6.0e5, runout:3000,
+  trigger:'Overtopping during a thunderstorm',
+  what:'A gold tailings dam was overtopped during a thunderstorm. Erosion exposed loose saturated tailings inside the wall, which then liquefied and flowed three kilometres through the village below.',
+  lesson:'The trigger was water, but the disaster was liquefaction. An overtopping event that would have been a repairable erosion problem in a dense fill became a three-kilometre flowslide because the material inside was contractive.'}
+];
+var caseSelected = 0;
 
-function updateSection3(){
-  var Mtc=num("s3M"), ko=num("s3K"), lam10=num("s3L"), psi=num("s3Psi");
-  el("s3MOut").textContent=Mtc.toFixed(2);
-  el("s3KOut").textContent=ko.toFixed(2);
-  el("s3LOut").textContent=lam10.toFixed(3);
-  el("s3PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
-
-  var sr = srOverSigV(Mtc,ko,lam10,psi);
-  var denseEnough = psi < -0.05;
-  var badge = denseEnough ? '<span class="badge ok">denser than ψ=-0.05 — no phase transformation expected</span>' : '<span class="badge warn">looser than ψ=-0.05 — contractive / flowslide-susceptible range</span>';
-
-  el("s3Stats").innerHTML = `
-    <div class="stat hi"><small>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> (book's function)</small><strong>${sr.toFixed(3)}</strong></div>
-    <div class="stat"><small>branch used</small><strong>${psi>lam10?"critical-state theory":"case-history trend"}</strong></div>
-    <div class="stat"><small>&psi; vs. threshold</small>${badge}</div>`;
-  el("denseFlag").innerHTML = "At the current slider state (&psi;=" + (psi>=0?"+":"") + psi.toFixed(3) + "): " + badge;
-
-  var W=el("caseChart").clientWidth||900,H=320;
-  var cv=el("caseChart"); cv.width=W;cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=58,mr=14,mt=14,mb=34; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=-0.15,xmax=0.30;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  var ymin=0,ymax=0.35;
-  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  for(var xv=-0.15;xv<=0.30;xv+=0.05){ var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.fillText(xv.toFixed(2),x-14,mt+ph+13); }
-  ctx.textAlign="right";
-  for(var yv=0;yv<=0.35;yv+=0.05){ var y=Y(yv); ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke(); ctx.fillText(yv.toFixed(2),ml-8,y+3); }
-  ctx.textAlign="left";
-  ctx.fillText("characteristic state parameter, ψk", ml+pw/2-70, H-4);
-  ctx.save(); ctx.translate(14,mt+ph/2+30); ctx.rotate(-Math.PI/2); ctx.fillText("sr / σ'vo",0,0); ctx.restore();
-
-  // -0.05 threshold line
-  ctx.strokeStyle="#c9d3d8"; ctx.setLineDash([2,3]); ctx.beginPath(); ctx.moveTo(X(-0.05),mt); ctx.lineTo(X(-0.05),mt+ph); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle="#9aa9ae"; ctx.fillText("ψ=-0.05",X(-0.05)+3,mt+10);
-
-  // case histories with range bars
-  ctx.strokeStyle="#9aa9ae"; ctx.fillStyle="#687a82";
-  CASE_HISTORIES.forEach(function(c){
-    var xm=(c.psiLo+c.psiHi)/2, ym=(c.srLo+c.srHi)/2;
-    ctx.beginPath(); ctx.moveTo(X(c.psiLo),Y(ym)); ctx.lineTo(X(c.psiHi),Y(ym)); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(X(xm),Y(c.srLo)); ctx.lineTo(X(xm),Y(c.srHi)); ctx.stroke();
-    ctx.beginPath(); ctx.arc(X(xm),Y(ym),3.5,0,7); ctx.fill();
+// ---------------------------------------------------------------- Section 2
+function renderCasePicker(){
+  el('casePicker').innerHTML = FLOW_FAILURES.map(function(f,i){
+    return '<button type="button" role="tab" class="case-pill'+(i===caseSelected?' on':'')+'" data-case="'+i+'" aria-selected="'+(i===caseSelected)+'">'+
+           f.name+'<small>'+f.place+' &middot; '+f.year+'</small></button>';
+  }).join('');
+  el('casePicker').querySelectorAll('.case-pill').forEach(function(b){
+    b.addEventListener('click', function(){ caseSelected=+b.dataset.case; renderCasePicker(); renderCaseDetail(); drawCaseScaleChart(); });
   });
+}
+function renderCaseDetail(){
+  var f=FLOW_FAILURES[caseSelected];
+  var deathBadge = f.deaths>0 ? '<span class="badge contract">'+f.deaths+' killed</span>' : '<span class="badge dilate">no lives lost</span>';
+  el('caseDetail').innerHTML =
+    '<div class="band-head" style="border-left:5px solid '+(f.deaths>0?'#c64852':'#1479b8')+'"><b>'+f.name+'</b> <span class="band-range">'+f.place+' &middot; '+f.year+'</span> '+deathBadge+'</div>'+
+    '<div class="band-grid">'+
+      '<div><small>Trigger</small><span>'+f.trigger+'</span></div>'+
+      '<div><small>Volume moved</small><strong>'+(f.volume>=1e6 ? (f.volume/1e6).toFixed(1)+' million m&sup3;' : Math.round(f.volume/1000)+' thousand m&sup3;')+'</strong></div>'+
+      '<div><small>Runout</small><strong>'+(f.runout>=1000 ? (f.runout/1000).toFixed(1)+' km' : f.runout+' m')+'</strong></div>'+
+      '<div><small>What happened</small><span>'+f.what+'</span></div>'+
+    '</div>'+
+    '<p class="band-note">'+f.lesson+'</p>';
+}
+function drawCaseScaleChart(){
+  var host=el('caseScaleChart'); if(!host) return;
+  var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=52, mr=14, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var vLo=1e4, vHi=1e7, rLo=100, rHi=5000;
+  function X(v){ return ml+pw*(Math.log10(Math.max(vLo,Math.min(vHi,v)))-Math.log10(vLo))/(Math.log10(vHi)-Math.log10(vLo)); }
+  function Y(r){ return mt+ph*(1-(Math.log10(Math.max(rLo,Math.min(rHi,r)))-Math.log10(rLo))/(Math.log10(rHi)-Math.log10(rLo))); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var d=4;d<=7;d++){ var x=X(Math.pow(10,d)); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); }
+  [100,1000,5000].forEach(function(r){ var y=Y(r); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#d7e1e5'; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [['10⁴','1e4'],['10⁵','1e5'],['10⁶','1e6'],['10⁷','1e7']].forEach(function(p,i){
+    ctx.fillText(p[0], clampLabelX(ctx, X(Math.pow(10,i+4)), p[0], ml, pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('volume moved, m³ (log)', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  [100,1000,5000].forEach(function(r){ ctx.fillText(r>=1000?(r/1000)+' km':r+' m', ml-7, Y(r)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('runout (log)',0,0); ctx.restore();
+  FLOW_FAILURES.forEach(function(f,i){
+    var x=X(f.volume), y=Y(f.runout), sel=(i===caseSelected);
+    ctx.fillStyle = f.deaths>0 ? '#c64852' : '#1479b8';
+    ctx.beginPath(); ctx.arc(x,y, sel?8:5.5, 0, 7); ctx.fill();
+    if(sel){ ctx.strokeStyle='#123b4a'; ctx.lineWidth=2.5; ctx.stroke(); }
+    else { ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke(); }
+    ctx.font=(sel?'700 ':'')+'9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='bottom';
+    haloText(ctx, f.name, clampLabelX(ctx, x, f.name, ml, pw), y-(sel?11:8), sel?'#123b4a':'#5b6b73');
+  });
+}
 
-  // book's function curve at current M,Ko,lam10
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
-  for(var xv2=xmin;xv2<=xmax;xv2+=0.005){
-    var sv=srOverSigV(Mtc,ko,lam10,xv2);
-    var x=X(xv2), y=Y(Math.min(ymax,sv));
-    if(xv2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+// ---------------------------------------------------------------- Section 3
+function updateSection1(){
+  var Mtc=num('s1M'), lam10=num('s1L'), psi=num('s1Psi'), su=num('s1Su');
+  el('s1MOut').textContent=Mtc.toFixed(2);
+  el('s1LOut').textContent=lam10.toFixed(3);
+  el('s1PsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  el('s1SuOut').textContent=su.toFixed(3);
+  var le=lamE(lam10), sr=srOverPoBasic(Mtc,lam10,psi), ratio=psi/le;
+  var IB=brittleness(su,sr), IBc=Math.max(0,Math.min(1,IB));
+  var brittleBadge = ratio>0.7 ? '<span class="badge contract">brittle regime</span>' : '<span class="badge dilate">near-ductile</span>';
+  var IBbadge = IB>=0.8 ? '<span class="badge contract">very brittle</span>' : (IB>=0.3 ? '<span class="badge caution">moderate</span>' : '<span class="badge dilate">ductile</span>');
+  el('s1Stats').innerHTML =
+    '<div class="stat"><small>&lambda;<sub>e</sub> = &lambda;<sub>10</sub>/ln10</small><strong>'+le.toFixed(4)+'</strong></div>'+
+    '<div class="stat hi"><small>s<sub>r</sub>/p&prime;<sub>o</sub> (Eq. 6.4)</small><strong>'+sr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&psi;<sub>o</sub>/&lambda;<sub>e</sub></small><strong>'+ratio.toFixed(2)+'</strong>'+brittleBadge+'</div>'+
+    '<div class="stat hi"><small>I<sub>B</sub> (Eq. 6.5)</small><strong>'+IBc.toFixed(2)+'</strong>'+IBbadge+'</div>';
+  el('s1Eq').innerHTML =
+    '<span class="step">1&middot; &lambda;<sub>e</sub> = &lambda;<sub>10</sub>/ln(10) = '+lam10.toFixed(3)+'/2.3026 = <b>'+le.toFixed(4)+'</b></span>'+
+    '<span class="step">2&middot; s<sub>r</sub>/p&prime;<sub>o</sub> = (M<sub>tc</sub>/2)&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) = ('+Mtc.toFixed(2)+'/2)&middot;exp(&minus;'+psi.toFixed(3)+'/'+le.toFixed(4)+') = <b>'+sr.toFixed(3)+'</b></span>'+
+    '<span class="step">3&middot; I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> = ('+su.toFixed(3)+'&minus;'+sr.toFixed(3)+')/'+su.toFixed(3)+' = <b style="font-size:14px;color:'+(IB>=0.5?'var(--red-text)':'var(--green-text)')+'">'+IBc.toFixed(2)+'</b></span>'+
+    '<span class="step-note">Only &psi;<sub>o</sub> and &lambda;<sub>10</sub> set the residual. The peak is an input, because Eq. 6.4 does not predict it.</span>';
+  var lost=Math.max(0,su-sr);
+  el('s1Note').innerHTML =
+    '<b>What this state would cost you.</b> At &psi;<sub>o</sub> = '+(psi>=0?'+':'')+psi.toFixed(3)+' the soil peaks at '+su.toFixed(3)+
+    '&middot;p&prime;<sub>o</sub> and ends at '+sr.toFixed(3)+'&middot;p&prime;<sub>o</sub>, so <b>'+(100*IBc).toFixed(0)+'% of the strength is lost</b> on the way to critical state. '+
+    (IBc>=0.8 ? 'That is the regime the four failures in Section 2 sit in: enough strength to build on, almost none left once it moves.'
+     : IBc>=0.3 ? 'Strength loss is real but partial &mdash; deformation rather than a runaway flowslide, provided the driving stress drops with it.'
+     : 'Little is lost, so failure would be a slump that arrests rather than a flowslide.')+
+    ' The brittleness onset the book quotes sits at &psi;<sub>o</sub> &asymp; 0.7&lambda;<sub>e</sub> = '+(0.7*le).toFixed(3)+' for this &lambda;<sub>10</sub>.';
+  drawBrittleChart(Mtc,lam10,psi,su);
+}
+function drawBrittleChart(Mtc,lam10,psi,su){
+  var host=el('brittleChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=14, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.05, xmax=0.20, ymin=0, ymax=Math.max(0.8, su*1.2);
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  // the brittleness gap: everything between the peak line and the residual curve
+  ctx.fillStyle='#e9b7bb'; ctx.globalAlpha=0.7; ctx.beginPath();
+  ctx.moveTo(X(xmin), Y(su));
+  for(var v=xmin;v<=xmax+1e-9;v+=0.002){ var sr=srOverPoBasic(Mtc,lam10,v); if(sr<su) ctx.lineTo(X(v), Y(su)); }
+  for(var v2=xmax;v2>=xmin-1e-9;v2-=0.002){ var sr2=srOverPoBasic(Mtc,lam10,v2); ctx.lineTo(X(v2), Y(Math.min(su,sr2))); }
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var g=xmin;g<=xmax+1e-9;g+=0.05){ var gx=X(g); ctx.beginPath(); ctx.moveTo(gx,mt); ctx.lineTo(gx,mt+ph); ctx.stroke(); }
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  // peak line and brittleness onset
+  ctx.strokeStyle='#268160'; ctx.lineWidth=1.8; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(ml,Y(su)); ctx.lineTo(ml+pw,Y(su)); ctx.stroke(); ctx.setLineDash([]);
+  var onset=0.7*lamE(lam10);
+  if(onset>xmin && onset<xmax){
+    ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(X(onset),mt); ctx.lineTo(X(onset),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+    haloText(ctx,'0.7λe', X(onset)+3, mt+3, '#6b7880');
+  }
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.4; ctx.beginPath();
+  for(var v3=xmin;v3<=xmax+1e-9;v3+=0.002){
+    var s3=srOverPoBasic(Mtc,lam10,v3), x3=X(v3), y3=Y(s3);
+    if(v3===xmin) ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3);
   }
   ctx.stroke();
-
-  // current point
-  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,sr)),6,0,7); ctx.fill();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψo', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText("sr / p'o",0,0); ctx.restore();
+  var cur=srOverPoBasic(Mtc,lam10,psi);
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(psi),Y(cur),6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.font='700 9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  var lab2='sr = '+cur.toFixed(3);
+  var lx = X(psi)+7+ctx.measureText(lab2).width > ml+pw ? X(psi)-7-ctx.measureText(lab2).width : X(psi)+7;
+  haloText(ctx, lab2, lx, Y(cur)-7, '#a8323d');
 }
-updateSection3();
-window.addEventListener("resize",updateSection3);
 
-// ---------------- Robertson (2010) comparison, Eq. 6.15 — kept on its own Qtn,cs axis, not converted to ψ ----------------
-var s3bIds=["s3bQ"];
-s3bIds.forEach(id=>el(id).addEventListener("input",updateRobertson));
+// ---------------------------------------------------------------- Section 5
+function updateUndrainedPath(){
+  var psi=num('upPsi'), Mtc=num('upM'), lam10=num('upL'), po=num('upP');
+  el('upPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  el('upMOut').textContent=Mtc.toFixed(2);
+  el('upLOut').textContent=lam10.toFixed(3);
+  el('upPOut').textContent=po.toFixed(0);
+  // critical state is reached at p'c = p'o * exp(-psi/lambda_e); q_c = M * p'c
+  var pc=po*Math.exp(-psi/lamE(lam10));
+  var qc=Mtc*pc, sr=qc/2;
+  // peak of an undrained path on a contractive soil, as a fraction of the way down
+  var suRatio=0.20;                    // representative peak ratio, Fig. 6.10
+  var su=suRatio*po, qPeak=2*su;
+  var contractive = pc<po;
+  el('upStats').innerHTML =
+    '<div class="stat"><small>p&prime; at critical state</small><strong>'+pc.toFixed(0)+' kPa</strong></div>'+
+    '<div class="stat"><small>p&prime; lost to pore pressure</small><strong>'+Math.max(0,po-pc).toFixed(0)+' kPa</strong></div>'+
+    '<div class="stat hi"><small>residual s<sub>r</sub> = q<sub>c</sub>/2</small><strong>'+sr.toFixed(1)+' kPa</strong></div>'+
+    '<div class="stat"><small>behaviour</small><strong style="font-size:12.5px">'+(contractive?'contractive':'dilative')+'</strong>'+
+      (contractive?'<span class="badge contract">sheds strength</span>':'<span class="badge dilate">gains strength</span>')+'</div>';
+  el('upNote').innerHTML =
+    '<b>What the path is telling you.</b> Starting at p&prime;<sub>o</sub> = '+po.toFixed(0)+'&nbsp;kPa with &psi;<sub>o</sub> = '+(psi>=0?'+':'')+psi.toFixed(3)+
+    ', critical state sits at p&prime; = '+pc.toFixed(0)+'&nbsp;kPa. '+
+    (contractive
+      ? 'That is <b>'+Math.max(0,po-pc).toFixed(0)+'&nbsp;kPa of mean effective stress destroyed by pore pressure</b> with no change in total stress at all. The soil ends at s<sub>r</sub> = '+sr.toFixed(1)+'&nbsp;kPa, and everything above that on the path is strength it had and gave back.'
+      : 'Critical state sits to the <i>right</i> of where it started, so shearing this soil undrained raises its mean effective stress rather than destroying it. There is no strength to give back and no flowslide to have.')+
+    ' Nothing in this picture required a collapse surface, a metastable fabric, or a trigger stress ratio &mdash; only a soil that starts on the wrong side of critical.';
+  drawPathChart(psi,Mtc,lam10,po,pc,qc,qPeak);
+}
+function drawPathChart(psi,Mtc,lam10,po,pc,qc,qPeak){
+  var host=el('pathChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var pMax=Math.max(po,pc)*1.25, qMax=Math.max(qc,qPeak)*1.35;
+  if(!(pMax>0)) pMax=1000; if(!(qMax>0)) qMax=500;
+  function X(p){ return ml+pw*Math.max(0,Math.min(1,p/pMax)); }
+  function Y(q){ return mt+ph*(1-Math.max(0,Math.min(1,q/qMax))); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var xt=niceTicks(0,pMax,4), yt=niceTicks(0,qMax,4);
+  xt.values.forEach(function(v){ if(v>pMax) return; var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  yt.values.forEach(function(v){ if(v>qMax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  // critical state line q = M p'
+  ctx.strokeStyle='#268160'; ctx.lineWidth=2; ctx.beginPath();
+  ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(pMax), Y(Math.min(qMax, Mtc*pMax))); ctx.stroke();
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  var csx=Math.min(X(pMax)-70, X(qMax/Mtc*0.85));
+  haloText(ctx,'CSL: q = M p′', csx, Y(Math.min(qMax, Mtc*(csx-ml)/pw*pMax))-4, '#1d6b4f');
+  // the undrained path: rise to a peak, then curve down to critical state
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
+  var N=120;
+  for(var i=0;i<=N;i++){
+    var t=i/N;
+    // p' walks from p'o to p'c; q rises to the peak then relaxes onto the CSL
+    var p = po + (pc-po)*t;
+    var q;
+    if(pc<po){ var tp=0.35; q = t<tp ? qPeak*(t/tp) : qPeak + (qc-qPeak)*((t-tp)/(1-tp)); }
+    else { q = qc*t; }
+    if(i===0) ctx.moveTo(X(p),Y(q)); else ctx.lineTo(X(p),Y(q));
+  }
+  ctx.stroke();
+  // the strength given back
+  if(pc<po && qPeak>qc){
+    ctx.strokeStyle='#e38a22'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(X(pc), Y(qPeak)); ctx.lineTo(X(pc), Y(qc)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='700 9px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    haloText(ctx,'lost', X(pc)-5, (Y(qPeak)+Y(qc))/2, '#b06d12');
+  }
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  // start, peak, residual
+  ctx.fillStyle='#8a97a0'; ctx.beginPath(); ctx.arc(X(po),Y(0),4,0,7); ctx.fill();
+  if(pc<po){ ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(po+(pc-po)*0.35),Y(qPeak),5.5,0,7); ctx.fill();
+             ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); }
+  ctx.fillStyle='#123b4a'; ctx.beginPath(); ctx.arc(X(pc),Y(qc),5.5,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  xt.values.forEach(function(v){ if(v>pMax) return; var lab=v.toFixed(0); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText("mean effective stress p′, kPa", ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v>qMax) return; ctx.fillText(v.toFixed(0), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('deviator stress q, kPa',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- Section 6
+function updateHIr(){
+  var hir=num('hirSlide'), etaL=etaLFromHIr(hir);
+  el('hirOut').textContent=hir.toFixed(2);
+  var span=ETA_L_HI-ETA_L_LO;
+  el('hirStats').innerHTML =
+    '<div class="stat hi"><small>&eta;<sub>L</sub> at instability</small><strong>'+etaL.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>moved from the low end by</small><strong>'+(100*(etaL-ETA_L_LO)/span).toFixed(0)+'%</strong></div>';
+  drawHIrChart(hir,etaL);
+}
+function drawHIrChart(hir,etaL){
+  var host=el('hirChart'); if(!host) return;
+  var cvp=prepCanvas(host, 250, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=50, mr=16, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
+  var ymin=0.6, ymax=1.1;
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/ETA_L_HIR_MAX)); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  [0,1,2,3,4].forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
+  for(var i=0;i<=120;i++){ var v=ETA_L_HIR_MAX*i/120, x=X(v), y=Y(etaLFromHIr(v));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  // the two values the book actually states
+  [[0,ETA_L_LO],[ETA_L_HIR_MAX,ETA_L_HI]].forEach(function(p){
+    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),5,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.font='700 9px Arial'; ctx.textAlign=p[0]===0?'left':'right'; ctx.textBaseline='bottom';
+    haloText(ctx, 'ηL = '+p[1].toFixed(2), p[0]===0?X(p[0])+7:X(p[0])-7, Y(p[1])-7, '#4c5b62');
+  });
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(hir),Y(etaL),6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [0,1,2,3,4].forEach(function(v){ ctx.fillText(String(v), clampLabelX(ctx,X(v),String(v),ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('H / Ir', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('instability stress ratio ηL',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- Section 7
+function updateSection3(){
+  var Mtc=num('s3M'), ko=num('s3K'), lam10=num('s3L'), psi=num('s3Psi');
+  el('s3MOut').textContent=Mtc.toFixed(2);
+  el('s3KOut').textContent=ko.toFixed(2);
+  el('s3LOut').textContent=lam10.toFixed(3);
+  el('s3PsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  var sr=srOverSigV(Mtc,ko,lam10,psi), theory=psi>lam10;
+  var dense=psi<PSI_DENSE_ENOUGH;
+  var badge = dense ? '<span class="badge dilate">denser than &psi;=&minus;0.05</span>' : '<span class="badge contract">looser than &psi;=&minus;0.05</span>';
+  el('s3Stats').innerHTML =
+    '<div class="stat hi"><small>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub></small><strong>'+sr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>branch in use</small><strong style="font-size:12px">'+(theory?'critical-state theory':'case-history trend')+'</strong></div>';
+  var k0f=(1+2*ko)/3;
+  el('s3Eq').innerHTML = theory
+    ? '<span class="step">&psi; = '+psi.toFixed(3)+' &gt; &lambda;<sub>10</sub> = '+lam10.toFixed(3)+', so the theory branch applies</span>'+
+      '<span class="step">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = '+k0f.toFixed(3)+'&middot;('+Mtc.toFixed(2)+'/2)&middot;exp(&minus;'+psi.toFixed(3)+'/'+lamE(lam10).toFixed(4)+') = <b style="font-size:14px">'+sr.toFixed(3)+'</b></span>'
+    : '<span class="step">&psi; = '+psi.toFixed(3)+' &le; &lambda;<sub>10</sub> = '+lam10.toFixed(3)+', so the case-history branch applies</span>'+
+      '<span class="step">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = '+k0f.toFixed(3)+'&middot;0.0501&middot;'+Mtc.toFixed(2)+' + 0.8&middot;('+lam10.toFixed(3)+'&minus;'+psi.toFixed(3)+') = <b style="font-size:14px">'+sr.toFixed(3)+'</b></span>';
+  el('denseFlag').innerHTML = 'At &psi; = '+(psi>=0?'+':'')+psi.toFixed(3)+': '+badge+' &mdash; '+
+    (dense ? 'no phase-transformation strength loss is expected, so the conversation is about tolerable movements.'
+           : 'this is the contractive, flowslide-susceptible range, so the conversation is about ground improvement.');
+  drawCaseChart(Mtc,ko,lam10,psi,sr);
+}
+function drawCaseChart(Mtc,ko,lam10,psi,sr){
+  var host=el('caseChart'); if(!host) return;
+  var cvp=prepCanvas(host, 320, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=56, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.15, xmax=0.30, ymin=0, ymax=0.35;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.fillStyle='#eef7f2'; ctx.fillRect(ml,mt,X(PSI_DENSE_ENOUGH)-ml,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var g=xmin;g<=xmax+1e-9;g+=0.05){ var gx=X(g); ctx.beginPath(); ctx.moveTo(gx,mt); ctx.lineTo(gx,mt+ph); ctx.stroke(); }
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(X(PSI_DENSE_ENOUGH),mt); ctx.lineTo(X(PSI_DENSE_ENOUGH),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+  haloText(ctx,'ψ = −0.05', X(PSI_DENSE_ENOUGH)+3, mt+3, '#6b7880');
+  // Table 6.5, as published ranges
+  CASE_HISTORIES.forEach(function(c){
+    var xm=(c.psiLo+c.psiHi)/2, ym=(c.srLo+c.srHi)/2;
+    ctx.strokeStyle='#9aa9ae'; ctx.lineWidth=1.3;
+    ctx.beginPath(); ctx.moveTo(X(c.psiLo),Y(ym)); ctx.lineTo(X(c.psiHi),Y(ym)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(X(xm),Y(c.srLo)); ctx.lineTo(X(xm),Y(c.srHi)); ctx.stroke();
+    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(X(xm),Y(ym),3.5,0,7); ctx.fill();
+  });
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2.6; ctx.beginPath();
+  for(var v=xmin;v<=xmax+1e-9;v+=0.002){ var s=srOverSigV(Mtc,ko,lam10,v), x=X(v), y=Y(s);
+    if(v===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,sr)),6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('characteristic state parameter, ψk', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText("sr / σ′vo",0,0); ctx.restore();
+}
 function updateRobertson(){
-  var q=num("s3bQ");
-  el("s3bQOut").textContent=q.toFixed(0);
-  var sr615=robertsonEq615(q);
-  el("s3bStats").innerHTML = `
-    <div class="stat hi"><small>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> (Robertson, Eq. 6.15)</small><strong>${sr615.toFixed(3)}</strong></div>
-    <div class="stat"><small>Q<sub>tn,cs</sub> = 70 threshold</small><strong>${q>=70?"above (dilatant, per Robertson)":"below"}</strong></div>`;
+  var q=num('s3bQ'), sr=robertsonEq615(q);
+  el('s3bQOut').textContent=q.toFixed(0);
+  el('s3bStats').innerHTML =
+    '<div class="stat hi"><small>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> (Eq. 6.15)</small><strong>'+sr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>vs. Q<sub>tn,cs</sub>&asymp;70 threshold</small><strong style="font-size:12px">'+(q<70?'below':'above')+'</strong>'+
+      (q<70?'<span class="badge contract">susceptible</span>':'<span class="badge dilate">dense enough</span>')+'</div>';
 }
-updateRobertson();
+
+// ---------------------------------------------------------------- Section 8
+function caseComparison(){
+  var Mtc=num('s3M'), ko=num('s3K');
+  return CASE_HISTORIES.map(function(c){
+    var psiMid=(c.psiLo+c.psiHi)/2, obs=(c.srLo+c.srHi)/2;
+    var pred=srOverSigV(Mtc, ko, c.lam10, psiMid);
+    return {c:c, psiMid:psiMid, obs:obs, pred:pred, ratio:obs>0?pred/obs:NaN};
+  });
+}
+function updateCaseCheck(){
+  var rows=caseComparison();
+  var ratios=rows.map(function(r){ return r.ratio; }).filter(isFinite);
+  var within2=ratios.filter(function(r){ return r>=0.5 && r<=2; }).length;
+  var logs=ratios.map(function(r){ return Math.log(r); });
+  var meanLog=logs.reduce(function(a,b){return a+b;},0)/logs.length;
+  var bias=Math.exp(meanLog);
+  el('fitStats').innerHTML =
+    '<div class="stat"><small>cases compared</small><strong>'+rows.length+'</strong></div>'+
+    '<div class="stat hi"><small>within a factor of 2</small><strong>'+within2+' of '+rows.length+'</strong></div>'+
+    '<div class="stat"><small>median predicted/observed</small><strong>'+bias.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>'+(bias<1?'conservative on average':'unconservative on average')+'</small><strong style="font-size:12px">'+(bias<1?'under-predicts':'over-predicts')+'</strong></div>';
+  el('fitNote').innerHTML =
+    '<b>How the function does against the record.</b> Run at each case&rsquo;s own &lambda;<sub>10</sub> and the midpoint of its published &psi; range, the design function lands within a factor of two on <b>'+within2+' of '+rows.length+'</b> cases, with a geometric mean predicted/observed ratio of <b>'+bias.toFixed(2)+'</b>. '+
+    (bias<1 ? 'On average it under-predicts the strength that was actually back-figured, which is the direction a design function should err.'
+            : 'On average it over-predicts the back-figured strength, which is worth knowing before leaning on it.')+
+    ' Both M<sub>tc</sub> and K<sub>o</sub> come from the Section 7 sliders, so you can watch the whole comparison move as you change what you assume about the soil.';
+  var tb=el('caseTableBody');
+  tb.innerHTML = rows.map(function(r){
+    var good = r.ratio>=0.5 && r.ratio<=2;
+    return '<tr'+(good?'':' class="off"')+'><td>'+r.c.name+' <span style="color:var(--muted);font-size:10px">'+r.c.year+'</span></td>'+
+      '<td>'+r.c.psiLo.toFixed(2)+' to '+r.c.psiHi.toFixed(2)+'</td>'+
+      '<td>'+r.c.srLo.toFixed(2)+'&ndash;'+r.c.srHi.toFixed(2)+'</td>'+
+      '<td>'+r.c.lam10.toFixed(3)+'</td>'+
+      '<td><b>'+r.pred.toFixed(3)+'</b></td>'+
+      '<td>'+r.ratio.toFixed(2)+'</td></tr>';
+  }).join('');
+  drawResidChart(rows);
+}
+function drawResidChart(rows){
+  var host=el('residChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var lo=0, hi=0.30;
+  rows.forEach(function(r){ hi=Math.max(hi, r.obs*1.15, r.pred*1.15); });
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,(v-lo)/(hi-lo))); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,(v-lo)/(hi-lo)))); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  // the factor-of-two envelope around equality
+  ctx.fillStyle='#e9b7bb'; ctx.globalAlpha=0.5; ctx.beginPath();
+  ctx.moveTo(X(lo),Y(lo)); ctx.lineTo(X(hi),Y(Math.min(hi,2*hi)));
+  ctx.lineTo(X(hi),Y(hi/2)); ctx.closePath(); ctx.fill();
+  ctx.globalAlpha=1;
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var t=niceTicks(lo,hi,4);
+  t.values.forEach(function(v){ if(v<lo||v>hi) return;
+    ctx.beginPath(); ctx.moveTo(X(v),mt); ctx.lineTo(X(v),mt+ph); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(ml,Y(v)); ctx.lineTo(ml+pw,Y(v)); ctx.stroke(); });
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2; ctx.beginPath();
+  ctx.moveTo(X(lo),Y(lo)); ctx.lineTo(X(hi),Y(hi)); ctx.stroke();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  rows.forEach(function(r){
+    ctx.fillStyle='#1479b8'; ctx.beginPath(); ctx.arc(X(r.obs),Y(r.pred),5,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke();
+  });
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  t.values.forEach(function(v){ if(v<lo||v>hi) return; var lab=v.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText("observed sr / σ′vo", ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  t.values.forEach(function(v){ if(v<lo||v>hi) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText("predicted sr / σ′vo",0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- notation + glossary
+var NOTATION=[
+ {sym:'s<sub>u</sub>', def:'peak undrained shear strength &mdash; the strength before any post-peak loss', goto:'brittleness'},
+ {sym:'s<sub>r</sub>', def:'residual (post-liquefaction, critical-state) undrained shear strength', goto:'brittleness'},
+ {sym:'I<sub>B</sub>', def:"Bishop's brittleness index, (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> &mdash; 0 is no loss, 1 is total loss", goto:'brittleness'},
+ {sym:'&lambda;<sub>e</sub>', def:'natural-log CSL slope, &lambda;<sub>10</sub>/ln(10), used inside Eq. 6.4', goto:'brittleness'},
+ {sym:'&psi;<sub>o</sub>', def:'state parameter at the start of shearing &mdash; Module 2 estimated this from the CPT', goto:'undrained-path'},
+ {sym:'p&prime;, q', def:'mean effective stress and deviator stress &mdash; the axes of the stress path', goto:'undrained-path'},
+ {sym:'&eta;<sub>L</sub>', def:'mobilized stress ratio at instability, where undrained strength loss begins', goto:'collapse-surface'},
+ {sym:'H/I<sub>r</sub>', def:'plastic hardening modulus over elastic rigidity &mdash; it, not the soil alone, sets &eta;<sub>L</sub>', goto:'collapse-surface'},
+ {sym:'M<sub>tc</sub>', def:'critical friction ratio in triaxial compression', goto:'residual-strength'},
+ {sym:'K<sub>o</sub>', def:'at-rest earth pressure coefficient, converting p&prime;<sub>o</sub> to &sigma;&prime;<sub>vo</sub>', goto:'residual-strength'},
+ {sym:'&sigma;&prime;<sub>vo</sub>', def:'in-situ vertical effective stress', goto:'residual-strength'},
+ {sym:'Q<sub>tn,cs</sub>', def:'clean-sand-equivalent normalized CPT resistance (Robertson 2010)', goto:'residual-strength'}
+];
+function renderNotation(){
+  el('notationGrid').innerHTML = NOTATION.map(function(n){
+    return '<button type="button" class="notation-card" data-goto="'+n.goto+'"><b>'+n.sym+'</b>'+n.def+'</button>';
+  }).join('');
+  el('notationGrid').querySelectorAll('.notation-card').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=document.getElementById(b.dataset.goto);
+      if(t && window.gotoPageForElement){ gotoPageForElement(t); t.scrollIntoView({block:'start'}); }
+    });
+  });
+}
+function renderGlossary(){
+  el('glossaryGrid').innerHTML = NOTATION.map(function(n){
+    return '<div class="term"><b>'+n.sym+'</b>'+n.def+'</div>';
+  }).join('');
+}
+
+// ---------------------------------------------------------------- figure help
+var figureInfo={
+'caseScaleChart':['The four failures, by volume and by how far they ran',
+ 'Both axes are logarithmic. Horizontal is the volume of material that moved; vertical is how far it travelled. <b>Red dots:</b> failures that killed people. <b>Blue dots:</b> failures that did not. The selected case is drawn larger with a dark ring.',
+ 'Look for the absence of a pattern between size and harm. Aberfan sits far to the left -- the smallest volume of the four by an order of magnitude -- yet it killed 144 people, while Fort Peck moved seventy times as much material and killed eight. Runout and what lay in the path decided that, and runout is governed by the residual strength this module computes. Nerlerk moved millions of cubic metres into open water and killed nobody, which is why it could be studied properly and became the case the rest of the book leans on.'],
+'brittleChart':['Residual strength against state, and the gap to the peak',
+ 'Horizontal axis is the state parameter at the start of shearing; vertical is strength as a fraction of the initial mean effective stress. <b>Blue curve:</b> residual strength from Eq. 6.4. <b>Green dashed line:</b> the peak strength you set on the slider, which Eq. 6.4 does not predict. <b>Pink shading between them:</b> the strength that is lost -- Bishop&rsquo;s brittleness index is that gap divided by the peak. <b>Grey dashed vertical line:</b> psi = 0.7 lambda_e, the brittleness onset the book quotes. <b>Red dot:</b> the current state.',
+ 'Read the vertical gap, not the curve height. A soil can have a perfectly respectable peak strength and still be lethal if almost all of it sits in the pink. Drag psi to the right and watch the residual curve dive while the peak stays put -- that divergence is what turns a slope failure into a flowslide. Then drag lambda_10: a flatter critical state line moves the whole problem, because it is the ratio psi/lambda_e, not psi alone, that sets how much is lost.'],
+'pathChart':['What undrained shearing does to a contractive soil',
+ 'The effective stress path in q against p&prime;. <b>Green line:</b> the critical state line, q = M p&prime;, where the soil must finish. <b>Blue curve:</b> the path taken -- rising to a peak, then turning left and down onto the CSL. <b>Red dot:</b> the peak, where instability begins. <b>Navy dot:</b> the residual at critical state. <b>Orange dashed bar:</b> the deviator stress given back between the two. <b>Grey dot on the axis:</b> where the soil started.',
+ 'Watch the horizontal movement first. Total stress never changes in this picture -- every bit of leftward travel is mean effective stress destroyed by pore pressure the soil cannot shed. Then drag psi from positive to negative. The critical state point crosses to the right of the start, the peak stops being a peak, and the orange bar vanishes: the same equations that describe a flowslide describe a soil that simply gets stronger. Nothing switched on. The soil just started on the other side of critical.'],
+'hirChart':['The instability stress ratio is not a soil property',
+ 'Horizontal axis is H/Ir, the ratio of plastic hardening modulus to elastic rigidity; vertical is the mobilized stress ratio at instability. <b>Blue curve:</b> eta_L across the range. <b>Grey dots:</b> the two values Figure 6.27 actually states. <b>Red dot:</b> the current setting.',
+ 'The soil does not change anywhere on this chart -- same Mtc, same lambda_10, same psi, same Guindon silty sand throughout. Only the ratio of hardening to rigidity moves, and eta_L moves by a third with it. If instability happened at a fixed stress ratio the way the collapse-surface picture claims, this line would be flat. It is not, and that is the argument. Treat the shape between the two grey dots as illustrative; the dots themselves are the cited result.'],
+'caseChart':['The design function against eleven real failures',
+ 'Horizontal axis is the characteristic state parameter; vertical is residual strength as a fraction of vertical effective stress. <b>Navy curve:</b> the book&rsquo;s published design function at your current Mtc, Ko and lambda_10. <b>Grey crosses:</b> the eleven case histories of Table 6.5, drawn as the ranges the book publishes rather than as points. <b>Green ground on the left:</b> denser than psi = -0.05. <b>Red dot:</b> your current slider state.',
+ 'Notice first that the case histories are crosses, not dots -- both coordinates are uncertain, and the book declines to pretend otherwise. Then find the kink in the navy curve at psi = lambda_10, where the function switches from critical-state theory to a conservative fit against exactly these crosses. Drag lambda_10 and watch the kink travel: the branch you are on depends on the soil, not on a fixed value of psi. Finally, note where the curve sits relative to the crosses in the contractive range -- it is meant to run through their lower part, because it is a design function rather than a best fit.'],
+'residChart':['Predicted against observed, for the eleven cases',
+ 'Both axes are residual strength ratio. <b>Navy diagonal:</b> perfect agreement. <b>Pink wedge:</b> within a factor of two either way. <b>Blue dots:</b> one per case history, using the midpoint of each published range and each case&rsquo;s own lambda_10.',
+ 'A point below the diagonal means the function predicted less strength than was back-figured, which is the safe direction for a design tool. Count how many sit inside the pink wedge, then change Mtc or Ko in Section 7 and watch the whole cloud slide -- that movement is how much your assumptions about the soil are worth relative to the scatter in the record itself. Do not read tight agreement as accuracy here: the observed values were themselves reconstructed from failures whose geometry and pore pressures had to be inferred.']
+};
+
+// ---------------------------------------------------------------- quiz
+var BLOCK_NAMES=['A — Brittleness and residual strength','B — Mechanism and the collapse surface','C — Design and the case-history record'];
+var QUIZ_BLOCK_SECTION=[
+  {id:'brittleness',       label:'Section 3'},
+  {id:'collapse-surface',  label:'Section 6'},
+  {id:'residual-strength', label:'Section 7'}
+];
+var QUIZ_ITEMS = [
+// Block A
+{q:"What makes static liquefaction dangerous is mainly:",opts:["The peak undrained strength of loose sand is unusually low","The large, brittle DROP from peak to residual strength","Loose sand has no strength at all until it is loaded"],correct:"b",exp:"Peak su/p'o for loose liquefiable sand is typically 0.15-0.30, comparable to normally consolidated clay. The hazard is the post-peak collapse to residual, not the peak value."},
+{q:"Bishop's brittleness index IB is defined as:",opts:["(su - sr)/su","(sr - su)/sr","su/sr"],correct:"a",exp:"Eq. 6.5. IB = 0 means no strength is lost; IB = 1 means all of it is."},
+{q:"In Eq. 6.4, sr/p'o = (M/2)exp(-psi/lambda_e), what is lambda_e?",opts:["The base-10 CSL slope, the same lambda_10 used in Module 2","The natural-log CSL slope, lambda_10 divided by ln(10)","An empirical fitting constant with no physical meaning"],correct:"b",exp:"lambda_e = lambda_10/2.3026. Mixing the two up shifts every residual strength in the third decimal."},
+{q:"Eq. 6.4 predicts:",opts:["The peak undrained strength","The residual (critical-state) undrained strength","Both peak and residual"],correct:"b",exp:"It follows from the CSL definition, so it gives where the soil ENDS. The peak is not predicted by it, which is why this module takes su as a separate input."},
+{q:"Two soils have the same psi_o but different lambda_10. Which is more brittle?",opts:["They are equally brittle, since psi is the same","The one with the SMALLER lambda_10","The one with the LARGER lambda_10"],correct:"b",exp:"Brittleness is governed by psi/lambda_e, not psi alone. A smaller lambda_10 means a smaller lambda_e, so the same psi is a larger ratio and a bigger strength drop."},
+{q:"The book quotes a brittleness onset at roughly:",opts:["psi_o = 0","psi_o = 0.7 lambda_e","psi_o = lambda_10"],correct:"b",exp:"Above about psi_o = 0.7 lambda_e the peak and residual separate enough for damaging brittleness; below it the response is closer to ductile."},
+{q:"Test G609 on Erksak sand, the module's default state, showed:",opts:["About an 80% peak-to-residual strength drop, mobilized smoothly","A sudden collapse at a well-defined stress ratio","No strength loss at all"],correct:"a",exp:"It is the loosest clean-sand liquefaction test in the book's database. The strength loss was severe, but stress ratio and pore pressure mobilized smoothly with no inflection at peak."},
+{q:"Peak undrained strength ratios su/p'o for loose liquefiable sands are typically:",opts:["Below 0.02","0.15 to 0.30","Above 1.0"],correct:"b",exp:"Fig. 6.10. Comparable to normally consolidated clay -- which is exactly why the peak alone gives no warning."},
+{q:"A soil with IB = 0.05 would best be described as:",opts:["Very brittle and flowslide-prone","Essentially ductile -- failure would arrest rather than run","Impossible, since IB cannot be that small"],correct:"b",exp:"Only 5% of the strength is lost, so there is no large strength deficit to drive a flowslide."},
+{q:"Why does the module take su as a slider input rather than computing it?",opts:["Because su is not a real quantity","Because Eq. 6.4 predicts only the residual, so the peak must come from data","Because su is always exactly 0.2 p'o"],correct:"b",exp:"Being explicit about which numbers are predicted and which are supplied is the point; Fig. 6.10 gives the range the slider spans."},
+// Block B
+{q:"The traditional 'collapse surface' idea claims that:",opts:["Loose sand collapses suddenly once a critical stress ratio is reached","Strength loss is gradual strain-softening plasticity","Liquefaction requires an earthquake"],correct:"a",exp:"It posits a metastable fabric that rearranges suddenly at a trigger stress ratio. The book tests that claim and rejects it."},
+{q:"What did Test G609's measured response show about this idea?",opts:["A sharp inflection at peak, confirming a collapse event","Stress ratio and pore pressure both mobilized smoothly, with no inflection","The test was inconclusive"],correct:"b",exp:"No structural event is visible in the data. A companion drained test on an even looser sample also showed nothing when it crossed the same ratio."},
+{q:"In NorSand simulations of Guindon silty sand, varying only H/Ir moved eta_L:",opts:["Not at all -- eta_L is a soil property","From about 0.75 to about 1.0","From 0 to 2.5"],correct:"b",exp:"Fig. 6.27. The soil is unchanged throughout; only the ratio of plastic hardening to elastic rigidity varies. eta_L moves by a third."},
+{q:"What does that result imply about eta_L?",opts:["It is a fundamental soil property that should be measured","It is not a soil property at all, so a fixed 'collapse' ratio is the wrong concept","It depends only on the friction angle"],correct:"b",exp:"If eta_L moves while the soil does not, it cannot be a property of the soil."},
+{q:"In the book's view, static liquefaction is:",opts:["A unique failure mode requiring its own theory","Ordinary strain-softening plasticity that turns catastrophic when drainage cannot keep up","Purely a fabric phenomenon"],correct:"b",exp:"Drucker's instability postulate (Eq. 6.20) supplies the condition; no special mechanism is needed."},
+{q:"During undrained shearing of a contractive soil, mean effective stress:",opts:["Rises, because the soil is being loaded","Falls, because pore pressure rises while total stress is unchanged","Stays constant by definition"],correct:"b",exp:"The soil wants to contract and cannot, so the pore pressure takes up the difference and p' falls."},
+{q:"On the q-p' plot, critical state for a contractive soil sits:",opts:["To the LEFT of the starting point","To the RIGHT of the starting point","Exactly above the starting point"],correct:"a",exp:"p'c = p'o exp(-psi/lambda_e), which is less than p'o when psi is positive. The leftward travel is the effective stress destroyed."},
+{q:"If psi_o is negative, the undrained path:",opts:["Behaves identically to the contractive case","Ends at a HIGHER mean effective stress than it started, gaining strength","Cannot be computed"],correct:"b",exp:"A dilative soil wants to expand, so undrained shearing suppresses pore pressure and p' rises. There is no strength deficit and no flowslide."},
+{q:"Drucker's instability postulate concerns:",opts:["The condition under which strain-softening becomes unstable","The maximum friction angle of sand","The rate of pore pressure dissipation"],correct:"a",exp:"Eq. 6.20. It supplies the instability condition without needing a collapse surface."},
+{q:"The curve drawn between Fig. 6.27's two endpoints in this module is:",opts:["Digitized point by point from the figure","A smooth interpolation, with only the two endpoints being cited values","Computed from NorSand inside this page"],correct:"b",exp:"The module says so on the figure. The endpoints are real; the shape between them is illustrative."},
+// Block C
+{q:"The book's design function (Fig. 6.48) switches branches at:",opts:["psi = 0","psi = lambda_10","psi = -0.05"],correct:"b",exp:"Above psi = lambda_10 it uses the critical-state theory result; at or below it, a conservative linear fit anchored to the case histories."},
+{q:"The factor (1+2Ko)/3 appears in the design function because:",opts:["It converts mean effective stress to vertical effective stress","It corrects for fines content","It is an empirical safety factor"],correct:"a",exp:"Eq. 6.4 is written on p'o; design is done on sigma'vo, and p'o = sigma'vo(1+2Ko)/3."},
+{q:"The practical 'dense enough' threshold the book converges on is about:",opts:["psi < -0.05","psi < 0","psi < -0.20"],correct:"a",exp:"Section 6.11. Denser than about psi = -0.05 and the phase-transformation behaviour that drives damaging strength loss does not appear. It is the same line Module 2 shaded its logs with."},
+{q:"Robertson's independent CPT criterion that lines up with that threshold is roughly:",opts:["Qtn,cs = 20","Qtn,cs = 70","Qtn,cs = 200"],correct:"b",exp:"Two independent routes -- one through psi, one directly from normalized CPT resistance -- landing on the same boundary."},
+{q:"Why is Robertson's Eq. 6.15 plotted on its own axis rather than on the psi chart?",opts:["Because it disagrees with the book","Because converting Qtn,cs to psi needs the full Ic/Kc normalization chain, which this tool does not reproduce","Because it is not a real equation"],correct:"b",exp:"Plotting it against psi would require Eqs. 6.11-6.14. The module says so rather than quietly approximating."},
+{q:"Table 6.5's case histories are shown as crosses rather than dots because:",opts:["There were only a few data points","Both the state parameter and the back-figured strength are published as ranges","The chart looks better that way"],correct:"b",exp:"Both coordinates are uncertain. The failures' geometry and pore pressures were themselves reconstructed."},
+{q:"Calaveras Dam and the Mochikoshi dams are omitted from the comparison because:",opts:["They were not liquefaction failures","The book itself flags their data as unreliable or outliers","They happened too long ago"],correct:"b",exp:"Including data the source distrusts would flatter the comparison."},
+{q:"A design function point falling BELOW the line of equality means it:",opts:["Predicted less strength than was back-figured -- the safe direction","Predicted more strength than was back-figured","Failed to compute"],correct:"a",exp:"Under-predicting residual strength is conservative for a design tool."},
+{q:"For a soil at psi = -0.10 with lambda_10 = 0.08, which branch of the design function applies?",opts:["The critical-state theory branch, since psi > lambda_10","The case-history branch, since psi <= lambda_10","Neither -- the function is undefined there"],correct:"b",exp:"-0.10 is well below 0.08, so the conservative linear branch is used. Note the branch depends on the soil's lambda_10, not on a fixed psi."},
+{q:"The single most important input carried from Module 2 into this module is:",opts:["The cone's tip resistance","The characteristic state parameter psi_k","The friction ratio F"],correct:"b",exp:"Module 2 ended by asking which psi_k to carry forward. This module turns that number into a residual strength and a brittleness."}
+];
+
+
+// wire the controls
+['s1M','s1L','s1Psi','s1Su'].forEach(function(id){ el(id).addEventListener('input', updateSection1); });
+['upPsi','upM','upL','upP'].forEach(function(id){ el(id).addEventListener('input', updateUndrainedPath); });
+el('hirSlide').addEventListener('input', updateHIr);
+['s3M','s3K','s3L','s3Psi'].forEach(function(id){ el(id).addEventListener('input', function(){ updateSection3(); updateCaseCheck(); }); });
+el('s3bQ').addEventListener('input', updateRobertson);
+renderCasePicker(); renderCaseDetail(); renderNotation(); renderGlossary();
+updateSection1(); updateUndrainedPath(); updateHIr(); updateSection3(); updateRobertson(); updateCaseCheck();
+
+Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
+document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
+
+</script>
+<script>
+(function(){
+var PER_BLOCK = Math.round(QUIZ_ITEMS.length/BLOCK_NAMES.length);
+var letters=['a','b','c','d','e'];
+var fill=document.getElementById('quizProgressFill'),count=document.getElementById('quizCount');
+var SLOT_FOR_BLOCK=['quizSlotA','quizSlotB','quizSlotC'];
+// The quiz lives in an IIFE. Expose its data the way SANDS and IC_BANDS already are, so
+// the self-tests can check the questions themselves rather than only the rendered DOM.
+window.QUIZ_ITEMS=QUIZ_ITEMS; window.BLOCK_NAMES=BLOCK_NAMES; window.QUIZ_BLOCK_SECTION=QUIZ_BLOCK_SECTION;
+var slotHtml={};
+BLOCK_NAMES.forEach(function(name,blockIdx){
+  var blockItems = QUIZ_ITEMS.slice(blockIdx*PER_BLOCK, blockIdx*PER_BLOCK+PER_BLOCK);
+  var body = blockItems.map(function(item,j){
+    var qn = blockIdx*PER_BLOCK+j+1;
+    var opts = item.opts.map(function(o,k){ return '<label><input type="radio" name="q'+qn+'" value="'+letters[k]+'"> '+o+'</label>'; }).join('');
+    return '<div class="quiz-q" data-correct="'+item.correct+'"><p>'+qn+'. '+item.q+'</p>'+opts+'<div class="quiz-explanation"><b>Explanation:</b> '+item.exp+'</div></div>';
+  }).join('');
+  var blockHtml='<details class="quiz-block"><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of '+PER_BLOCK+' answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none" aria-live="polite"></div></details>';
+  var slotId=SLOT_FOR_BLOCK[blockIdx];
+  slotHtml[slotId]=(slotHtml[slotId]||'')+blockHtml;
+});
+var slotEls=[];
+Object.keys(slotHtml).forEach(function(slotId){
+  var e=document.getElementById(slotId);
+  if(e){ e.innerHTML=slotHtml[slotId]; slotEls.push(e); }
+});
+var qs=Array.from(document.querySelectorAll('.quiz-q'));
+var blockCountEls=Array.from(document.querySelectorAll('[data-blockcount]'));
+function gradeBlock(idx){
+  var blockQs=qs.slice(idx*PER_BLOCK, idx*PER_BLOCK+PER_BLOCK);
+  var scoreEl=document.querySelector('[data-blockscore="'+idx+'"]');
+  var resultEl=document.querySelector('[data-blockresult="'+idx+'"]');
+  var score=0, unanswered=0;
+  blockQs.forEach(function(q){
+    var pick=q.querySelector('input:checked');
+    q.classList.remove('unanswered','review');
+    if(!pick){ unanswered++; q.classList.add('unanswered'); q.style.background='#fff8e8'; }
+    else{
+      q.classList.add('review');
+      if(pick.value===q.dataset.correct){ score++; q.style.background='#e9f6ef'; }
+      else{ q.style.background='#fdeee9'; }
+    }
+  });
+  scoreEl.textContent=score+'/PER_BLOCK';
+  scoreEl.style.background=score===PER_BLOCK?'#c9ecd8':score>=Math.ceil(0.7*PER_BLOCK)?'#eef8fc':'#fdeee9';
+  scoreEl.style.display='inline-block';
+  resultEl.textContent = unanswered
+    ? unanswered+' question(s) in this block are still unanswered ('+score+'/PER_BLOCK correct so far) — their explanations stay hidden until answered.'
+    : (score===PER_BLOCK?'Perfect block — all 10 correct.':score>=Math.ceil(0.7*PER_BLOCK)?'Solid — '+score+'/PER_BLOCK correct. Check the red ones below.':'Worth a second pass — '+score+'/PER_BLOCK correct. Read the explanations below, then revisit the relevant section.');
+  resultEl.style.display='block';
+}
+Array.from(document.querySelectorAll('[data-blockcheck]')).forEach(function(btn){
+  btn.addEventListener('click',function(){ gradeBlock(+btn.dataset.blockcheck); });
+});
+function updateQuizProgress(){
+  var answered=qs.filter(function(q){ return q.querySelector('input:checked'); }).length;
+  count.textContent=answered+' of '+qs.length+' answered';
+  fill.style.width=(100*answered/qs.length)+'%';
+  blockCountEls.forEach(function(e){
+    var idx=+e.dataset.blockcount;
+    var blockQs=qs.slice(idx*PER_BLOCK, idx*PER_BLOCK+PER_BLOCK);
+    var blockAnswered=blockQs.filter(function(q){ return q.querySelector('input:checked'); }).length;
+    e.textContent=blockAnswered+' of '+blockQs.length+' answered';
+  });
+}
+slotEls.forEach(function(e){ e.addEventListener('change',updateQuizProgress); });
+updateQuizProgress();
+Array.from(document.querySelectorAll('.expandGroup')).forEach(function(btn){
+  btn.addEventListener('click',function(){ var g=document.getElementById(btn.dataset.group); if(g) g.querySelectorAll('details').forEach(function(d){ d.open=true; }); });
+});
+Array.from(document.querySelectorAll('.collapseGroup')).forEach(function(btn){
+  btn.addEventListener('click',function(){ var g=document.getElementById(btn.dataset.group); if(g) g.querySelectorAll('details').forEach(function(d){ d.open=false; }); });
+});
+var grade=document.getElementById('gradeQuiz');
+grade.addEventListener('click',function(){
+  var score=0,unanswered=0;
+  qs.forEach(function(q){
+    var pick=q.querySelector('input:checked');
+    q.classList.remove('unanswered','review');
+    if(!pick){ unanswered++; q.classList.add('unanswered'); }
+    else{
+      q.classList.add('review');
+      if(pick.value===q.dataset.correct){ score++; q.style.background='#e9f6ef'; }
+      else{ q.style.background='#fdeee9'; }
+    }
+  });
+  document.querySelectorAll('.quiz-block').forEach(function(d){ d.open=true; });
+  var result=document.getElementById('quizResult');
+  result.style.display='block';
+
+  // A bare total tells a reader they got 14 of 40 and nothing about what to do next.
+  // Break it down by block, name the section each block came from, and offer to jump.
+  var perBlock = BLOCK_NAMES.map(function(name, idx){
+    var blockQs = qs.slice(idx*PER_BLOCK, idx*PER_BLOCK+PER_BLOCK), got=0, blank=0;
+    blockQs.forEach(function(q){
+      var pick=q.querySelector('input:checked');
+      if(!pick) blank++;
+      else if(pick.value===q.dataset.correct) got++;
+    });
+    return {idx:idx, name:name, got:got, blank:blank, n:blockQs.length,
+            section:QUIZ_BLOCK_SECTION[idx]};
+  });
+
+  var head = unanswered
+    ? '<b>'+score+' of '+qs.length+' correct so far</b>, '+unanswered+' still unanswered — their explanations stay hidden until answered.'
+    : '<b>Final score: '+score+' of '+qs.length+' correct.</b>';
+
+  var rows = perBlock.map(function(b){
+    var pct = b.n ? Math.round(100*b.got/b.n) : 0;
+    var tone = b.got>=8 ? 'dilate' : (b.got>=6 ? 'caution' : 'contract');
+    return '<tr>'+
+      '<td>'+b.name+'</td>'+
+      '<td style="white-space:nowrap"><b>'+b.got+' / '+b.n+'</b>'+(b.blank?' <span style="color:var(--muted)">('+b.blank+' blank)</span>':'')+'</td>'+
+      '<td><span class="badge '+tone+'">'+pct+'%</span></td>'+
+      '<td><button type="button" class="alt quiz-jump" data-section="'+b.section.id+'">Revisit '+b.section.label+'</button></td>'+
+    '</tr>';
+  }).join('');
+
+  // Point at the weakest block rather than making the reader compare four numbers.
+  var answered = perBlock.filter(function(b){ return b.n-b.blank>0; });
+  var advice = '';
+  if(answered.length){
+    var worst = answered.slice().sort(function(a,b){ return (a.got/a.n)-(b.got/b.n); })[0];
+    var best  = answered.slice().sort(function(a,b){ return (b.got/b.n)-(a.got/a.n); })[0];
+    advice = worst.got===best.got
+      ? '<p style="margin:8px 0 0">Your blocks are even. If you want one thing to reread, take the explanations under any question you got wrong — every one of them names the equation and section it came from.</p>'
+      : '<p style="margin:8px 0 0"><b>Weakest block: '+worst.name+'</b> ('+worst.got+' of '+worst.n+'). That is '+worst.section.label+
+        '. Strongest was '+best.name.split(' — ')[0]+' at '+best.got+' of '+best.n+'.</p>';
+  }
+
+  result.innerHTML = head +
+    '<table class="quiz-breakdown"><thead><tr><th>Block</th><th>Score</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    advice +
+    '<div class="quiz-actions" style="margin-top:10px"><button type="button" class="alt" id="reviewMissed">Show only the ones I missed</button>'+
+    '<button type="button" class="alt" id="reviewAll" style="display:none">Show every question again</button></div>';
+
+  // jump straight to the section a block came from
+  result.querySelectorAll('.quiz-jump').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target=document.getElementById(btn.dataset.section);
+      if(target && window.gotoPageForElement){ gotoPageForElement(target); target.scrollIntoView({block:'start'}); }
+    });
+  });
+
+  // With 40 questions, hunting for the red ones by eye is the tedious part.
+  function setMissedOnly(on){
+    qs.forEach(function(q){
+      var pick=q.querySelector('input:checked');
+      var missed = !pick || pick.value!==q.dataset.correct;
+      q.style.display = (on && !missed) ? 'none' : '';
+    });
+    document.querySelectorAll('.quiz-block').forEach(function(d){
+      var anyVisible = Array.from(d.querySelectorAll('.quiz-q')).some(function(q){ return q.style.display!=='none'; });
+      d.style.display = anyVisible ? '' : (on ? 'none' : '');
+      if(anyVisible) d.open = true;
+    });
+    var a=document.getElementById('reviewMissed'), b=document.getElementById('reviewAll');
+    if(a) a.style.display = on ? 'none' : '';
+    if(b) b.style.display = on ? '' : 'none';
+  }
+  var rm=document.getElementById('reviewMissed'), ra=document.getElementById('reviewAll');
+  if(rm) rm.addEventListener('click', function(){ setMissedOnly(true); });
+  if(ra) ra.addEventListener('click', function(){ setMissedOnly(false); });
+
+  updateQuizProgress();
+});
+document.getElementById('resetQuiz').addEventListener('click',function(){
+  qs.forEach(function(q){
+    q.querySelectorAll('input').forEach(function(i){ i.checked=false; });
+    q.classList.remove('review','unanswered');
+    q.style.background='';
+    q.style.display='';                       // clear the missed-only filter
+  });
+  document.querySelectorAll('.quiz-block').forEach(function(d){ d.style.display=''; });
+  document.querySelectorAll('[data-blockscore]').forEach(function(e){ e.style.display='none'; });
+  document.querySelectorAll('[data-blockresult]').forEach(function(e){ e.style.display='none'; });
+  document.getElementById('quizResult').style.display='none';
+  updateQuizProgress();
+});
+})();
+
+</script>
+<script>
+// ============================================================================
+// Dev-only regression check, callable from the console as runModule3SelfTests().
+// Never runs on its own and never logs anything unless explicitly invoked.
+// ============================================================================
+window.runModule3SelfTests = function(){
+  var results=[];
+  function check(cond,label){ results.push({label:label,pass:!!cond}); }
+
+  // ---- the physics ----
+  check(Math.abs(LN10-Math.log(10))<1e-12, "lambda_e uses ln(10), not 2.3");
+  check(Math.abs(lamE(0.05)-0.05/Math.log(10))<1e-12, "lambda_e = lambda_10/ln10");
+  // Eq. 6.4 at psi=0 must give exactly M/2: a soil starting AT critical has no
+  // strength to lose, and sr/p'o collapses to the critical state ratio.
+  check(Math.abs(srOverPoBasic(1.25,0.05,0)-0.625)<1e-12, "Eq 6.4 at psi=0 gives M/2");
+  check(srOverPoBasic(1.25,0.05,0.10) < srOverPoBasic(1.25,0.05,0), "looser states give lower residual strength");
+  check(srOverPoBasic(1.25,0.05,-0.05) > srOverPoBasic(1.25,0.05,0), "denser states give higher residual strength");
+  // the same psi is more damaging in a soil with a flatter CSL
+  check(srOverPoBasic(1.25,0.03,0.06) < srOverPoBasic(1.25,0.12,0.06),
+        "at fixed psi, a smaller lambda_10 means a bigger strength loss");
+  // brittleness index
+  check(Math.abs(brittleness(0.2,0.04)-0.8)<1e-12, "IB of a 0.2 peak and 0.04 residual is 0.80");
+  check(brittleness(0.2,0.2)===0, "no strength loss gives IB = 0");
+  check(brittleness(0.2,0.0)===1, "total strength loss gives IB = 1");
+  // the book's quoted onset: peak and residual converge near psi = 0.7 lambda_e
+  (function(){
+    var lam=0.05, le=lamE(lam), sr=srOverPoBasic(1.25,lam,0.7*le);
+    check(sr>0.20 && sr<0.40, "at psi = 0.7 lambda_e the residual is near the typical peak range");
+  })();
+
+  // ---- Fig. 6.48, both branches ----
+  check(Math.abs(srOverSigV(1.25,0.7,0.08,0.20) - (1+2*0.7)/3*0.5*1.25*Math.exp(-0.20/lamE(0.08)))<1e-12,
+        "above psi = lambda_10 the theory branch is used verbatim");
+  check(Math.abs(srOverSigV(1.25,0.7,0.08,-0.05) - ((1+2*0.7)/3*0.0501*1.25 + 0.8*(0.08+0.05)))<1e-12,
+        "at or below psi = lambda_10 the case-history branch is used verbatim");
+  // the two branches must nearly meet at the switch, or the function has a step in it
+  (function(){
+    var lam=0.08, a=srOverSigV(1.25,0.7,lam,lam+1e-9), b=srOverSigV(1.25,0.7,lam,lam-1e-9);
+    check(Math.abs(a-b)/Math.max(a,b) < 0.01, "the two branches agree at psi = lambda_10 to within 1%");
+  })();
+  check(srOverSigV(1.25,0.7,0.08,0.15) < srOverSigV(1.25,0.7,0.08,-0.10),
+        "the design function falls as the soil gets looser");
+  // Ko enters only through (1+2Ko)/3
+  check(Math.abs(srOverSigV(1.25,1.0,0.08,0.2)/srOverSigV(1.25,0.5,0.08,0.2) - 1/((1+2*0.5)/3))<1e-9,
+        "Ko scales the design function by (1+2Ko)/3 exactly");
+  check(Math.abs(robertsonEq615(0)-0.0055)<1e-12, "Eq 6.15 at Qtn,cs = 0 gives 0.0055");
+  check(robertsonEq615(70) > robertsonEq615(40), "Eq 6.15 rises with penetration resistance");
+
+  // ---- Fig. 6.27: eta_L is not a soil property ----
+  check(Math.abs(etaLFromHIr(0)-0.75)<1e-9, "eta_L at H/Ir = 0 is the cited 0.75");
+  check(Math.abs(etaLFromHIr(4)-1.00)<1e-9, "eta_L at H/Ir = 4 is the cited 1.00");
+  check(etaLFromHIr(2) > etaLFromHIr(1), "eta_L increases monotonically with H/Ir");
+  check(Math.abs((ETA_L_HI-ETA_L_LO)/ETA_L_LO - 1/3) < 0.01,
+        "the span is about a third of the low value -- the section's whole argument");
+
+  // ---- the four case histories ----
+  check(FLOW_FAILURES.length===4, "four flow failures");
+  FLOW_FAILURES.forEach(function(f,i){
+    check(!!f.name && !!f.place && !!f.what && !!f.lesson, "failure "+i+" ("+f.name+") is complete");
+    check(f.volume>0 && f.runout>0, "failure "+i+" has a volume and a runout");
+    check(f.deaths>=0, "failure "+i+" has a death toll");
+  });
+  (function(){
+    var ab=FLOW_FAILURES.filter(function(f){ return f.key==='aberfan'; })[0];
+    var fp=FLOW_FAILURES.filter(function(f){ return f.key==='fortpeck'; })[0];
+    check(ab.volume < fp.volume && ab.deaths > fp.deaths,
+          "Aberfan moved less and killed more than Fort Peck -- the section's point");
+  })();
+
+  // ---- Table 6.5 ----
+  check(CASE_HISTORIES.length===11, "eleven case histories from Table 6.5");
+  CASE_HISTORIES.forEach(function(c,i){
+    check(c.psiLo<=c.psiHi, c.name+": psi range is ordered");
+    check(c.srLo<=c.srHi, c.name+": strength range is ordered");
+    check(c.lam10>0 && c.lam10<0.5, c.name+": lambda_10 is physical");
+    check(c.srLo>0, c.name+": a positive back-figured strength");
+  });
+  (function(){
+    var names=CASE_HISTORIES.map(function(c){ return c.name; });
+    check(names.indexOf('Calaveras')<0 && names.indexOf('Mochikoshi')<0,
+          "the cases the book flags as unreliable are excluded");
+  })();
+
+  // ---- Section 8's comparison ----
+  (function(){
+    var rows=caseComparison();
+    check(rows.length===CASE_HISTORIES.length, "every case history is compared");
+    check(rows.every(function(r){ return isFinite(r.pred) && r.pred>0; }), "every prediction is finite and positive");
+    check(rows.every(function(r){ return isFinite(r.ratio); }), "every ratio is finite");
+    // each case must be run at its OWN lambda_10, not a single global one
+    var byOwn = rows.every(function(r){
+      return Math.abs(r.pred - srOverSigV(num('s3M'), num('s3K'), r.c.lam10, r.psiMid)) < 1e-12; });
+    check(byOwn, "each case is predicted at its own lambda_10");
+    var txt=el('fitNote').textContent;
+    var within=rows.filter(function(r){ return r.ratio>=0.5 && r.ratio<=2; }).length;
+    check(txt.indexOf(within+' of '+rows.length)>=0, "the note quotes the count it computed");
+    check(el('caseTableBody').querySelectorAll('tr').length===rows.length, "the table lists every case");
+  })();
+
+  // ---- undrained path ----
+  (function(){
+    var po=500, lam=0.05;
+    var pcLoose=po*Math.exp(-0.10/lamE(lam)), pcDense=po*Math.exp(0.05/lamE(lam));
+    check(pcLoose<po, "a contractive soil ends at a LOWER mean effective stress");
+    check(pcDense>po, "a dilative soil ends at a HIGHER mean effective stress");
+  })();
+
+  // ---- figures and wiring ----
+  var CANV=['caseScaleChart','brittleChart','pathChart','hirChart','caseChart','residChart'];
+  check(document.querySelectorAll('canvas').length===CANV.length, CANV.length+" figures");
+  CANV.forEach(function(id){
+    var c=el(id);
+    check(!!c && c.width>0, id+" is drawn");
+    check(!!c && c.closest('.figure-shell'), id+" has a how-to-read wrapper");
+    check(!!figureInfo[id], id+" has figure help");
+    if(c && c.style.width) check(Math.abs(c.width/parseFloat(c.style.width)-(window.devicePixelRatio||1))<0.01,
+      id+" is backed at device resolution");
+  });
+  Object.keys(figureInfo).forEach(function(id){
+    check(!!document.getElementById(id), "figure help entry "+id+" matches a real canvas");
+    check(figureInfo[id].length===3, id+": caption, legend and reading strategy");
+  });
+
+  // ---- notation and glossary ----
+  check(NOTATION.length>=10, "the notation list is populated");
+  NOTATION.forEach(function(n){
+    check(!!document.getElementById(n.goto), "notation '"+n.sym.replace(/<[^>]+>/g,'')+"' points at a real section");
+  });
+  check(el('notationGrid').querySelectorAll('.notation-card').length===NOTATION.length, "a card per symbol");
+  check(el('glossaryGrid').querySelectorAll('.term').length===NOTATION.length, "a glossary entry per symbol");
+
+  // ---- quiz ----
+  check(QUIZ_ITEMS.length===30, "thirty questions");
+  check(BLOCK_NAMES.length===3 && QUIZ_BLOCK_SECTION.length===3, "three blocks, each mapped to a section");
+  QUIZ_BLOCK_SECTION.forEach(function(b,i){
+    check(!!document.getElementById(b.id), "block "+i+" points at a section that exists");
+  });
+  QUIZ_ITEMS.forEach(function(it,i){
+    check(it.opts.length>=2, "question "+(i+1)+" offers at least two options");
+    check(['a','b','c','d'].indexOf(it.correct)>=0, "question "+(i+1)+" has a valid correct key");
+    check(it.correct.charCodeAt(0)-97 < it.opts.length, "question "+(i+1)+"'s answer is among its options");
+    check(!!it.exp && it.exp.length>20, "question "+(i+1)+" carries an explanation");
+  });
+  check(document.querySelectorAll('.quiz-q').length===30, "all thirty render");
+
+  // ---- pagination ----
+  check(typeof showPage==='function' && typeof gotoPageForElement==='function', "pagination is wired");
+  check(document.querySelectorAll('.sticky-nav a[href^="#"]').length===9, "nine nav pills");
+  (function(){
+    var ids=['start','case-histories','brittleness','notation','undrained-path',
+             'collapse-surface','residual-strength','case-check','knowledge-check'];
+    ids.forEach(function(id){ check(!!document.getElementById(id), "section "+id+" exists"); });
+  })();
+
+  var failed=results.filter(function(r){ return !r.pass; });
+  console.log('[runModule3SelfTests] '+results.length+' checks, '+failed.length+' failed.');
+  failed.forEach(function(f){ console.warn('  FAIL: '+f.label); });
+  return {total:results.length, failed:failed.length, results:results};
+};
+
+
+// ---------------- Pagination: one page at a time ----------------
+(function(){
+  var PAGES = [
+    {label:'Start here', ids:['start','about-module']},
+    {label:'Four failures', ids:['case-histories']},
+    {label:'Brittleness', ids:['brittleness']},
+    {label:'Notation', ids:['notation']},
+    {label:'Undrained path', ids:['undrained-path']},
+    {label:'Collapse surface', ids:['collapse-surface']},
+    {label:'Residual strength', ids:['residual-strength']},
+    {label:'Against the record', ids:['case-check']},
+    {label:'Check learning', ids:['knowledge-check','about-tool']}
+  ];
+  var SECTION_LABELS={'start':'Start here','case-histories':'Four failures','brittleness':'Brittleness',
+    'notation':'Notation','undrained-path':'Undrained path','collapse-surface':'Collapse surface',
+    'residual-strength':'Residual strength','case-check':'Against the record','knowledge-check':'Check learning'};
+  var cur=0, prevPage=null;
+  function pageIndexForElement(e){
+    if(!e || !e.closest) return -1;
+    for(var i=0;i<PAGES.length;i++){
+      for(var j=0;j<PAGES[i].ids.length;j++){
+        var host=document.getElementById(PAGES[i].ids[j]);
+        if(host && (host===e || host.contains(e))) return i;
+      }
+    }
+    return -1;
+  }
+  function redrawVisibleCharts(){
+    if(window.updateSection1) updateSection1();
+    if(window.updateUndrainedPath) updateUndrainedPath();
+    if(window.updateHIr) updateHIr();
+    if(window.updateSection3) updateSection3();
+    if(window.updateRobertson) updateRobertson();
+    if(window.updateCaseCheck) updateCaseCheck();
+    if(window.drawCaseScaleChart) drawCaseScaleChart();
+  }
+  function updateStepper(){
+    var st=document.getElementById('pageStepper'); if(!st) return;
+    st.innerHTML =
+      '<button type="button" class="alt" id="pgPrev"'+(cur===0?' disabled':'')+'>&larr; '+(cur>0?PAGES[cur-1].label:'')+'</button>'+
+      '<span class="page-label">Page '+(cur+1)+' of '+PAGES.length+' &middot; '+PAGES[cur].label+'</span>'+
+      '<button type="button" id="pgNext"'+(cur===PAGES.length-1?' disabled':'')+'>'+(cur<PAGES.length-1?PAGES[cur+1].label:'')+' &rarr;</button>';
+    var p=document.getElementById('pgPrev'), n=document.getElementById('pgNext');
+    if(p) p.addEventListener('click', function(){ showPage(cur-1); });
+    if(n) n.addEventListener('click', function(){ showPage(cur+1); });
+    var fill=document.getElementById('readingProgress');
+    if(fill) fill.style.width=(100*(cur+1)/PAGES.length)+'%';
+    document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(a){
+      var idx=pageIndexForElement(document.getElementById(a.getAttribute('href').slice(1)));
+      a.classList.toggle('active', idx===cur);
+    });
+  }
+  function focusPageHeading(){
+    var first=document.getElementById(PAGES[cur].ids[0]);
+    if(!first) return;
+    var h=first.querySelector('h2');
+    var ann=document.getElementById('pageAnnouncer');
+    if(ann) ann.textContent='Page '+(cur+1)+' of '+PAGES.length+': '+PAGES[cur].label;
+    if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+  }
+  window.showPage=function(idx, opts){
+    if(idx<0||idx>=PAGES.length) return;
+    if(idx!==cur) prevPage=cur;
+    cur=idx;
+    PAGES.forEach(function(p,i){
+      p.ids.forEach(function(id){
+        var host=document.getElementById(id);
+        if(host) host.style.display = (i===cur) ? '' : 'none';
+      });
+    });
+    updateStepper(); redrawVisibleCharts();
+    if(!opts || !opts.noScroll) window.scrollTo({top:0,behavior:'instant'});
+    focusPageHeading();
+    var back=document.getElementById('backToPrevious');
+    if(back) back.style.display = prevPage===null ? 'none' : '';
+  };
+  window.getCurrentPageIndex=function(){ return cur; };
+  window.gotoPageForElement=function(e){ var i=pageIndexForElement(e); if(i>=0) showPage(i,{noScroll:true}); };
+  document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(ev){
+      var t=document.getElementById(a.getAttribute('href').slice(1));
+      var i=pageIndexForElement(t);
+      if(i>=0){ ev.preventDefault(); showPage(i); }
+    });
+  });
+  var back=document.getElementById('backToPrevious');
+  if(back) back.addEventListener('click', function(){ if(prevPage!==null) showPage(prevPage); });
+  var stepHost=document.createElement('div');
+  stepHost.className='page-stepper'; stepHost.id='pageStepper';
+  document.querySelector('.wrap').appendChild(stepHost);
+  window.addEventListener('resize', redrawVisibleCharts);
+  showPage(0);
+})();
+
 </script>
 <script src="view-counter.js"></script>
 <script src="comments.js"></script>
