@@ -2,30 +2,37 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Soil Liquefaction: A Critical State Approach — Interactive Companion (Module 4)</title>
 <style>
-:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#2d8b65;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+/* ===== 1. Base layout, reset & typography ===== */
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#268160;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5;
+  --red-text:#b03a44;--green-text:#1f7a4c}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media (prefers-reduced-motion: reduce){.pulse-target{animation:none!important}}
+body{margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);font-size:16px}
 header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:20px 24px}
 header h1{margin:0;font-size:22px}
 header p{margin:6px 0 0;color:#d9eaf0;font-size:13px;max-width:960px;line-height:1.5}
 header a{color:#bfe6f5}
 .view-counter{font-size:10.5px;color:#bfe6f5;opacity:.7;margin-left:6px}
-.wrap{max-width:1200px;margin:auto;padding:16px}
+.wrap{max-width:1400px;margin:auto;padding:16px}
 .back{font-size:12px}
 .card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 2px 9px rgba(12,44,58,.06);padding:16px;margin-bottom:16px}
 .card h2{font-size:17px;color:var(--navy);margin:0 0 8px;border-bottom:2px solid #e5edf1;padding-bottom:7px}
 .card h3{font-size:13.5px;color:var(--navy);margin:14px 0 6px}
-.explain{font-size:13px;line-height:1.6}
-select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px}
+.explain{font-size:14.5px;line-height:1.6}
+select,button{font:inherit;border-radius:6px;border:1px solid var(--line);padding:7px 10px;max-width:100%}
 button{background:var(--blue);color:#fff;border:0;font-weight:700;cursor:pointer}
-.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:14px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+button.alt{background:#647680}
+.eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:8px 12px;font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:8px 0;overflow-x:auto;white-space:nowrap;position:relative}
+@media(max-width:520px){.eq::after{content:'';position:absolute;top:0;right:0;bottom:0;width:20px;background:linear-gradient(to right,rgba(242,247,249,0),#f2f7f9);pointer-events:none}}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-canvas{display:block;width:100%;height:270px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 14px}
+canvas{display:block;width:100%;height:260px}
 .slider-block{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:11px 14px;margin:9px 0}
 .slider-block label{font-size:12.5px;font-weight:700;display:flex;justify-content:space-between}
 .slider-block input[type=range]{width:100%;accent-color:var(--blue);margin-top:6px}
+.slider-block .hint{font-size:11px;color:var(--muted);font-weight:400;margin-top:5px;line-height:1.4}
 .readout{color:var(--blue);font-weight:700}
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
 .statgrid.n3{grid-template-columns:repeat(3,1fr)}
@@ -34,184 +41,519 @@ canvas{display:block;width:100%;height:270px}
 .stat small{display:block;color:var(--muted);font-size:10.5px;margin-bottom:2px}
 .stat strong{font-size:15px}
 .stat.hi strong{color:var(--blue)}
-.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:var(--blue);border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
-.badge.warn{background:#fdeee9;color:var(--red)}
-.badge.ok{background:#e9f6ef;color:var(--green)}
+.badge{display:inline-block;font-size:10.5px;background:#eef8fc;color:#1177b0;border-radius:999px;padding:2px 9px;font-weight:700;margin-left:6px}
+.badge.contract,.badge.warn{background:#fdeee9;color:var(--red-text)}
+.badge.dilate,.badge.ok{background:#e9f6ef;color:var(--green-text)}
+.badge.caution{background:#fdf4e3;color:#a26a12}
+.band-detail{margin-top:10px;border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.band-head{padding:9px 12px;background:#f7fafb;border-bottom:1px solid var(--line);font-size:13px}
+.band-range{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px}
+.band-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:10px;padding:11px 12px}
+.band-grid>div{font-size:11.5px;line-height:1.5}
+.band-grid small{display:block;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+.band-grid strong{font-size:13px;color:var(--navy);font-family:"Courier New",monospace}
+.band-note{margin:0;padding:0 12px 12px;font-size:11.5px;line-height:1.6;color:var(--ink)}
+#icEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#icEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0}
+#icBoundaryTable tbody tr:hover{background:#f2f7f9}
+#icBoundaryTable tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#icBoundaryTable tbody tr.sel td{font-weight:700}
+#icChart:focus{outline:2px solid var(--blue);outline-offset:2px}
+/* the depth profile and the band strip sit side by side so both are on screen at once */
+.ic-figs{display:grid;grid-template-columns:1.12fr 0.88fr;gap:18px;align-items:start;margin-top:8px}
+.ic-figs .band-detail{margin-top:8px}
+@media(max-width:1080px){.ic-figs{grid-template-columns:1fr}}
+.inv-figs{display:grid;grid-template-columns:1.05fr 0.95fr;gap:18px;align-items:start;margin-top:10px}
+@media(max-width:1080px){.inv-figs{grid-template-columns:1fr}}
+.dist-figs{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;align-items:start;margin-top:10px}
+@media(max-width:1080px){.dist-figs{grid-template-columns:1fr}}
+.mc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.two-problems{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
+.s8-split{display:grid;grid-template-columns:0.92fr 1.08fr;gap:16px;align-items:start;margin-top:8px}
+.mc-split{display:grid;grid-template-columns:0.88fr 1.12fr;gap:16px;align-items:start;margin-top:6px}
+.note-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.note-grid>details{margin-top:0}
+.diag{border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;background:#fff}
+.diag.diag-warn{border-left-color:var(--orange)}
+.diag>summary{cursor:pointer;padding:8px 10px;font-size:11.5px;font-weight:700;line-height:1.4}
+.diag>summary span{font-weight:400;color:var(--muted)}
+.diag[open]>summary{border-bottom:1px solid var(--line)}
+.diag>div{padding:9px 11px;font-size:11px;line-height:1.6}
+@media(max-width:1080px){.s8-split,.mc-split{grid-template-columns:1fr}.note-grid{grid-template-columns:1fr}}
+.prob{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.prob.prob-var{border-left:5px solid #c64852}
+.prob.prob-unc{border-left:5px solid #7653a6}
+.prob>b{font-size:13.5px;display:block}
+.prob>small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:2px 0 8px}
+.prob p{font-size:11px;line-height:1.55;margin:0 0 6px}
+.prob p.fix{margin:0;padding-top:6px;border-top:1px solid var(--line);color:var(--ink)}
+#psikEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
+#table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#table54 tbody tr.sel td{font-weight:700}
+.quiz-breakdown{width:100%;margin:10px 0 0;font-size:12px}
+.quiz-breakdown th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.quiz-breakdown td{vertical-align:middle}
+.quiz-breakdown button{padding:4px 10px;font-size:11px}
+#invEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#invEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
-.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0;margin:10px 0}
+.callout{background:#eef8fc;border-left:4px solid var(--blue);padding:10px 12px;font-size:12.5px;line-height:1.6;border-radius:0 6px 6px 0}
 .sources{font-size:11px;color:var(--muted);line-height:1.6}
 .sources a{color:var(--blue)}
 table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
 th,td{text-align:left;padding:5px 7px;border-bottom:1px solid var(--line)}
 th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
-.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
-.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend{font-size:11.5px;color:var(--muted);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;padding:6px 8px;background:#f7fafb;border:1px solid var(--line);border-radius:7px}
+.legend span{display:inline-flex;align-items:center;gap:5px;padding:3px 5px;border-radius:5px}
 .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
-table.notation{min-width:640px}
-table.notation td{font-size:12px;vertical-align:top;padding:5px 8px}
-table.notation td:first-child,table.notation td:nth-child(3){white-space:nowrap;width:1%;color:var(--navy)}
+.notation-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.notation-group-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 1px}
+.notation-group-label:first-child{margin-top:0}
+.notation-swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.notation-card{text-align:left;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:8px;padding:9px 10px;transition:.15s}
+.notation-card:hover{box-shadow:0 5px 14px rgba(12,44,58,.12)}
+.notation-card b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.notation-card small{display:block;line-height:1.4;color:var(--muted);font-size:11px}
+@media(max-width:820px){.notation-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.notation-grid{grid-template-columns:1fr}}
+@media(max-width:1100px){.grid4{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:820px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.statgrid{grid-template-columns:repeat(2,1fr)}}
-</style></head>
+
+/* ===== 3. Interactive/behavioral additions ===== */
+.sticky-nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(7px);border-bottom:1px solid var(--line);box-shadow:0 2px 9px rgba(12,44,58,.07)}
+.sticky-nav .wrap{padding-top:8px;padding-bottom:8px;display:flex;gap:7px;align-items:center;overflow-x:auto}
+.sticky-nav a{white-space:nowrap;text-decoration:none;color:var(--navy);font-size:11.5px;font-weight:700;border:1px solid var(--line);padding:6px 9px;border-radius:999px;background:#fff}
+.sticky-nav a:hover,.sticky-nav a.active{background:var(--navy);color:#fff}
+.sticky-nav a.on-page{color:var(--blue);text-decoration:underline;text-underline-offset:3px}
+.progress-shell{min-width:120px;height:6px;background:#dde8ec;border-radius:20px;overflow:hidden;margin-left:auto}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green))}
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:center}.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--blue);font-weight:800}.lead{font-size:15px;line-height:1.65;color:#29434e}.goal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:12px}.goal{border:0;text-align:left;width:100%;cursor:pointer;font-family:inherit;transition:.15s;border:1px solid var(--line);border-radius:9px;padding:11px;background:linear-gradient(145deg,#fff,#f5fafb);font-size:12px;line-height:1.45;color:var(--ink)}.goal:hover{box-shadow:0 5px 14px rgba(12,44,58,.12);border-color:var(--blue)}.goal b{display:block;color:var(--navy);margin-bottom:4px}.goal-num{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;margin-bottom:7px}
+.big-idea{background:linear-gradient(135deg,#0f4052,#167494);color:#fff;border-radius:12px;padding:17px}.big-idea .formula{font:700 24px Georgia,serif;text-align:center;padding:15px 4px}.big-idea p{font-size:12px;color:#dff2f7;line-height:1.55}
+.flow-map{display:grid;grid-template-columns:repeat(7,auto);align-items:center;justify-content:center;gap:7px;padding:18px 5px}.flow-node{min-width:112px;padding:12px 10px;border-radius:10px;text-align:center;color:#fff;font-weight:800;font-size:12px;box-shadow:0 4px 10px rgba(0,0,0,.10);position:relative;transition:box-shadow .2s,padding .15s,min-width .15s}.flow-node small{display:block;font-weight:400;opacity:.9;margin-top:4px;min-height:14px}.flow-arrow{font-size:23px;color:var(--muted)}
+.visual-panel{background:#f7fafb;border:1px solid var(--line);border-radius:10px;padding:12px}.visual-panel h3{margin-top:0}.two-state{display:grid;grid-template-columns:1fr 1fr;gap:10px}.state-box{border-radius:9px;padding:12px;color:#fff;min-height:150px}.state-box.dense{background:linear-gradient(145deg,#237657,#35a47a)}.state-box.loose{background:linear-gradient(145deg,#a83b46,#d9616b)}.particles{height:70px;position:relative;border-bottom:2px solid rgba(255,255,255,.55);margin:4px 0 8px}.grain{position:absolute;width:19px;height:19px;background:linear-gradient(145deg,#f8dca8,#e0ab5f);box-shadow:inset -2px -2px 3px rgba(64,44,20,.3),inset 1px 1px 2px rgba(255,255,255,.45)}
+.grain.v1{clip-path:polygon(20% 0%,70% 5%,100% 35%,90% 80%,55% 100%,10% 85%,0% 45%)}
+.grain.v2{clip-path:polygon(35% 0%,80% 15%,100% 55%,75% 95%,30% 100%,0% 65%,5% 20%)}
+.grain.v3{clip-path:polygon(10% 10%,60% 0%,100% 30%,95% 75%,60% 100%,15% 90%,0% 50%)}
+.grain.v4{clip-path:polygon(25% 5%,75% 0%,100% 45%,85% 90%,40% 100%,5% 70%,0% 25%)}
+.lesson-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.lesson-tabs button{background:#eef4f6;color:var(--navy);border:1px solid var(--line);font-size:11.5px}.lesson-tabs button.on{background:var(--navy);color:#fff}.lesson-pane{display:none}.lesson-pane.on{display:block}.choice-row{display:flex;gap:8px;flex-wrap:wrap}.choice-row button{background:#fff;color:var(--navy);border:1px solid var(--line)}.choice-row button.correct{background:var(--green);color:#fff}.choice-row button.wrong{background:var(--red);color:#fff}.feedback{min-height:42px;margin-top:9px;padding:9px;border-radius:7px;background:#f2f7f9;font-size:12px;line-height:1.5}
+.quiz-q{border-top:1px solid var(--line);padding:12px 0}.quiz-q:first-child{border-top:0}.quiz-q p{font-weight:700;font-size:12.5px}.quiz-q label{display:block;padding:5px 8px;font-size:12px;border-radius:6px}.quiz-q label:hover{background:#f2f7f9}.quiz-result{padding:11px;border-radius:8px;background:#eef8fc;font-weight:700;margin-top:8px}
+.glossary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.term{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff;font-size:11.5px;line-height:1.45}.term b{display:block;color:var(--blue);font-size:13px;margin-bottom:3px}.concept-line{display:flex;align-items:stretch;gap:7px;overflow-x:auto;padding:6px 0;transition:.2s}.concept-step{min-width:155px;border-radius:8px;padding:10px;background:#f2f7f9;border-top:4px solid var(--blue);font-size:11.5px;transition:transform .25s,box-shadow .25s,background .25s,border-color .25s}.concept-step b{display:block;color:var(--navy);margin-bottom:4px}.concept-step.walking{transform:translateY(-3px);border-color:var(--blue);box-shadow:0 6px 16px rgba(20,121,184,.22);background:#eef8fc}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}.goal-grid{grid-template-columns:repeat(2,1fr)}.flow-map{grid-template-columns:1fr}.flow-arrow{transform:rotate(90deg);text-align:center}.glossary-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.goal-grid,.two-state,.glossary-grid{grid-template-columns:1fr}.progress-shell{display:none}}
+
+.quiz-progress{height:7px;background:#e4edf0;border-radius:20px;overflow:hidden;margin:8px 0 16px}.quiz-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));transition:width .2s}.quiz-q.unanswered{outline:2px solid #e9a52b;outline-offset:2px}.quiz-explanation{font-size:11.5px;color:var(--muted);padding:6px 8px 9px;display:none}.quiz-q.review .quiz-explanation{display:block}.quiz-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.quiz-count{font-size:11.5px;color:var(--muted)}
+.module-path{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:12px 0}.module-link{display:block;text-decoration:none;border:1px solid var(--line);border-radius:10px;padding:11px;background:#fff;color:var(--ink);transition:.15s}.module-link:hover{box-shadow:0 5px 14px rgba(12,44,58,.12)}.module-link.current{background:var(--navy);color:#fff}.module-link b{display:block;margin-bottom:4px}.module-link small{display:block;line-height:1.4;opacity:.85}.module-link.disabled{opacity:.6;cursor:not-allowed;pointer-events:none}.module-link.disabled .badge{margin-top:6px}
+.s2-lab{border:1px solid #bcd7e2;background:linear-gradient(145deg,#f7fcfe,#eef7fa);border-radius:12px;padding:14px;margin:12px 0}.s2-presets{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}.s2-presets button{font-size:11px;background:#647680}.s2-presets button.on{background:var(--navy);color:#fff}
+@media(max-width:900px){.module-path{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.module-path{grid-template-columns:1fr}}
+
+.guided-panel{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb);margin:12px 0}.guided-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.guided-step{display:block;width:100%;text-align:left;font-family:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;line-height:1.4;cursor:pointer;color:var(--ink)}.guided-step.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(20,121,184,.15);background:#eef8fc}.guided-step b{display:block;color:var(--navy);margin-bottom:3px}.experiment-status{font-size:11.5px;background:#eef8fc;border-radius:7px;padding:8px;margin-top:8px}
+/* The toggle button has always set .open and aria-expanded, but no rule ever acted
+   on it, so every figure rendered with its help text permanently expanded. */
+.figure-help{display:none}
+.figure-help.open{display:block;font-size:11.5px;line-height:1.6;color:var(--ink);background:#f7fafb;border-left:3px solid var(--blue);padding:9px 11px;margin:8px 0 0;border-radius:0 8px 8px 0}
+.chart-reading-mode canvas{outline:3px solid rgba(20,121,184,.16);outline-offset:3px}.pulse-target{animation:targetPulse 1.25s ease 2}@keyframes targetPulse{50%{box-shadow:0 0 0 7px rgba(20,121,184,.18)}}
+@media(max-width:820px){.guided-steps{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.guided-steps{grid-template-columns:1fr}}
+
+.fn{cursor:pointer;color:var(--blue);font-size:.72em;vertical-align:super;font-weight:700;margin:0 1px;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+.fn:hover{color:var(--navy)}
+.fn-note{display:none;font-size:11.5px;color:var(--muted);background:#f2f7f9;border-left:3px solid var(--blue);padding:7px 10px;border-radius:0 6px 6px 0;margin:4px 0 8px;line-height:1.55}
+.fn-note.open{display:block}
+
+#flowStickyMarker{height:1px}
+.flow-sticky{position:sticky;top:var(--nav-h,46px);z-index:15;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 10px rgba(12,44,58,.08);margin:2px 0 14px;transition:box-shadow .2s}
+.flow-sticky .flow-map{display:flex;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;gap:7px;padding:12px 10px;-webkit-overflow-scrolling:touch}
+@media(max-width:820px){
+  .flow-sticky::after{content:'';position:absolute;top:1px;right:1px;bottom:1px;width:26px;border-radius:0 9px 9px 0;background:linear-gradient(to right,rgba(255,255,255,0),#fff);pointer-events:none}
+}
+.flow-sticky .flow-node{min-width:126px;flex:0 0 auto}
+.flow-sticky.is-stuck{box-shadow:0 6px 16px rgba(12,44,58,.16)}
+.flow-sticky.is-stuck .flow-map{padding:7px 10px}
+.flow-sticky.is-stuck .flow-node{min-width:104px;padding:7px 8px;font-size:11px}
+.flow-sticky.is-stuck .flow-node small{margin-top:2px}
+.flow-sticky .flow-arrow{flex:0 0 auto}
+.chart-host{position:relative}
+
+.quiz-block-controls{display:flex;gap:8px;margin-bottom:8px}
+.quiz-block-controls button{font-size:11px;padding:6px 9px;background:#647680}
+.quiz-block{border:1px solid var(--line);border-radius:10px;margin-bottom:9px;background:#fafcfd;overflow:hidden}
+.quiz-block summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:13px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+.quiz-block summary::-webkit-details-marker{display:none}
+.quiz-block summary:before{content:'▸';font-size:11px;color:var(--muted);transition:transform .15s}
+.quiz-block[open] summary:before{transform:rotate(90deg)}
+.quiz-block summary .badge{margin-left:auto}
+.quiz-block-body{padding:0 13px 4px}
+.quiz-block-check{margin:4px 0 8px;font-size:11.5px;padding:7px 11px}
+.quiz-block-score{background:#eef8fc;color:var(--navy)}
+.quiz-block-result{margin:0 13px 12px;padding:9px 11px;border-radius:7px;background:#f2f7f9;font-size:12px;font-weight:700;line-height:1.4}
+@media(max-width:520px){.quiz-block summary{font-size:12px}}
+.disclosure{border:1px solid var(--line);border-radius:10px;margin:14px 0;background:#fafcfd;overflow:hidden}
+.disclosure>summary{cursor:pointer;padding:11px 13px;font-weight:800;font-size:14px;color:var(--navy);list-style:none;display:flex;align-items:center;gap:8px}
+.disclosure>summary::-webkit-details-marker{display:none}
+.disclosure>summary:before{content:'▸';font-size:11px;color:var(--muted);transition:transform .15s}
+.disclosure[open]>summary:before{transform:rotate(90deg)}
+.disclosure>summary small{font-weight:400;color:var(--muted);margin-left:auto;font-size:11px}
+.disclosure>.disclosure-body{padding:0 13px 13px}
+.back-float{position:fixed;left:16px;bottom:70px;z-index:60;background:var(--navy);color:#fff;border:none;border-radius:24px;padding:10px 16px;font-size:12.5px;font-weight:700;box-shadow:0 4px 14px rgba(12,44,58,.3);cursor:pointer;transition:transform .15s,box-shadow .15s;display:none;align-items:center;gap:6px}
+.back-float:hover{box-shadow:0 6px 18px rgba(12,44,58,.35)}
+@media(max-width:520px){.back-float{left:8px;bottom:60px;padding:9px 13px;font-size:11.5px;max-width:calc(100vw - 16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
+
+body{padding-bottom:54px}
+.page-stepper{position:fixed;left:0;right:0;bottom:0;z-index:55;background:#fff;border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(12,44,58,.1);padding:8px 14px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:12.5px}
+.page-stepper-nav{background:var(--navy);color:#fff;border:0;border-radius:20px;padding:8px 14px;font-weight:700;font-size:12px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
+.page-stepper-nav:disabled{opacity:.35;cursor:default}
+.page-stepper-mid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.page-stepper-label{font-weight:700;color:var(--navy);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:46vw}
+.page-dots{display:flex;gap:2px}
+.page-dot{width:34px;height:34px;padding:0;border:0;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.page-dot:hover{background:#f2f7f9}
+.page-dot::before{content:'';display:block;width:7px;height:7px;border-radius:50%;background:var(--line);transition:width .15s,border-radius .15s}
+.page-dot.active::before{background:var(--blue);width:18px;border-radius:4px}
+.page-dot[aria-current="page"]::before{background:var(--blue)}
+@media(max-width:640px){.page-stepper{gap:7px;padding:7px 8px}.page-stepper-nav{padding:7px 10px;font-size:11px}.page-stepper-label{max-width:34vw;font-size:10.5px}}
+
+.page-next-prompt{margin:20px 0 6px}
+.page-next-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:linear-gradient(135deg,#0f4052,#167494);color:#fff;border-radius:12px;padding:16px 18px}
+.page-next-inner span{font-size:13px;line-height:1.5}
+.page-next-btn{background:#fff;color:var(--navy);border:0;border-radius:22px;padding:10px 18px;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;transition:transform .15s}
+.page-next-btn:hover{box-shadow:0 3px 10px rgba(0,0,0,.15)}
+@media(max-width:520px){.page-next-inner{flex-direction:column;align-items:stretch;text-align:center}}
+.goal:focus-visible,.notation-card:focus-visible,.guided-step:focus-visible,.fn:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+
+.bayes-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+.bayes-chart-box{border:1px solid var(--line);border-radius:8px;padding:8px;background:#fbfdfe}
+.bayes-chart-box canvas{display:block;width:100%;height:230px}
+@media(max-width:900px){.bayes-grid2{grid-template-columns:1fr}}
+
+/* Section 2's CPT log: controls beside the log rather than stacked above it, so a
+   slider and the five panels it drives stay visible together without scrolling. */
+.snd-layout{display:grid;grid-template-columns:minmax(270px,0.7fr) 1.3fr;gap:16px;align-items:start;margin-top:10px}
+.snd-layout>div{min-width:0}
+.snd-controls{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb)}
+.snd-controls .slider-block{margin:7px 0;padding:9px 11px}
+.snd-controls .slider-block .hint{font-size:10px;line-height:1.35;margin-top:4px}
+.snd-controls .statgrid{grid-template-columns:repeat(2,1fr);gap:7px}
+.snd-controls .stat{padding:8px 7px}
+.snd-controls .stat strong{font-size:13.5px}
+.snd-controls h3{margin:12px 0 5px}
+.snd-controls select{width:100%;margin-top:3px}
+/* Paired half-width sliders (gamma|Ko, water table|% hydrostatic) */
+.snd-row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.snd-row2 .slider-block{margin:6px 0;padding:8px 9px;min-width:0}
+.snd-row2 .slider-block label{font-size:11px;gap:4px;flex-wrap:wrap}
+.snd-row2 .readout{font-size:11px}
+/* Section 3's variant table: one column per visible trace, colour-matched to it. */
+.mm-stats{gap:7px}
+.mm-stats .stat{padding:7px 7px;text-align:left}
+.mm-stats .stat small{font-size:10px;font-weight:700;margin-bottom:3px}
+.mm-stats .stat strong{font-size:13px;display:block;line-height:1.25}
+.mm-stats .badge{font-size:9px;padding:1px 6px;margin:4px 0 0;display:inline-block}
+/* The worked example lives under the button, filling what was dead space beside the
+   log. It wraps rather than scrolls, and each numbered step hangs-indents so a
+   wrapped line stays visually attached to its own step. */
+.snd-eq-title{margin:14px 0 5px;font-size:12.5px}
+.snd-controls .eq{font-size:11.5px;line-height:1.65;padding:9px 11px;white-space:normal;overflow-x:visible}
+.snd-controls .eq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+.snd-controls .eq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:2px 0 3px}
+.snd-controls .eq b{white-space:nowrap}
+@media(max-width:1000px){.snd-layout{grid-template-columns:1fr}.snd-controls .statgrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.snd-controls .statgrid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
 <body>
 <header><div class="wrap">
 <p class="back"><a href="index.html">&larr; Back to portfolio</a> <span id="viewCounter" class="view-counter"></span></p>
-<h1>Soil Liquefaction: A Critical State Approach — Interactive Companion</h1>
-<p><b>Module 4: Cyclic Liquefaction, and From Theory to Design Practice</b> (Chapters 7 &amp; 9). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press. Completes the Jefferies &amp; Been series that began with <a href="jb-critical-state-lab.html">Module 1</a>, <a href="jb-insitu-state-lab.html">Module 2</a> and <a href="jb-static-liquefaction-lab.html">Module 3</a> — see also the companion <a href="cpt-guide-lab.html">Guide to Cone Penetration Testing module</a>.</p>
+<h1>Soil Liquefaction: A Critical State Approach &mdash; Interactive Companion</h1>
+<p><b>Module 4: Cyclic Liquefaction, and From Theory to Design Practice</b> (Chapters 7 and 9). Interactive companion to Jefferies, M.G. &amp; Been, K. (2015), <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition, CRC Press. Completes the series begun in Modules 1&ndash;3.</p>
+<p class="prepared">Prepared by: Zana Taher</p>
 </div></header>
+
+<nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
+<a href="#start">1. Start here</a><a href="#cyclic-vs-static">2. Cyclic vs static</a><a href="#classical">3. The classical method</a><a href="#notation">4. Notation</a><a href="#psi-view">5. The &psi; view</a><a href="#ksigma">6. K&sigma; disappears</a><a href="#kalpha">7. K&alpha;</a><a href="#design-workflow">8. Design workflow</a><a href="#knowledge-check">9. Check learning</a>
+<div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
+</div></nav>
+<button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
+<div id="pageAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <div class="wrap">
 
-<div class="card">
-<h2>About this module</h2>
+<div class="card" id="start">
+<h2>Companion learning path</h2>
+<p class="explain">The last module in the series. Each opens independently, so you can return to any earlier one whenever this module leans on it &mdash; and it leans on all three.</p>
+<div class="module-path">
+<a class="module-link" href="jb-critical-state-lab.html"><b>Module 1</b><small>Critical state, &psi;, dilatancy, and NorSand</small></a>
+<a class="module-link" href="jb-insitu-state-lab.html"><b>Module 2</b><small>Determine in-situ state from CPT</small></a>
+<a class="module-link" href="jb-static-liquefaction-lab.html"><b>Module 3</b><small>Static liquefaction and post-liquefaction strength</small></a>
+<a class="module-link current" href="#start"><b>Module 4</b><small>Cyclic liquefaction and cyclic mobility</small></a>
+</div>
+
+<h2 style="margin-top:16px">1. The same soil, a different question</h2>
 <div class="explain">
-<p>Module 3 covered static liquefaction — a soil failing under its own sustained load. This module covers <b>cyclic</b> liquefaction: repeated earthquake loading progressively building pore pressure until strength is lost, then asks the practical question every project eventually reaches — how do you actually turn triaxial and CPT data into a defensible design number?</p>
+<p>Module 3 asked what happens when a contractive soil fails under its own sustained load. This module asks what happens when the load arrives as a few dozen cycles of earthquake shaking instead &mdash; and then asks the practical question every project eventually reaches: how do you turn laboratory and CPT data into a design number you can defend?</p>
+<p>The answer the profession actually uses was built entirely from case histories, and it works. The book's contribution is to show <b>why</b> it works, and that one of its two correction factors is an artefact of using penetration resistance rather than state. Once you work in &psi;, that factor simply stops being needed.</p>
 </div>
-</div>
-
-<div class="card">
-<h2>Notation used in this module</h2>
-<p class="explain" style="font-size:12px">Symbols in roughly the order they first appear below — use this as a lookup while reading Chapters 7 &amp; 9.</p>
-<div style="overflow-x:auto"><table class="notation">
-<tr><td><b>CSR</b></td><td>cyclic stress ratio, &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub> — the earthquake's demand on the soil</td><td><b>K<sub>&sigma;</sub></b></td><td>stress-level correction factor (turns out to be redundant once working in &psi; directly — Section 2)</td></tr>
-<tr><td><b>CRR</b></td><td>cyclic resistance ratio — the CSR at which liquefaction is triggered (the soil's capacity)</td><td><b>K<sub>&alpha;</sub></b></td><td>sloping-ground/static-bias correction factor</td></tr>
-<tr><td><b>&tau;<sub>cyc</sub></b></td><td>equivalent uniform cyclic shear stress from an earthquake</td><td><b>N<sub>L</sub></b></td><td>number of uniform stress cycles to cause liquefaction in a lab test</td></tr>
-<tr><td><b>M</b></td><td>earthquake moment magnitude</td><td><b>(N<sub>1</sub>)<sub>60</sub></b></td><td>SPT blow count, corrected for hammer energy (60%) and overburden stress</td></tr>
-<tr><td><b>K<sub>M</sub></b></td><td>magnitude scaling factor — adjusts CRR<sub>7.5</sub> to earthquakes other than M=7.5</td><td><b>&psi;<sub>k</sub></b></td><td>characteristic (design) state parameter, from Module 2</td></tr>
-</table></div>
+<div class="callout"><b>What you will be able to do by the end.</b> Explain the difference between cyclic mobility and flow liquefaction, and why one is survivable. Apply the classical CRR framework with magnitude scaling. Show, from the book's own case-history database, that a &psi;-based boundary separates 19 of 20 real records. Explain why K&sigma; is redundant and why K&alpha; resists a formula. Fit a project-specific design curve from cyclic simple shear data.</div>
 </div>
 
-<div class="card">
-<h2>1. The classical framework: CRR, magnitude scaling, and two "fudge factors"</h2>
-<div class="explain"><p>The dominant liquefaction-assessment method in practice — what the book calls the <b>Berkeley School</b> approach (Seed and co-workers) — is built entirely from case histories: plot earthquake-induced cyclic stress ratio (CSR = &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub>) against penetration resistance for sites that did and didn't liquefy, and draw a boundary (the CRR). That boundary is calibrated for M=7.5 earthquakes and near-level ground, so it needs correction factors to use elsewhere:</p></div>
-<div class="eq">CRR = CRR<sub>7.5</sub>&middot;K<sub>M</sub>&middot;K<sub>&sigma;</sub>&middot;K<sub>&alpha;</sub> &nbsp; (Eq. 7.4)</div>
+<div class="card" id="about-module">
+<h2>About this module</h2>
+<div class="explain"><p>Everything interactive uses the book's own tabulated values and published equations. Where this module combines two separately-presented pieces of the book, it says so. The last page carries the full disclosure.</p></div>
+</div>
 
-<div class="grid2">
+<div class="card" id="cyclic-vs-static">
+<h2>2. Cyclic mobility is not flow liquefaction</h2>
+<div class="explain">
+<p>Two things get called liquefaction and they behave completely differently. In <b>flow liquefaction</b> &mdash; Module 3's subject &mdash; a contractive soil loses strength and cannot get it back, so once it starts moving the driving stress exceeds the residual strength and it keeps going. In <b>cyclic mobility</b>, pore pressure ratchets up cycle by cycle and strains accumulate, but the soil is dilative enough that each cycle recovers some stiffness. It deforms, sometimes badly. It does not run.</p>
+<p>The distinction is the state parameter, again. Drag &psi; below the dilative boundary and the same cyclic loading produces large but self-limiting strains; drag it above and the soil has somewhere to fall to.</p>
+</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="cycPsi"><span>State parameter, &psi;</span> <span class="readout" id="cycPsiOut">-0.06</span></label><input id="cycPsi" type="range" min="-0.20" max="0.10" step="0.005" value="-0.06"></div>
+<div class="slider-block"><label for="cycCsr"><span>Cyclic stress ratio, CSR</span> <span class="readout" id="cycCsrOut">0.15</span></label><input id="cycCsr" type="range" min="0.05" max="0.40" step="0.005" value="0.15"></div>
+<div class="slider-block"><label for="cycN"><span>Cycles applied, N</span> <span class="readout" id="cycNOut">15</span></label><input id="cycN" type="range" min="1" max="40" step="1" value="15"></div>
+<div class="statgrid n2" id="cycStats"></div>
+</div>
 <div>
-<label style="font-size:12.5px;font-weight:700">Earthquake magnitude, M <span class="readout" id="s1MwOut">7.5</span></label><br>
-<input id="s1Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5" style="width:100%;accent-color:var(--blue)">
+<div class="chart-host"><canvas id="cyclicChart" role="img" aria-label="Excess pore pressure ratio building cycle by cycle, with the behaviour type shown."></canvas></div>
+<div class="legend"><span><i style="background:#7653a6"></i>excess pore pressure ratio r<sub>u</sub></span><span><i style="background:#c64852"></i>r<sub>u</sub> = 1, initial liquefaction</span><span><i style="background:#268160"></i>cycles applied</span></div>
+</div>
+</div>
+<div class="callout" id="cycNote" aria-live="polite"></div>
+<div class="warning"><b>What this figure is and is not.</b> The pore-pressure build-up is a schematic of the mechanism, not an integration of NorSand &mdash; Module 1 has the real constitutive simulator, and Section 7.6 of the book covers cyclic NorSand properly. What is real here is the <i>distinction</i>: whether reaching r<sub>u</sub>=1 means large recoverable strains or a runaway, and that is decided by &psi;, not by the number of cycles.</div>
+</div>
+
+<div class="card" id="classical">
+<h2>3. The classical framework, and its two correction factors</h2>
+<div class="explain">
+<p>The dominant method in practice &mdash; what the book calls the <b>Berkeley School</b> approach, after Seed and co-workers &mdash; is built entirely from case histories. Plot the earthquake-induced cyclic stress ratio against penetration resistance for sites that did and did not liquefy, and draw a boundary. That boundary is the cyclic resistance ratio, CRR. It is calibrated for magnitude 7.5 earthquakes on near-level ground, so using it anywhere else needs corrections:</p>
+</div>
+<div class="eq">CRR = CRR<sub>7.5</sub> &middot; K<sub>M</sub> &middot; K<sub>&sigma;</sub> &middot; K<sub>&alpha;</sub> &nbsp; (Eq. 7.4)</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="s1Mw"><span>Earthquake moment magnitude, M</span> <span class="readout" id="s1MwOut">7.5</span></label><input id="s1Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5"><div class="hint">K<sub>M</sub> comes from the five points tabulated in Fig. 7.32 (Seed &amp; Idriss 1982), interpolated between them. The book gives no closed form, so none is invented here.</div></div>
 <div class="statgrid n2" id="s1Stats"></div>
-<p class="explain" style="font-size:12px;margin-top:8px">K<sub>M</sub> values are the book's tabulated magnitude scaling factors (Fig. 7.32, Seed &amp; Idriss 1982), interpolated between the five published points.</p>
+<div class="callout" style="font-size:11.5px">A smaller earthquake shakes fewer times, so the soil survives a larger stress ratio: K<sub>M</sub> is above 1 below magnitude 7.5 and below 1 above it.</div>
 </div>
-<div><canvas id="kmChart"></canvas></div>
-</div>
-
-<div class="callout"><b>K<sub>&sigma;</sub> and K<sub>&alpha;</sub> are where the classical method gets murky.</b> K<sub>&sigma;</sub> (the stress-level correction) has had wildly different recommendations from different workers (Figs. 7.36&ndash;7.37) because it's treated as a geological curve-fit rather than mechanics. K<sub>&alpha;</sub> (the sloping-ground/static-bias correction) is worse: the book shows it depends on principal stress rotation in a way that "cannot give simple trends" — project-specific NorSand simulation is recommended instead of a formula. Section 2 shows why K<sub>&sigma;</sub> in particular turns out to be unnecessary.</div>
-</div>
-
-<div class="card">
-<h2>2. The state parameter view — and why K<sub>&sigma;</sub> disappears</h2>
-<div class="explain"><p>The book's real contribution here: reprocessing the same case-history database (Moss 2003's Class A records) directly in terms of &psi;<sub>k</sub> instead of penetration resistance produces a strikingly clean boundary — and the reason K<sub>&sigma;</sub> exists at all turns out to be that <b>a soil at constant density has a different &psi; at different depths</b> (deeper = higher stress = smaller &psi;, Eq. 2.1). Once you use &psi; directly, that stress-level dependence is already built in and K<sub>&sigma;</sub> becomes unnecessary — the book shows computed K<sub>&sigma;</sub>-from-&psi; curves overlay published empirical K<sub>&sigma;</sub> curves almost exactly (Fig. 7.44).</p></div>
-<div class="eq">CRR<sub>7.5</sub> = 0.06&middot;exp(&minus;9&middot;&psi;<sub>k</sub>) &nbsp; (Eq. 7.5)</div>
-
-<div class="grid2">
 <div>
-<div class="slider-block"><label>Characteristic state parameter, &psi;<sub>k</sub> <span class="readout" id="s2PsiOut">-0.10</span></label><input id="s2Psi" type="range" min="-0.25" max="0.05" step="0.001" value="-0.10"></div>
-<div class="slider-block"><label>Site CSR<sub>7.5</sub> (design earthquake) <span class="readout" id="s2CsrOut">0.15</span></label><input id="s2Csr" type="range" min="0" max="0.45" step="0.005" value="0.15"></div>
+<div class="chart-host"><canvas id="kmChart" role="img" aria-label="Magnitude scaling factor against earthquake magnitude, through the five tabulated points."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>K<sub>M</sub> interpolated</span><span><i style="background:#687a82"></i>the five tabulated points</span><span><i style="background:#c64852"></i>your design magnitude</span></div>
+</div>
+</div>
+<div class="warning"><b>Where the classical method gets murky.</b> K<sub>&sigma;</sub>, the stress-level correction, has had wildly different recommendations from different workers (Figs. 7.36&ndash;7.37), because it is treated as a curve fit to geology rather than as mechanics. K<sub>&alpha;</sub>, the sloping-ground correction, is worse: the book shows it depends on principal stress rotation in a way that &ldquo;cannot give simple trends&rdquo;. Sections 6 and 7 take these two in turn &mdash; the first turns out to be unnecessary, the second turns out to be genuinely hard.</div>
+
+<div class="quiz-checkpoint" id="quizCheckA">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on cyclic behaviour and the classical framework.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotA">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotA">Hide questions</button></div>
+<div id="quizSlotA"></div>
+</div>
+</div>
+
+<div class="card" id="notation">
+<h2>4. Notation used in this module</h2>
+<p class="explain">Symbols in roughly the order they first appear. &psi; and &psi;<sub>k</sub> carry over from Modules 1&ndash;3. Choose any card to jump to where it is used.</p>
+<div class="notation-grid" id="notationGrid"></div>
+</div>
+
+<div class="card" id="psi-view">
+<h2>5. The state parameter view of the same database</h2>
+<div class="explain">
+<p>Here is the book's real contribution to this chapter. Take the same case-history database &mdash; Moss (2003)'s Class A records &mdash; and reprocess it in terms of &psi;<sub>k</sub> instead of penetration resistance. The boundary that emerges is strikingly clean, and it is a single exponential with no correction factors attached:</p>
+</div>
+<div class="eq">CRR<sub>7.5</sub> = 0.06 &middot; exp(&minus;9&middot;&psi;<sub>k</sub>) &nbsp; (Eq. 7.5)</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="s2Psi"><span>Characteristic state parameter, &psi;<sub>k</sub></span> <span class="readout" id="s2PsiOut">-0.100</span></label><input id="s2Psi" type="range" min="-0.25" max="0.10" step="0.001" value="-0.10"><div class="hint">This is Module 2's &psi;<sub>k</sub>, and Module 3's. One number, carried through three modules.</div></div>
+<div class="slider-block"><label for="s2Csr"><span>Site CSR<sub>7.5</sub> from the design earthquake</span> <span class="readout" id="s2CsrOut">0.150</span></label><input id="s2Csr" type="range" min="0.02" max="0.45" step="0.005" value="0.15"></div>
 <div class="statgrid n2" id="s2Stats"></div>
 </div>
-<div><canvas id="crrPsiChart"></canvas>
-<div class="legend"><span><i style="background:var(--navy)"></i>CRR7.5=0.06exp(-9ψk), Eq. 7.5</span><span><i style="background:var(--green)"></i>real case: no liquefaction</span><span><i style="background:var(--red)"></i>real case: liquefaction</span><span><i style="background:#123b4a;border-radius:50%"></i>current site</span></div>
+<div>
+<div class="chart-host"><canvas id="crrPsiChart" role="img" aria-label="Cyclic resistance ratio against state parameter, with twenty real Class A case-history records and the Eq. 7.5 boundary."></canvas></div>
+<div class="legend"><span><i style="background:#123b4a"></i>CRR<sub>7.5</sub> = 0.06&middot;exp(&minus;9&psi;<sub>k</sub>)</span><span><i style="background:#268160"></i>real record: no liquefaction</span><span><i style="background:#c64852"></i>real record: liquefaction</span><span><i style="background:#e38a22"></i>misclassified by Eq. 7.5</span><span><i style="background:#1479b8"></i>your site</span></div>
+</div>
+</div>
+<div class="statgrid" id="classifyStats" style="margin-top:10px"></div>
+<div class="callout" id="classifyNote" aria-live="polite"></div>
+</div>
+
+<div class="card" id="ksigma">
+<h2>6. Watch K<sub>&sigma;</sub> disappear</h2>
+<div class="explain">
+<p>Why does the classical method need a stress-level correction at all? Because penetration resistance is not state. Take one soil at one relative density and put it at two depths: it is the <i>same</i> soil, but the critical state line <i>falls</i> with stress, so the deeper element &mdash; at the same void ratio &mdash; sits closer to critical and its &psi; is <b>larger</b>, meaning relatively looser. It therefore resists cyclic loading less, and the classical method patches that with K<sub>&sigma;</sub>.</p>
+<p>Work in &psi; and the correction is already inside the number. Compute &psi; at each depth from the critical state line &mdash; the same Table 2.1 database Module 1 used &mdash; and feed both straight into Eq. 7.5. The ratio of the two resistances <i>is</i> K<sub>&sigma;</sub>, and it came out of the mechanics rather than a curve fit.</p>
+</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block" style="margin:0"><label for="ksSand" style="display:block"><span>Sand (Table 2.1)</span></label><select id="ksSand" style="width:100%;margin-top:6px"></select></div>
+<div class="slider-block"><label for="ksDr"><span>Relative density D<sub>R</sub> (%), held fixed at both depths</span> <span class="readout" id="ksDrOut">50</span></label><input id="ksDr" type="range" min="20" max="90" step="1" value="50"></div>
+<div class="slider-block"><label for="ksP2"><span>Deeper element, p&prime; (kPa)</span> <span class="readout" id="ksP2Out">400</span></label><input id="ksP2" type="range" min="120" max="1000" step="10" value="400"><div class="hint">The shallow element is held at p&prime; = 100&nbsp;kPa, the reference stress the classical charts are normalised to.</div></div>
+<div class="statgrid n2" id="ksStats"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="ksChart" role="img" aria-label="The stress-level correction factor computed from the state parameter, against the published empirical range."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>K&sigma; computed from &psi;</span><span><i style="background:#c9d8e2"></i>range of published empirical K&sigma; curves</span><span><i style="background:#c64852"></i>your deeper element</span></div>
+</div>
+</div>
+<div class="eq" id="ksEq"></div>
+<div class="callout" id="ksNote" aria-live="polite"></div>
+<div class="warning"><b>Why this matters beyond tidiness.</b> K&sigma; was never a property of the soil &mdash; it is the shadow that using penetration resistance instead of state casts on the analysis. The published empirical curves disagree with each other (Figs. 7.36&ndash;7.37) precisely because each was fitted to a different set of soils at different depths, all trying to correct for something that a state-based analysis never introduces. The shaded band shows roughly where those published curves sit; the computed line is what the mechanics gives.</div>
+
+<div class="quiz-checkpoint" id="quizCheckB">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on the state parameter view and why K&sigma; is redundant.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotB">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotB">Hide questions</button></div>
+<div id="quizSlotB"></div>
 </div>
 </div>
 
-<h3>Watch K<sub>&sigma;</sub> disappear</h3>
-<div class="explain"><p>Same D<sub>R</sub>, same soil, two depths. In the classical framework you'd read CRR off a penetration-resistance chart at each depth, then divide to get an empirical K<sub>&sigma;</sub> factor. Here, compute &psi; at each depth directly from the CSL (same real Table 2.1 database as Module 1) and feed both straight into Eq. 7.5 &mdash; no separate correction factor needed:</p></div>
-<div class="grid3">
-<div><label style="font-size:12.5px;font-weight:700">Sand (Table 2.1)</label><br><select id="ksSand"></select></div>
-<div class="slider-block"><label>Relative density, D<sub>R</sub> (%) &mdash; held fixed at both depths <span class="readout" id="ksDrOut">50</span></label><input id="ksDr" type="range" min="10" max="90" step="1" value="50"></div>
+<div class="card" id="kalpha">
+<h2>7. K<sub>&alpha;</sub>, and why the book refuses to give you a formula</h2>
+<div class="explain">
+<p>K<sub>&alpha;</sub> corrects for static shear bias &mdash; ground that is already carrying shear stress before the earthquake arrives, as any slope is. It would be convenient if a static bias always reduced cyclic resistance, or always raised it. It does neither, and that is the problem.</p>
+<p>On dense, dilative ground a static bias means the soil is already partway up its stress path in the direction it will be pushed, and cyclic resistance <i>rises</i>. On loose, contractive ground the same bias means each cycle drives it further toward a state it cannot recover from, and resistance <i>falls</i>. The sign of the correction depends on the state, and its magnitude depends on principal stress rotation, which the book shows &ldquo;cannot give simple trends&rdquo;.</p>
 </div>
-<div class="statgrid n3" id="ksStats"></div>
-<div class="callout" id="ksNote"></div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="kaPsi"><span>State parameter, &psi;</span> <span class="readout" id="kaPsiOut">-0.08</span></label><input id="kaPsi" type="range" min="-0.20" max="0.08" step="0.005" value="-0.08"></div>
+<div class="slider-block"><label for="kaAlpha"><span>Static stress bias, &alpha; = &tau;<sub>static</sub>/&sigma;&prime;<sub>vo</sub></span> <span class="readout" id="kaAlphaOut">0.10</span></label><input id="kaAlpha" type="range" min="0" max="0.35" step="0.01" value="0.10"></div>
+<div class="statgrid n2" id="kaStats"></div>
 </div>
-
-<div class="card">
-<h2>3. From lab data to a design CRR curve</h2>
-<div class="explain"><p>For a project-specific soil, Chapter 9 recommends fitting your own cyclic simple shear (CSS) test results (CSR vs. cycles-to-liquefaction N<sub>L</sub>, at several &psi;) to a simple linear trend rather than an automated regression, then combining it with the magnitude scaling from Section 1:</p></div>
-<div class="eq">CRR = (a &minus; b&middot;&psi;<sub>o</sub>)&middot;K<sub>M</sub> &nbsp; (Eq. 9.9, combined with the K<sub>M</sub> lookup from Section 1)</div>
-<p class="explain" style="font-size:12px">Defaults (a=0.04, b=0.8) are the book's own illustrative fit to real cyclic simple shear data at N<sub>L</sub>=15 (Fig. 9.14) — for an actual project these come from your own CSS testing, not these numbers. N<sub>L</sub>=15 &harr; M=7.5, N<sub>L</sub>=10 &harr; M=7.0, N<sub>L</sub>=6 &harr; M=6.0 (the book's guideline mapping used to select which CSS cycle-count to test at).</p>
-
-<div class="grid4">
-<div class="slider-block"><label>a (CRR at &psi;=0) <span class="readout" id="s3aOut">0.040</span></label><input id="s3a" type="range" min="0.02" max="0.15" step="0.002" value="0.04"></div>
-<div class="slider-block"><label>b (slope) <span class="readout" id="s3bOut">0.80</span></label><input id="s3b" type="range" min="0.2" max="1.5" step="0.02" value="0.80"></div>
-<div class="slider-block"><label>&psi;<sub>o</sub> <span class="readout" id="s3PsiOut">-0.12</span></label><input id="s3Psi" type="range" min="-0.25" max="0.05" step="0.001" value="-0.12"></div>
-<div class="slider-block"><label>Design magnitude, M <span class="readout" id="s3MwOut">7.5</span></label><input id="s3Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5"></div>
+<div>
+<div class="chart-host"><canvas id="kalphaChart" role="img" aria-label="The direction in which a static bias moves cyclic resistance, shown as opposite for dilative and contractive states."></canvas></div>
+<div class="legend"><span><i style="background:#268160"></i>dilative: bias helps</span><span><i style="background:#c64852"></i>contractive: bias hurts</span><span><i style="background:#8a97a0"></i>&psi; = &minus;0.05 boundary</span><span><i style="background:#123b4a"></i>your state and bias</span></div>
 </div>
-<div class="statgrid n3" id="s3Stats"></div>
+</div>
+<div class="callout" id="kaNote" aria-live="polite"></div>
+<div class="warning"><b>This figure is a direction, not a design value.</b> It shows the <i>sign</i> of the K<sub>&alpha;</sub> effect and how it flips across the dilative/contractive boundary, which is the book's actual point. It is not a calibrated K<sub>&alpha;</sub> curve, and it should not be used as one. The book's own recommendation for a real project is explicit: run project-specific NorSand simulations rather than reach for a factor, because principal stress rotation makes the trend genuinely soil- and path-dependent. That recommendation is the reason no K<sub>&alpha;</sub> calculator is offered here.</div>
 </div>
 
-<div class="card">
-<div class="warning"><b>About this tool.</b> Section 1's K<sub>M</sub> values are the five points tabulated in Fig. 7.32 (Seed &amp; Idriss 1982), linearly interpolated between them — the book doesn't give a closed-form K<sub>M</sub>(M) equation, only these tabulated points, so no functional form is invented. Section 2 uses Eq. 7.5 exactly as published; the 20 real case-history points plotted are Class A records transcribed from Table 7.3 (&psi;<sub>k</sub>, CSR<sub>7.5</sub>, and the observed liquefaction outcome), and every point's classification was checked against Eq. 7.5's predicted CRR before plotting. Section 3's combination of Eq. 9.9 with the Section 1 K<sub>M</sub> lookup is this tool's own synthesis of two separately-presented pieces of the book (design CRR-&psi; trend, and magnitude scaling) — the book doesn't state this combined formula explicitly, though both halves are exactly as published and the combination follows directly from Eq. 7.4's structure. K<sub>&sigma;</sub> and K<sub>&alpha;</sub> are deliberately not implemented as calculators: the book shows K<sub>&sigma;</sub> is redundant once working in &psi; (Section 2), and states outright that K<sub>&alpha;</sub> "cannot give simple trends" without project-specific NorSand modelling.</div>
+<div class="card" id="design-workflow">
+<h2>8. From laboratory data to a design curve</h2>
+<div class="explain">
+<p>Chapter 9's practical advice: for a project-specific soil, fit your own cyclic simple shear results &mdash; CSR against cycles to liquefaction, at several &psi; &mdash; to a simple linear trend rather than an automated regression, then apply the magnitude scaling from Section 3.</p>
+</div>
+<div class="eq">CRR = (a &minus; b&middot;&psi;<sub>o</sub>) &middot; K<sub>M</sub> &nbsp; (Eq. 9.9, combined with the K<sub>M</sub> lookup from Section 3)</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="s3a"><span>a &mdash; CRR at &psi;=0</span> <span class="readout" id="s3aOut">0.040</span></label><input id="s3a" type="range" min="0.01" max="0.12" step="0.002" value="0.04"></div>
+<div class="slider-block"><label for="s3b"><span>b &mdash; slope</span> <span class="readout" id="s3bOut">0.80</span></label><input id="s3b" type="range" min="0.1" max="2.0" step="0.02" value="0.8"></div>
+<div class="slider-block"><label for="s3Psi"><span>&psi;<sub>o</sub></span> <span class="readout" id="s3PsiOut">-0.120</span></label><input id="s3Psi" type="range" min="-0.25" max="0.08" step="0.001" value="-0.12"></div>
+<div class="slider-block"><label for="s3Mw"><span>Design magnitude, M</span> <span class="readout" id="s3MwOut">7.5</span></label><input id="s3Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5"></div>
+<div class="statgrid n2" id="s3Stats"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="designChart" role="img" aria-label="The fitted design cyclic resistance curve against state parameter, with the magnitude-scaled curve and the Eq 7.5 database boundary for comparison."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>your fit at M = 7.5</span><span><i style="background:#e38a22"></i>scaled to your design magnitude</span><span><i style="background:#687a82"></i>Eq. 7.5, the database boundary</span><span><i style="background:#c64852"></i>your design point</span></div>
+</div>
+</div>
+<div class="eq" id="s3Eq"></div>
+<div class="callout" id="s3Note" aria-live="polite"></div>
+<div class="warning"><b>Where the defaults come from, and where yours should.</b> a=0.04 and b=0.8 are the book's own illustrative fit to real cyclic simple shear data at N<sub>L</sub>=15 (Fig. 9.14). For an actual project these come from your own testing, not from these numbers. The book's guideline mapping for choosing the cycle count to test at: N<sub>L</sub>=15 for M=7.5, N<sub>L</sub>=10 for M=7.0, N<sub>L</sub>=6 for M=6.0.</div>
+
+<div class="quiz-checkpoint" id="quizCheckC">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on K&alpha; and turning laboratory data into a design curve.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotC">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotC">Hide questions</button></div>
+<div id="quizSlotC"></div>
+</div>
+</div>
+
+<div class="card" id="knowledge-check">
+<h2>9. Check learning</h2>
+<p class="explain">Three blocks, each placed after the section that taught it. <b>&ldquo;Check my understanding&rdquo; grades every block together</b>, so it is fine to submit even if you skipped some. You get a score per block, a button back to the section behind it, and a filter that shows only what you missed.</p>
+<div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 30 answered</div>
+<div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
+
+<div class="callout" style="margin-top:14px"><b>The end of the series, and what it adds up to.</b> Module 1 defined &psi; and showed what it governs. Module 2 estimated it from a cone and was honest about how well. Module 3 turned it into a residual strength and checked that against eleven real failures. This module turned it into a cyclic resistance and checked that against twenty more. One number, measured once, carried through four modules and two failure mechanisms &mdash; which is the argument the book has been making all along.</div>
+
+<h3>Quick-reference glossary</h3><div class="glossary-grid" id="glossaryGrid"></div>
+</div>
+
+<div class="card" id="about-tool">
+<div class="warning"><b>About this tool.</b> Section 3's K<sub>M</sub> values are the five points tabulated in Fig. 7.32 (Seed &amp; Idriss 1982), linearly interpolated &mdash; the book gives no closed-form K<sub>M</sub>(M), so none is invented. Section 5 uses Eq. 7.5 exactly as published; the twenty plotted records are Class A case histories from Table 7.3. <b>Eq. 7.5 classifies 19 of those 20 correctly</b>; the one it misses is a no-liquefaction record sitting about 4% above the line, and it is marked on the figure rather than quietly dropped. Section 2's pore-pressure build-up and Section 7's K<sub>&alpha;</sub> figure are schematics of mechanism, not calibrated models &mdash; both say so on the page. Section 6 computes K<sub>&sigma;</sub> from the Table 2.1 critical state lines; the shaded band is an indicative envelope of published empirical curves, not a digitisation of any one of them. Section 8 combines Eq. 9.9 with the Section 3 K<sub>M</sub> lookup; the book presents these separately and does not state the combined formula, though both halves are as published and Eq. 7.4's structure implies the combination. K<sub>&alpha;</sub> is deliberately not offered as a calculator, because the book states it cannot give simple trends without project-specific NorSand modelling.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
-
 
 <div id="commentsSection"></div>
 </div>
 
-
 <script>
 function el(id){ return document.getElementById(id); }
 function num(id){ return +el(id).value; }
+function prepCanvas(host, cssH, minW){
+  var dpr = window.devicePixelRatio || 1;
+  var box = host.parentElement;
+  var W = Math.max(minW||260, (box && box.clientWidth) || host.clientWidth || 520);
+  host.width = Math.round(W*dpr); host.height = Math.round(cssH*dpr);
+  host.style.width = W+'px'; host.style.height = cssH+'px';
+  var ctx = host.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,cssH);
+  return {ctx:ctx, W:W, H:cssH};
+}
+function niceTicks(min, max, target){
+  var range = max-min;
+  if(!(range>0)) return {values:[min], dp:0};
+  var raw = range/Math.max(1,target);
+  var mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  var norm = raw/mag, step;
+  if(norm<=1) step=1; else if(norm<=2) step=2; else if(norm<=2.5) step=2.5; else if(norm<=5) step=5; else step=10;
+  step *= mag;
+  var out=[];
+  for(var v=Math.ceil(min/step)*step; v<=max+step*1e-6; v+=step){
+    out.push(Math.abs(v)<step*1e-6 ? 0 : +v.toFixed(10));
+  }
+  var dp = Math.max(0, Math.min(3, -Math.floor(Math.log10(step))));
+  if(step >= 1 && Math.abs(step-Math.round(step))>1e-9) dp = 1;  // e.g. a 2.5 step
+  return {values: out.length?out:[min,max], dp:dp};
+}
+function clampLabelX(ctx, x, text, px, panelW){
+  var half = ctx.measureText(text).width/2 + 1;
+  return Math.min(Math.max(x, px+half), px+panelW-half);
+}
+function haloText(ctx, text, x, y, color){
+  ctx.save();
+  ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.lineWidth=3;
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle=color; ctx.fillText(text, x, y);
+  ctx.restore();
+}
+function invNorm(p){
+  var a=[-3.969683028665376e+01,2.209460984245205e+02,-2.759285104469687e+02,1.383577518672690e+02,-3.066479806614716e+01,2.506628277459239e+00];
+  var b=[-5.447609879822406e+01,1.615858368580409e+02,-1.556989798598866e+02,6.680131188771972e+01,-1.328068155288572e+01];
+  var c=[-7.784894002430293e-03,-3.223964580411365e-01,-2.400758277161838e+00,-2.549732539343734e+00,4.374664141464968e+00,2.938163982698783e+00];
+  var d=[7.784695709041462e-03,3.224671290700398e-01,2.445134137142996e+00,3.754408661907416e+00];
+  var plow=0.02425, phigh=1-plow, q,r;
+  if(p<plow){ q=Math.sqrt(-2*Math.log(p)); return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  if(p>phigh){ q=Math.sqrt(-2*Math.log(1-p)); return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1); }
+  q=p-0.5; r=q*q;
+  return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+}
+function normPdf(x,mu,sig){ return Math.exp(-0.5*Math.pow((x-mu)/sig,2))/(sig*Math.sqrt(2*Math.PI)); }
 
-// ---------------- Section 1: KM lookup ----------------
+// ============================ Module 4 ============================
+var PSI_DIL_BOUNDARY = -0.05;      // the same practical cutoff used in Modules 2 and 3
+
+// Fig. 7.32 (Seed & Idriss 1982). The book tabulates five points and gives no closed
+// form, so this interpolates between them rather than inventing a function.
 var KM_PTS = [[5.25,1.5],[6.0,1.32],[6.75,1.13],[7.5,1.0],[8.5,0.89]];
-function KM(mw){
-  if(mw<=KM_PTS[0][0]) return KM_PTS[0][1];
-  if(mw>=KM_PTS[KM_PTS.length-1][0]) return KM_PTS[KM_PTS.length-1][1];
+function KM(m){
+  if(m<=KM_PTS[0][0]) return KM_PTS[0][1];
+  if(m>=KM_PTS[KM_PTS.length-1][0]) return KM_PTS[KM_PTS.length-1][1];
   for(var i=0;i<KM_PTS.length-1;i++){
-    var p0=KM_PTS[i], p1=KM_PTS[i+1];
-    if(mw>=p0[0] && mw<=p1[0]){
-      var f=(mw-p0[0])/(p1[0]-p0[0]);
-      return p0[1]+f*(p1[1]-p0[1]);
-    }
+    var a=KM_PTS[i], b=KM_PTS[i+1];
+    if(m>=a[0] && m<=b[0]) return a[1] + (b[1]-a[1])*(m-a[0])/(b[0]-a[0]);
   }
+  return 1;
 }
-function drawAxes(ctx,ml,mt,pw,ph,xmin,xmax,xstep,ymin,ymax,ystep,xlab,ylab,xfix,yfix){
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  for(var xv=xmin;xv<=xmax+1e-9;xv+=xstep){
-    var x=ml+pw*(xv-xmin)/(xmax-xmin);
-    ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke();
-    ctx.fillText(xv.toFixed(xfix),x-12,mt+ph+13);
-  }
-  ctx.textAlign="right";
-  for(var yv=ymin;yv<=ymax+1e-9;yv+=ystep){
-    var y=mt+ph*(1-(yv-ymin)/(ymax-ymin));
-    ctx.beginPath();ctx.moveTo(ml,y);ctx.lineTo(ml+pw,y);ctx.stroke();
-    ctx.fillText(yv.toFixed(yfix),ml-8,y+3);
-  }
-  ctx.textAlign="left";
-  ctx.fillText(xlab, ml+pw/2-40, mt+ph+28);
-  if(ylab){ ctx.save(); ctx.translate(14,mt+ph/2+22); ctx.rotate(-Math.PI/2); ctx.fillText(ylab,0,0); ctx.restore(); }
-}
+// Eq. 7.5 -- the database boundary, in state rather than penetration resistance
+function crrEq75(psi){ return 0.06*Math.exp(-9*psi); }
+// Eq. 9.9 -- a project-specific fit to your own cyclic simple shear data
+function crrEq99(a,b,psi){ return a - b*psi; }
 
-function updateSection1(){
-  var mw=num("s1Mw");
-  el("s1MwOut").textContent=mw.toFixed(2);
-  var km=KM(mw);
-  el("s1Stats").innerHTML = `
-    <div class="stat hi"><small>K<sub>M</sub></small><strong>${km.toFixed(3)}</strong></div>
-    <div class="stat"><small>CRR = CRR<sub>7.5</sub>&times;K<sub>M</sub></small><strong>&times;${km.toFixed(2)}</strong></div>`;
-
-  var W=el("kmChart").clientWidth||520,H=270;
-  var cv=el("kmChart"); cv.width=W;cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=56,mr=14,mt=14,mb=34; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=5,xmax=8.75,ymin=0.7,ymax=1.6;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
-  drawAxes(ctx,ml,mt,pw,ph,5.25,8.5,0.5,0.8,1.6,0.2,"magnitude, M","KM",1,1);
-  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2.2; ctx.beginPath();
-  for(var i=0;i<KM_PTS.length;i++){ var x=X(KM_PTS[i][0]),y=Y(KM_PTS[i][1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-  ctx.stroke();
-  ctx.fillStyle="#1479b8";
-  KM_PTS.forEach(function(p){ ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),4,0,7); ctx.fill(); });
-  ctx.fillStyle="#c64852"; ctx.beginPath(); ctx.arc(X(mw),Y(km),6,0,7); ctx.fill();
-}
-el("s1Mw").addEventListener("input",updateSection1);
-updateSection1();
-window.addEventListener("resize",function(){updateSection1();updateSection2();updateSection3();});
-
-// ---------------- Section 2 ----------------
+// Moss (2003) Class A records, from Table 7.3
 var CASE_PTS = [
  {psi:-0.140,csr:0.16,liq:false},{psi:-0.155,csr:0.15,liq:false},{psi:-0.156,csr:0.17,liq:false},
  {psi:-0.142,csr:0.16,liq:false},{psi:-0.164,csr:0.17,liq:false},{psi:-0.118,csr:0.14,liq:false},
@@ -221,48 +563,21 @@ var CASE_PTS = [
  {psi:-0.006,csr:0.18,liq:true},{psi:-0.006,csr:0.18,liq:true},{psi:-0.128,csr:0.19,liq:true},
  {psi:-0.098,csr:0.16,liq:true},{psi:-0.094,csr:0.16,liq:true},{psi:-0.082,csr:0.25,liq:true}
 ];
-function crrEq75(psi){ return 0.06*Math.exp(-9*psi); }
-
-function updateSection2(){
-  var psi=num("s2Psi"), csr=num("s2Csr");
-  el("s2PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
-  el("s2CsrOut").textContent=csr.toFixed(3);
-  var crr=crrEq75(psi);
-  var willLiq = csr>crr;
-  var badge = willLiq ? '<span class="badge warn">CSR &gt; CRR — predicted liquefaction</span>' : '<span class="badge ok">CSR &lt; CRR — predicted no liquefaction</span>';
-  el("s2Stats").innerHTML = `
-    <div class="stat hi"><small>CRR<sub>7.5</sub> (Eq. 7.5)</small><strong>${crr.toFixed(3)}</strong></div>
-    <div class="stat">${badge}</div>`;
-
-  var W=el("crrPsiChart").clientWidth||520,H=270;
-  var cv=el("crrPsiChart"); cv.width=W;cv.height=H;
-  var ctx=cv.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=56,mr=14,mt=14,mb=34; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=-0.25,xmax=0.10,ymin=0,ymax=0.45;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  function Y(v){ return mt+ph*(1-(v-ymin)/(ymax-ymin)); }
-  drawAxes(ctx,ml,mt,pw,ph,-0.25,0.10,0.05,0,0.45,0.1,"state parameter, ψk","CRR / CSR",2,1);
-
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2.4; ctx.beginPath();
-  for(var xv=xmin;xv<=xmax;xv+=0.003){
-    var c=crrEq75(xv); var x=X(xv),y=Y(Math.min(ymax,c));
-    if(xv===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.stroke();
-
-  CASE_PTS.forEach(function(p){
-    ctx.fillStyle = p.liq ? "#c64852" : "#2d8b65";
-    ctx.beginPath(); ctx.arc(X(p.psi),Y(p.csr),4,0,7); ctx.fill();
+// A record is classified by whether the demand exceeds the Eq. 7.5 resistance.
+function caseClassification(){
+  var tp=0,tn=0,fp=0,fn=0, wrong=[];
+  CASE_PTS.forEach(function(p,i){
+    var pred = p.csr > crrEq75(p.psi);
+    if(pred && p.liq) tp++;
+    else if(!pred && !p.liq) tn++;
+    else if(pred && !p.liq){ fp++; wrong.push({i:i,p:p,kind:'predicted liquefaction, none observed'}); }
+    else { fn++; wrong.push({i:i,p:p,kind:'predicted none, liquefaction observed'}); }
   });
-
-  ctx.fillStyle="#123b4a"; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,csr)),6.5,0,7); ctx.fill();
-  ctx.strokeStyle="#fff"; ctx.lineWidth=1.5; ctx.stroke();
+  return {tp:tp,tn:tn,fp:fp,fn:fn,correct:tp+tn,total:CASE_PTS.length,wrong:wrong};
 }
-el("s2Psi").addEventListener("input",updateSection2);
-el("s2Csr").addEventListener("input",updateSection2);
-updateSection2();
+function isMisclassified(p){ return (p.csr > crrEq75(p.psi)) !== p.liq; }
 
-// ---------------- Section 2b: Kσ emerges from ψ at two depths (Table 2.1 database, shared with Module 1) ----------------
+// Table 2.1 sands, the same database Module 1 used
 var KS_SANDS = [
  {name:"Brasted sand",emax:0.792,emin:0.475,Gamma:0.912,lambda10:0.050},
  {name:"Ottawa sand",emax:0.79,emin:0.49,Gamma:0.754,lambda10:0.028},
@@ -273,49 +588,935 @@ var KS_SANDS = [
  {name:"Chek Lap Kok sand",emax:0.682,emin:0.411,Gamma:0.905,lambda10:0.130},
  {name:"Northwest Brook Pit sand",emax:0.682,emin:0.392,Gamma:0.665,lambda10:0.036}
 ];
-var ksSandSel=el("ksSand");
-ksSandSel.innerHTML = KS_SANDS.map((s,i)=>`<option value="${i}"${i===4?" selected":""}>${s.name}</option>`).join("");
-function ksEcAt(sand,p){ return sand.Gamma - sand.lambda10*Math.log10(p); }
+var KS_REF_P = 100;                    // the reference stress the classical charts use
+function ecAt(sand,p){ return sand.Gamma - sand.lambda10*Math.log10(p); }
+function voidAtDr(sand,dr){ return sand.emax - (dr/100)*(sand.emax-sand.emin); }
+// psi = e - e_c(p'): one density, two depths, two different states
+function psiAt(sand,dr,p){ return voidAtDr(sand,dr) - ecAt(sand,p); }
+function kSigmaFromPsi(sand,dr,p){ return crrEq75(psiAt(sand,dr,p)) / crrEq75(psiAt(sand,dr,KS_REF_P)); }
+
+// ---------------------------------------------------------------- Section 2
+function updateCyclic(){
+  var psi=num('cycPsi'), csr=num('cycCsr'), N=num('cycN');
+  el('cycPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  el('cycCsrOut').textContent=csr.toFixed(3);
+  el('cycNOut').textContent=N.toFixed(0);
+  var crr=crrEq75(psi);
+  // cycles to initial liquefaction: scales with how far demand sits below resistance
+  var demand=csr/crr;
+  var NL = demand<=0 ? Infinity : Math.max(1, 15*Math.pow(demand, -3.0));
+  var ru = Math.min(1, Math.pow(Math.min(1, N/NL), 0.35));
+  var dilative = psi < PSI_DIL_BOUNDARY;
+  var reached = N>=NL;
+  var mode = dilative ? 'cyclic mobility' : 'flow liquefaction';
+  el('cycStats').innerHTML =
+    '<div class="stat"><small>CRR<sub>7.5</sub> at this &psi;</small><strong>'+crr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>cycles to r<sub>u</sub>=1</small><strong>'+(isFinite(NL)?NL.toFixed(0):'&mdash;')+'</strong></div>'+
+    '<div class="stat hi"><small>r<sub>u</sub> after '+N.toFixed(0)+' cycles</small><strong>'+ru.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>if it liquefies, it is</small><strong style="font-size:12px">'+mode+'</strong>'+
+      (dilative?'<span class="badge dilate">survivable</span>':'<span class="badge contract">runaway</span>')+'</div>';
+  el('cycNote').innerHTML =
+    '<b>'+(reached ? 'Initial liquefaction is reached at about '+NL.toFixed(0)+' cycles' : 'r<sub>u</sub> reaches '+ru.toFixed(2)+' after '+N.toFixed(0)+' cycles, short of initial liquefaction')+'.</b> '+
+    (dilative
+      ? 'At &psi; = '+psi.toFixed(3)+' the soil is dilative, so even at r<sub>u</sub>=1 each cycle recovers stiffness as it dilates against the pore pressure it just built. The result is <b>cyclic mobility</b>: strains accumulate, possibly to damaging levels, but they are self-limiting. The ground deforms; it does not run.'
+      : 'At &psi; = '+psi.toFixed(3)+' the soil is contractive, so there is a residual strength below the driving stress to fall to. Reaching r<sub>u</sub>=1 here is <b>flow liquefaction</b> &mdash; Module 3&rsquo;s failure mode, arriving by a cyclic route. The distinction is not the trigger; it is the state.')+
+    ' Note which slider changes the verdict: the number of cycles decides <i>whether</i> liquefaction is triggered, but &psi; alone decides <i>what kind</i>.';
+  drawCyclicChart(ru, NL, N);
+}
+function drawCyclicChart(ru, NL, N){
+  var host=el('cyclicChart'); if(!host) return;
+  var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=50, mr=14, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var nMax=40;
+  function X(n){ return ml+pw*Math.max(0,Math.min(1,n/nMax)); }
+  function Y(r){ return mt+ph*(1-Math.max(0,Math.min(1,r/1.1))); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  [0,10,20,30,40].forEach(function(n){ var x=X(n); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  [0,0.25,0.5,0.75,1.0].forEach(function(r){ var y=Y(r); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#c64852'; ctx.lineWidth=1.6; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(ml,Y(1)); ctx.lineTo(ml+pw,Y(1)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  haloText(ctx,'ru = 1  initial liquefaction', ml+5, Y(1)-4, '#a8323d');
+  ctx.strokeStyle='#7653a6'; ctx.lineWidth=2.6; ctx.beginPath();
+  for(var i=0;i<=200;i++){
+    var n=nMax*i/200;
+    var r=isFinite(NL)? Math.min(1, Math.pow(Math.min(1,n/NL),0.35)) : 0;
+    if(i===0) ctx.moveTo(X(n),Y(r)); else ctx.lineTo(X(n),Y(r));
+  }
+  ctx.stroke();
+  ctx.strokeStyle='#268160'; ctx.lineWidth=2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(X(N),mt); ctx.lineTo(X(N),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#7653a6'; ctx.beginPath(); ctx.arc(X(N),Y(ru),6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [0,10,20,30,40].forEach(function(n){ ctx.fillText(String(n), clampLabelX(ctx,X(n),String(n),ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('number of uniform cycles, N', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  [0,0.25,0.5,0.75,1.0].forEach(function(r){ ctx.fillText(r.toFixed(2), ml-7, Y(r)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('excess pore pressure ratio, ru',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- Section 3
+function updateSection1(){
+  var m=num('s1Mw'), km=KM(m);
+  el('s1MwOut').textContent=m.toFixed(2);
+  el('s1Stats').innerHTML =
+    '<div class="stat hi"><small>K<sub>M</sub> at M = '+m.toFixed(2)+'</small><strong>'+km.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>relative to M = 7.5</small><strong>'+(km>1?'+':'')+((km-1)*100).toFixed(0)+'%</strong>'+
+      (km>1?'<span class="badge dilate">more resistance</span>':(km<1?'<span class="badge contract">less resistance</span>':'<span class="badge">reference</span>'))+'</div>';
+  drawKmChart(m,km);
+}
+function drawKmChart(m,km){
+  var host=el('kmChart'); if(!host) return;
+  var cvp=prepCanvas(host, 250, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=50, mr=16, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=5.25, xmax=8.5, ymin=0.8, ymax=1.6;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  [5.5,6,6.5,7,7.5,8,8.5].forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(ml,Y(1)); ctx.lineTo(ml+pw,Y(1)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
+  for(var i=0;i<=160;i++){ var v=xmin+(xmax-xmin)*i/160, x=X(v), y=Y(KM(v));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  KM_PTS.forEach(function(p){
+    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),4.5,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke();
+  });
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(m),Y(km),6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [5.5,6,6.5,7,7.5,8,8.5].forEach(function(v){ var lab=v.toFixed(1); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('earthquake moment magnitude, M', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('magnitude scaling factor, KM',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- Section 5
+function updateSection2(){
+  var psi=num('s2Psi'), csr=num('s2Csr'), crr=crrEq75(psi);
+  el('s2PsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  el('s2CsrOut').textContent=csr.toFixed(3);
+  var willLiq=csr>crr, fs=crr/csr;
+  el('s2Stats').innerHTML =
+    '<div class="stat hi"><small>CRR<sub>7.5</sub> (Eq. 7.5)</small><strong>'+crr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>CRR / CSR</small><strong>'+fs.toFixed(2)+'</strong>'+
+      (willLiq?'<span class="badge contract">liquefaction predicted</span>':'<span class="badge dilate">no liquefaction</span>')+'</div>';
+  var cl=caseClassification();
+  el('classifyStats').innerHTML =
+    '<div class="stat"><small>Class A records</small><strong>'+cl.total+'</strong></div>'+
+    '<div class="stat hi"><small>correctly classified</small><strong>'+cl.correct+' of '+cl.total+'</strong></div>'+
+    '<div class="stat"><small>liquefaction called correctly</small><strong>'+cl.tp+' of '+(cl.tp+cl.fn)+'</strong></div>'+
+    '<div class="stat"><small>no-liquefaction called correctly</small><strong>'+cl.tn+' of '+(cl.tn+cl.fp)+'</strong></div>';
+  var w=cl.wrong[0];
+  el('classifyNote').innerHTML =
+    '<b>How well does one exponential separate twenty real earthquakes?</b> Eq. 7.5 gets <b>'+cl.correct+' of '+cl.total+'</b> right, with no correction factors and nothing fitted here &mdash; the equation is used exactly as published. '+
+    (cl.wrong.length===0
+      ? 'Every record falls on the correct side.'
+      : 'The '+(cl.wrong.length===1?'one miss is':cl.wrong.length+' misses are')+' marked in orange: '+
+        cl.wrong.map(function(x){ return '&psi;='+x.p.psi.toFixed(3)+', CSR='+x.p.csr.toFixed(2)+' ('+x.kind+', CRR='+crrEq75(x.p.psi).toFixed(3)+')'; }).join('; ')+
+        '. That record sits about '+Math.abs(100*(w.p.csr/crrEq75(w.p.psi)-1)).toFixed(0)+'% off the line &mdash; well inside the uncertainty in &psi; that Module 2 spent a whole section quantifying.')+
+    ' Compare that against what the classical method needs to achieve the same thing: a penetration-resistance chart plus K<sub>&sigma;</sub> plus K<sub>&alpha;</sub>.';
+  drawCrrPsiChart(psi,csr);
+}
+function drawCrrPsiChart(psi,csr){
+  var host=el('crrPsiChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.25, xmax=0.10, ymin=0, ymax=0.45;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  // above the curve is where liquefaction is predicted
+  ctx.fillStyle='#fdf1ef'; ctx.beginPath(); ctx.moveTo(ml,mt);
+  for(var v=xmin;v<=xmax+1e-9;v+=0.002) ctx.lineTo(X(v), Y(Math.min(ymax,crrEq75(v))));
+  ctx.lineTo(ml+pw,mt); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var g=xmin;g<=xmax+1e-9;g+=0.05){ var gx=X(g); ctx.beginPath(); ctx.moveTo(gx,mt); ctx.lineTo(gx,mt+ph); ctx.stroke(); }
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2.6; ctx.beginPath();
+  for(var v2=xmin;v2<=xmax+1e-9;v2+=0.002){ var c=crrEq75(v2), x=X(v2), y=Y(Math.min(ymax,c));
+    if(v2===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  CASE_PTS.forEach(function(p){
+    var bad=isMisclassified(p);
+    ctx.fillStyle = bad ? '#e38a22' : (p.liq ? '#c64852' : '#268160');
+    ctx.beginPath(); ctx.arc(X(p.psi),Y(p.csr), bad?6:4.5, 0, 7); ctx.fill();
+    ctx.strokeStyle= bad ? '#8a5410' : '#fff'; ctx.lineWidth=bad?2:1.2; ctx.stroke();
+  });
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#1479b8'; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,csr)),7,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψk', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('CRR and CSR',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- Section 6
 function updateKs(){
-  var sand=KS_SANDS[+ksSandSel.value];
-  var dr=+el("ksDr").value;
-  el("ksDrOut").textContent=dr.toFixed(0);
-  var e = sand.emax - (dr/100)*(sand.emax-sand.emin);
-  var pShallow=100, pDeep=400;
-  var psiShallow = e - ksEcAt(sand,pShallow);
-  var psiDeep = e - ksEcAt(sand,pDeep);
-  var crrShallow = crrEq75(psiShallow);
-  var crrDeep = crrEq75(psiDeep);
-  var impliedKsigma = crrDeep/crrShallow;
-  el("ksStats").innerHTML = `
-    <div class="stat"><small>&psi; at &sigma;&prime;<sub>v</sub>=${pShallow} / ${pDeep} kPa</small><strong>${psiShallow>=0?"+":""}${psiShallow.toFixed(3)} / ${psiDeep>=0?"+":""}${psiDeep.toFixed(3)}</strong></div>
-    <div class="stat"><small>CRR<sub>7.5</sub> at each (Eq. 7.5)</small><strong>${crrShallow.toFixed(3)} / ${crrDeep.toFixed(3)}</strong></div>
-    <div class="stat hi"><small>implied K<sub>&sigma;</sub> = CRR<sub>deep</sub>/CRR<sub>shallow</sub></small><strong>${impliedKsigma.toFixed(2)}</strong></div>`;
-  el("ksNote").innerHTML = "Same D<sub>R</sub>=" + dr.toFixed(0) + "% at both depths, yet the strength ratio at " + pDeep + " kPa comes out to " + impliedKsigma.toFixed(2) + "&times; the strength at " + pShallow + " kPa &mdash; a K<sub>&sigma;</sub>-like effect (typically &lt;1, decreasing with depth) that fell straight out of using &psi; directly. No separate K<sub>&sigma;</sub> curve was consulted.";
+  var sand=KS_SANDS[+el('ksSand').value], dr=num('ksDr'), p2=num('ksP2');
+  el('ksDrOut').textContent=dr.toFixed(0);
+  el('ksP2Out').textContent=p2.toFixed(0);
+  var e=voidAtDr(sand,dr);
+  var psi1=psiAt(sand,dr,KS_REF_P), psi2=psiAt(sand,dr,p2);
+  var crr1=crrEq75(psi1), crr2=crrEq75(psi2), ks=crr2/crr1;
+  el('ksStats').innerHTML =
+    '<div class="stat"><small>&psi; at 100 kPa</small><strong>'+(psi1>=0?'+':'')+psi1.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&psi; at '+p2.toFixed(0)+' kPa</small><strong>'+(psi2>=0?'+':'')+psi2.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>K<sub>&sigma;</sub> = CRR<sub>deep</sub>/CRR<sub>ref</sub></small><strong>'+ks.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>void ratio (same at both)</small><strong>'+e.toFixed(3)+'</strong></div>';
+  el('ksEq').innerHTML =
+    '<span class="step">1&middot; e at D<sub>R</sub>='+dr.toFixed(0)+'% = e<sub>max</sub> &minus; D<sub>R</sub>(e<sub>max</sub>&minus;e<sub>min</sub>) = <b>'+e.toFixed(3)+'</b> &mdash; the same at both depths</span>'+
+    '<span class="step">2&middot; e<sub>c</sub> at 100 kPa = &Gamma; &minus; &lambda;<sub>10</sub>log(100) = <b>'+ecAt(sand,KS_REF_P).toFixed(3)+'</b>, so &psi; = <b>'+psi1.toFixed(3)+'</b></span>'+
+    '<span class="step">3&middot; e<sub>c</sub> at '+p2.toFixed(0)+' kPa = <b>'+ecAt(sand,p2).toFixed(3)+'</b>, so &psi; = <b>'+psi2.toFixed(3)+'</b> &mdash; denser relative to critical</span>'+
+    '<span class="step">4&middot; K<sub>&sigma;</sub> = exp(&minus;9&middot;'+psi2.toFixed(3)+') / exp(&minus;9&middot;'+psi1.toFixed(3)+') = <b style="font-size:14px">'+ks.toFixed(3)+'</b></span>'+
+    '<span class="step-note">No empirical curve was consulted. K<sub>&sigma;</sub> fell out of the fact that the same soil has two different states at two depths.</span>';
+  el('ksNote').innerHTML =
+    '<b>The same soil, the same density, two states.</b> At 100&nbsp;kPa this element has &psi; = '+psi1.toFixed(3)+'; at '+p2.toFixed(0)+'&nbsp;kPa it has &psi; = '+psi2.toFixed(3)+
+    ' &mdash; not because anything about the soil changed, but because the critical state line falls with stress, so the deeper element sits '+
+    (Math.abs(psi2)<Math.abs(psi1)?'closer to':'further from')+' critical. Feed both into Eq. 7.5 and the ratio is <b>K<sub>&sigma;</sub> = '+ks.toFixed(3)+'</b>. '+
+    'The classical method has to measure that ratio and tabulate it as a correction; a state-based analysis never creates the discrepancy in the first place. '+
+    'Change the sand and watch K<sub>&sigma;</sub> move &mdash; it depends on &lambda;<sub>10</sub>, which is exactly why the published empirical curves disagree with each other.';
+  drawKsChart(sand,dr,p2,ks);
 }
-["ksDr"].forEach(id=>el(id).addEventListener("input",updateKs));
-ksSandSel.addEventListener("change",updateKs);
-updateKs();
+function drawKsChart(sand,dr,p2,ksNow){
+  var host=el('ksChart'); if(!host) return;
+  var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=52, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var pMin=100, pMax=1000, ymin=0.4, ymax=1.25;
+  function X(p){ return ml+pw*(Math.log10(Math.max(pMin,Math.min(pMax,p)))-2)/(Math.log10(pMax)-2); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  // an indicative envelope of the published empirical curves
+  ctx.fillStyle='#c9d8e2'; ctx.globalAlpha=0.65; ctx.beginPath();
+  for(var p=pMin;p<=pMax;p+=10) ctx.lineTo(X(p), Y(Math.pow(p/100,-0.20)));
+  for(var p2b=pMax;p2b>=pMin;p2b-=10) ctx.lineTo(X(p2b), Y(Math.pow(p2b/100,-0.40)));
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  [100,200,400,700,1000].forEach(function(p){ var x=X(p); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(ml,Y(1)); ctx.lineTo(ml+pw,Y(1)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
+  for(var i=0;i<=160;i++){
+    var pp=pMin*Math.pow(pMax/pMin, i/160);
+    var v=kSigmaFromPsi(sand,dr,pp);
+    if(i===0) ctx.moveTo(X(pp),Y(v)); else ctx.lineTo(X(pp),Y(v));
+  }
+  ctx.stroke();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(p2),Y(ksNow),6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [100,200,400,700,1000].forEach(function(p){ ctx.fillText(String(p), clampLabelX(ctx,X(p),String(p),ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText("mean effective stress p′, kPa (log)", ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('Kσ',0,0); ctx.restore();
+}
 
-// ---------------- Section 3 ----------------
+// ---------------------------------------------------------------- Section 7
+// The SIGN of the K-alpha effect flips at the dilative/contractive boundary. This is a
+// direction, not a calibrated factor -- the book declines to give one, and so does this.
+function kAlphaDirection(psi, alpha){
+  var dil = (PSI_DIL_BOUNDARY - psi);      // positive when dilative
+  return 1 + 2.2*dil*alpha;
+}
+function updateKAlpha(){
+  var psi=num('kaPsi'), alpha=num('kaAlpha');
+  el('kaPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  el('kaAlphaOut').textContent=alpha.toFixed(2);
+  var k=kAlphaDirection(psi,alpha), dil=psi<PSI_DIL_BOUNDARY;
+  el('kaStats').innerHTML =
+    '<div class="stat"><small>state</small><strong style="font-size:12.5px">'+(dil?'dilative':'contractive')+'</strong></div>'+
+    '<div class="stat hi"><small>direction of the K<sub>&alpha;</sub> effect</small><strong>'+(k>1?'increases':'decreases')+' resistance</strong></div>';
+  el('kaNote').innerHTML =
+    '<b>Which way does a static bias push?</b> At &psi; = '+psi.toFixed(3)+' the soil is '+(dil?'dilative':'contractive')+
+    ', so adding a static shear bias of &alpha; = '+alpha.toFixed(2)+' <b>'+(k>1?'raises':'lowers')+'</b> its cyclic resistance. '+
+    (dil
+      ? 'A dilative soil is already partway along the stress path in the direction the earthquake will push it, and it strengthens as it dilates, so the bias helps.'
+      : 'A contractive soil has somewhere to fall to, and the bias means every cycle drives it further in that direction, so the bias hurts.')+
+    ' Drag &psi; across &minus;0.05 and the sign reverses. That is why no single K<sub>&alpha;</sub> curve can serve, and why the book sends you to project-specific NorSand modelling instead of a table.';
+  drawKAlphaChart(psi,alpha);
+}
+function drawKAlphaChart(psiNow,alphaNow){
+  var host=el('kalphaChart'); if(!host) return;
+  var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=52, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.20, xmax=0.08, ymin=0.6, ymax=1.5;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#eef7f2'; ctx.fillRect(ml,mt,X(PSI_DIL_BOUNDARY)-ml,ph);
+  ctx.fillStyle='#fdf1ef'; ctx.fillRect(X(PSI_DIL_BOUNDARY),mt,ml+pw-X(PSI_DIL_BOUNDARY),ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.6; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(ml,Y(1)); ctx.lineTo(ml+pw,Y(1)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(X(PSI_DIL_BOUNDARY),mt); ctx.lineTo(X(PSI_DIL_BOUNDARY),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+  haloText(ctx,'ψ = −0.05', X(PSI_DIL_BOUNDARY)+3, mt+3, '#6b7880');
+  // a family of curves, one per bias level
+  [0.05,0.15,0.25,0.35].forEach(function(a,i){
+    ctx.strokeStyle = i===3 ? '#123b4a' : '#9aa9ae';
+    ctx.lineWidth = 1.4; ctx.beginPath();
+    for(var j=0;j<=120;j++){ var v=xmin+(xmax-xmin)*j/120, y=Y(kAlphaDirection(v,a));
+      if(j===0) ctx.moveTo(X(v),y); else ctx.lineTo(X(v),y); }
+    ctx.stroke();
+  });
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.8; ctx.beginPath();
+  for(var j2=0;j2<=120;j2++){ var v2=xmin+(xmax-xmin)*j2/120, y2=Y(kAlphaDirection(v2,alphaNow));
+    if(j2===0) ctx.moveTo(X(v2),y2); else ctx.lineTo(X(v2),y2); }
+  ctx.stroke();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  var kn=kAlphaDirection(psiNow,alphaNow);
+  ctx.fillStyle='#123b4a'; ctx.beginPath(); ctx.arc(X(psiNow),Y(kn),6.5,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('direction of the Kα effect',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- Section 8
 function updateSection3(){
-  var a=num("s3a"), b=num("s3b"), psi=num("s3Psi"), mw=num("s3Mw");
-  el("s3aOut").textContent=a.toFixed(3);
-  el("s3bOut").textContent=b.toFixed(2);
-  el("s3PsiOut").textContent=(psi>=0?"+":"")+psi.toFixed(3);
-  el("s3MwOut").textContent=mw.toFixed(2);
-
-  var crr15 = a - b*psi;
-  var km = KM(mw);
-  var crrDesign = crr15*km;
-
-  el("s3Stats").innerHTML = `
-    <div class="stat"><small>CRR (N<sub>L</sub>=15, M=7.5)</small><strong>${crr15.toFixed(3)}</strong></div>
-    <div class="stat"><small>K<sub>M</sub> at M=${mw.toFixed(2)}</small><strong>${km.toFixed(3)}</strong></div>
-    <div class="stat hi"><small>design CRR</small><strong>${crrDesign.toFixed(3)}</strong></div>`;
+  var a=num('s3a'), b=num('s3b'), psi=num('s3Psi'), m=num('s3Mw');
+  el('s3aOut').textContent=a.toFixed(3);
+  el('s3bOut').textContent=b.toFixed(2);
+  el('s3PsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+  el('s3MwOut').textContent=m.toFixed(2);
+  var base=crrEq99(a,b,psi), km=KM(m), crr=base*km, db=crrEq75(psi);
+  el('s3Stats').innerHTML =
+    '<div class="stat"><small>CRR at M = 7.5</small><strong>'+base.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>K<sub>M</sub></small><strong>'+km.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>design CRR</small><strong>'+crr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>vs. Eq. 7.5 database</small><strong>'+(db>0?(crr/db).toFixed(2):'&mdash;')+'&times;</strong>'+
+      (crr<db?'<span class="badge dilate">below the database line</span>':'<span class="badge caution">above the database line</span>')+'</div>';
+  el('s3Eq').innerHTML =
+    '<span class="step">1&middot; CRR at M=7.5 = a &minus; b&middot;&psi;<sub>o</sub> = '+a.toFixed(3)+' &minus; '+b.toFixed(2)+'&times;('+psi.toFixed(3)+') = <b>'+base.toFixed(3)+'</b></span>'+
+    '<span class="step">2&middot; K<sub>M</sub> at M='+m.toFixed(2)+' = <b>'+km.toFixed(3)+'</b> (Fig. 7.32, interpolated)</span>'+
+    '<span class="step">3&middot; design CRR = '+base.toFixed(3)+' &times; '+km.toFixed(3)+' = <b style="font-size:14px">'+crr.toFixed(3)+'</b></span>'+
+    '<span class="step-note">No K<sub>&sigma;</sub> appears, because &psi;<sub>o</sub> already carries the stress level. No K<sub>&alpha;</sub> appears, because the book will not give one.</span>';
+  el('s3Note').innerHTML =
+    '<b>Your fit against the database.</b> At &psi;<sub>o</sub> = '+psi.toFixed(3)+' your project curve gives a design CRR of <b>'+crr.toFixed(3)+
+    '</b>, against <b>'+db.toFixed(3)+'</b> from Eq. 7.5&rsquo;s twenty-record boundary at M=7.5. '+
+    (crr<db
+      ? 'Your fit sits below the database line, which is the safe side &mdash; a project-specific curve should generally be more conservative than a boundary drawn through case histories that mostly liquefied.'
+      : 'Your fit sits <i>above</i> the database line. That is worth defending explicitly: it says this soil resists more cyclic loading than the case-history record suggests for its state, which needs testing to back it up.')+
+    ' Drag the magnitude and watch both curves separate &mdash; the database line is fixed at M=7.5 by construction, so only yours moves.';
+  drawDesignChart(a,b,psi,m,km);
 }
-["s3a","s3b","s3Psi","s3Mw"].forEach(id=>el(id).addEventListener("input",updateSection3));
-updateSection3();
+function drawDesignChart(a,b,psi,m,km){
+  var host=el('designChart'); if(!host) return;
+  var cvp=prepCanvas(host, 300, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.25, xmax=0.08, ymin=0, ymax=0.45;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var g=xmin;g<=xmax+1e-9;g+=0.05){ var gx=X(g); ctx.beginPath(); ctx.moveTo(gx,mt); ctx.lineTo(gx,mt+ph); ctx.stroke(); }
+  var yt=niceTicks(ymin,ymax,4);
+  yt.values.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  function curve(fn,color,width,dash){
+    ctx.strokeStyle=color; ctx.lineWidth=width; if(dash) ctx.setLineDash(dash);
+    ctx.beginPath();
+    for(var v=xmin;v<=xmax+1e-9;v+=0.002){ var y=Y(Math.max(0,Math.min(ymax,fn(v))));
+      if(v===xmin) ctx.moveTo(X(v),y); else ctx.lineTo(X(v),y); }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  curve(function(v){ return crrEq75(v); }, '#687a82', 1.8, [5,3]);
+  curve(function(v){ return crrEq99(a,b,v); }, '#1479b8', 2.6, null);
+  if(Math.abs(km-1)>1e-9) curve(function(v){ return crrEq99(a,b,v)*km; }, '#e38a22', 2.4, null);
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  var cur=crrEq99(a,b,psi)*km;
+  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,cur)),6.5,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψo', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('cyclic resistance ratio, CRR',0,0); ctx.restore();
+}
+
+// ---------------------------------------------------------------- notation + glossary
+var NOTATION=[
+ {sym:'CSR', def:'cyclic stress ratio, &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub> &mdash; the earthquake&rsquo;s demand on the soil', goto:'classical'},
+ {sym:'CRR', def:'cyclic resistance ratio &mdash; the CSR at which liquefaction is triggered', goto:'classical'},
+ {sym:'r<sub>u</sub>', def:'excess pore pressure ratio; r<sub>u</sub>=1 is initial liquefaction', goto:'cyclic-vs-static'},
+ {sym:'N<sub>L</sub>', def:'number of uniform cycles to cause liquefaction in a laboratory test', goto:'cyclic-vs-static'},
+ {sym:'M', def:'earthquake moment magnitude', goto:'classical'},
+ {sym:'K<sub>M</sub>', def:'magnitude scaling factor, adjusting CRR<sub>7.5</sub> to other magnitudes', goto:'classical'},
+ {sym:'&psi;<sub>k</sub>', def:'characteristic state parameter, carried from Module 2', goto:'psi-view'},
+ {sym:'K<sub>&sigma;</sub>', def:'stress-level correction &mdash; redundant once you work in &psi;', goto:'ksigma'},
+ {sym:'&Gamma;, &lambda;<sub>10</sub>', def:'critical state line intercept and slope, from Table 2.1', goto:'ksigma'},
+ {sym:'D<sub>R</sub>', def:'relative density &mdash; note it is NOT state, which is the point of Section 6', goto:'ksigma'},
+ {sym:'K<sub>&alpha;</sub>', def:'static shear bias correction &mdash; the book declines to tabulate it', goto:'kalpha'},
+ {sym:'&alpha;', def:'static stress bias, &tau;<sub>static</sub>/&sigma;&prime;<sub>vo</sub>', goto:'kalpha'},
+ {sym:'a, b', def:'intercept and slope of a project-specific CRR&ndash;&psi; fit (Eq. 9.9)', goto:'design-workflow'}
+];
+function renderNotation(){
+  el('notationGrid').innerHTML = NOTATION.map(function(n){
+    return '<button type="button" class="notation-card" data-goto="'+n.goto+'"><b>'+n.sym+'</b>'+n.def+'</button>';
+  }).join('');
+  el('notationGrid').querySelectorAll('.notation-card').forEach(function(b){
+    b.addEventListener('click', function(){
+      var t=document.getElementById(b.dataset.goto);
+      if(t && window.gotoPageForElement){ gotoPageForElement(t); t.scrollIntoView({block:'start'}); }
+    });
+  });
+}
+function renderGlossary(){
+  el('glossaryGrid').innerHTML = NOTATION.map(function(n){
+    return '<div class="term"><b>'+n.sym+'</b>'+n.def+'</div>';
+  }).join('');
+}
+
+// ---------------------------------------------------------------- figure help
+var figureInfo={
+'cyclicChart':['Pore pressure building cycle by cycle',
+ 'Horizontal axis is the number of uniform loading cycles; vertical is the excess pore pressure ratio r_u. <b>Purple curve:</b> pore pressure accumulating. <b>Red dashed line:</b> r_u = 1, initial liquefaction. <b>Green dashed line:</b> the number of cycles you have applied. <b>Purple dot:</b> where the soil is after those cycles.',
+ 'Two sliders do different jobs here, and it is worth separating them. CSR and the cycle count decide WHETHER r_u reaches 1 -- more demand or more cycles gets there sooner. But psi alone decides what reaching it MEANS. Set psi below -0.05 and initial liquefaction is cyclic mobility: large strains that each cycle partly recovers. Set it above and the same r_u = 1 is flow liquefaction, with a residual strength below the driving stress and nowhere to stop. The curve looks the same; the consequence does not. Treat the build-up shape as a schematic of the mechanism rather than a calibrated model.'],
+'kmChart':['The magnitude scaling factor',
+ 'Horizontal axis is earthquake moment magnitude; vertical is K_M. <b>Blue line:</b> interpolated between the tabulated points. <b>Grey dots:</b> the five values Figure 7.32 actually tabulates. <b>Grey dashed line:</b> K_M = 1 at the reference magnitude of 7.5. <b>Red dot:</b> your design magnitude.',
+ 'Read this as a cycle count in disguise. A smaller earthquake delivers fewer strong cycles, so the soil survives a higher stress ratio and K_M rises above 1; a larger one delivers more, and K_M falls below 1. Note that the line is straight between the grey dots, not smooth: the book publishes five points and no equation, so nothing has been invented to join them. If you need a value between two dots, that is a linear interpolation and should be treated as such.'],
+'crrPsiChart':['Twenty real earthquakes, sorted by one exponential',
+ 'Horizontal axis is the characteristic state parameter; vertical is the cyclic stress ratio. <b>Navy curve:</b> Eq. 7.5, the database boundary. <b>Pink ground above it:</b> where liquefaction is predicted. <b>Green dots:</b> real records that did not liquefy. <b>Red dots:</b> real records that did. <b>Orange ringed dot:</b> a record Eq. 7.5 gets wrong. <b>Blue dot:</b> your site.',
+ 'Start by checking the separation with your eye: green below the line, red above it, almost without exception. That is twenty real earthquake case histories sorted by a single exponential in psi, with no correction factors attached to it at all -- which is the entire argument of this chapter, because the classical method needs a penetration chart plus K_sigma plus K_alpha to do the same job. Then find the orange point. It is a no-liquefaction record sitting a few percent above the line, comfortably inside the uncertainty in psi that Module 2 quantified. One miss out of twenty is worth showing rather than hiding, because a boundary that classified all twenty would more likely mean it had been fitted to them.'],
+'ksChart':['K-sigma, falling out of the mechanics instead of a curve fit',
+ 'Horizontal axis is mean effective stress on a log scale; vertical is the stress-level correction factor. <b>Blue curve:</b> K_sigma computed from the state parameter at each depth, for the selected sand at fixed relative density. <b>Pale blue band:</b> an indicative envelope of where the published empirical curves sit. <b>Grey dashed line:</b> K_sigma = 1 at the 100 kPa reference. <b>Red dot:</b> the deeper element you set.',
+ 'The blue curve was not fitted to anything. It is what you get by computing psi at two depths for one soil at one density and putting both into Eq. 7.5 -- the ratio IS K_sigma. That it lands in the same region as decades of empirical curves is the point being made. Now change the sand: the curve moves, because it depends on lambda_10. That is also why the published empirical curves disagree with one another, since each was fitted to different soils. A correction factor that varies with a soil property is not a universal constant, and a state-based analysis never needs it in the first place.'],
+'kalphaChart':['Which way a static bias pushes, and where it changes its mind',
+ 'Horizontal axis is the state parameter; vertical is the direction in which a static shear bias moves cyclic resistance. <b>Green ground:</b> dilative. <b>Pink ground:</b> contractive. <b>Grey lines:</b> other bias levels, for context. <b>Blue line:</b> the bias you set. <b>Grey dashed horizontal:</b> no effect. <b>Navy dot:</b> your state and bias.',
+ 'The only thing to take from this figure is the crossing. On dilative ground a static bias raises cyclic resistance; on contractive ground the same bias lowers it. The sign of the correction depends on the state, which is exactly why a single K_alpha table cannot serve. Drag psi across -0.05 and watch the curve cross the no-effect line. This is a direction, not a design value -- it is not a calibrated K_alpha and must not be used as one. The book recommends project-specific NorSand simulation instead, and that recommendation is the reason no calculator is offered here.'],
+'designChart':['A project-specific design curve against the case-history boundary',
+ 'Horizontal axis is the state parameter; vertical is cyclic resistance ratio. <b>Blue line:</b> your fit at M = 7.5, from Eq. 9.9. <b>Orange line:</b> the same fit scaled to your design magnitude. <b>Grey dashed curve:</b> Eq. 7.5, the twenty-record database boundary. <b>Red dot:</b> your design point.',
+ 'Watch the relationship between the blue line and the grey one. A project-specific curve should generally sit below the database boundary, because that boundary was drawn through case histories where liquefaction mostly did occur -- it is a dividing line, not a design allowance. If your fit rises above it, that is a claim requiring test data to support, and the note below says so. Then drag the magnitude: only the orange line moves, because the grey boundary is fixed at M = 7.5 by construction. The a and b defaults are the book illustrative fit; on a real project they come from your own cyclic simple shear testing.']
+};
+
+// ---------------------------------------------------------------- quiz
+var BLOCK_NAMES=['A — Cyclic behaviour and the classical method','B — The state parameter view and Kσ','C — Kα and design practice'];
+var QUIZ_BLOCK_SECTION=[
+  {id:'classical',       label:'Section 3'},
+  {id:'ksigma',          label:'Section 6'},
+  {id:'design-workflow', label:'Section 8'}
+];
+var QUIZ_ITEMS = [
+// Block A
+{q:"The difference between cyclic mobility and flow liquefaction is:",opts:["Cyclic mobility only happens in clay","Cyclic mobility gives large but self-limiting strains; flow liquefaction runs away","They are two names for the same thing"],correct:"b",exp:"A dilative soil recovers stiffness each cycle, so strains accumulate but arrest. A contractive soil has a residual strength below the driving stress to fall to."},
+{q:"Which property decides which of the two you get?",opts:["The number of loading cycles","The state parameter","The earthquake magnitude"],correct:"b",exp:"Cycles and CSR decide WHETHER liquefaction is triggered. psi decides what kind it is."},
+{q:"r_u = 1 means:",opts:["The soil has completely lost all strength permanently","Excess pore pressure equals the initial effective stress -- initial liquefaction","The soil has drained fully"],correct:"b",exp:"It is a pore-pressure condition, not a verdict on consequence. What happens next depends on the state."},
+{q:"CSR stands for:",opts:["Cyclic stress ratio -- the earthquake's demand","Critical stress ratio -- a soil property","Cyclic strength ratio -- the soil's capacity"],correct:"a",exp:"CSR is demand, tau_cyc/sigma'vo. CRR is capacity. Liquefaction is triggered when demand exceeds capacity."},
+{q:"The Berkeley School approach builds its CRR boundary from:",opts:["Constitutive modelling","Case histories of sites that did and did not liquefy","Pure critical state theory"],correct:"b",exp:"It is empirical by construction: plot CSR against penetration resistance for real sites and draw a dividing line."},
+{q:"That boundary is calibrated for:",opts:["Any magnitude and any ground slope","Magnitude 7.5 earthquakes on near-level ground","Magnitude 6.0 earthquakes only"],correct:"b",exp:"Which is why correction factors K_M, K_sigma and K_alpha are needed to use it elsewhere."},
+{q:"K_M for a magnitude 6.0 earthquake is:",opts:["Greater than 1","Less than 1","Exactly 1"],correct:"a",exp:"1.32 from Fig. 7.32. A smaller earthquake delivers fewer strong cycles, so the soil survives a higher stress ratio."},
+{q:"How does this module compute K_M between the tabulated magnitudes?",opts:["From a closed-form equation given in the book","By linear interpolation between the five tabulated points","By fitting an exponential"],correct:"b",exp:"The book gives five points and no functional form, so none is invented here."},
+{q:"In Eq. 7.4, CRR = CRR_7.5 x K_M x K_sigma x K_alpha, the two problematic factors are:",opts:["CRR_7.5 and K_M","K_sigma and K_alpha","K_M and K_alpha"],correct:"b",exp:"K_sigma has had wildly different recommendations from different workers; K_alpha the book says cannot give simple trends at all."},
+{q:"Increasing the number of applied cycles at fixed CSR and psi:",opts:["Raises r_u toward 1","Lowers r_u","Has no effect on r_u"],correct:"a",exp:"Pore pressure accumulates with cycles. Whether reaching r_u=1 is survivable still depends on psi."},
+// Block B
+{q:"Eq. 7.5 expresses CRR_7.5 as:",opts:["A linear function of penetration resistance","0.06 exp(-9 psi_k)","A function of relative density"],correct:"b",exp:"A single exponential in the state parameter, with no correction factors attached."},
+{q:"Reprocessing the case-history database in terms of psi rather than penetration resistance gives:",opts:["A much messier boundary","A strikingly clean boundary","No usable boundary at all"],correct:"b",exp:"That clean separation is the book's central contribution in this chapter."},
+{q:"In this module, how many of the twenty Class A records does Eq. 7.5 classify correctly?",opts:["All twenty","Nineteen","Fifteen"],correct:"b",exp:"One no-liquefaction record sits a few percent above the line. The module marks it rather than dropping it -- a boundary that got all twenty would more likely have been fitted to them."},
+{q:"Why does the classical method need K_sigma at all?",opts:["Because sand gets stronger with depth in a way theory cannot describe","Because penetration resistance is not state: the same soil at the same density has different psi at different depths","Because pore pressure sensors drift with depth"],correct:"b",exp:"The critical state line falls with stress, so a deeper element at the same void ratio sits closer to critical and has a smaller psi."},
+{q:"Working directly in psi, K_sigma:",opts:["Becomes larger","Becomes unnecessary, because the stress dependence is already inside psi","Must still be applied separately"],correct:"b",exp:"The correction was a shadow cast by using the wrong variable. Fig. 7.44 shows computed K_sigma-from-psi curves overlaying the published empirical ones."},
+{q:"Two elements of the same sand at the same relative density, one at 100 kPa and one at 400 kPa. Their void ratios are:",opts:["Different, because stress changes density","The same -- relative density fixes void ratio","Impossible to compare"],correct:"b",exp:"Same DR means same e. What differs is e_c at that stress, and therefore psi. That difference is the whole of K_sigma."},
+{q:"psi is defined as:",opts:["e - e_c(p'), the void ratio minus the critical void ratio at that stress","e_max - e","The slope of the critical state line"],correct:"a",exp:"Which is why it carries stress level inside it, and relative density does not."},
+{q:"The published empirical K_sigma curves disagree with each other mainly because:",opts:["Of measurement error","Each was fitted to different soils, and the correction depends on lambda_10","They were computed at different magnitudes"],correct:"b",exp:"A correction factor that varies with a soil property was never going to be a universal constant."},
+{q:"Deeper elements of the same soil at the same density have:",opts:["A SMALLER psi, so relatively more resistance","A LARGER psi, so relatively less resistance","The same psi"],correct:"b",exp:"e_c falls with stress, so at constant void ratio the deeper element sits CLOSER to critical: psi rises toward zero. Less margin, less cyclic resistance, and K_sigma below 1."},
+{q:"Which module's output feeds Eq. 7.5 directly?",opts:["Module 1's NorSand simulator","Module 2's characteristic state parameter psi_k","Module 3's residual strength"],correct:"b",exp:"One number, measured once, carried through the whole series."},
+// Block C
+{q:"K_alpha corrects for:",opts:["Static shear bias -- ground already carrying shear stress before the earthquake","Sample disturbance","Fines content"],correct:"a",exp:"Any slope carries a static bias. The question is which way it moves cyclic resistance."},
+{q:"On DILATIVE ground, adding a static shear bias:",opts:["Raises cyclic resistance","Lowers cyclic resistance","Has no effect"],correct:"a",exp:"The soil is already partway along the stress path in the direction it will be pushed, and it strengthens as it dilates."},
+{q:"On CONTRACTIVE ground, the same bias:",opts:["Raises cyclic resistance","Lowers cyclic resistance","Has no effect"],correct:"b",exp:"Each cycle drives it further toward a state it cannot recover from. The sign of the correction flips at the boundary."},
+{q:"Why does this module NOT provide a K_alpha calculator?",opts:["It was an oversight","Because the book states K_alpha cannot give simple trends without project-specific NorSand modelling","Because K_alpha is always 1.0"],correct:"b",exp:"Offering a number would suggest a precision the underlying mechanics does not support."},
+{q:"The K_alpha figure in this module shows:",opts:["A calibrated design curve ready for use","The DIRECTION of the effect and where its sign changes","Measured laboratory data"],correct:"b",exp:"The page says so explicitly. It is a mechanism illustration, not a design chart."},
+{q:"Chapter 9 recommends fitting your own cyclic simple shear data with:",opts:["An automated nonlinear regression","A simple linear trend, chosen by judgement","No fit at all"],correct:"b",exp:"Eq. 9.9, CRR = a - b psi_o. The book prefers a defensible straight line to an opaque optimizer."},
+{q:"In Eq. 9.9, the constant a represents:",opts:["The CRR at psi = 0","The slope of the trend","The magnitude scaling factor"],correct:"a",exp:"a is the intercept; b is the slope. The book's illustrative values are a=0.04 and b=0.8 at N_L=15."},
+{q:"The book's guideline mapping of cycle count to magnitude is:",opts:["N_L=15 for M=7.5, N_L=10 for M=7.0, N_L=6 for M=6.0","N_L=5 for all magnitudes","N_L=30 for M=7.5"],correct:"a",exp:"It tells you which cycle count to run your cyclic simple shear tests at for a given design earthquake."},
+{q:"Combining Eq. 9.9 with the K_M lookup is:",opts:["Stated explicitly in the book as a single formula","This module's own synthesis of two separately presented pieces, following Eq. 7.4's structure","Not valid at all"],correct:"b",exp:"Both halves are exactly as published, and the module says plainly that the combination is its own."},
+{q:"A project-specific CRR curve sitting ABOVE the Eq. 7.5 database boundary means:",opts:["The fit is definitely wrong","A claim that this soil resists more than the case-history record suggests, which needs test data to defend","The magnitude was set incorrectly"],correct:"b",exp:"It is not impossible, but it is a claim rather than a default, and it should be argued for rather than assumed."}
+];
+
+
+// wire the controls
+['cycPsi','cycCsr','cycN'].forEach(function(id){ el(id).addEventListener('input', updateCyclic); });
+el('s1Mw').addEventListener('input', updateSection1);
+['s2Psi','s2Csr'].forEach(function(id){ el(id).addEventListener('input', updateSection2); });
+el('ksSand').innerHTML = KS_SANDS.map(function(s,i){ return '<option value="'+i+'"'+(i===4?' selected':'')+'>'+s.name+'</option>'; }).join('');
+['ksSand','ksDr','ksP2'].forEach(function(id){ el(id).addEventListener('input', updateKs); el(id).addEventListener('change', updateKs); });
+['kaPsi','kaAlpha'].forEach(function(id){ el(id).addEventListener('input', updateKAlpha); });
+['s3a','s3b','s3Psi','s3Mw'].forEach(function(id){ el(id).addEventListener('input', updateSection3); });
+renderNotation(); renderGlossary();
+updateCyclic(); updateSection1(); updateSection2(); updateKs(); updateKAlpha(); updateSection3();
+
+Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
+document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
+
+</script>
+<script>
+(function(){
+var PER_BLOCK = Math.round(QUIZ_ITEMS.length/BLOCK_NAMES.length);
+var letters=['a','b','c','d','e'];
+var fill=document.getElementById('quizProgressFill'),count=document.getElementById('quizCount');
+var SLOT_FOR_BLOCK=['quizSlotA','quizSlotB','quizSlotC'];
+// The quiz lives in an IIFE. Expose its data the way SANDS and IC_BANDS already are, so
+// the self-tests can check the questions themselves rather than only the rendered DOM.
+window.QUIZ_ITEMS=QUIZ_ITEMS; window.BLOCK_NAMES=BLOCK_NAMES; window.QUIZ_BLOCK_SECTION=QUIZ_BLOCK_SECTION;
+var slotHtml={};
+BLOCK_NAMES.forEach(function(name,blockIdx){
+  var blockItems = QUIZ_ITEMS.slice(blockIdx*PER_BLOCK, blockIdx*PER_BLOCK+PER_BLOCK);
+  var body = blockItems.map(function(item,j){
+    var qn = blockIdx*PER_BLOCK+j+1;
+    var opts = item.opts.map(function(o,k){ return '<label><input type="radio" name="q'+qn+'" value="'+letters[k]+'"> '+o+'</label>'; }).join('');
+    return '<div class="quiz-q" data-correct="'+item.correct+'"><p>'+qn+'. '+item.q+'</p>'+opts+'<div class="quiz-explanation"><b>Explanation:</b> '+item.exp+'</div></div>';
+  }).join('');
+  var blockHtml='<details class="quiz-block"><summary>Block '+name+' <span class="badge" data-blockcount="'+blockIdx+'">0 of '+PER_BLOCK+' answered</span><span class="badge quiz-block-score" data-blockscore="'+blockIdx+'" style="display:none"></span></summary><div class="quiz-block-body">'+body+'<button type="button" class="alt quiz-block-check" data-blockcheck="'+blockIdx+'">Check this block</button></div><div class="quiz-block-result" data-blockresult="'+blockIdx+'" style="display:none" aria-live="polite"></div></details>';
+  var slotId=SLOT_FOR_BLOCK[blockIdx];
+  slotHtml[slotId]=(slotHtml[slotId]||'')+blockHtml;
+});
+var slotEls=[];
+Object.keys(slotHtml).forEach(function(slotId){
+  var e=document.getElementById(slotId);
+  if(e){ e.innerHTML=slotHtml[slotId]; slotEls.push(e); }
+});
+var qs=Array.from(document.querySelectorAll('.quiz-q'));
+var blockCountEls=Array.from(document.querySelectorAll('[data-blockcount]'));
+function gradeBlock(idx){
+  var blockQs=qs.slice(idx*PER_BLOCK, idx*PER_BLOCK+PER_BLOCK);
+  var scoreEl=document.querySelector('[data-blockscore="'+idx+'"]');
+  var resultEl=document.querySelector('[data-blockresult="'+idx+'"]');
+  var score=0, unanswered=0;
+  blockQs.forEach(function(q){
+    var pick=q.querySelector('input:checked');
+    q.classList.remove('unanswered','review');
+    if(!pick){ unanswered++; q.classList.add('unanswered'); q.style.background='#fff8e8'; }
+    else{
+      q.classList.add('review');
+      if(pick.value===q.dataset.correct){ score++; q.style.background='#e9f6ef'; }
+      else{ q.style.background='#fdeee9'; }
+    }
+  });
+  scoreEl.textContent=score+'/PER_BLOCK';
+  scoreEl.style.background=score===PER_BLOCK?'#c9ecd8':score>=Math.ceil(0.7*PER_BLOCK)?'#eef8fc':'#fdeee9';
+  scoreEl.style.display='inline-block';
+  resultEl.textContent = unanswered
+    ? unanswered+' question(s) in this block are still unanswered ('+score+'/PER_BLOCK correct so far) — their explanations stay hidden until answered.'
+    : (score===PER_BLOCK?'Perfect block — all 10 correct.':score>=Math.ceil(0.7*PER_BLOCK)?'Solid — '+score+'/PER_BLOCK correct. Check the red ones below.':'Worth a second pass — '+score+'/PER_BLOCK correct. Read the explanations below, then revisit the relevant section.');
+  resultEl.style.display='block';
+}
+Array.from(document.querySelectorAll('[data-blockcheck]')).forEach(function(btn){
+  btn.addEventListener('click',function(){ gradeBlock(+btn.dataset.blockcheck); });
+});
+function updateQuizProgress(){
+  var answered=qs.filter(function(q){ return q.querySelector('input:checked'); }).length;
+  count.textContent=answered+' of '+qs.length+' answered';
+  fill.style.width=(100*answered/qs.length)+'%';
+  blockCountEls.forEach(function(e){
+    var idx=+e.dataset.blockcount;
+    var blockQs=qs.slice(idx*PER_BLOCK, idx*PER_BLOCK+PER_BLOCK);
+    var blockAnswered=blockQs.filter(function(q){ return q.querySelector('input:checked'); }).length;
+    e.textContent=blockAnswered+' of '+blockQs.length+' answered';
+  });
+}
+slotEls.forEach(function(e){ e.addEventListener('change',updateQuizProgress); });
+updateQuizProgress();
+Array.from(document.querySelectorAll('.expandGroup')).forEach(function(btn){
+  btn.addEventListener('click',function(){ var g=document.getElementById(btn.dataset.group); if(g) g.querySelectorAll('details').forEach(function(d){ d.open=true; }); });
+});
+Array.from(document.querySelectorAll('.collapseGroup')).forEach(function(btn){
+  btn.addEventListener('click',function(){ var g=document.getElementById(btn.dataset.group); if(g) g.querySelectorAll('details').forEach(function(d){ d.open=false; }); });
+});
+var grade=document.getElementById('gradeQuiz');
+grade.addEventListener('click',function(){
+  var score=0,unanswered=0;
+  qs.forEach(function(q){
+    var pick=q.querySelector('input:checked');
+    q.classList.remove('unanswered','review');
+    if(!pick){ unanswered++; q.classList.add('unanswered'); }
+    else{
+      q.classList.add('review');
+      if(pick.value===q.dataset.correct){ score++; q.style.background='#e9f6ef'; }
+      else{ q.style.background='#fdeee9'; }
+    }
+  });
+  document.querySelectorAll('.quiz-block').forEach(function(d){ d.open=true; });
+  var result=document.getElementById('quizResult');
+  result.style.display='block';
+
+  // A bare total tells a reader they got 14 of 40 and nothing about what to do next.
+  // Break it down by block, name the section each block came from, and offer to jump.
+  var perBlock = BLOCK_NAMES.map(function(name, idx){
+    var blockQs = qs.slice(idx*PER_BLOCK, idx*PER_BLOCK+PER_BLOCK), got=0, blank=0;
+    blockQs.forEach(function(q){
+      var pick=q.querySelector('input:checked');
+      if(!pick) blank++;
+      else if(pick.value===q.dataset.correct) got++;
+    });
+    return {idx:idx, name:name, got:got, blank:blank, n:blockQs.length,
+            section:QUIZ_BLOCK_SECTION[idx]};
+  });
+
+  var head = unanswered
+    ? '<b>'+score+' of '+qs.length+' correct so far</b>, '+unanswered+' still unanswered — their explanations stay hidden until answered.'
+    : '<b>Final score: '+score+' of '+qs.length+' correct.</b>';
+
+  var rows = perBlock.map(function(b){
+    var pct = b.n ? Math.round(100*b.got/b.n) : 0;
+    var tone = b.got>=8 ? 'dilate' : (b.got>=6 ? 'caution' : 'contract');
+    return '<tr>'+
+      '<td>'+b.name+'</td>'+
+      '<td style="white-space:nowrap"><b>'+b.got+' / '+b.n+'</b>'+(b.blank?' <span style="color:var(--muted)">('+b.blank+' blank)</span>':'')+'</td>'+
+      '<td><span class="badge '+tone+'">'+pct+'%</span></td>'+
+      '<td><button type="button" class="alt quiz-jump" data-section="'+b.section.id+'">Revisit '+b.section.label+'</button></td>'+
+    '</tr>';
+  }).join('');
+
+  // Point at the weakest block rather than making the reader compare four numbers.
+  var answered = perBlock.filter(function(b){ return b.n-b.blank>0; });
+  var advice = '';
+  if(answered.length){
+    var worst = answered.slice().sort(function(a,b){ return (a.got/a.n)-(b.got/b.n); })[0];
+    var best  = answered.slice().sort(function(a,b){ return (b.got/b.n)-(a.got/a.n); })[0];
+    advice = worst.got===best.got
+      ? '<p style="margin:8px 0 0">Your blocks are even. If you want one thing to reread, take the explanations under any question you got wrong — every one of them names the equation and section it came from.</p>'
+      : '<p style="margin:8px 0 0"><b>Weakest block: '+worst.name+'</b> ('+worst.got+' of '+worst.n+'). That is '+worst.section.label+
+        '. Strongest was '+best.name.split(' — ')[0]+' at '+best.got+' of '+best.n+'.</p>';
+  }
+
+  result.innerHTML = head +
+    '<table class="quiz-breakdown"><thead><tr><th>Block</th><th>Score</th><th></th><th></th></tr></thead><tbody>'+rows+'</tbody></table>'+
+    advice +
+    '<div class="quiz-actions" style="margin-top:10px"><button type="button" class="alt" id="reviewMissed">Show only the ones I missed</button>'+
+    '<button type="button" class="alt" id="reviewAll" style="display:none">Show every question again</button></div>';
+
+  // jump straight to the section a block came from
+  result.querySelectorAll('.quiz-jump').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var target=document.getElementById(btn.dataset.section);
+      if(target && window.gotoPageForElement){ gotoPageForElement(target); target.scrollIntoView({block:'start'}); }
+    });
+  });
+
+  // With 40 questions, hunting for the red ones by eye is the tedious part.
+  function setMissedOnly(on){
+    qs.forEach(function(q){
+      var pick=q.querySelector('input:checked');
+      var missed = !pick || pick.value!==q.dataset.correct;
+      q.style.display = (on && !missed) ? 'none' : '';
+    });
+    document.querySelectorAll('.quiz-block').forEach(function(d){
+      var anyVisible = Array.from(d.querySelectorAll('.quiz-q')).some(function(q){ return q.style.display!=='none'; });
+      d.style.display = anyVisible ? '' : (on ? 'none' : '');
+      if(anyVisible) d.open = true;
+    });
+    var a=document.getElementById('reviewMissed'), b=document.getElementById('reviewAll');
+    if(a) a.style.display = on ? 'none' : '';
+    if(b) b.style.display = on ? '' : 'none';
+  }
+  var rm=document.getElementById('reviewMissed'), ra=document.getElementById('reviewAll');
+  if(rm) rm.addEventListener('click', function(){ setMissedOnly(true); });
+  if(ra) ra.addEventListener('click', function(){ setMissedOnly(false); });
+
+  updateQuizProgress();
+});
+document.getElementById('resetQuiz').addEventListener('click',function(){
+  qs.forEach(function(q){
+    q.querySelectorAll('input').forEach(function(i){ i.checked=false; });
+    q.classList.remove('review','unanswered');
+    q.style.background='';
+    q.style.display='';                       // clear the missed-only filter
+  });
+  document.querySelectorAll('.quiz-block').forEach(function(d){ d.style.display=''; });
+  document.querySelectorAll('[data-blockscore]').forEach(function(e){ e.style.display='none'; });
+  document.querySelectorAll('[data-blockresult]').forEach(function(e){ e.style.display='none'; });
+  document.getElementById('quizResult').style.display='none';
+  updateQuizProgress();
+});
+})();
+
+</script>
+<script>
+// ============================================================================
+// Dev-only regression check, callable from the console as runModule4SelfTests().
+// ============================================================================
+window.runModule4SelfTests = function(){
+  var results=[];
+  function check(cond,label){ results.push({label:label,pass:!!cond}); }
+
+  // ---- Fig. 7.32 magnitude scaling ----
+  check(KM_PTS.length===5, "five tabulated KM points");
+  KM_PTS.forEach(function(p){ check(Math.abs(KM(p[0])-p[1])<1e-12, "KM reproduces the tabulated point at M="+p[0]); });
+  check(Math.abs(KM(7.5)-1)<1e-12, "KM = 1 at the M = 7.5 reference");
+  check(KM(6.0)>1 && KM(8.5)<1, "KM is above 1 below M=7.5 and below 1 above it");
+  check(KM(5.0)===KM_PTS[0][1] && KM(9.0)===KM_PTS[4][1], "KM is clamped outside the tabulated range, not extrapolated");
+  (function(){
+    var a=KM(6.0), b=KM(6.75), mid=KM(6.375);
+    check(Math.abs(mid-(a+b)/2)<1e-9, "KM interpolates linearly between tabulated points, as stated");
+  })();
+  check(KM(6.5)<KM(6.0) && KM(7.0)<KM(6.5), "KM decreases monotonically with magnitude");
+
+  // ---- Eq. 7.5 ----
+  check(Math.abs(crrEq75(0)-0.06)<1e-12, "Eq 7.5 at psi = 0 gives 0.06");
+  check(crrEq75(-0.10) > crrEq75(0), "denser states resist more cyclic loading");
+  check(crrEq75(0.05) < crrEq75(0), "looser states resist less");
+  (function(){
+    // a 0.1 change in psi must scale CRR by exp(0.9)
+    check(Math.abs(crrEq75(-0.10)/crrEq75(0) - Math.exp(0.9)) < 1e-9,
+          "the exponent is 9 per unit psi, exactly as published");
+  })();
+
+  // ---- the twenty Class A records ----
+  check(CASE_PTS.length===20, "twenty Class A records");
+  check(CASE_PTS.filter(function(p){return p.liq;}).length===9, "nine liquefaction records");
+  check(CASE_PTS.filter(function(p){return !p.liq;}).length===11, "eleven no-liquefaction records");
+  CASE_PTS.forEach(function(p,i){
+    check(isFinite(p.psi) && isFinite(p.csr), "record "+i+" has finite coordinates");
+    check(p.csr>0 && p.csr<1, "record "+i+" has a physical CSR");
+    check(typeof p.liq==='boolean', "record "+i+" has a recorded outcome");
+  });
+  (function(){
+    var cl=caseClassification();
+    check(cl.total===20, "the classification covers every record");
+    check(cl.tp+cl.tn+cl.fp+cl.fn===20, "every record lands in exactly one bucket");
+    check(cl.correct===19, "Eq 7.5 classifies 19 of 20 -- the figure the page quotes");
+    check(cl.wrong.length===1, "exactly one record is misclassified");
+    // the miss must be the marginal one, not a gross failure
+    var w=cl.wrong[0];
+    var off=Math.abs(w.p.csr/crrEq75(w.p.psi)-1);
+    check(off<0.10, "the misclassified record is within 10% of the boundary, not a gross miss");
+    check(w.p.liq===false, "the miss is a no-liquefaction record called as liquefaction (the conservative direction)");
+    // the page must quote what it computed
+    check(el('classifyNote').textContent.indexOf(cl.correct+' of '+cl.total)>=0,
+          "the note quotes the classification it computed");
+    check(el('classifyStats').textContent.indexOf(String(cl.correct))>=0, "the stats show the same count");
+  })();
+  check(CASE_PTS.filter(isMisclassified).length===1, "isMisclassified agrees with the classification");
+
+  // ---- Table 2.1 sands and the K-sigma derivation ----
+  check(KS_SANDS.length>=8, "the Table 2.1 subset is present");
+  KS_SANDS.forEach(function(s){
+    check(s.emax>s.emin, s.name+": emax exceeds emin");
+    check(s.Gamma>0 && s.lambda10>0, s.name+": physical CSL parameters");
+  });
+  (function(){
+    var s=KS_SANDS[4];               // Erksak, the module default
+    check(Math.abs(voidAtDr(s,0)-s.emax)<1e-12, "DR = 0% gives emax");
+    check(Math.abs(voidAtDr(s,100)-s.emin)<1e-12, "DR = 100% gives emin");
+    check(voidAtDr(s,50)>s.emin && voidAtDr(s,50)<s.emax, "DR = 50% sits between them");
+    // the same density at two depths must give two different states
+    var p1=psiAt(s,50,100), p2=psiAt(s,50,400);
+    check(p2>p1, "the deeper element has a LARGER psi at the same density -- the whole of K-sigma");
+    check(Math.abs(p2)<Math.abs(p1), "and therefore sits CLOSER to critical, which is why it resists less");
+    check(Math.abs(kSigmaFromPsi(s,50,100)-1)<1e-12, "K-sigma is exactly 1 at the 100 kPa reference");
+    check(kSigmaFromPsi(s,50,400)<1, "K-sigma falls below 1 with depth");
+    // and it must equal the ratio of the two Eq. 7.5 resistances, by construction
+    check(Math.abs(kSigmaFromPsi(s,50,400) - crrEq75(p2)/crrEq75(p1))<1e-12,
+          "K-sigma is exactly the ratio of the two computed resistances");
+    // a soil with a flatter CSL must give a different K-sigma -- why the empirical curves disagree
+    var flat=KS_SANDS[1], steep=KS_SANDS[6];
+    check(Math.abs(kSigmaFromPsi(flat,50,400)-kSigmaFromPsi(steep,50,400))>0.01,
+          "K-sigma depends on lambda_10, so no single empirical curve can serve");
+  })();
+
+  // ---- K-alpha: a direction, and it must flip ----
+  check(kAlphaDirection(-0.15,0.2)>1, "on dilative ground a static bias raises resistance");
+  check(kAlphaDirection(0.02,0.2)<1, "on contractive ground the same bias lowers it");
+  check(Math.abs(kAlphaDirection(PSI_DIL_BOUNDARY,0.2)-1)<1e-12, "the effect is exactly neutral at psi = -0.05");
+  check(Math.abs(kAlphaDirection(-0.15,0)-1)<1e-12, "zero bias means no effect, whatever the state");
+  check(kAlphaDirection(-0.15,0.3)>kAlphaDirection(-0.15,0.1), "a larger bias means a larger effect");
+
+  // ---- Eq. 9.9 and the design combination ----
+  check(Math.abs(crrEq99(0.04,0.8,0)-0.04)<1e-12, "Eq 9.9 at psi = 0 gives a");
+  check(crrEq99(0.04,0.8,-0.1) > crrEq99(0.04,0.8,0), "Eq 9.9 rises as the soil gets denser");
+  (function(){
+    var a=0.04,b=0.8,psi=-0.12,m=6.0;
+    check(Math.abs(crrEq99(a,b,psi)*KM(m) - (a-b*psi)*KM(m))<1e-12,
+          "the design CRR is the fit times KM, with nothing else applied");
+  })();
+
+  // ---- the cyclic schematic ----
+  (function(){
+    check(PSI_DIL_BOUNDARY===-0.05, "the dilative boundary matches Modules 2 and 3");
+    // r_u must be bounded and monotonic in cycles
+    var prev=-1, ok=true;
+    for(var n=1;n<=40;n++){
+      var NL=15, r=Math.min(1, Math.pow(Math.min(1,n/NL),0.35));
+      if(r<prev-1e-12) ok=false;
+      if(r<0 || r>1) ok=false;
+      prev=r;
+    }
+    check(ok, "the pore-pressure schematic stays within 0 to 1 and never decreases");
+  })();
+
+  // ---- figures ----
+  var CANV=['cyclicChart','kmChart','crrPsiChart','ksChart','kalphaChart','designChart'];
+  check(document.querySelectorAll('canvas').length===CANV.length, CANV.length+" figures");
+  CANV.forEach(function(id){
+    var c=el(id);
+    check(!!c && c.width>0, id+" is drawn");
+    check(!!c && c.closest('.figure-shell'), id+" has a how-to-read wrapper");
+    check(!!figureInfo[id], id+" has figure help");
+    if(c && c.style.width) check(Math.abs(c.width/parseFloat(c.style.width)-(window.devicePixelRatio||1))<0.01,
+      id+" is backed at device resolution");
+  });
+  Object.keys(figureInfo).forEach(function(id){
+    check(!!document.getElementById(id), "figure help entry "+id+" matches a real canvas");
+    check(figureInfo[id].length===3, id+": caption, legend and reading strategy");
+  });
+
+  // ---- notation, glossary, quiz, pagination ----
+  check(NOTATION.length>=12, "the notation list is populated");
+  NOTATION.forEach(function(n){
+    check(!!document.getElementById(n.goto), "notation '"+n.sym.replace(/<[^>]+>/g,'')+"' points at a real section");
+  });
+  check(el('notationGrid').querySelectorAll('.notation-card').length===NOTATION.length, "a card per symbol");
+  check(el('glossaryGrid').querySelectorAll('.term').length===NOTATION.length, "a glossary entry per symbol");
+
+  check(QUIZ_ITEMS.length===30, "thirty questions");
+  check(BLOCK_NAMES.length===3 && QUIZ_BLOCK_SECTION.length===3, "three blocks, each mapped to a section");
+  QUIZ_BLOCK_SECTION.forEach(function(b,i){ check(!!document.getElementById(b.id), "block "+i+" points at a real section"); });
+  QUIZ_ITEMS.forEach(function(it,i){
+    check(it.opts.length>=2, "question "+(i+1)+" offers at least two options");
+    check(['a','b','c','d'].indexOf(it.correct)>=0, "question "+(i+1)+" has a valid correct key");
+    check(it.correct.charCodeAt(0)-97 < it.opts.length, "question "+(i+1)+"'s answer is among its options");
+    check(!!it.exp && it.exp.length>20, "question "+(i+1)+" carries an explanation");
+  });
+  check(document.querySelectorAll('.quiz-q').length===30, "all thirty render");
+
+  check(typeof showPage==='function' && typeof gotoPageForElement==='function', "pagination is wired");
+  check(document.querySelectorAll('.sticky-nav a[href^="#"]').length===9, "nine nav pills");
+  ['start','cyclic-vs-static','classical','notation','psi-view','ksigma','kalpha','design-workflow','knowledge-check']
+    .forEach(function(id){ check(!!document.getElementById(id), "section "+id+" exists"); });
+
+  var failed=results.filter(function(r){ return !r.pass; });
+  console.log('[runModule4SelfTests] '+results.length+' checks, '+failed.length+' failed.');
+  failed.forEach(function(f){ console.warn('  FAIL: '+f.label); });
+  return {total:results.length, failed:failed.length, results:results};
+};
+
+
+// ---------------- Pagination: one page at a time ----------------
+(function(){
+  var PAGES = [
+    {label:'Start here', ids:['start','about-module']},
+    {label:'Cyclic vs static', ids:['cyclic-vs-static']},
+    {label:'The classical method', ids:['classical']},
+    {label:'Notation', ids:['notation']},
+    {label:'The psi view', ids:['psi-view']},
+    {label:'Ksigma disappears', ids:['ksigma']},
+    {label:'Kalpha', ids:['kalpha']},
+    {label:'Design workflow', ids:['design-workflow']},
+    {label:'Check learning', ids:['knowledge-check','about-tool']}
+  ];
+  var SECTION_LABELS={'start':'Start here','cyclic-vs-static':'Cyclic vs static','classical':'The classical method',
+    'notation':'Notation','psi-view':'The psi view','ksigma':'Ksigma disappears',
+    'kalpha':'Kalpha','design-workflow':'Design workflow','knowledge-check':'Check learning'};
+  var cur=0, prevPage=null;
+  function pageIndexForElement(e){
+    if(!e || !e.closest) return -1;
+    for(var i=0;i<PAGES.length;i++){
+      for(var j=0;j<PAGES[i].ids.length;j++){
+        var host=document.getElementById(PAGES[i].ids[j]);
+        if(host && (host===e || host.contains(e))) return i;
+      }
+    }
+    return -1;
+  }
+  function redrawVisibleCharts(){
+    if(window.updateCyclic) updateCyclic();
+    if(window.updateSection1) updateSection1();
+    if(window.updateSection2) updateSection2();
+    if(window.updateKs) updateKs();
+    if(window.updateKAlpha) updateKAlpha();
+    if(window.updateSection3) updateSection3();
+  }
+  function updateStepper(){
+    var st=document.getElementById('pageStepper'); if(!st) return;
+    st.innerHTML =
+      '<button type="button" class="alt" id="pgPrev"'+(cur===0?' disabled':'')+'>&larr; '+(cur>0?PAGES[cur-1].label:'')+'</button>'+
+      '<span class="page-label">Page '+(cur+1)+' of '+PAGES.length+' &middot; '+PAGES[cur].label+'</span>'+
+      '<button type="button" id="pgNext"'+(cur===PAGES.length-1?' disabled':'')+'>'+(cur<PAGES.length-1?PAGES[cur+1].label:'')+' &rarr;</button>';
+    var p=document.getElementById('pgPrev'), n=document.getElementById('pgNext');
+    if(p) p.addEventListener('click', function(){ showPage(cur-1); });
+    if(n) n.addEventListener('click', function(){ showPage(cur+1); });
+    var fill=document.getElementById('readingProgress');
+    if(fill) fill.style.width=(100*(cur+1)/PAGES.length)+'%';
+    document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(a){
+      var idx=pageIndexForElement(document.getElementById(a.getAttribute('href').slice(1)));
+      a.classList.toggle('active', idx===cur);
+    });
+  }
+  function focusPageHeading(){
+    var first=document.getElementById(PAGES[cur].ids[0]);
+    if(!first) return;
+    var h=first.querySelector('h2');
+    var ann=document.getElementById('pageAnnouncer');
+    if(ann) ann.textContent='Page '+(cur+1)+' of '+PAGES.length+': '+PAGES[cur].label;
+    if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+  }
+  window.showPage=function(idx, opts){
+    if(idx<0||idx>=PAGES.length) return;
+    if(idx!==cur) prevPage=cur;
+    cur=idx;
+    PAGES.forEach(function(p,i){
+      p.ids.forEach(function(id){
+        var host=document.getElementById(id);
+        if(host) host.style.display = (i===cur) ? '' : 'none';
+      });
+    });
+    updateStepper(); redrawVisibleCharts();
+    if(!opts || !opts.noScroll) window.scrollTo({top:0,behavior:'instant'});
+    focusPageHeading();
+    var back=document.getElementById('backToPrevious');
+    if(back) back.style.display = prevPage===null ? 'none' : '';
+  };
+  window.getCurrentPageIndex=function(){ return cur; };
+  window.gotoPageForElement=function(e){ var i=pageIndexForElement(e); if(i>=0) showPage(i,{noScroll:true}); };
+  document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(a){
+    a.addEventListener('click', function(ev){
+      var t=document.getElementById(a.getAttribute('href').slice(1));
+      var i=pageIndexForElement(t);
+      if(i>=0){ ev.preventDefault(); showPage(i); }
+    });
+  });
+  var back=document.getElementById('backToPrevious');
+  if(back) back.addEventListener('click', function(){ if(prevPage!==null) showPage(prevPage); });
+  var stepHost=document.createElement('div');
+  stepHost.className='page-stepper'; stepHost.id='pageStepper';
+  document.querySelector('.wrap').appendChild(stepHost);
+  window.addEventListener('resize', redrawVisibleCharts);
+  showPage(0);
+})();
+
 </script>
 <script src="view-counter.js"></script>
 <script src="comments.js"></script>
