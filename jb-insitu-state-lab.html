@@ -301,7 +301,7 @@ body{padding-bottom:54px}
 
 <div class="snd-layout">
 <div class="snd-controls">
-<div class="slider-block"><label for="sndDepth"><span>Selected depth (m)</span> <span class="readout" id="sndDepthOut">20.00</span></label><input id="sndDepth" type="range" min="0.5" max="54" step="0.25" value="20"></div>
+<div class="slider-block"><label for="sndDepth"><span>Selected depth</span> <span class="readout" id="sndDepthOut">20.00 m (65.6 ft)</span></label><input id="sndDepth" type="range" min="0.5" max="54" step="0.25" value="20"><div class="hint">One depth for the whole module: Sections 6 and 7 show this same slider, and moving any of them moves all three.</div></div>
 <div class="snd-row2">
 <div class="slider-block"><label for="sndGamma"><span>&gamma;, kN/m&sup3; (pcf)</span> <span class="readout" id="sndGammaOut">19.0</span></label><input id="sndGamma" type="range" min="15" max="21" step="0.5" value="19"></div>
 <div class="slider-block"><label for="sndKo"><span>K<sub>o</sub></span> <span class="readout" id="sndKoOut">0.50</span></label><input id="sndKo" type="range" min="0.35" max="1.1" step="0.01" value="0.50"></div>
@@ -682,7 +682,6 @@ body{padding-bottom:54px}
 <script>
 function el(id){ return document.getElementById(id); }
 function num(id){ return +el(id).value; }
-function getCss(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
 
 var SANDS = [
  {name:"Brasted sand",lambda10:0.050,Mtc:1.30},
@@ -729,9 +728,6 @@ function updateFlow(raw,dim,ic,psi){
 }
 
 // ---------------- Section 2: CPT sounding, start to finish ----------------
-var sndRngState = 20260828;
-function sndRnd(){ sndRngState=(sndRngState*1103515245+12345)&0x7fffffff; return sndRngState/0x7fffffff; }
-function sndGaussian(){ var u1=Math.max(1e-9,sndRnd()), u2=sndRnd(); return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2); }
 
 var SND_LAYER_Z = 30;  // boundary between the two zones of the default profile (m); null for uploaded data
 var SND_MAX_Z = 54;
@@ -3051,6 +3047,78 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- module-wide consistency, from the review pass ----
+  (function(){
+    // one selected depth, surfaced in three places -- they must agree and read alike
+    var ds=['sndDepth','icDepth','invDepth'].map(function(id){ return el(id); });
+    check(ds.every(Boolean), "module: all three depth controls exist");
+    var labels=ds.map(function(e){ return e.closest(".slider-block").querySelector("label span").textContent.trim(); });
+    check(labels.every(function(l){ return l===labels[0]; }),
+          "module: the three depth sliders are labelled identically");
+    check(ds.every(function(e){ return e.min===ds[0].min && e.max===ds[0].max && e.step===ds[0].step; }),
+          "module: and share one range and step");
+    // each should say it is shared, so a reader does not take them for three depths
+    ds.forEach(function(e,i){
+      var h=e.closest(".slider-block").querySelector(".hint");
+      check(!!h && /Section|module/.test(h.textContent),
+            "module: depth control "+i+" says the depth is shared");
+    });
+    // moving any one must move the others
+    var keep=+el('sndDepth').value;
+    [[ 'icDepth', 11.5],[ 'invDepth', 33.25]].forEach(function(pair){
+      var e=el(pair[0]); e.value=pair[1]; e.dispatchEvent(new Event("input",{bubbles:true}));
+      check(+el('sndDepth').value===pair[1], "module: "+pair[0]+" drives the shared depth");
+      check(+el('icDepth').value===pair[1] && +el('invDepth').value===pair[1],
+            "module: and the other depth sliders follow to "+pair[1]+" m");
+    });
+    el('sndDepth').value=keep; updateSounding();
+
+    // one sand choice, surfaced twice
+    check(el('sndSandSelect').options.length===el('sandSelect').options.length,
+          "module: both sand lists offer the same options");
+    check(el('sndSandSelect').value===el('sandSelect').value,
+          "module: and currently agree");
+
+    // every figure carries a caption, a legend and a reading strategy
+    var canv=Array.from(document.querySelectorAll("canvas"));
+    check(canv.length===9, "module: nine figures");
+    canv.forEach(function(c){
+      var sh=c.closest(".figure-shell");
+      check(!!sh, "module: "+c.id+" is wrapped as a figure");
+      if(sh){
+        check(!!sh.querySelector(".figure-caption"), "module: "+c.id+" has a caption");
+        var h=sh.querySelector(".figure-help");
+        check(!!h && /Legend:/.test(h.innerHTML) && /Reading strategy:/.test(h.innerHTML),
+              "module: "+c.id+" has both a legend and a reading strategy");
+      }
+      check(Math.abs(c.width/parseFloat(c.style.width||c.width)-(window.devicePixelRatio||1))<0.01,
+            "module: "+c.id+" is backed at device resolution");
+    });
+
+    // navigation stays in step: one pill per section, and every jump target resolves
+    check(document.querySelectorAll(".card[id], section.card[id]").length>=9, "module: all sections present");
+    Array.from(document.querySelectorAll("[data-goto]")).forEach(function(b){
+      check(!!document.getElementById(b.dataset.goto), "module: jump target "+b.dataset.goto+" exists");
+      if(b.dataset.pulse) check(!!document.getElementById(b.dataset.pulse),
+            "module: pulse target "+b.dataset.pulse+" exists");
+    });
+
+    // no section should cite itself, and no citation should point past the module
+    var map={start:1,"cpt-sounding":2,"mental-model":3,notation:4,"cpt-groups-section":5,
+             "ic-section":6,"inversion-section":7,"variability-section":8,"knowledge-check":9};
+    Object.keys(map).forEach(function(id){
+      var c=document.getElementById(id); if(!c) return;
+      var clone=c.cloneNode(true);
+      clone.querySelectorAll(".quiz-checkpoint,script,option").forEach(function(n){ n.remove(); });
+      var t=clone.textContent.replace(/\s+/g," ");
+      var re=/Sections?\s+(\d)(?!\d|\.)/g, m2;
+      while((m2=re.exec(t))){
+        var n=+m2[1];
+        check(n>=1 && n<=9, id+": cites a section inside the module (saw "+n+")");
+        check(n!==map[id], id+": does not cite itself");
+      }
+    });
+  })();
   // ---- Section 9: the quiz must say what to revisit, not just a total ----
   (function(){
     var qs=Array.from(document.querySelectorAll(".quiz-q"));
