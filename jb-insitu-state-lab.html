@@ -68,6 +68,15 @@ canvas{display:block;width:100%;height:260px}
 .dist-figs{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;align-items:start;margin-top:10px}
 @media(max-width:1080px){.dist-figs{grid-template-columns:1fr}}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.two-problems{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+@media(max-width:820px){.two-problems{grid-template-columns:1fr}}
+.prob{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+.prob.prob-var{border-left:5px solid #c64852}
+.prob.prob-unc{border-left:5px solid #7653a6}
+.prob>b{font-size:13.5px;display:block}
+.prob>small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:2px 0 8px}
+.prob p{font-size:11.5px;line-height:1.6;margin:0 0 8px}
+.prob p.fix{margin:0;padding-top:8px;border-top:1px solid var(--line);color:var(--ink)}
 @media(max-width:820px){.grid4{grid-template-columns:repeat(2,1fr)}}
 #psikEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
 #psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
@@ -621,6 +630,29 @@ body{padding-bottom:54px}
 </div>
 
 <div class="guided-panel" style="margin-top:12px">
+<h3>Variability and uncertainty are different problems, and you need both</h3>
+<div class="two-problems">
+<div class="prob prob-var">
+<b>Variability &mdash; Chapter 5</b>
+<small>a property of the ground</small>
+<p>The soil genuinely differs from point to point. A loose pocket at 5&nbsp;m is really looser than dense sand at 6&nbsp;m; that is not measurement error, it is the deposit. It is why a single &ldquo;representative&rdquo; &psi; is the wrong object and a <b>distribution</b> is the right one, and why Rowe &amp; Craig&rsquo;s caissons cared about the <i>fraction</i> of loose material rather than its average.</p>
+<p class="fix"><b>What reduces it:</b> nothing. You cannot make ground less variable by measuring it harder. You <i>characterise</i> it &mdash; more soundings, tighter spacing, and a percentile rather than a mean.</p>
+</div>
+<div class="prob prob-unc">
+<b>Uncertainty &mdash; Chapter 4</b>
+<small>a property of your knowledge</small>
+<p>At any single depth you do not know &psi; well. The inversion claims &plusmn;0.05, and Section 7&rsquo;s Ticino data shows stress level alone moving &psi; by 0.09 at identical Q<sub>p</sub>. On top of that sit &gamma;, the water table, K<sub>o</sub> and &lambda;<sub>10</sub> &mdash; all estimated, all feeding the same chain.</p>
+<p class="fix"><b>What reduces it:</b> better inputs. A laboratory CSL on the actual material, a measured unit-weight profile, a real piezometer. More CPT footage does <i>not</i> touch it &mdash; the hundredth sounding inherits the same &plusmn;0.05 as the first.</p>
+</div>
+</div>
+<p class="explain" style="margin-top:8px">They compound, and they call for different responses, so the profile below draws them separately. Read the dark trace as the ground, the inner band as how well the method knows any one point, and the outer band as what your assumed inputs are worth on top of that.</p>
+<div class="chart-host"><canvas id="psiFullProfileChart" role="img" aria-label="State parameter against depth for the whole sounding with two nested uncertainty envelopes, the selected fitting interval marked, and the mean and characteristic value drawn across it."></canvas></div>
+<div class="legend"><span><i style="background:#c64852"></i>&psi; from the inversion</span><span><i style="background:#f0d5d2"></i>&plusmn;0.05 method uncertainty</span><span><i style="background:#e6e0ef"></i>method <b>and</b> assumed &gamma;, water table, K<sub>o</sub>, &lambda;<sub>10</sub> combined (5th&ndash;95th)</span><span><i style="background:#123b4a"></i>your fitting interval</span><span><i style="background:#1479b8"></i>&psi;<sub>k</sub></span><span><i style="background:#268160"></i>&minus;0.05 cutoff</span></div>
+<div class="callout" id="fullProfileNote" style="margin-top:8px" aria-live="polite"></div>
+
+</div>
+
+<div class="guided-panel" style="margin-top:12px">
 <h3 style="margin-top:0">Then choose the characteristic value</h3>
 <div class="grid3">
 <div class="slider-block"><label for="muSlide"><span>Mean, &psi;<sub>&mu;</sub></span> <span class="readout" id="muOut">-0.080</span></label><input id="muSlide" type="range" min="-0.40" max="0.10" step="0.001" value="-0.08"></div>
@@ -1159,6 +1191,7 @@ function updateSounding(){
   if(window.icSyncDepthSlider) icSyncDepthSlider();
   if(window.invSyncDepthSlider) invSyncDepthSlider();
   if(window.updateFitPanel) updateFitPanel();
+  if(window.drawPsiFullProfile){ mcProfile=null; drawPsiFullProfile(); updateFullProfileNote(); }
 }
 ['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
 // gamma / water table / Ko / % hydrostatic also drive Section 3's demo, so keep it in step
@@ -2863,6 +2896,8 @@ function updatePsik(){
   updateNormalityNote();
   updateLooseFractionNote(psik);
   drawDistChart(mu,sig,psik);
+  drawPsiFullProfile();
+  updateFullProfileNote();
   updateFlow(undefined, undefined, undefined, 'ψk='+(psik>=0?'+':'')+psik.toFixed(3));
 }
 
@@ -2987,6 +3022,150 @@ function drawDistChart(mu,sig,psik){
   marker(NERLERK_LIQ_PSI, 'Nerlerk liquefiable →', '#c64852', [4,3]);
   marker(psik, 'ψk = '+(psik>=0?'+':'')+psik.toFixed(3), '#1479b8', null);
 }
+// Per-depth envelope for the Section 8 profile. Fewer draws than the psi_k histogram
+// because this one keeps a value at every depth, not one number per draw.
+var mcProfile=null;
+function buildMcProfile(){
+  var N=250, base={gamma:num('sndGamma'), wt:num('sndWt'), ko:num('sndKo'),
+                   lambda10:SANDS[+sndSandSel.value].lambda10};
+  var sG=num('mcGamma'), sW=num('mcWt'), sK=num('mcKo'), sL=num('mcLam')/100;
+  var cols=sndData.map(function(){ return []; });
+  var saved=mcSeed; mcSeed=987654321;
+  for(var i=0;i<N;i++){
+    var ov={
+      gamma: Math.max(10, base.gamma + sG*mcNorm()),
+      wt:    Math.max(0,  base.wt    + sW*mcNorm()),
+      ko:    Math.min(1.5, Math.max(0.2, base.ko + sK*mcNorm())),
+      lambda10: Math.max(0.011, base.lambda10*(1 + sL*mcNorm()))
+    };
+    sndData.forEach(function(r,j){
+      var c=sndComputeAtRow(r, ov);
+      // combine both sources: the assumed inputs vary per draw, and the method's own
+      // +/-0.05 lands on every reading. Alone the input spread is narrower than the
+      // method band, so an outer band showing it by itself would be invisible.
+      if(isFinite(c.psi)) cols[j].push(c.psi + PSI_BAND*mcNorm());
+    });
+  }
+  mcSeed=saved;
+  mcProfile=cols.map(function(v,j){
+    if(!v.length) return null;
+    v.sort(function(a,b){ return a-b; });
+    return {z:sndData[j].z, lo:v[Math.floor(0.05*(v.length-1))], hi:v[Math.floor(0.95*(v.length-1))]};
+  }).filter(Boolean);
+}
+
+function drawPsiFullProfile(){
+  var host=el('psiFullProfileChart'); if(!host) return;
+  var cvp=prepCanvas(host, 380, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=52, mr=14, mt=18, mb=46, pw=W-ml-mr, ph=H-mt-mb;
+  var zMax=SND_MAX_Z;
+  var rows=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
+  if(!rows.length) return;
+  if(!mcProfile) buildMcProfile();
+
+  var lo=-0.45, hi=0.30;
+  (mcProfile||[]).forEach(function(p){ lo=Math.min(lo,p.lo); hi=Math.max(hi,p.hi); });
+  rows.forEach(function(c){ lo=Math.min(lo,c.psi-PSI_BAND); hi=Math.max(hi,c.psi+PSI_BAND); });
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,(v-lo)/(hi-lo))); }
+  function Y(z){ return mt+ph*Math.max(0,Math.min(1,z/zMax)); }
+
+  // dilative / contractive ground, split at the practical cutoff
+  ctx.fillStyle='#eef7f2'; ctx.fillRect(ml,mt,X(PSI_DIL_BOUNDARY)-ml,ph);
+  ctx.fillStyle='#fdf1ef'; ctx.fillRect(X(PSI_DIL_BOUNDARY),mt,ml+pw-X(PSI_DIL_BOUNDARY),ph);
+
+  // outer band: what the ASSUMED inputs are worth, 5th-95th across draws
+  if(mcProfile && mcProfile.length){
+    ctx.fillStyle='#e6e0ef'; ctx.globalAlpha=0.85; ctx.beginPath();
+    mcProfile.forEach(function(p,i){ var x=X(p.lo), y=Y(p.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    for(var i=mcProfile.length-1;i>=0;i--) ctx.lineTo(X(mcProfile[i].hi), Y(mcProfile[i].z));
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+  }
+  // inner band: what the METHOD claims at a single point
+  ctx.fillStyle='#f0d5d2'; ctx.globalAlpha=0.9; ctx.beginPath();
+  rows.forEach(function(c,i){ var x=X(c.psi-PSI_BAND), y=Y(c.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  for(var k=rows.length-1;k>=0;k--) ctx.lineTo(X(rows[k].psi+PSI_BAND), Y(rows[k].z));
+  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var yt=niceTicks(0,zMax,6);
+  yt.values.forEach(function(v){ if(v>zMax) return; var y=Y(v);
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+
+  // the fitting interval, bracketed on the left and shaded faintly across
+  var top=num('fitTop'), bot=num('fitBot');
+  if(bot<top){ var t=top; top=bot; bot=t; }
+  ctx.fillStyle='rgba(18,59,74,0.06)'; ctx.fillRect(ml, Y(top), pw, Y(bot)-Y(top));
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(ml+2,Y(top)); ctx.lineTo(ml+2,Y(bot)); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ml+2,Y(top)); ctx.lineTo(ml+9,Y(top));
+  ctx.moveTo(ml+2,Y(bot)); ctx.lineTo(ml+9,Y(bot)); ctx.stroke();
+
+  // psi_k, drawn only across the interval it was fitted to
+  var mu=num('muSlide'), sig=num('sigSlide'), psik=mu+invNorm(num('pctSlide')/100)*sig;
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.2;
+  ctx.beginPath(); ctx.moveTo(X(psik),Y(top)); ctx.lineTo(X(psik),Y(bot)); ctx.stroke();
+  ctx.setLineDash([3,3]); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(X(mu),Y(top)); ctx.lineTo(X(mu),Y(bot)); ctx.stroke(); ctx.setLineDash([]);
+
+  ctx.setLineDash([3,3]); ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(X(0),mt); ctx.lineTo(X(0),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#268160'; ctx.lineWidth=1.8;
+  ctx.beginPath(); ctx.moveTo(X(PSI_DIL_BOUNDARY),mt); ctx.lineTo(X(PSI_DIL_BOUNDARY),mt+ph); ctx.stroke();
+
+  ctx.strokeStyle='#c64852'; ctx.lineWidth=1.6; ctx.beginPath();
+  rows.forEach(function(c,i){ var x=X(c.psi), y=Y(c.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+
+  ctx.textAlign='right';
+  yt.values.forEach(function(v){ if(v>zMax) return; var y=Y(v);
+    ctx.fillStyle='#3a4b52'; ctx.font='700 10px Arial'; ctx.textBaseline='bottom';
+    ctx.fillText(v.toFixed(yt.dp), ml-6, y);
+    ctx.fillStyle='#748086'; ctx.font='9.5px Arial'; ctx.textBaseline='top';
+    ctx.fillText('('+Math.round(mToFt(v))+')', ml-6, y+1); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('depth, m (ft)',0,0); ctx.restore();
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.font='9.5px Arial'; ctx.fillStyle='#61737b';
+  var xt=niceTicks(lo,hi,6);
+  xt.values.forEach(function(v){ if(v<lo||v>hi) return;
+    ctx.fillText(v.toFixed(2), clampLabelX(ctx,X(v),v.toFixed(2),ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
+
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+  haloText(ctx,'−0.05', X(PSI_DIL_BOUNDARY)+3, mt+3, '#268160');
+  var lab='ψk = '+(psik>=0?'+':'')+psik.toFixed(3);
+  var lx = X(psik)+4+ctx.measureText(lab).width > ml+pw ? X(psik)-4-ctx.measureText(lab).width : X(psik)+4;
+  haloText(ctx, lab, lx, Y(top)+4, '#1479b8');
+  ctx.font='700 9px Arial'; ctx.textAlign='left';
+  haloText(ctx,'fitting interval', ml+12, Y(top)+4, '#123b4a');
+}
+
+function updateFullProfileNote(){
+  var rows=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
+  if(!rows.length){ el('fullProfileNote').innerHTML=''; return; }
+  var methodOnly=rows.filter(function(c){
+    return (c.psi-PSI_BAND)<PSI_DIL_BOUNDARY && (c.psi+PSI_BAND)>PSI_DIL_BOUNDARY; }).length;
+  var both=0;
+  if(mcProfile && mcProfile.length===rows.length){
+    both=mcProfile.filter(function(p){ return p.lo<PSI_DIL_BOUNDARY && p.hi>PSI_DIL_BOUNDARY; }).length;
+  }
+  var spread=rows.map(function(c){ return c.psi; });
+  var mm=momentsOf(spread);
+  el('fullProfileNote').innerHTML=
+    '<b>Reading the two bands.</b> The dark trace swings from '+Math.min.apply(null,spread).toFixed(3)+' to '+
+    Math.max.apply(null,spread).toFixed(3)+' down this hole &mdash; a range of <b>'+(Math.max.apply(null,spread)-Math.min.apply(null,spread)).toFixed(3)+
+    '</b>, against a standard deviation of '+mm.sd.toFixed(3)+'. That swing is <b>variability</b>: real, and the reason you choose a percentile rather than a mean. '+
+    'The pink band around it is <b>uncertainty</b> &mdash; the &plusmn;0.05 the method claims at any one point &mdash; and it alone leaves <b>'+methodOnly+' of '+rows.length+
+    '</b> depths unable to say which side of the &minus;0.05 line they are on. '+
+    (both>methodOnly
+      ? 'Combine it with the spreads you set on &gamma;, the water table, K<sub>o</sub> and &lambda;<sub>10</sub> and that rises to <b>'+both+'</b> of '+rows.length+'. '
+      : 'Combining it with your assumed inputs leaves <b>'+both+'</b> unresolved &mdash; on these settings the input spreads are narrower than the method band, so the inversion itself dominates. ')+
+    'The two are not interchangeable: narrowing the pink band needs better inputs, while the dark trace&rsquo;s swing is the deposit itself and no amount of measurement will flatten it. '+
+    'A design has to survive both &mdash; which is exactly what choosing &psi;<sub>k</sub> from a distribution, rather than quoting a mean, is for.';
+}
+
 // ---- Section 8, short form of Module 1's uncertainty warm-up ----
 // Module 1 gives lambda10, eGamma, e and p' a spread each and watches one psi become a
 // distribution. The same argument here has more inputs, because the CPT chain assumes
@@ -3115,7 +3294,8 @@ function drawMcChart(){
 }
 
 ['mcGamma','mcWt','mcKo','mcLam'].forEach(function(id){
-  el(id).addEventListener('input', function(){ mcResult=null; renderMonteCarlo(); });
+  // the input spreads set the OUTER band on the profile too, so drop its cache
+  el(id).addEventListener('input', function(){ mcResult=null; mcProfile=null; renderMonteCarlo(); drawPsiFullProfile(); updateFullProfileNote(); });
 });
 el('mcIncludeBand').addEventListener('change', function(){ if(mcResult) runMonteCarlo(); });
 el('mcRun').addEventListener('click', runMonteCarlo);
@@ -3258,7 +3438,7 @@ window.runModule2SelfTests = function(){
 
     // every figure carries a caption, a legend and a reading strategy
     var canv=Array.from(document.querySelectorAll("canvas"));
-    check(canv.length===10, "module: ten figures");
+    check(canv.length===11, "module: eleven figures");
     canv.forEach(function(c){
       var sh=c.closest(".figure-shell");
       check(!!sh, "module: "+c.id+" is wrapped as a figure");
@@ -3321,6 +3501,64 @@ window.runModule2SelfTests = function(){
     var head=v8.querySelector("h2").textContent;
     check(/variable|variability/i.test(head), "S8: the heading is about variability");
     check(!/uncertainty/i.test(head), "S8: the heading does not call Chapter 5 uncertainty");
+  })();
+  // ---- Section 8 full profile: variability and uncertainty drawn apart ----
+  (function(){
+    var cv=el('psiFullProfileChart');
+    check(!!cv && cv.width>0, "S8 profile: the full psi profile is drawn");
+    check(cv.closest(".figure-shell")!==null, "S8 profile: it has a how-to-read wrapper");
+    check(Math.abs(cv.width/parseFloat(cv.style.width)-(window.devicePixelRatio||1))<0.01,
+          "S8 profile: backed at device resolution");
+
+    if(!mcProfile) buildMcProfile();
+    var rows=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
+    check(mcProfile.length===rows.length, "S8 profile: one envelope point per reading");
+    // the outer band carries BOTH sources, so it must contain the method band everywhere
+    var nests=mcProfile.every(function(p,i){
+      return p.lo<=rows[i].psi-PSI_BAND+1e-9 && p.hi>=rows[i].psi+PSI_BAND-1e-9; });
+    check(nests, "S8 profile: the combined band contains the method band at every depth");
+    var widths=mcProfile.map(function(p){ return p.hi-p.lo; });
+    check(Math.min.apply(null,widths) > 2*PSI_BAND,
+          "S8 profile: combining both sources is wider than the method alone");
+    check(mcProfile.every(function(p){ return p.lo<p.hi; }), "S8 profile: every envelope is ordered");
+
+    // more assumed spread must widen the combined band, never narrow it
+    var keep=el('mcLam').value;
+    el('mcLam').value=0; mcProfile=null; buildMcProfile();
+    var tight=mcProfile.reduce(function(a,p){ return a+(p.hi-p.lo); },0)/mcProfile.length;
+    el('mcLam').value=45; mcProfile=null; buildMcProfile();
+    var wide=mcProfile.reduce(function(a,p){ return a+(p.hi-p.lo); },0)/mcProfile.length;
+    check(wide>tight, "S8 profile: widening the lambda10 spread widens the combined band");
+    el('mcLam').value=keep; mcProfile=null; buildMcProfile();
+
+    // the note must quote counts it actually computed
+    updateFullProfileNote();
+    var t=el('fullProfileNote').textContent;
+    var methodOnly=rows.filter(function(c){
+      return (c.psi-PSI_BAND)<PSI_DIL_BOUNDARY && (c.psi+PSI_BAND)>PSI_DIL_BOUNDARY; }).length;
+    check(t.indexOf(methodOnly+" of "+rows.length)>=0,
+          "S8 profile: the note quotes the real method-only unresolved count");
+    check(/variability/i.test(t) && /uncertainty/i.test(t),
+          "S8 profile: the note names both effects");
+  })();
+
+  // the panel must state that the two have DIFFERENT remedies, not just that they differ
+  (function(){
+    var p=document.querySelector(".two-problems");
+    check(!!p, "S8: the variability-vs-uncertainty panel exists");
+    var cards=p.querySelectorAll(".prob");
+    check(cards.length===2, "S8: it has one card for each");
+    var txt=p.textContent;
+    check(/Chapter 5/.test(txt) && /Chapter 4/.test(txt),
+          "S8: each is attributed to the chapter it belongs to");
+    check(/property of the ground/i.test(txt) && /property of your knowledge/i.test(txt),
+          "S8: it says what kind of thing each one is");
+    check(p.querySelectorAll("p.fix").length===2,
+          "S8: each card says what actually reduces it");
+    check(/more CPT footage does/i.test(txt) || /not.{0,20}more CPT/i.test(txt),
+          "S8: it says more soundings do not reduce uncertainty");
+    check(/cannot make ground less variable|nothing/i.test(txt),
+          "S8: and that variability cannot be measured away");
   })();
   // ---- Section 8 Monte Carlo: the short form of Module 1's uncertainty warm-up ----
   (function(){
@@ -4321,6 +4559,7 @@ var figureInfo={
 'qpChart':['The Qp-psi calibration curve, and how much it can be trusted','Horizontal axis is the state parameter; vertical is Qp on a log scale. <b>Blue:</b> Qp=k&middot;exp(-m&psi;) for the selected sand. <b>Pale blue band:</b> the &plusmn;0.05 in psi that the method claims against the calibration-chamber database. <b>Faint grey curves:</b> the same relationship for the other 16 sands in Table 2.1, so the effect of the lambda10 choice is visible rather than asserted. <b>Red dot:</b> this depth&rsquo;s Qp and the psi it inverts to. <b>Grey dots at Qp=100 with the bracket beneath:</b> the three real Ticino readings of Fig. 4.20, split by stress level. A grey dashed line marks psi=0 and a green dashed line the -0.05 practical cutoff.','Start with the red dot, then look at how much room there is around it. The pale band is the method&rsquo;s own stated accuracy, and it is wide -- read psi off this chart as a range, not a number. Then look at the three grey Ticino points: identical Qp, three different psi, purely because the stress level differed. That spread is as large as the claimed accuracy, and this equation has no term that could see it. Finally, sweep the sand selector and watch the blue curve move through the grey ones. If that motion changes which side of the -0.05 line your red dot sits on, then lambda10 -- a laboratory measurement on the actual soil -- is deciding your engineering conclusion, and no amount of care with the cone log will substitute for it.'],
 'psiProfileChart':['psi down the sounding, read as a band','Depth runs down the left in m with ft in parentheses; psi runs across. <b>Red trace:</b> psi from the inversion at every depth. <b>Pink envelope:</b> the same trace plus and minus the method&rsquo;s claimed 0.05. <b>Green ground:</b> dilative, left of the -0.05 cutoff. <b>Pink ground:</b> contractive, right of it. A grey dashed line marks the theoretical critical state at psi=0, and the solid green line the -0.05 practical cutoff used throughout this module. An orange dashed line marks the selected depth.','Do not read the red line on its own -- read the envelope. Wherever the pink band straddles the green cutoff, the sounding does not actually tell you whether that depth is dilative or contractive; it tells you the answer is inside the noise. Those are the depths worth a laboratory CSL or a second sounding. Where the whole band sits clear on one side, the conclusion is robust to the method&rsquo;s own stated error. Change the sand and watch the entire profile shift bodily left or right: that motion is the lambda10 sensitivity, and it moves the whole hole at once rather than adding scatter.'],
 
+'psiFullProfileChart':['psi down the hole, with variability and uncertainty drawn apart','Depth runs down the left in m with ft in parentheses; psi runs across, over green (dilative) and pink (contractive) ground split at -0.05. <b>Dark red trace:</b> psi from the inversion at every depth -- this is the ground&rsquo;s own variability. <b>Inner pink band:</b> the +/-0.05 the method claims at any single point. <b>Outer lilac band:</b> the 5th to 95th percentile with BOTH sources acting together -- the method band plus the spreads set on gamma, the water table, Ko and lambda10 below. Worth knowing: on the default settings the input spreads alone are narrower than the method band, so most of that outer width is the inversion itself, not your assumptions. <b>Navy bracket on the left:</b> the depth interval you are fitting. <b>Blue line across it:</b> psi_k, with the fitted mean dashed beside it. <b>Green line:</b> the -0.05 cutoff; the grey dashed line is psi=0.','Read the three layers as three different questions. The trace answers where is this deposit loose -- that is variability, it is real, and no amount of measuring flattens it; you handle it by choosing a percentile rather than a mean. The inner band answers how well do I know psi here -- that is method uncertainty, and it narrows only with better inputs, not more CPT footage. The outer band answers how much of my answer is assumption rather than data. Then look at where psi_k sits relative to the trace: it should sit out in the weak tail, not near the middle, because it is meant to protect against the loose fraction rather than describe the average soil. Wherever a band crosses the green line, that depth is not resolved -- and which band crossed it tells you whether the fix is a laboratory CSL or another sounding.'],
 'mcChart':['What the assumed inputs alone do to psi_k','Horizontal axis is the characteristic state parameter; bars are how often each value came up across the draws. <b>Purple bars:</b> psi_k recomputed with gamma, the water table, Ko and lambda10 each drawn from the spread you set. <b>Pale red band:</b> the 5th to 95th percentile of those draws. <b>Blue line:</b> the single psi_k your best estimates give. <b>Green dashed line:</b> the -0.05 dilative/contractive cutoff.','The blue line is the number you would have reported. The purple spread is what that number is actually worth given inputs you estimated rather than measured. Watch whether the red band crosses the green line: if it does, the engineering conclusion on this interval is being decided by your assumptions rather than by the sounding, and more CPT footage will not fix it -- measuring lambda10, the unit weight and the piezometric surface will. Set every spread to zero and the distribution collapses onto the blue line, which is the claim a single reported psi_k quietly makes.'],
 'distChart':['The psi distribution, the fit, and what the sounding actually shows','Horizontal axis is the state parameter; vertical is probability density. <b>Pale blue bars:</b> the histogram of psi actually measured over the chosen depth interval of the loaded sounding. <b>Navy curve:</b> the normal distribution fitted to psi_mu and psi_sigma on the sliders. <b>Red shading:</b> the weak tail beyond the chosen characteristic value, under that fitted curve. <b>Blue vertical line:</b> psi_k itself. <b>Red dashed line:</b> psi = -0.02, the threshold Onisiphorou found liquefiable at Nerlerk.','The bars are the data and the curve is the assumption -- compare them before trusting anything downstream. Where the bars sit above the curve on the right-hand side, the real weak tail is fatter than the normal model, and psi_k is then less conservative than its percentile claims; the skewness reported below the figure puts a number on that. Then look at how much of the histogram lies right of the red dashed line: that is the fraction of this interval already at Nerlerk-liquefiable state, and the note below compares it against the 4% and 10% volume fractions from Rowe and Craig\'s centrifuge caissons. Finally drag the percentile and watch psi_k march into the tail -- the design value is deliberately not the average soil.']
 };
