@@ -67,17 +67,26 @@ canvas{display:block;width:100%;height:260px}
 @media(max-width:1080px){.inv-figs{grid-template-columns:1fr}}
 .dist-figs{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;align-items:start;margin-top:10px}
 @media(max-width:1080px){.dist-figs{grid-template-columns:1fr}}
-.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.two-problems{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
-@media(max-width:820px){.two-problems{grid-template-columns:1fr}}
-.prob{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff}
+.mc-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.two-problems{display:grid;grid-template-columns:1fr;gap:10px;margin-top:8px}
+.s8-split{display:grid;grid-template-columns:0.92fr 1.08fr;gap:16px;align-items:start;margin-top:8px}
+.mc-split{display:grid;grid-template-columns:0.88fr 1.12fr;gap:16px;align-items:start;margin-top:6px}
+.note-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.note-grid>details{margin-top:0}
+.diag{border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;background:#fff}
+.diag.diag-warn{border-left-color:var(--orange)}
+.diag>summary{cursor:pointer;padding:8px 10px;font-size:11.5px;font-weight:700;line-height:1.4}
+.diag>summary span{font-weight:400;color:var(--muted)}
+.diag[open]>summary{border-bottom:1px solid var(--line)}
+.diag>div{padding:9px 11px;font-size:11px;line-height:1.6}
+@media(max-width:1080px){.s8-split,.mc-split{grid-template-columns:1fr}.note-grid{grid-template-columns:1fr}}
+.prob{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
 .prob.prob-var{border-left:5px solid #c64852}
 .prob.prob-unc{border-left:5px solid #7653a6}
 .prob>b{font-size:13.5px;display:block}
 .prob>small{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:2px 0 8px}
-.prob p{font-size:11.5px;line-height:1.6;margin:0 0 8px}
-.prob p.fix{margin:0;padding-top:8px;border-top:1px solid var(--line);color:var(--ink)}
-@media(max-width:820px){.grid4{grid-template-columns:repeat(2,1fr)}}
+.prob p{font-size:11px;line-height:1.55;margin:0 0 6px}
+.prob p.fix{margin:0;padding-top:6px;border-top:1px solid var(--line);color:var(--ink)}
 #psikEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
 #psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 #table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
@@ -613,7 +622,7 @@ body{padding-bottom:54px}
 <div class="card" id="variability-section">
 <h2>8. How variable is &psi; really? Choosing a characteristic value &psi;<sub>k</sub></h2>
 <div class="explain">
-<p>Chapter 5's central point: &psi; measured continuously down a real CPT sounding is never one number, it's a distribution &mdash; and Rowe &amp; Craig's centrifuge caisson tests found that as little as <b>4% loose material by volume</b> measurably degraded cyclic performance, with <b>10%</b> triggering outright liquefaction failure during testing. So which percentile of the distribution should a design actually use? The book's real example is the Nerlerk berm (Module 1's Ch. 1 flow-failure case history): over the 3&ndash;7 m depth interval, the median CPT-derived &psi; &asymp; &minus;0.08 looked comfortably stable, but the 80th percentile was &asymp; &minus;0.03, and Onisiphorou's stochastic re-analysis found liquefiable behavior starting around &psi; &gt; &minus;0.02 &mdash; i.e. the "average" soil looked fine while a real, connected fraction of it did not.</p>
+<p>Chapter 5's central point: &psi; measured continuously down a real CPT sounding is never one number, it's a distribution &mdash; and Rowe &amp; Craig's centrifuge caissons degraded at <b>4% loose material by volume</b> and failed outright at <b>10%</b>. So which percentile should a design use? The book's example is the Nerlerk berm: over 3&ndash;7&nbsp;m the median CPT-derived &psi;&nbsp;&asymp;&nbsp;&minus;0.08 looked stable, but the 80th percentile was &asymp;&nbsp;&minus;0.03 and Onisiphorou's re-analysis found liquefiable behaviour from &psi;&nbsp;&gt;&nbsp;&minus;0.02 &mdash; the average soil looked fine while a real, connected fraction of it did not.</p>
 </div>
 <div class="eq">&psi;<sub>k</sub> = &psi;<sub>&mu;</sub> + z(percentile)&middot;&psi;<sub>&sigma;</sub> &nbsp; (assuming a normal distribution of &psi;; z from the inverse standard normal CDF)</div>
 
@@ -631,6 +640,8 @@ body{padding-bottom:54px}
 
 <div class="guided-panel" style="margin-top:12px">
 <h3>Variability and uncertainty are different problems, and you need both</h3>
+<div class="s8-split">
+<div>
 <div class="two-problems">
 <div class="prob prob-var">
 <b>Variability &mdash; Chapter 5</b>
@@ -645,10 +656,14 @@ body{padding-bottom:54px}
 <p class="fix"><b>What reduces it:</b> better inputs. A laboratory CSL on the actual material, a measured unit-weight profile, a real piezometer. More CPT footage does <i>not</i> touch it &mdash; the hundredth sounding inherits the same &plusmn;0.05 as the first.</p>
 </div>
 </div>
-<p class="explain" style="margin-top:8px">They compound, and they call for different responses, so the profile below draws them separately. Read the dark trace as the ground, the inner band as how well the method knows any one point, and the outer band as what your assumed inputs are worth on top of that.</p>
+<p class="explain" style="margin:8px 0 0;font-size:11.5px">They compound and call for different responses, so the profile beside them draws them separately: the dark trace is the ground, the inner band is how well the method knows any one point, the outer band is both together.</p>
+</div>
+<div>
 <div class="chart-host"><canvas id="psiFullProfileChart" role="img" aria-label="State parameter against depth for the whole sounding with two nested uncertainty envelopes, the selected fitting interval marked, and the mean and characteristic value drawn across it."></canvas></div>
 <div class="legend"><span><i style="background:#c64852"></i>&psi; from the inversion</span><span><i style="background:#f0d5d2"></i>&plusmn;0.05 method uncertainty</span><span><i style="background:#e6e0ef"></i>method <b>and</b> assumed &gamma;, water table, K<sub>o</sub>, &lambda;<sub>10</sub> combined (5th&ndash;95th)</span><span><i style="background:#123b4a"></i>your fitting interval</span><span><i style="background:#1479b8"></i>&psi;<sub>k</sub></span><span><i style="background:#268160"></i>&minus;0.05 cutoff</span></div>
-<div class="callout" id="fullProfileNote" style="margin-top:8px" aria-live="polite"></div>
+</div>
+</div>
+<div class="callout" id="fullProfileNote" style="margin-top:10px" aria-live="polite"></div>
 
 </div>
 
@@ -680,10 +695,11 @@ body{padding-bottom:54px}
 </div>
 </div>
 
-<div class="callout" id="varianceSplitNote" style="margin-top:10px" aria-live="polite"></div>
 <h3>And how much of &psi;<sub>k</sub> is the ground, versus what you assumed?</h3>
 <p class="explain" style="margin-top:-2px">Module 1 makes this point with the state-parameter equation: give each input a spread instead of a single value and one &psi; becomes a distribution. The same argument applies here, with more inputs. &gamma;, the water table, K<sub>o</sub> and &lambda;<sub>10</sub> are all estimates, and every one of them feeds the chain that produced the histogram above. Give them spreads and watch what happens to &psi;<sub>k</sub>.</p>
-<div class="grid4">
+<div class="mc-split">
+<div>
+<div class="mc-grid">
 <div class="slider-block"><label for="mcGamma"><span>&gamma; &plusmn;</span> <span class="readout" id="mcGammaOut">1.0</span></label><input id="mcGamma" type="range" min="0" max="3" step="0.1" value="1"></div>
 <div class="slider-block"><label for="mcWt"><span>water table &plusmn;</span> <span class="readout" id="mcWtOut">1.0 m</span></label><input id="mcWt" type="range" min="0" max="5" step="0.25" value="1"></div>
 <div class="slider-block"><label for="mcKo"><span>K<sub>o</sub> &plusmn;</span> <span class="readout" id="mcKoOut">0.10</span></label><input id="mcKo" type="range" min="0" max="0.3" step="0.01" value="0.10"></div>
@@ -693,13 +709,20 @@ body{padding-bottom:54px}
 <button type="button" id="mcRun">Run 1500 draws</button>
 <label style="font-size:11.5px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="mcIncludeBand" checked> also add the method&rsquo;s own &plusmn;0.05 to each reading</label>
 </div>
-<div class="statgrid" id="mcStats" style="margin-top:8px"></div>
-<div class="chart-host" style="margin-top:8px"><canvas id="mcChart" role="img" aria-label="Distribution of the characteristic state parameter across Monte Carlo draws of the assumed inputs."></canvas></div>
+<div class="statgrid n2" id="mcStats" style="margin-top:8px"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="mcChart" role="img" aria-label="Distribution of the characteristic state parameter across Monte Carlo draws of the assumed inputs."></canvas></div>
 <div class="legend"><span><i style="background:#7653a6"></i>&psi;<sub>k</sub> across draws</span><span><i style="background:#1479b8"></i>&psi;<sub>k</sub> from your single best estimate</span><span><i style="background:#c64852"></i>5th&ndash;95th percentile band</span></div>
-<div class="callout" id="mcNote" style="margin-top:8px" aria-live="polite"></div>
+</div>
+</div>
+<div class="callout" id="mcNote" style="margin-top:10px" aria-live="polite"></div>
 
-<div class="warning" id="normalityNote" style="margin-top:10px" aria-live="polite"></div>
-<div class="callout" id="looseFractionNote" style="margin-top:10px" aria-live="polite"></div>
+<div class="note-grid">
+<details class="diag diag-warn"><summary>Normality check &mdash; <span id="normalityKey">&mdash;</span></summary><div id="normalityNote" aria-live="polite"></div></details>
+<details class="diag"><summary>Variability vs uncertainty &mdash; <span id="varianceKey">&mdash;</span></summary><div id="varianceSplitNote" aria-live="polite"></div></details>
+<details class="diag"><summary>Loose fraction &mdash; <span id="looseKey">&mdash;</span></summary><div id="looseFractionNote" aria-live="polite"></div></details>
+</div>
 </div>
 
 <div class="quiz-checkpoint" id="quizCheckD">
@@ -2918,6 +2941,7 @@ function updateNormalityNote(){
   // ground's own variability. Readers reliably assume the opposite.
   var sdObs=s.sd;
   var sdTrue = sdObs>PSI_BAND ? Math.sqrt(Math.max(0, sdObs*sdObs-PSI_BAND*PSI_BAND)) : 0;
+  el('varianceKey').textContent='fitted sigma '+sdObs.toFixed(3)+' is an upper bound';
   el('varianceSplitNote').innerHTML =
     '<b>Two different things, and this figure holds both.</b> Chapter 5 is about soil <i>variability</i> &mdash; the ground genuinely differs from point to point. '+
     'Section 7&rsquo;s &plusmn;0.05 is <i>uncertainty</i> &mdash; how well the inversion knows &psi; at any single point. The distribution above is a mixture: every &psi; in it was '+
@@ -2929,6 +2953,7 @@ function updateNormalityNote(){
     'Treat that subtraction as indicative only &mdash; the stress-level bias is systematic with depth rather than random, so it does not combine as cleanly as quadrature suggests, and one sounding cannot separate the two. '+
     'The practical reading: &psi;<sub>k</sub> below errs conservative on this count, but do not quote the fitted &psi;<sub>&sigma;</sub> as a measured property of the deposit.';
 
+  el('normalityKey').textContent='skewness '+s.skew.toFixed(2)+', '+skewWord.replace(/&psi;/g,'psi');
   el('normalityNote').innerHTML=
     '<b>Is &ldquo;assume normal&rdquo; actually safe on this interval?</b> The equation above takes it on faith; the histogram lets you check. '+
     'Over '+num('fitTop').toFixed(1)+'&ndash;'+num('fitBot').toFixed(1)+'&nbsp;m the '+s.n+' readings have a skewness of <b>'+s.skew.toFixed(2)+
@@ -2946,6 +2971,7 @@ function updateLooseFractionNote(psik){
     : pct>=ROWE_CRAIG_DEGRADE
       ? 'That is past the <b>4%</b> at which they measured degraded cyclic performance, though short of the 10% that caused outright failure.'
       : 'That is below the <b>4%</b> at which they first measured degraded cyclic performance.';
+  el('looseKey').textContent=pct.toFixed(1)+'% looser than psi = -0.02 ('+loose+' of '+n+')';
   el('looseFractionNote').innerHTML=
     '<b>Putting the centrifuge numbers on your own data.</b> The 4% and 10% quoted at the top of this section are volume fractions of loose material, '+
     'and this sounding can be asked the same question directly. Over '+num('fitTop').toFixed(1)+'&ndash;'+num('fitBot').toFixed(1)+'&nbsp;m, '+
@@ -3056,8 +3082,8 @@ function buildMcProfile(){
 
 function drawPsiFullProfile(){
   var host=el('psiFullProfileChart'); if(!host) return;
-  var cvp=prepCanvas(host, 380, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=52, mr=14, mt=18, mb=46, pw=W-ml-mr, ph=H-mt-mb;
+  var cvp=prepCanvas(host, 360, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=48, mr=12, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
   var zMax=SND_MAX_Z;
   var rows=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi); });
   if(!rows.length) return;
@@ -3128,7 +3154,7 @@ function drawPsiFullProfile(){
   ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
   ctx.fillText('depth, m (ft)',0,0); ctx.restore();
   ctx.textAlign='center'; ctx.textBaseline='top'; ctx.font='9.5px Arial'; ctx.fillStyle='#61737b';
-  var xt=niceTicks(lo,hi,6);
+  var xt=niceTicks(lo,hi,4);
   xt.values.forEach(function(v){ if(v<lo||v>hi) return;
     ctx.fillText(v.toFixed(2), clampLabelX(ctx,X(v),v.toFixed(2),ml,pw), mt+ph+5); });
   ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
@@ -3252,8 +3278,8 @@ function renderMonteCarlo(){
 
 function drawMcChart(){
   var host=el('mcChart'); if(!host) return;
-  var cvp=prepCanvas(host, 150, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=44, mr=12, mt=12, mb=34, pw=W-ml-mr, ph=H-mt-mb;
+  var cvp=prepCanvas(host, 200, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=42, mr=12, mt=12, mb=36, pw=W-ml-mr, ph=H-mt-mb;
   ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
   if(!mcResult || !mcResult.draws.length){
     ctx.fillStyle='#8a97a0'; ctx.font='11px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
