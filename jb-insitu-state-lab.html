@@ -67,6 +67,8 @@ canvas{display:block;width:100%;height:260px}
 @media(max-width:1080px){.inv-figs{grid-template-columns:1fr}}
 .dist-figs{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;align-items:start;margin-top:10px}
 @media(max-width:1080px){.dist-figs{grid-template-columns:1fr}}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:820px){.grid4{grid-template-columns:repeat(2,1fr)}}
 #psikEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
 #psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 #table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
@@ -646,6 +648,24 @@ body{padding-bottom:54px}
 </div>
 </div>
 
+<div class="callout" id="varianceSplitNote" style="margin-top:10px" aria-live="polite"></div>
+<h3>And how much of &psi;<sub>k</sub> is the ground, versus what you assumed?</h3>
+<p class="explain" style="margin-top:-2px">Module 1 makes this point with the state-parameter equation: give each input a spread instead of a single value and one &psi; becomes a distribution. The same argument applies here, with more inputs. &gamma;, the water table, K<sub>o</sub> and &lambda;<sub>10</sub> are all estimates, and every one of them feeds the chain that produced the histogram above. Give them spreads and watch what happens to &psi;<sub>k</sub>.</p>
+<div class="grid4">
+<div class="slider-block"><label for="mcGamma"><span>&gamma; &plusmn;</span> <span class="readout" id="mcGammaOut">1.0</span></label><input id="mcGamma" type="range" min="0" max="3" step="0.1" value="1"></div>
+<div class="slider-block"><label for="mcWt"><span>water table &plusmn;</span> <span class="readout" id="mcWtOut">1.0 m</span></label><input id="mcWt" type="range" min="0" max="5" step="0.25" value="1"></div>
+<div class="slider-block"><label for="mcKo"><span>K<sub>o</sub> &plusmn;</span> <span class="readout" id="mcKoOut">0.10</span></label><input id="mcKo" type="range" min="0" max="0.3" step="0.01" value="0.10"></div>
+<div class="slider-block"><label for="mcLam"><span>&lambda;<sub>10</sub> &plusmn; (%)</span> <span class="readout" id="mcLamOut">20%</span></label><input id="mcLam" type="range" min="0" max="50" step="1" value="20"></div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px">
+<button type="button" id="mcRun">Run 1500 draws</button>
+<label style="font-size:11.5px;display:flex;align-items:center;gap:5px"><input type="checkbox" id="mcIncludeBand" checked> also add the method&rsquo;s own &plusmn;0.05 to each reading</label>
+</div>
+<div class="statgrid" id="mcStats" style="margin-top:8px"></div>
+<div class="chart-host" style="margin-top:8px"><canvas id="mcChart" role="img" aria-label="Distribution of the characteristic state parameter across Monte Carlo draws of the assumed inputs."></canvas></div>
+<div class="legend"><span><i style="background:#7653a6"></i>&psi;<sub>k</sub> across draws</span><span><i style="background:#1479b8"></i>&psi;<sub>k</sub> from your single best estimate</span><span><i style="background:#c64852"></i>5th&ndash;95th percentile band</span></div>
+<div class="callout" id="mcNote" style="margin-top:8px" aria-live="polite"></div>
+
 <div class="warning" id="normalityNote" style="margin-top:10px" aria-live="polite"></div>
 <div class="callout" id="looseFractionNote" style="margin-top:10px" aria-live="polite"></div>
 </div>
@@ -782,9 +802,15 @@ function sndInterp(z){
 var sndSandSel = el('sndSandSelect');
 sndSandSel.innerHTML = SANDS.map(function(s,i){ return '<option value="'+i+'"'+(i===8?" selected":"")+'>'+s.name+' (λ10='+s.lambda10+')</option>'; }).join("");
 
-function sndComputeFromValues(z, qt, fs, u2){
-  var gamma = num('sndGamma'), wt = num('sndWt'), ko = num('sndKo');
-  var hydFrac = num('sndHyd')/100;
+// `ov` lets the Monte Carlo in Section 8 vary gamma, the water table, Ko and lambda10
+// without touching the sliders. It reuses this same physics rather than a second copy,
+// so the sampled chain cannot drift from the one the rest of the module shows.
+function sndComputeFromValues(z, qt, fs, u2, ov){
+  ov = ov || {};
+  var gamma = ov.gamma!==undefined ? ov.gamma : num('sndGamma');
+  var wt    = ov.wt   !==undefined ? ov.wt    : num('sndWt');
+  var ko    = ov.ko   !==undefined ? ov.ko    : num('sndKo');
+  var hydFrac = (ov.hyd!==undefined ? ov.hyd : num('sndHyd'))/100;
   var svTotal = gamma*z;
   // Full hydrostatic equilibrium pore pressure, then the fraction of it actually
   // assumed at this site. Below 100% is under-drained/partially drained (common under
@@ -801,12 +827,12 @@ function sndComputeFromValues(z, qt, fs, u2){
   var po = svEff*(1+2*ko)/3;
   var Qp = (qtKpa-po)/po;
   var ic = icOf(Q,F,Bq);
-  var sand = SANDS[+sndSandSel.value];
-  var psi = psiOfQp(sand.lambda10, Math.max(1,Qp));
+  var lam10 = ov.lambda10!==undefined ? ov.lambda10 : SANDS[+sndSandSel.value].lambda10;
+  var psi = psiOfQp(lam10, Math.max(1,Qp));
   return {z:z, qt:qt, fs:fs, u2:u2, svTotal:svTotal, u0:u0, u0Full:u0Full, hydFrac:hydFrac, svEff:svEff, Q:Q, F:F, Bq:Bq, po:po, Qp:Qp, ic:ic, psi:psi};
 }
 function sndComputeAt(z){ var pt=sndInterp(z); if(!pt) return null; return sndComputeFromValues(z, pt.qt, pt.fs, pt.u2); }
-function sndComputeAtRow(row){ return sndComputeFromValues(row.z, row.qt, row.fs, row.u2); }
+function sndComputeAtRow(row, ov){ return sndComputeFromValues(row.z, row.qt, row.fs, row.u2, ov); }
 
 var PSI_DIL_BOUNDARY = -0.05;
 
@@ -2851,6 +2877,23 @@ function updateNormalityNote(){
     : (s.skew>0
         ? 'That matters here, and not symmetrically: a right skew means <b>the real weak tail is fatter than the normal curve drawn below</b>, so the fitted &psi;<sub>k</sub> is <i>less</i> conservative than the percentile suggests. Read it as a floor, not a value.'
         : 'A left skew means the normal curve overstates the weak tail, so the fitted &psi;<sub>k</sub> errs conservative here.');
+  // Chapter 5 is about soil VARIABILITY -- real differences in the ground. Section 7's
+  // +/-0.05 is method UNCERTAINTY -- how well the inversion knows psi at one point. A
+  // sigma fitted to CPT-derived psi contains both, so it is an UPPER bound on the
+  // ground's own variability. Readers reliably assume the opposite.
+  var sdObs=s.sd;
+  var sdTrue = sdObs>PSI_BAND ? Math.sqrt(Math.max(0, sdObs*sdObs-PSI_BAND*PSI_BAND)) : 0;
+  el('varianceSplitNote').innerHTML =
+    '<b>Two different things, and this figure holds both.</b> Chapter 5 is about soil <i>variability</i> &mdash; the ground genuinely differs from point to point. '+
+    'Section 7&rsquo;s &plusmn;0.05 is <i>uncertainty</i> &mdash; how well the inversion knows &psi; at any single point. The distribution above is a mixture: every &psi; in it was '+
+    'inverted from a cone reading, so it carries the method&rsquo;s error as well as the soil&rsquo;s real scatter. '+
+    'The consequence runs opposite to most people&rsquo;s intuition: the fitted &psi;<sub>&sigma;</sub> = <b>'+sdObs.toFixed(3)+'</b> is an <b>upper bound</b> on how variable this ground actually is, not a lower one. '+
+    (sdObs>PSI_BAND
+      ? 'Remove a &plusmn;0.05 of method scatter in quadrature and the ground&rsquo;s own variability could be as small as <b>'+sdTrue.toFixed(3)+'</b>. '
+      : 'It is already smaller than the &plusmn;0.05 the method claims for itself, so over this interval the spread may be telling you more about the inversion than about the soil. ')+
+    'Treat that subtraction as indicative only &mdash; the stress-level bias is systematic with depth rather than random, so it does not combine as cleanly as quadrature suggests, and one sounding cannot separate the two. '+
+    'The practical reading: &psi;<sub>k</sub> below errs conservative on this count, but do not quote the fitted &psi;<sub>&sigma;</sub> as a measured property of the deposit.';
+
   el('normalityNote').innerHTML=
     '<b>Is &ldquo;assume normal&rdquo; actually safe on this interval?</b> The equation above takes it on faith; the histogram lets you check. '+
     'Over '+num('fitTop').toFixed(1)+'&ndash;'+num('fitBot').toFixed(1)+'&nbsp;m the '+s.n+' readings have a skewness of <b>'+s.skew.toFixed(2)+
@@ -2944,6 +2987,140 @@ function drawDistChart(mu,sig,psik){
   marker(NERLERK_LIQ_PSI, 'Nerlerk liquefiable →', '#c64852', [4,3]);
   marker(psik, 'ψk = '+(psik>=0?'+':'')+psik.toFixed(3), '#1479b8', null);
 }
+// ---- Section 8, short form of Module 1's uncertainty warm-up ----
+// Module 1 gives lambda10, eGamma, e and p' a spread each and watches one psi become a
+// distribution. The same argument here has more inputs, because the CPT chain assumes
+// more: gamma, the water table, Ko and lambda10 all feed psi before variability enters.
+// Deterministic seed so the same settings always give the same answer.
+var mcSeed = 20240917;
+function mcRnd(){ mcSeed=(mcSeed*1103515245+12345)&0x7fffffff; return mcSeed/0x7fffffff; }
+function mcNorm(){
+  var u1=Math.max(1e-9,mcRnd()), u2=mcRnd();
+  return Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+}
+var mcResult=null;
+
+function mcPsiK(ov, addBand){
+  var top=num('fitTop'), bot=num('fitBot');
+  if(bot<=top){ var t=top; top=bot; bot=t; }
+  var vals=[];
+  sndData.forEach(function(r){
+    if(r.z<top || r.z>bot) return;
+    var c=sndComputeAtRow(r, ov);
+    if(!isFinite(c.psi)) return;
+    vals.push(addBand ? c.psi + PSI_BAND*mcNorm() : c.psi);
+  });
+  if(vals.length<2) return null;
+  var m=momentsOf(vals);
+  return m.mu + invNorm(num('pctSlide')/100)*m.sd;
+}
+
+function runMonteCarlo(){
+  var N=1500, base={
+    gamma:num('sndGamma'), wt:num('sndWt'), ko:num('sndKo'),
+    lambda10:SANDS[+sndSandSel.value].lambda10
+  };
+  var sG=num('mcGamma'), sW=num('mcWt'), sK=num('mcKo'), sL=num('mcLam')/100;
+  var addBand=el('mcIncludeBand').checked;
+  mcSeed=20240917;
+  var out=[];
+  for(var i=0;i<N;i++){
+    var ov={
+      gamma: Math.max(10, base.gamma + sG*mcNorm()),
+      wt:    Math.max(0,  base.wt    + sW*mcNorm()),
+      ko:    Math.min(1.5, Math.max(0.2, base.ko + sK*mcNorm())),
+      lambda10: Math.max(0.011, base.lambda10*(1 + sL*mcNorm()))
+    };
+    var v=mcPsiK(ov, addBand);
+    if(v!==null && isFinite(v)) out.push(v);
+  }
+  out.sort(function(a,b){ return a-b; });
+  var pt=mcPsiK({}, false);          // the single best estimate, no spread, no method noise
+  mcResult={draws:out, point:pt,
+            p05:out[Math.floor(0.05*(out.length-1))],
+            p50:out[Math.floor(0.50*(out.length-1))],
+            p95:out[Math.floor(0.95*(out.length-1))]};
+  renderMonteCarlo();
+}
+
+function renderMonteCarlo(){
+  el('mcGammaOut').textContent=num('mcGamma').toFixed(1);
+  el('mcWtOut').textContent=num('mcWt').toFixed(2)+' m';
+  el('mcKoOut').textContent=num('mcKo').toFixed(2);
+  el('mcLamOut').textContent=num('mcLam').toFixed(0)+'%';
+  if(!mcResult){
+    el('mcStats').innerHTML='<div class="stat"><small>draws</small><strong>&mdash;</strong></div>';
+    el('mcNote').innerHTML='Press <b>Run 1500 draws</b> to propagate those spreads through the whole chain.';
+    drawMcChart(); return;
+  }
+  var r=mcResult, span=r.p95-r.p05;
+  var flips=(r.p05<PSI_DIL_BOUNDARY)!==(r.p95<PSI_DIL_BOUNDARY);
+  el('mcStats').innerHTML=
+    '<div class="stat"><small>&psi;<sub>k</sub>, best estimate</small><strong>'+(r.point>=0?'+':'')+r.point.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&psi;<sub>k</sub>, median of draws</small><strong>'+(r.p50>=0?'+':'')+r.p50.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>5th &ndash; 95th percentile</small><strong style="font-size:13px">'+r.p05.toFixed(3)+' to '+r.p95.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>width of that band</small><strong>'+span.toFixed(3)+'</strong></div>';
+  el('mcNote').innerHTML=
+    '<b>What the assumptions alone are worth.</b> Holding the sounding fixed and varying only &gamma;, the water table, K<sub>o</sub> and &lambda;<sub>10</sub>'+
+    (el('mcIncludeBand').checked ? ', plus the method&rsquo;s &plusmn;0.05 on every reading' : '')+
+    ', &psi;<sub>k</sub> lands between <b>'+r.p05.toFixed(3)+'</b> and <b>'+r.p95.toFixed(3)+'</b> nine times out of ten &mdash; a band <b>'+span.toFixed(3)+'</b> wide. '+
+    (flips
+      ? '<b>That band straddles the &minus;0.05 dilative/contractive line.</b> On this interval your assumptions, not your data, decide the engineering answer &mdash; and no amount of extra CPT footage fixes that. Measuring &lambda;<sub>10</sub>, the unit weight and the piezometric surface does.'
+      : 'The band stays on one side of the &minus;0.05 line, so the conclusion survives your own assumptions &mdash; which is the check worth making before quoting &psi;<sub>k</sub> to three decimals.')+
+    ' This is the short form of Module 1&rsquo;s point: a single number carries a confidence it has not earned.';
+  drawMcChart();
+}
+
+function drawMcChart(){
+  var host=el('mcChart'); if(!host) return;
+  var cvp=prepCanvas(host, 150, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=44, mr=12, mt=12, mb=34, pw=W-ml-mr, ph=H-mt-mb;
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  if(!mcResult || !mcResult.draws.length){
+    ctx.fillStyle='#8a97a0'; ctx.font='11px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('no draws yet', ml+pw/2, mt+ph/2); return;
+  }
+  var d=mcResult.draws, lo=Math.min(d[0], mcResult.point)-0.01, hi=Math.max(d[d.length-1], mcResult.point)+0.01;
+  if(!(hi>lo)){ lo-=0.05; hi+=0.05; }
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,(v-lo)/(hi-lo))); }
+  var NB=34, bins=new Array(NB).fill(0), bw=(hi-lo)/NB;
+  d.forEach(function(v){ bins[Math.min(NB-1,Math.max(0,Math.floor((v-lo)/bw)))]++; });
+  var mx=Math.max.apply(null,bins)||1;
+  // the 5th-95th band behind the bars
+  ctx.fillStyle='rgba(198,72,82,0.13)';
+  ctx.fillRect(X(mcResult.p05), mt, X(mcResult.p95)-X(mcResult.p05), ph);
+  ctx.fillStyle='#7653a6';
+  bins.forEach(function(c,i){
+    if(!c) return;
+    var h=ph*c/mx, x0=X(lo+i*bw), x1=X(lo+(i+1)*bw);
+    ctx.fillRect(x0, mt+ph-h, Math.max(1,x1-x0-1), h);
+  });
+  // the practical cutoff, and the single best estimate
+  if(PSI_DIL_BOUNDARY>lo && PSI_DIL_BOUNDARY<hi){
+    ctx.strokeStyle='#268160'; ctx.lineWidth=1.6; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(X(PSI_DIL_BOUNDARY),mt); ctx.lineTo(X(PSI_DIL_BOUNDARY),mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+    haloText(ctx,'−0.05', X(PSI_DIL_BOUNDARY)+3, mt+3, '#268160');
+  }
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.moveTo(X(mcResult.point),mt); ctx.lineTo(X(mcResult.point),mt+ph); ctx.stroke();
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=0;t<=4;t++){ var v=lo+(hi-lo)*t/4;
+    ctx.fillText(v.toFixed(2), clampLabelX(ctx,X(v),v.toFixed(2),ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('characteristic state parameter, ψk', ml+pw/2, mt+ph+18);
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('draws',0,0); ctx.restore();
+}
+
+['mcGamma','mcWt','mcKo','mcLam'].forEach(function(id){
+  el(id).addEventListener('input', function(){ mcResult=null; renderMonteCarlo(); });
+});
+el('mcIncludeBand').addEventListener('change', function(){ if(mcResult) runMonteCarlo(); });
+el('mcRun').addEventListener('click', runMonteCarlo);
+renderMonteCarlo();
+
 ['fitTop','fitBot'].forEach(function(id){ el(id).addEventListener('input', function(){ updateFitPanel(); updatePsik(); }); });
 el('fitFromSounding').addEventListener('click', function(){ applyFit(psiSampleInInterval()); });
 el('fitWholeHole').addEventListener('click', function(){
@@ -3081,7 +3258,7 @@ window.runModule2SelfTests = function(){
 
     // every figure carries a caption, a legend and a reading strategy
     var canv=Array.from(document.querySelectorAll("canvas"));
-    check(canv.length===9, "module: nine figures");
+    check(canv.length===10, "module: ten figures");
     canv.forEach(function(c){
       var sh=c.closest(".figure-shell");
       check(!!sh, "module: "+c.id+" is wrapped as a figure");
@@ -3118,6 +3295,78 @@ window.runModule2SelfTests = function(){
         check(n!==map[id], id+": does not cite itself");
       }
     });
+  })();
+  // Chapter 5 is soil variability; Chapter 4 is method uncertainty. The module must
+  // keep them apart, and must not let the fitted sigma be read as ground truth.
+  (function(){
+    var v=psiSampleInInterval(), m=momentsOf(v);
+    var t=el('varianceSplitNote').textContent;
+    check(!!t && t.length>200, "S8: the variability-vs-uncertainty note renders");
+    check(/variability/i.test(t) && /uncertainty/i.test(t),
+          "S8: it names both variability and uncertainty");
+    check(t.indexOf("upper bound")>=0,
+          "S8: it says the fitted sigma is an UPPER bound on ground variability");
+    check(t.indexOf(m.sd.toFixed(3))>=0, "S8: it quotes the sigma actually fitted");
+    check(/indicative/.test(t), "S8: it flags the quadrature split as indicative only");
+    // the arithmetic of the split, when it applies
+    if(m.sd>PSI_BAND){
+      var expected=Math.sqrt(m.sd*m.sd-PSI_BAND*PSI_BAND);
+      check(t.indexOf(expected.toFixed(3))>=0,
+            "S8: the de-noised sigma is the real quadrature result");
+      check(expected<m.sd, "S8: removing method scatter can only shrink the estimate");
+    }
+    // Chapter 5 must not be described as being about uncertainty anywhere
+    var v8=document.getElementById("variability-section").cloneNode(true);
+    v8.querySelectorAll(".quiz-checkpoint,script").forEach(function(n){ n.remove(); });
+    var head=v8.querySelector("h2").textContent;
+    check(/variable|variability/i.test(head), "S8: the heading is about variability");
+    check(!/uncertainty/i.test(head), "S8: the heading does not call Chapter 5 uncertainty");
+  })();
+  // ---- Section 8 Monte Carlo: the short form of Module 1's uncertainty warm-up ----
+  (function(){
+    check(typeof runMonteCarlo==="function" && typeof mcPsiK==="function",
+          "S8 MC: the propagation exists");
+    // it must reuse the module physics, not a second copy: zero spread must reproduce
+    // exactly the psi_k the deterministic panel reports
+    var mu=num('muSlide'), sg=num('sigSlide'), pc=num('pctSlide');
+    var direct=mcPsiK({}, false);
+    var fit=momentsOf(psiSampleInInterval());
+    check(Math.abs(direct-(fit.mu+invNorm(pc/100)*fit.sd))<1e-12,
+          "S8 MC: a zero-spread draw reproduces the fitted psi_k exactly");
+    // overrides must actually reach the physics
+    var a=mcPsiK({gamma:16}, false), b=mcPsiK({gamma:22}, false);
+    check(isFinite(a) && isFinite(b) && Math.abs(a-b)>1e-6,
+          "S8 MC: varying gamma changes the answer, so overrides reach the chain");
+    var c1=mcPsiK({lambda10:0.02}, false), c2=mcPsiK({lambda10:0.06}, false);
+    check(Math.abs(c1-c2)>1e-6, "S8 MC: varying lambda10 changes the answer");
+    // and must not disturb the sliders it read from
+    check(num('muSlide')===mu && num('sigSlide')===sg && num('pctSlide')===pc,
+          "S8 MC: sampling leaves the panel sliders untouched");
+
+    // deterministic: the same settings must give the same band twice running
+    el('mcRun').click();
+    var r1=mcResult.p05+"|"+mcResult.p50+"|"+mcResult.p95;
+    el('mcRun').click();
+    var r2=mcResult.p05+"|"+mcResult.p50+"|"+mcResult.p95;
+    check(r1===r2, "S8 MC: seeded, so the same inputs give the same band");
+    check(mcResult.draws.length>1000, "S8 MC: it actually ran the draws");
+    check(mcResult.p05<=mcResult.p50 && mcResult.p50<=mcResult.p95,
+          "S8 MC: the reported percentiles are ordered");
+    check(el('mcNote').textContent.indexOf(mcResult.p05.toFixed(3))>=0,
+          "S8 MC: the note quotes the band it computed");
+
+    // wider input spreads must not narrow the answer
+    var keep=el('mcKo').value;
+    el('mcKo').value=0; el('mcGamma').value=0; el('mcWt').value=0; el('mcLam').value=0;
+    el('mcIncludeBand').checked=false;
+    el('mcRun').click();
+    var tight=mcResult.p95-mcResult.p05;
+    check(tight<1e-9, "S8 MC: zero spread and no method noise collapses the distribution to a point");
+    el('mcLam').value=40; el('mcRun').click();
+    var wide=mcResult.p95-mcResult.p05;
+    check(wide>tight, "S8 MC: giving lambda10 a spread widens the band");
+    el('mcKo').value=keep; el('mcGamma').value=1; el('mcWt').value=1; el('mcLam').value=20;
+    el('mcIncludeBand').checked=true; el('mcRun').click();
   })();
   // ---- Section 9: the quiz must say what to revisit, not just a total ----
   (function(){
@@ -4072,6 +4321,7 @@ var figureInfo={
 'qpChart':['The Qp-psi calibration curve, and how much it can be trusted','Horizontal axis is the state parameter; vertical is Qp on a log scale. <b>Blue:</b> Qp=k&middot;exp(-m&psi;) for the selected sand. <b>Pale blue band:</b> the &plusmn;0.05 in psi that the method claims against the calibration-chamber database. <b>Faint grey curves:</b> the same relationship for the other 16 sands in Table 2.1, so the effect of the lambda10 choice is visible rather than asserted. <b>Red dot:</b> this depth&rsquo;s Qp and the psi it inverts to. <b>Grey dots at Qp=100 with the bracket beneath:</b> the three real Ticino readings of Fig. 4.20, split by stress level. A grey dashed line marks psi=0 and a green dashed line the -0.05 practical cutoff.','Start with the red dot, then look at how much room there is around it. The pale band is the method&rsquo;s own stated accuracy, and it is wide -- read psi off this chart as a range, not a number. Then look at the three grey Ticino points: identical Qp, three different psi, purely because the stress level differed. That spread is as large as the claimed accuracy, and this equation has no term that could see it. Finally, sweep the sand selector and watch the blue curve move through the grey ones. If that motion changes which side of the -0.05 line your red dot sits on, then lambda10 -- a laboratory measurement on the actual soil -- is deciding your engineering conclusion, and no amount of care with the cone log will substitute for it.'],
 'psiProfileChart':['psi down the sounding, read as a band','Depth runs down the left in m with ft in parentheses; psi runs across. <b>Red trace:</b> psi from the inversion at every depth. <b>Pink envelope:</b> the same trace plus and minus the method&rsquo;s claimed 0.05. <b>Green ground:</b> dilative, left of the -0.05 cutoff. <b>Pink ground:</b> contractive, right of it. A grey dashed line marks the theoretical critical state at psi=0, and the solid green line the -0.05 practical cutoff used throughout this module. An orange dashed line marks the selected depth.','Do not read the red line on its own -- read the envelope. Wherever the pink band straddles the green cutoff, the sounding does not actually tell you whether that depth is dilative or contractive; it tells you the answer is inside the noise. Those are the depths worth a laboratory CSL or a second sounding. Where the whole band sits clear on one side, the conclusion is robust to the method&rsquo;s own stated error. Change the sand and watch the entire profile shift bodily left or right: that motion is the lambda10 sensitivity, and it moves the whole hole at once rather than adding scatter.'],
 
+'mcChart':['What the assumed inputs alone do to psi_k','Horizontal axis is the characteristic state parameter; bars are how often each value came up across the draws. <b>Purple bars:</b> psi_k recomputed with gamma, the water table, Ko and lambda10 each drawn from the spread you set. <b>Pale red band:</b> the 5th to 95th percentile of those draws. <b>Blue line:</b> the single psi_k your best estimates give. <b>Green dashed line:</b> the -0.05 dilative/contractive cutoff.','The blue line is the number you would have reported. The purple spread is what that number is actually worth given inputs you estimated rather than measured. Watch whether the red band crosses the green line: if it does, the engineering conclusion on this interval is being decided by your assumptions rather than by the sounding, and more CPT footage will not fix it -- measuring lambda10, the unit weight and the piezometric surface will. Set every spread to zero and the distribution collapses onto the blue line, which is the claim a single reported psi_k quietly makes.'],
 'distChart':['The psi distribution, the fit, and what the sounding actually shows','Horizontal axis is the state parameter; vertical is probability density. <b>Pale blue bars:</b> the histogram of psi actually measured over the chosen depth interval of the loaded sounding. <b>Navy curve:</b> the normal distribution fitted to psi_mu and psi_sigma on the sliders. <b>Red shading:</b> the weak tail beyond the chosen characteristic value, under that fitted curve. <b>Blue vertical line:</b> psi_k itself. <b>Red dashed line:</b> psi = -0.02, the threshold Onisiphorou found liquefiable at Nerlerk.','The bars are the data and the curve is the assumption -- compare them before trusting anything downstream. Where the bars sit above the curve on the right-hand side, the real weak tail is fatter than the normal model, and psi_k is then less conservative than its percentile claims; the skewness reported below the figure puts a number on that. Then look at how much of the histogram lies right of the red dashed line: that is the fraction of this interval already at Nerlerk-liquefiable state, and the note below compares it against the 4% and 10% volume fractions from Rowe and Craig\'s centrifuge caissons. Finally drag the percentile and watch psi_k march into the tail -- the design value is deliberately not the average soil.']
 };
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
