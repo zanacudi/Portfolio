@@ -65,6 +65,12 @@ canvas{display:block;width:100%;height:260px}
 @media(max-width:1080px){.ic-figs{grid-template-columns:1fr}}
 .inv-figs{display:grid;grid-template-columns:1.05fr 0.95fr;gap:18px;align-items:start;margin-top:10px}
 @media(max-width:1080px){.inv-figs{grid-template-columns:1fr}}
+.dist-figs{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px;align-items:start;margin-top:10px}
+@media(max-width:1080px){.dist-figs{grid-template-columns:1fr}}
+#psikEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+#psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
+#table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#table54 tbody tr.sel td{font-weight:700}
 #invEq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
 #invEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 .warning{background:#fff4df;border-left:4px solid #e9a52b;padding:10px;font-size:11.5px;line-height:1.55;margin-top:10px}
@@ -597,28 +603,47 @@ body{padding-bottom:54px}
 <div class="eq">&psi;<sub>k</sub> = &psi;<sub>&mu;</sub> + z(percentile)&middot;&psi;<sub>&sigma;</sub> &nbsp; (assuming a normal distribution of &psi;; z from the inverse standard normal CDF)</div>
 
 <div class="guided-panel">
+<h3 style="margin-top:0">Fit the distribution to your own sounding</h3>
+<p class="explain" style="margin-top:-2px">The sliders below start on the book&rsquo;s Nerlerk numbers, but you do not have to guess: Sections 2 and 7 already computed &psi; at every depth in the loaded sounding. Choose a depth interval &mdash; Nerlerk&rsquo;s own example was the 3&ndash;7&nbsp;m layer, not the whole hole &mdash; and fit &psi;<sub>&mu;</sub> and &psi;<sub>&sigma;</sub> straight from those readings.</p>
 <div class="grid3">
-<div class="slider-block"><label for="muSlide"><span>Mean, &psi;<sub>&mu;</sub></span> <span class="readout" id="muOut">-0.080</span></label><input id="muSlide" type="range" min="-0.25" max="0.05" step="0.001" value="-0.08"></div>
-<div class="slider-block"><label for="sigSlide"><span>Std. deviation, &psi;<sub>&sigma;</sub></span> <span class="readout" id="sigOut">0.050</span></label><input id="sigSlide" type="range" min="0.01" max="0.12" step="0.001" value="0.05"></div>
+<div class="slider-block"><label for="fitTop"><span>Interval top</span> <span class="readout" id="fitTopOut">3.0 m</span></label><input id="fitTop" type="range" min="0.5" max="53" step="0.25" value="3"></div>
+<div class="slider-block"><label for="fitBot"><span>Interval base</span> <span class="readout" id="fitBotOut">7.0 m</span></label><input id="fitBot" type="range" min="1" max="54" step="0.25" value="7"></div>
+<div class="slider-block" style="display:flex;flex-direction:column;justify-content:center;gap:6px"><button type="button" id="fitFromSounding">Fit &psi;<sub>&mu;</sub> and &psi;<sub>&sigma;</sub> from this interval</button><button type="button" id="fitWholeHole" class="alt">Use the whole sounding instead</button></div>
+</div>
+<div class="statgrid" id="fitStats"></div>
+<div class="callout" id="fitNote" style="margin-top:8px" aria-live="polite"></div>
+</div>
+
+<div class="guided-panel" style="margin-top:12px">
+<h3 style="margin-top:0">Then choose the characteristic value</h3>
+<div class="grid3">
+<div class="slider-block"><label for="muSlide"><span>Mean, &psi;<sub>&mu;</sub></span> <span class="readout" id="muOut">-0.080</span></label><input id="muSlide" type="range" min="-0.40" max="0.10" step="0.001" value="-0.08"></div>
+<div class="slider-block"><label for="sigSlide"><span>Std. deviation, &psi;<sub>&sigma;</sub></span> <span class="readout" id="sigOut">0.050</span></label><input id="sigSlide" type="range" min="0.005" max="0.20" step="0.001" value="0.05"></div>
 <div class="slider-block"><label for="pctSlide"><span>Characteristic percentile</span> <span class="readout" id="pctOut">80%</span></label><input id="pctSlide" type="range" min="50" max="95" step="1" value="80"></div>
 </div>
-<p class="explain" style="font-size:12px">Defaults are the book's own Nerlerk berm stochastic-analysis input (&psi;<sub>&mu;</sub>=&minus;0.08, &psi;<sub>&sigma;</sub>=0.05, Onisiphorou 2000). "80th percentile" here follows the book's convention: the value that 80% of measurements are <i>stronger</i> (denser) than &mdash; i.e. the 80th percentile of the &psi; distribution itself, since higher &psi; is weaker. Practical guidance from Section 5.5.1: <b>80th&ndash;90th percentile</b>, erring toward 90th for cyclic loading and relaxing toward 80th for static problems.</p>
+<p class="explain" style="font-size:12px">&ldquo;80th percentile&rdquo; here follows the book&rsquo;s convention: the value that 80% of measurements are <i>stronger</i> (denser) than &mdash; i.e. the 80th percentile of the &psi; distribution itself, since higher &psi; is weaker. Practical guidance from Section 5.5.1: <b>80th&ndash;90th percentile</b>, erring toward 90th for cyclic loading and relaxing toward 80th for static problems.</p>
+<div class="eq" id="psikEq"></div>
 
-<div class="bayes-grid2">
-<div class="bayes-chart-box"><canvas id="distChart" role="img" aria-label="Probability density chart of the psi distribution, with the region weaker than the characteristic value shaded."></canvas>
-<div class="legend"><span><i style="background:#123b4a"></i>&psi; probability density</span><span><i style="background:var(--red)"></i>weaker than &psi;<sub>k</sub> (shaded)</span><span><i style="background:#1479b8"></i>chosen &psi;<sub>k</sub></span><span><i style="background:#c64852"></i>Nerlerk liquefiable threshold</span></div>
+<div class="dist-figs">
+<div>
+<div class="chart-host"><canvas id="distChart" role="img" aria-label="The fitted normal distribution of psi with the sounding's own histogram behind it, the region weaker than the characteristic value shaded, and the Nerlerk liquefiable threshold marked."></canvas></div>
+<div class="legend"><span><i style="background:#123b4a"></i>fitted normal density</span><span><i style="background:#c9d8e2"></i>your sounding&rsquo;s actual &psi; histogram</span><span><i style="background:#e9b7bb"></i>weaker than &psi;<sub>k</sub></span><span><i style="background:#1479b8"></i>chosen &psi;<sub>k</sub></span><span><i style="background:#c64852"></i>Nerlerk liquefiable threshold, &psi;&gt;&minus;0.02</span></div>
 </div>
 <div>
 <div class="statgrid n2" id="psikStats"></div>
-<table style="margin-top:10px">
+<table style="margin-top:10px" id="table54">
 <caption style="text-align:left;font-size:11px;color:var(--muted);margin-bottom:4px">Table 5.4 &mdash; percentile vs. resistance factor for 99% reliability (offshore structure example, Been &amp; Jefferies 1993)</caption>
 <thead><tr><th>Percentile</th><th>Resistance factor</th></tr></thead>
 <tbody>
-<tr><td>95</td><td>1.17</td></tr><tr><td>90</td><td>1.21</td></tr><tr><td>80</td><td>1.26</td></tr>
-<tr><td>70</td><td>1.29</td></tr><tr><td>60</td><td>1.32</td></tr><tr><td>50</td><td>1.34</td></tr>
+<tr data-pct="95"><td>95</td><td>1.17</td></tr><tr data-pct="90"><td>90</td><td>1.21</td></tr><tr data-pct="80"><td>80</td><td>1.26</td></tr>
+<tr data-pct="70"><td>70</td><td>1.29</td></tr><tr data-pct="60"><td>60</td><td>1.32</td></tr><tr data-pct="50"><td>50</td><td>1.34</td></tr>
 </tbody></table>
+<p class="explain" style="font-size:11px;color:var(--muted);margin-top:5px">The row nearest your chosen percentile is highlighted. Note which way the factor moves: a <i>more</i> conservative percentile needs a <i>smaller</i> resistance factor, because the conservatism has already been taken in the state.</p>
 </div>
 </div>
+
+<div class="warning" id="normalityNote" style="margin-top:10px" aria-live="polite"></div>
+<div class="callout" id="looseFractionNote" style="margin-top:10px" aria-live="polite"></div>
 </div>
 
 <div class="quiz-checkpoint" id="quizCheckD">
@@ -1107,6 +1132,7 @@ function updateSounding(){
   if(window.IC_BANDS && window.drawIcProfileChart) drawIcProfileChart();
   if(window.icSyncDepthSlider) icSyncDepthSlider();
   if(window.invSyncDepthSlider) invSyncDepthSlider();
+  if(window.updateFitPanel) updateFitPanel();
 }
 ['sndDepth','sndGamma','sndWt','sndKo','sndHyd'].forEach(function(id){ el(id).addEventListener('input', updateSounding); });
 // gamma / water table / Ko / % hydrostatic also drive Section 3's demo, so keep it in step
@@ -2664,7 +2690,7 @@ function drawPsiProfileChart(){
 }
 
 updateSection4();
-window.addEventListener("resize",function(){ updateSection4(); updateMentalModel(); updateSection7(); updateSounding(); });
+window.addEventListener("resize",function(){ updateSection4(); updateMentalModel(); updatePsik(); updateSounding(); });
 
 // ---- Section 7's depth slider and sand list: the module's one selected depth
 // and one sand choice, surfaced again here rather than duplicated.
@@ -2708,57 +2734,225 @@ function invNorm(p){
 function normPdf(x,mu,sig){ return Math.exp(-0.5*Math.pow((x-mu)/sig,2))/(sig*Math.sqrt(2*Math.PI)); }
 
 var s4ids=["muSlide","sigSlide","pctSlide"];
-s4ids.forEach(function(id){ el(id).addEventListener("input",updateSection7); });
+s4ids.forEach(function(id){ el(id).addEventListener("input",updatePsik); });
 
-function updateSection7(){
+// Rowe & Craig's centrifuge caisson result, quoted at the top of this section: 4% loose
+// material by volume measurably degraded cyclic performance, 10% triggered outright
+// failure. Onisiphorou's Nerlerk re-analysis put liquefiable behaviour at psi > -0.02.
+// Those numbers are only worth quoting if the page then computes them from the data.
+var NERLERK_LIQ_PSI = -0.02;
+var ROWE_CRAIG_DEGRADE = 4, ROWE_CRAIG_FAIL = 10;
+
+function psiSampleInInterval(){
+  var top=num('fitTop'), bot=num('fitBot');
+  if(bot<=top){ var t=top; top=bot; bot=t; }
+  return sndData.map(sndComputeAtRow)
+                .filter(function(c){ return isFinite(c.psi) && c.z>=top && c.z<=bot; })
+                .map(function(c){ return c.psi; });
+}
+
+function momentsOf(v){
+  var n=v.length; if(!n) return {n:0};
+  var mu=v.reduce(function(a,b){return a+b;},0)/n;
+  var m2=0, m3=0;
+  v.forEach(function(x){ var d=x-mu; m2+=d*d; m3+=d*d*d; });
+  // sample standard deviation: this is an estimate from n readings, not a population
+  var sd=n>1 ? Math.sqrt(m2/(n-1)) : 0;
+  var pop=Math.sqrt(m2/n);
+  var skew = (n>2 && pop>0) ? (m3/n)/(pop*pop*pop) : 0;
+  var beyond2=v.filter(function(x){ return Math.abs(x-mu)>2*sd; }).length;
+  return {n:n, mu:mu, sd:sd, skew:skew, beyond2:beyond2, beyond2Pct:100*beyond2/n};
+}
+
+function updateFitPanel(){
+  var top=num('fitTop'), bot=num('fitBot');
+  if(bot<=top){ el('fitBot').value=Math.min(+el('fitBot').max, top+0.5); bot=num('fitBot'); }
+  el('fitTopOut').textContent=top.toFixed(1)+' m ('+mToFt(top).toFixed(0)+' ft)';
+  el('fitBotOut').textContent=bot.toFixed(1)+' m ('+mToFt(bot).toFixed(0)+' ft)';
+
+  var v=psiSampleInInterval(), s=momentsOf(v);
+  if(!s.n){
+    el('fitStats').innerHTML='<div class="stat"><small>readings in interval</small><strong>0</strong></div>';
+    el('fitNote').innerHTML='No readings fall in this interval. Widen it.';
+    return;
+  }
+  var loose=v.filter(function(p){ return p>NERLERK_LIQ_PSI; }).length;
+  var loosePct=100*loose/s.n;
+  el('fitStats').innerHTML=
+    '<div class="stat"><small>readings in interval</small><strong>'+s.n+'</strong></div>'+
+    '<div class="stat"><small>&psi;<sub>&mu;</sub> of those readings</small><strong>'+(s.mu>=0?'+':'')+s.mu.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&psi;<sub>&sigma;</sub> of those readings</small><strong>'+s.sd.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>looser than &psi;=&minus;0.02</small><strong>'+loosePct.toFixed(1)+'%</strong></div>';
+
+  el('fitNote').innerHTML=
+    '<b>'+s.n+' readings over '+top.toFixed(1)+'&ndash;'+bot.toFixed(1)+'&nbsp;m</b> give &psi;<sub>&mu;</sub> = '+
+    (s.mu>=0?'+':'')+s.mu.toFixed(3)+' and &psi;<sub>&sigma;</sub> = '+s.sd.toFixed(3)+
+    '. For comparison the book&rsquo;s Nerlerk input over its 3&ndash;7&nbsp;m layer was &minus;0.080 and 0.050. '+
+    'Press the button to load these into the sliders below, then choose a percentile.';
+}
+
+function applyFit(v){
+  var s=momentsOf(v);
+  if(!s.n) return;
+  function setClamped(id,val){
+    var e=el(id), lo=+e.min, hi=+e.max, out=Math.max(lo,Math.min(hi,val));
+    e.value=out;
+    return Math.abs(out-val)>1e-9;
+  }
+  var cm=setClamped('muSlide', s.mu), cs=setClamped('sigSlide', s.sd);
+  updatePsik();
+  if(cm||cs){
+    el('fitNote').innerHTML += '<br><b>Note:</b> the fitted '+(cm&&cs?'mean and standard deviation were':(cm?'mean was':'standard deviation was'))+
+      ' outside the slider range and has been clamped, so the distribution below is not exactly the fit.';
+  }
+}
+
+function updatePsik(){
   var mu=num("muSlide"), sig=num("sigSlide"), pct=num("pctSlide");
   el("muOut").textContent=mu.toFixed(3);
   el("sigOut").textContent=sig.toFixed(3);
   el("pctOut").textContent=pct.toFixed(0)+"%";
 
-  var z=invNorm(pct/100);
-  var psik = mu + z*sig;
-  var band = pct>=85 ? '<span class="badge contract">cyclic-loading range</span>' : (pct>=80?'<span class="badge dilate">book\'s recommended range</span>':'<span class="badge">below recommended range</span>');
+  var z=invNorm(pct/100), psik=mu+z*sig;
+  var band = pct>=85 ? '<span class="badge contract">cyclic-loading range</span>'
+           : (pct>=80 ? '<span class="badge dilate">book&rsquo;s recommended range</span>'
+                      : '<span class="badge caution">below recommended range</span>');
+  el("psikStats").innerHTML =
+    '<div class="stat"><small>z at the '+pct.toFixed(0)+'th percentile</small><strong>'+z.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>&psi;<sub>k</sub> characteristic value</small><strong>'+(psik>=0?'+':'')+psik.toFixed(3)+'</strong>'+band+'</div>';
 
-  el("psikStats").innerHTML = `
-    <div class="stat"><small>z (percentile)</small><strong>${z.toFixed(3)}</strong></div>
-    <div class="stat hi"><small>&psi;<sub>k</sub> characteristic value</small><strong>${psik>=0?"+":""}${psik.toFixed(3)}</strong>${band}</div>`;
+  el("psikEq").innerHTML =
+    '<span class="step">1&middot; z at the '+pct.toFixed(0)+'th percentile of a standard normal = <b>'+z.toFixed(3)+'</b></span>'+
+    '<span class="step">2&middot; &psi;<sub>k</sub> = &psi;<sub>&mu;</sub> + z&middot;&psi;<sub>&sigma;</sub> = '+
+      (mu>=0?'+':'')+mu.toFixed(3)+' + '+z.toFixed(3)+'&times;'+sig.toFixed(3)+
+      ' = <b style="color:'+(psik<PSI_DIL_BOUNDARY?'var(--green-text)':'var(--red-text)')+';font-size:14px">'+(psik>=0?'+':'')+psik.toFixed(3)+'</b></span>'+
+    '<span class="step-note">Raising the percentile moves &psi;<sub>k</sub> toward the weak tail, which is the whole point: you are designing for the loose fraction, not the average soil.</span>';
 
-  var host=el("distChart"); if(!host) return;
-  var W=host.clientWidth||420,H=230;
-  host.width=W; host.height=H;
-  var ctx=host.getContext("2d"); ctx.clearRect(0,0,W,H);
-  var ml=52,mr=14,mt=14,mb=30; var pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=mu-4*sig, xmax=mu+4*sig;
-  function X(v){ return ml+pw*(v-xmin)/(xmax-xmin); }
-  var ymax = normPdf(mu,mu,sig)*1.15;
-  function Y(v){ return mt+ph*(1-v/ymax); }
-  ctx.strokeStyle="#e5edf1"; ctx.fillStyle="#61737b"; ctx.font="10.5px Arial";
-  ctx.textBaseline="top";
-  for(var k2=0;k2<=4;k2++){ var xv=xmin+(xmax-xmin)*k2/4; var x=X(xv); ctx.beginPath();ctx.moveTo(x,mt);ctx.lineTo(x,mt+ph);ctx.stroke(); ctx.textAlign="center"; ctx.fillText(xv.toFixed(2),x,mt+ph+8); }
-  ctx.textAlign="right"; ctx.textBaseline="middle";
-  for(var k3=0;k3<=4;k3++){ var yvv=ymax*k3/4; var yy=Y(yvv); ctx.beginPath();ctx.moveTo(ml,yy);ctx.lineTo(ml+pw,yy);ctx.stroke(); ctx.fillText(yvv.toFixed(1),ml-8,yy); }
-  ctx.textBaseline="alphabetic";
-  ctx.textAlign="center"; ctx.fillText("state parameter, ψ", ml+pw/2, H-2);
-  ctx.save(); ctx.translate(12,mt+ph/2); ctx.rotate(-Math.PI/2); ctx.textAlign="center"; ctx.fillText("probability density",0,0); ctx.restore();
-  ctx.strokeStyle="#123b4a"; ctx.lineWidth=2; ctx.beginPath();
-  for(var i=0;i<=200;i++){ var xv2=xmin+(xmax-xmin)*i/200; var y=Y(normPdf(xv2,mu,sig)); if(i===0) ctx.moveTo(X(xv2),y); else ctx.lineTo(X(xv2),y); }
-  ctx.stroke();
-  ctx.fillStyle="rgba(198,72,82,0.18)";
-  ctx.beginPath(); ctx.moveTo(X(psik),mt+ph);
-  for(var i2=0;i2<=100;i2++){ var xv3=psik+(xmax-psik)*i2/100; if(xv3>xmax) break; ctx.lineTo(X(xv3),Y(normPdf(xv3,mu,sig))); }
-  ctx.lineTo(X(xmax),mt+ph); ctx.closePath(); ctx.fill();
-  function marker(x,label,color){
-    if(x<xmin||x>xmax) return;
-    var xx=X(x); ctx.strokeStyle=color; ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xx,mt); ctx.lineTo(xx,mt+ph); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle=color; ctx.font="10px Arial"; ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillText(label,xx+3,mt+2);
-  }
-  marker(-0.02,"Nerlerk liquefiable >",  "#c64852");
-  ctx.strokeStyle="#1479b8"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(X(psik),mt); ctx.lineTo(X(psik),mt+ph); ctx.stroke();
+  // Table 5.4: mark the row the chosen percentile is nearest to
+  var rows=document.querySelectorAll('#table54 tbody tr');
+  var best=null, bestD=1e9;
+  rows.forEach(function(tr){ var d=Math.abs(+tr.dataset.pct-pct); if(d<bestD){ bestD=d; best=tr; } });
+  rows.forEach(function(tr){ tr.classList.toggle('sel', tr===best); });
 
-  updateFlow(undefined, undefined, undefined, 'ψk='+(psik>=0?"+":"")+psik.toFixed(3));
+  updateNormalityNote();
+  updateLooseFractionNote(psik);
+  drawDistChart(mu,sig,psik);
+  updateFlow(undefined, undefined, undefined, 'ψk='+(psik>=0?'+':'')+psik.toFixed(3));
 }
-updateSection7();
+
+function updateNormalityNote(){
+  var v=psiSampleInInterval(), s=momentsOf(v);
+  if(!s.n){ el('normalityNote').innerHTML=''; return; }
+  var skewWord = Math.abs(s.skew)<0.5 ? 'close to symmetric'
+               : (s.skew>0 ? 'skewed toward the weak (higher-&psi;) side'
+                           : 'skewed toward the dense (lower-&psi;) side');
+  var verdict = Math.abs(s.skew)<0.5
+    ? 'A normal distribution is a fair model over this interval, so &psi;<sub>k</sub> below can be taken at face value.'
+    : (s.skew>0
+        ? 'That matters here, and not symmetrically: a right skew means <b>the real weak tail is fatter than the normal curve drawn below</b>, so the fitted &psi;<sub>k</sub> is <i>less</i> conservative than the percentile suggests. Read it as a floor, not a value.'
+        : 'A left skew means the normal curve overstates the weak tail, so the fitted &psi;<sub>k</sub> errs conservative here.');
+  el('normalityNote').innerHTML=
+    '<b>Is &ldquo;assume normal&rdquo; actually safe on this interval?</b> The equation above takes it on faith; the histogram lets you check. '+
+    'Over '+num('fitTop').toFixed(1)+'&ndash;'+num('fitBot').toFixed(1)+'&nbsp;m the '+s.n+' readings have a skewness of <b>'+s.skew.toFixed(2)+
+    '</b> &mdash; '+skewWord+'. '+verdict+' '+
+    'As a second check, <b>'+s.beyond2Pct.toFixed(1)+'%</b> of readings fall beyond &plusmn;2&sigma;, against the <b>4.6%</b> a true normal would give.';
+}
+
+function updateLooseFractionNote(psik){
+  var v=psiSampleInInterval(), n=v.length;
+  if(!n){ el('looseFractionNote').innerHTML=''; return; }
+  var loose=v.filter(function(p){ return p>NERLERK_LIQ_PSI; }).length;
+  var pct=100*loose/n;
+  var verdict = pct>=ROWE_CRAIG_FAIL
+      ? 'That is at or past the <b>10%</b> at which Rowe &amp; Craig&rsquo;s caissons liquefied outright during testing.'
+    : pct>=ROWE_CRAIG_DEGRADE
+      ? 'That is past the <b>4%</b> at which they measured degraded cyclic performance, though short of the 10% that caused outright failure.'
+      : 'That is below the <b>4%</b> at which they first measured degraded cyclic performance.';
+  el('looseFractionNote').innerHTML=
+    '<b>Putting the centrifuge numbers on your own data.</b> The 4% and 10% quoted at the top of this section are volume fractions of loose material, '+
+    'and this sounding can be asked the same question directly. Over '+num('fitTop').toFixed(1)+'&ndash;'+num('fitBot').toFixed(1)+'&nbsp;m, '+
+    '<b>'+loose+' of '+n+' readings ('+pct.toFixed(1)+'%)</b> sit looser than the &psi;&nbsp;&gt;&nbsp;&minus;0.02 threshold Onisiphorou found liquefiable at Nerlerk. '+
+    verdict+' Treat the comparison as indicative rather than literal &mdash; a percentage of readings down one vertical hole is not the same thing as a '+
+    'volume fraction of connected loose material, and connectivity is exactly what decided Nerlerk. It is the right question asked of the wrong geometry, '+
+    'which is still far better than not asking it.';
+}
+
+function drawDistChart(mu,sig,psik){
+  var host=el("distChart"); if(!host) return;
+  var cvp=prepCanvas(host, 290, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=50, mr=12, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
+
+  var sample=psiSampleInInterval();
+  var xmin=Math.min(mu-4*sig, sample.length?Math.min.apply(null,sample):mu-4*sig);
+  var xmax=Math.max(mu+4*sig, sample.length?Math.max.apply(null,sample):mu+4*sig);
+  if(!(xmax>xmin)){ xmin=mu-0.1; xmax=mu+0.1; }
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+
+  // the sounding's own psi as a density histogram, so it overlays the fitted curve
+  var NB=22, bins=new Array(NB).fill(0), bw=(xmax-xmin)/NB;
+  sample.forEach(function(p){
+    var i=Math.min(NB-1, Math.max(0, Math.floor((p-xmin)/bw)));
+    bins[i]++;
+  });
+  var histDens=bins.map(function(c){ return sample.length ? c/(sample.length*bw) : 0; });
+  var ymax=Math.max(normPdf(mu,mu,sig), Math.max.apply(null,histDens.concat([0])))*1.15;
+  function Y(v){ return mt+ph*(1-v/ymax); }
+
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){ var yy=Y(ymax*g/4); ctx.beginPath(); ctx.moveTo(ml,yy); ctx.lineTo(ml+pw,yy); ctx.stroke(); }
+
+  ctx.fillStyle='#c9d8e2';
+  histDens.forEach(function(d,i){
+    if(d<=0) return;
+    var x0=X(xmin+i*bw), x1=X(xmin+(i+1)*bw);
+    ctx.fillRect(x0, Y(d), Math.max(1,x1-x0-1), mt+ph-Y(d));
+  });
+
+  // the weak tail beyond psi_k, under the fitted curve
+  ctx.fillStyle='rgba(198,72,82,0.20)'; ctx.beginPath(); ctx.moveTo(X(psik), mt+ph);
+  for(var i2=0;i2<=120;i2++){ var xv=psik+(xmax-psik)*i2/120; if(xv>xmax) break; ctx.lineTo(X(xv), Y(normPdf(xv,mu,sig))); }
+  ctx.lineTo(X(xmax), mt+ph); ctx.closePath(); ctx.fill();
+
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+
+  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2.2; ctx.beginPath();
+  for(var i3=0;i3<=220;i3++){ var xv3=xmin+(xmax-xmin)*i3/220, yy3=Y(normPdf(xv3,mu,sig));
+    if(i3===0) ctx.moveTo(X(xv3),yy3); else ctx.lineTo(X(xv3),yy3); }
+  ctx.stroke();
+
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  for(var t=0;t<=4;t++){ var xv4=xmin+(xmax-xmin)*t/4;
+    ctx.fillText(xv4.toFixed(2), clampLabelX(ctx,X(xv4),xv4.toFixed(2),ml,pw), mt+ph+5); }
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='9.5px Arial';
+  for(var t2=0;t2<=4;t2++){ var dv=ymax*t2/4; ctx.fillText(dv.toFixed(0), ml-6, Y(dv)); }
+  ctx.save(); ctx.translate(12, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('probability density',0,0); ctx.restore();
+
+  function marker(x,label,color,dash){
+    if(x<xmin||x>xmax) return;
+    var xx=X(x);
+    ctx.strokeStyle=color; ctx.lineWidth=2; if(dash) ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.moveTo(xx,mt); ctx.lineTo(xx,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font='700 9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
+    var w=ctx.measureText(label).width;
+    var lx = xx+4+w > ml+pw ? xx-4-w : xx+4;
+    haloText(ctx, label, lx, mt+3, color);
+  }
+  marker(NERLERK_LIQ_PSI, 'Nerlerk liquefiable →', '#c64852', [4,3]);
+  marker(psik, 'ψk = '+(psik>=0?'+':'')+psik.toFixed(3), '#1479b8', null);
+}
+['fitTop','fitBot'].forEach(function(id){ el(id).addEventListener('input', function(){ updateFitPanel(); updatePsik(); }); });
+el('fitFromSounding').addEventListener('click', function(){ applyFit(psiSampleInInterval()); });
+el('fitWholeHole').addEventListener('click', function(){
+  el('fitTop').value=el('fitTop').min; el('fitBot').value=el('fitBot').max;
+  updateFitPanel();
+  applyFit(psiSampleInInterval());
+});
+updateFitPanel();
+updatePsik();
 
 // ============================================================================
 // Dev-only regression check, callable from the console as runModule2SelfTests().
@@ -2853,6 +3047,90 @@ window.runModule2SelfTests = function(){
     }
   })();
 
+  // ---- Section 8: fitting the psi distribution to the real sounding ----
+  (function(){
+    var t0=+el('fitTop').value, b0=+el('fitBot').value;
+    // the moment estimator itself, against a hand-computed case
+    var m=momentsOf([1,2,3,4,5]);
+    check(m.n===5 && Math.abs(m.mu-3)<1e-12, "S8: mean of 1..5 is 3");
+    check(Math.abs(m.sd-Math.sqrt(2.5))<1e-12, "S8: sample sd of 1..5 is sqrt(2.5)");
+    check(Math.abs(m.skew)<1e-12, "S8: a symmetric sample has zero skewness");
+    var r=momentsOf([1,1,1,1,10]);
+    check(r.skew>1, "S8: a long right tail gives positive skewness");
+    check(momentsOf([]).n===0, "S8: an empty sample is handled");
+
+    // the interval selector must actually select from the sounding
+    el('fitTop').value=3; el('fitBot').value=7;
+    el('fitTop').dispatchEvent(new Event("input",{bubbles:true}));
+    var v=psiSampleInInterval();
+    var manual=sndData.map(sndComputeAtRow).filter(function(c){ return isFinite(c.psi)&&c.z>=3&&c.z<=7; });
+    check(v.length===manual.length && v.length>0, "S8: the 3-7 m interval selects the right readings");
+    check(v.every(function(p){ return isFinite(p); }), "S8: every selected reading is a finite psi");
+    // reversed handles are tolerated rather than returning nothing
+    el('fitTop').value=20; el('fitBot').value=10;
+    check(psiSampleInInterval().length>0, "S8: a reversed interval still selects readings");
+    el('fitTop').value=3; el('fitBot').value=7;
+    el('fitTop').dispatchEvent(new Event("input",{bubbles:true}));
+
+    // fitting must load the computed moments into the sliders, not something else
+    var fit=momentsOf(psiSampleInInterval());
+    el('fitFromSounding').click();
+    check(Math.abs(+el('muSlide').value-fit.mu)<0.0015, "S8: the fit loads the real mean into the slider");
+    check(Math.abs(+el('sigSlide').value-fit.sd)<0.0015, "S8: and the real standard deviation");
+    // the slider ranges must be wide enough to hold a real fit from this sounding
+    check(+el('muSlide').min<=fit.mu && fit.mu<=+el('muSlide').max,
+          "S8: the mean slider spans the fitted value without clamping");
+    check(+el('sigSlide').min<=fit.sd && fit.sd<=+el('sigSlide').max,
+          "S8: the sd slider spans the fitted value without clamping");
+
+    // psi_k arithmetic
+    var mu=num('muSlide'), sg=num('sigSlide'), pc=num('pctSlide');
+    var st=el('psikStats').querySelectorAll(".stat strong");
+    check(Math.abs(+st[0].textContent-invNorm(pc/100))<0.001, "S8: z is the inverse normal of the percentile");
+    check(Math.abs(parseFloat(st[1].textContent)-(mu+invNorm(pc/100)*sg))<0.0015,
+          "S8: psi_k = psi_mu + z*psi_sigma as displayed");
+    // raising the percentile must move psi_k toward the weak tail
+    el('pctSlide').value=90; el('pctSlide').dispatchEvent(new Event("input",{bubbles:true}));
+    var p90=parseFloat(el('psikStats').querySelectorAll(".stat strong")[1].textContent);
+    el('pctSlide').value=50; el('pctSlide').dispatchEvent(new Event("input",{bubbles:true}));
+    var p50=parseFloat(el('psikStats').querySelectorAll(".stat strong")[1].textContent);
+    check(p90>p50, "S8: a higher percentile gives a weaker (higher) psi_k");
+    check(Math.abs(p50-mu)<0.0015, "S8: the 50th percentile returns the mean");
+
+    // Table 5.4 must track the chosen percentile
+    [50,80,90,95].forEach(function(pv){
+      el('pctSlide').value=pv; el('pctSlide').dispatchEvent(new Event("input",{bubbles:true}));
+      var sel=document.querySelector("#table54 tbody tr.sel");
+      check(!!sel && +sel.dataset.pct===pv, "S8: Table 5.4 highlights the "+pv+"th percentile row");
+    });
+    el('pctSlide').value=80; el('pctSlide').dispatchEvent(new Event("input",{bubbles:true}));
+
+    // the loose-fraction note must quote the real count against the real thresholds
+    check(NERLERK_LIQ_PSI===-0.02, "S8: the Nerlerk liquefiable threshold is psi > -0.02");
+    check(ROWE_CRAIG_DEGRADE===4 && ROWE_CRAIG_FAIL===10, "S8: the Rowe & Craig fractions are 4% and 10%");
+    var vv=psiSampleInInterval();
+    var loose=vv.filter(function(p){ return p>NERLERK_LIQ_PSI; }).length;
+    var txt=el('looseFractionNote').textContent;
+    check(txt.indexOf(loose+" of "+vv.length)>=0, "S8: the note quotes the real loose count for this interval");
+    check(txt.indexOf((100*loose/vv.length).toFixed(1)+"%")>=0, "S8: and the real percentage");
+    check(txt.indexOf("indicative")>=0,
+          "S8: and says the readings-vs-volume comparison is indicative, not literal");
+
+    // the normality note must report the sample it actually has
+    var sm=momentsOf(vv), nt=el('normalityNote').textContent;
+    check(nt.indexOf(sm.skew.toFixed(2))>=0, "S8: the normality note quotes the computed skewness");
+    check(nt.indexOf(sm.beyond2Pct.toFixed(1)+"%")>=0, "S8: and the real fraction beyond 2 sigma");
+    check(nt.indexOf("4.6%")>=0, "S8: against the 4.6% a true normal gives");
+
+    var cv=el('distChart');
+    check(!!cv && cv.width>0, "S8: the distribution chart is drawn");
+    check(Math.abs(cv.width/parseFloat(cv.style.width)-(window.devicePixelRatio||1))<0.01,
+          "S8: it is backed at device resolution");
+    check(!!document.querySelector(".dist-figs"), "S8: the chart and Table 5.4 share a layout container");
+
+    el('fitTop').value=t0; el('fitBot').value=b0;
+    el('fitTop').dispatchEvent(new Event("input",{bubbles:true}));
+  })();
   // ---- Section 7: one sand choice, one depth, and the inversion ----
   // Sections 2 and 7 used to hold separate sand lists, so the module could report two
   // different psi for the same depth and the same Qp. Hold them to a single choice.
@@ -3564,7 +3842,7 @@ var figureInfo={
 'qpChart':['The Qp-psi calibration curve, and how much it can be trusted','Horizontal axis is the state parameter; vertical is Qp on a log scale. <b>Blue:</b> Qp=k&middot;exp(-m&psi;) for the selected sand. <b>Pale blue band:</b> the &plusmn;0.05 in psi that the method claims against the calibration-chamber database. <b>Faint grey curves:</b> the same relationship for the other 16 sands in Table 2.1, so the effect of the lambda10 choice is visible rather than asserted. <b>Red dot:</b> this depth&rsquo;s Qp and the psi it inverts to. <b>Grey dots at Qp=100 with the bracket beneath:</b> the three real Ticino readings of Fig. 4.20, split by stress level. A grey dashed line marks psi=0 and a green dashed line the -0.05 practical cutoff.','Start with the red dot, then look at how much room there is around it. The pale band is the method&rsquo;s own stated accuracy, and it is wide -- read psi off this chart as a range, not a number. Then look at the three grey Ticino points: identical Qp, three different psi, purely because the stress level differed. That spread is as large as the claimed accuracy, and this equation has no term that could see it. Finally, sweep the sand selector and watch the blue curve move through the grey ones. If that motion changes which side of the -0.05 line your red dot sits on, then lambda10 -- a laboratory measurement on the actual soil -- is deciding your engineering conclusion, and no amount of care with the cone log will substitute for it.'],
 'psiProfileChart':['psi down the sounding, read as a band','Depth runs down the left in m with ft in parentheses; psi runs across. <b>Red trace:</b> psi from the inversion at every depth. <b>Pink envelope:</b> the same trace plus and minus the method&rsquo;s claimed 0.05. <b>Green ground:</b> dilative, left of the -0.05 cutoff. <b>Pink ground:</b> contractive, right of it. A grey dashed line marks the theoretical critical state at psi=0, and the solid green line the -0.05 practical cutoff used throughout this module. An orange dashed line marks the selected depth.','Do not read the red line on its own -- read the envelope. Wherever the pink band straddles the green cutoff, the sounding does not actually tell you whether that depth is dilative or contractive; it tells you the answer is inside the noise. Those are the depths worth a laboratory CSL or a second sounding. Where the whole band sits clear on one side, the conclusion is robust to the method&rsquo;s own stated error. Change the sand and watch the entire profile shift bodily left or right: that motion is the lambda10 sensitivity, and it moves the whole hole at once rather than adding scatter.'],
 
-'distChart':['The ψ distribution at a site, and where ψk sits in it','Navy curve: assumed-normal probability density of ψ across the sounding. Red shading: the weaker (higher-ψ) tail beyond the chosen ψk. Blue vertical line: the chosen characteristic value itself. Red dashed line: the Nerlerk case\'s real liquefiable threshold.','The mean sits at the peak of the curve — read ψk\'s line position relative to that peak to see how much conservatism the chosen percentile is actually buying, then compare ψk against the red liquefiable-threshold line.']
+'distChart':['The psi distribution, the fit, and what the sounding actually shows','Horizontal axis is the state parameter; vertical is probability density. <b>Pale blue bars:</b> the histogram of psi actually measured over the chosen depth interval of the loaded sounding. <b>Navy curve:</b> the normal distribution fitted to psi_mu and psi_sigma on the sliders. <b>Red shading:</b> the weak tail beyond the chosen characteristic value, under that fitted curve. <b>Blue vertical line:</b> psi_k itself. <b>Red dashed line:</b> psi = -0.02, the threshold Onisiphorou found liquefiable at Nerlerk.','The bars are the data and the curve is the assumption -- compare them before trusting anything downstream. Where the bars sit above the curve on the right-hand side, the real weak tail is fatter than the normal model, and psi_k is then less conservative than its percentile claims; the skewness reported below the figure puts a number on that. Then look at how much of the histogram lies right of the red dashed line: that is the fraction of this interval already at Nerlerk-liquefiable state, and the note below compares it against the 4% and 10% volume fractions from Rowe and Craig\'s centrifuge caissons. Finally drag the percentile and watch psi_k march into the tail -- the design value is deliberately not the average soil.']
 };
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
 document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
