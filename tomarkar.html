@@ -44,6 +44,13 @@
     .ok { color: #167249; font-weight: 700; }
     .warn { color: #9a3412; font-weight: 700; }
     #result, #screenHelp { display: none; }
+    .oshelp { list-style: none; padding: 0; margin: 10px 0 0; }
+    .oshelp li { display: flex; gap: 11px; align-items: flex-start; margin-bottom: 11px; }
+    .oshelp .n { flex: 0 0 22px; height: 22px; border-radius: 50%; background: #b45309; color: #fff;
+      font-size: .78rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+    .oshelp .txt { flex: 1 1 auto; line-height: 1.5; }
+    .recglyph { display: inline-flex; vertical-align: -6px; margin: 0 3px; }
+    .recglyph svg { width: 24px; height: 24px; }
     ol, ul { padding-left: 20px; line-height: 1.6; margin: 0 0 10px; }
     li { margin-bottom: 5px; }
     /* password gate */
@@ -98,7 +105,8 @@
     <div id="screenHelp" class="alert">
       <strong id="screenHelpTitle">To record your screen on this device</strong>
       <p style="margin:8px 0 6px">Use the recorder built into the operating system &mdash; it captures the whole screen, including apps a browser can never see. No web page can do this on a phone: neither Safari on iOS nor Chrome on Android exposes the screen-capture API to web pages. Come back here afterwards if you also want a separate camera or voice recording.</p>
-      <ul id="screenHelpSteps"></ul>
+      <ol class="oshelp" id="screenHelpSteps"></ol>
+      <p class="muted" style="margin:4px 0 0" id="screenHelpFoot"></p>
     </div>
   </section>
 
@@ -204,7 +212,11 @@ document.getElementById('gateForm').addEventListener('submit', e => {
   e.preventDefault();
   tryUnlock(document.getElementById('gatePass').value.trim());
 });
-try { if (sessionStorage.getItem(GATE_KEY) === '1') openApp(); } catch {}
+// deferred to the end of this script: openApp() -> initRecorder() must not run
+// before initRecorder's own module-scope bindings are initialised.
+function restoreUnlocked() {
+  try { if (sessionStorage.getItem(GATE_KEY) === '1') openApp(); } catch {}
+}
 
 /* -------------------------------------------------------------- recorder --- */
 let initialised = false;
@@ -252,18 +264,30 @@ function describePlatform() {
       (isIOS ? 'iOS' : isAndroid ? 'Android' : 'your system') +
       ' has its own recorder built in, because Apple and Google do not let web pages capture a phone screen. Steps are below.';
   }
+  // the glyph people are actually hunting for in Control Centre / Quick Settings
+  const REC_GLYPH = '<span class="recglyph" aria-hidden="true"><svg viewBox="0 0 24 24">' +
+    '<circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+    '<circle cx="12" cy="12" r="6" fill="currentColor"/></svg></span>';
+  const step = (n, html) => '<li><span class="n">' + n + '</span><span class="txt">' + html + '</span></li>';
+  $('screenHelpFoot').innerHTML = isIOS
+    ? 'A web page cannot press that button for you &mdash; iOS keeps Control Centre out of reach of Safari entirely, so this is the only route to a screen recording on an iPhone.'
+    : isAndroid
+    ? 'A web page cannot press that tile for you &mdash; Android keeps Quick Settings out of reach of the browser, so this is the only route to a screen recording on the phone.'
+    : '';
   const steps = $('screenHelpSteps');
   steps.innerHTML = isIOS
-    ? '<li>Open <strong>Settings &rarr; Control Centre</strong> and add <strong>Screen Recording</strong>.</li>' +
-      '<li>Swipe down from the top-right corner and tap the record button.</li>' +
-      '<li>Press and hold that button first if you want microphone audio included.</li>' +
-      '<li>The video is saved to Photos when you stop.</li>'
+    ? step(1, 'Open <strong>Settings &rarr; Control Centre</strong> and add <strong>Screen Recording</strong>. You only do this once.') +
+      step(2, 'Swipe down from the <strong>top-right corner</strong> to open Control Centre.') +
+      step(3, 'Tap this button: ' + REC_GLYPH + ' &mdash; recording starts after a three-second countdown.') +
+      step(4, '<strong>Press and hold</strong> it instead, and turn the microphone on, if you want your voice captured too.') +
+      step(5, 'Stop from the red pill or clock at the top of the screen. The video lands in <strong>Photos</strong>.')
     : isAndroid
-    ? '<li>Swipe down twice from the top of the screen to open Quick Settings.</li>' +
-      '<li>Tap <strong>Screen record</strong>, and choose whether to include audio.</li>' +
-      '<li>The video is saved to your gallery when you stop.</li>'
-    : '<li>Use current Microsoft Edge or Google Chrome on a desktop computer.</li>' +
-      '<li>Make sure the page is served over https.</li>';
+    ? step(1, 'Swipe down <strong>twice</strong> from the top of the screen to open Quick Settings in full.') +
+      step(2, 'Tap the ' + REC_GLYPH + ' <strong>Screen record</strong> tile. Edit the tile order first if you cannot see it.') +
+      step(3, 'Choose whether to record audio, and whether to show taps, then start.') +
+      step(4, 'Stop from the notification shade. The video lands in your <strong>gallery</strong>.')
+    : step(1, 'Use current Microsoft Edge or Google Chrome on a desktop computer.') +
+      step(2, 'Make sure the page is served over https.');
 }
 
 function setMode(next) {
@@ -609,6 +633,8 @@ loadDevices().catch(() => {});
 window.__tomarkar = { supportedMimeType, mimeCandidates, extensionFor, sha256, GATE_HASH,
   canScreen, isMobile, isIOS, isAndroid, setMode, FIRST_DATA_MS };
 }
+
+restoreUnlocked();
 </script>
 </body>
 </html>
