@@ -96,8 +96,8 @@
     <div id="platformNote" class="muted"></div>
 
     <div id="screenHelp" class="alert">
-      <strong>Screen recording is not available in phone and tablet browsers.</strong>
-      <p style="margin:8px 0 6px">Neither Safari on iPhone or iPad nor Chrome on Android implements the screen-capture API, so no web page can record your screen on this device. Use the recorder built into the operating system instead, then come back here if you want a separate camera or voice recording.</p>
+      <strong id="screenHelpTitle">To record your screen on this device</strong>
+      <p style="margin:8px 0 6px">Use the recorder built into the operating system &mdash; it captures the whole screen, including apps a browser can never see. No web page can do this on a phone: neither Safari on iOS nor Chrome on Android exposes the screen-capture API to web pages. Come back here afterwards if you also want a separate camera or voice recording.</p>
       <ul id="screenHelpSteps"></ul>
     </div>
   </section>
@@ -229,9 +229,12 @@ const canScreen = !!navigator.mediaDevices?.getDisplayMedia;
 const canRecord = typeof MediaRecorder !== 'undefined';
 const canMedia  = !!navigator.mediaDevices?.getUserMedia;
 const ua = navigator.userAgent;
-const isIOS = /iPad|iPhone|iPod/.test(ua) ||
-              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const isAndroid = /Android/.test(ua);
+// ?device=ios|android|desktop forces the branch, so the phone experience can be
+// checked from a desktop browser without spoofing a user agent.
+const forced = new URLSearchParams(location.search).get('device');
+const isIOS = forced ? forced === 'ios'
+  : (/iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+const isAndroid = forced ? forced === 'android' : /Android/.test(ua);
 const isMobile = isIOS || isAndroid;
 
 function describePlatform() {
@@ -240,10 +243,14 @@ function describePlatform() {
     note.innerHTML = '<span class="warn">This browser cannot record media at all. Try current Chrome, Edge or Safari.</span>';
     return;
   }
+  const device = isIOS ? 'iPhone or iPad' : isAndroid ? 'Android phone' : 'device';
   if (canScreen && !isMobile) {
     note.innerHTML = 'Screen, camera and microphone recording are all available on this device.';
   } else {
-    note.innerHTML = '<span class="warn">Screen recording is not available on this device.</span> Camera and microphone recording work normally &mdash; choose one of those modes.';
+    note.innerHTML = '<strong>Camera and microphone recording work on your ' + device +
+      '</strong> &mdash; both modes above are ready to use. For the <em>screen</em>, ' +
+      (isIOS ? 'iOS' : isAndroid ? 'Android' : 'your system') +
+      ' has its own recorder built in, because Apple and Google do not let web pages capture a phone screen. Steps are below.';
   }
   const steps = $('screenHelpSteps');
   steps.innerHTML = isIOS
@@ -264,7 +271,8 @@ function setMode(next) {
   $('modeScreen').setAttribute('aria-pressed', String(next === 'screen'));
   $('modeCamera').setAttribute('aria-pressed', String(next === 'camera'));
   $('modeMic').setAttribute('aria-pressed', String(next === 'mic'));
-  $('screenHelp').style.display = (next === 'screen' && (!canScreen || isMobile)) ? 'block' : 'none';
+  // on a phone these steps are the actual answer, so keep them visible in every mode
+  $('screenHelp').style.display = (isMobile || !canScreen) ? 'block' : 'none';
   $('camWrap').style.display = next === 'camera' ? '' : 'none';
   $('sysWrap').style.display = next === 'screen' ? '' : 'none';
   $('sysMeterLabel').parentElement.querySelector('#systemMeter').style.opacity = next === 'screen' ? '1' : '.35';
@@ -272,7 +280,9 @@ function setMode(next) {
   flipBtn.style.display = (next === 'camera' && isMobile) ? '' : 'none';
   const blocked = next === 'screen' && (!canScreen || isMobile);
   startBtn.disabled = blocked || !canRecord;
-  startBtn.textContent = blocked ? 'Not available on this device' : 'Start recording';
+  startBtn.textContent = blocked
+    ? (isMobile ? 'Use the built-in recorder below' : 'Not available in this browser')
+    : 'Start recording';
   setStatus('Ready');
 }
 
