@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Tomarkar</title>
+  <style>
+    :root { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color: #172033; background: #eef2f7; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; padding: max(14px, env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom)); }
+    main { width: min(100%, 1000px); margin: auto; }
+    .card { background: #fff; border: 1px solid #dce3ec; border-radius: 16px; padding: 18px; box-shadow: 0 10px 28px rgba(25,45,75,.08); margin-bottom: 14px; }
+    h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 5vw, 2.3rem); }
+    h2 { margin: 0 0 8px; font-size: 1.05rem; }
+    p { line-height: 1.55; margin: 0 0 10px; }
+    .notice { border-left: 5px solid #6954c9; background: #f1efff; padding: 12px 14px; border-radius: 10px; font-size: .95rem; }
+    .alert { border-left: 5px solid #b45309; background: #fff7ed; padding: 12px 14px; border-radius: 10px; font-size: .95rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+    label { display: block; font-weight: 700; margin-bottom: 6px; font-size: .92rem; }
+    select, input[type="range"], input[type="password"] { width: 100%; }
+    select, input[type="password"] { padding: 11px; border: 1px solid #b9c4d2; border-radius: 10px; background: inherit; color: inherit; font: inherit; }
+    button, .download { border: 0; border-radius: 11px; padding: 13px 18px; font: inherit; font-weight: 750; cursor: pointer;
+      text-decoration: none; display: inline-flex; align-items: center; justify-content: center; min-height: 46px; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    .primary { background: #5b47c8; color: #fff; }
+    .secondary { background: #e6eaf0; color: #182234; }
+    .danger { background: #b42318; color: #fff; }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 10px; }
+    .controls button, .controls .download { flex: 1 1 auto; min-width: 128px; }
+    .modes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .modes button { flex: 1 1 140px; background: #eef1f6; color: #26324a; border: 2px solid transparent; }
+    .modes button[aria-pressed="true"] { background: #5b47c8; color: #fff; }
+    .modes button:disabled { opacity: .4; }
+    .statusline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; background: #8894a4; flex: 0 0 auto; }
+    .dot.live { background: #d92d20; box-shadow: 0 0 0 6px rgba(217,45,32,.12); }
+    .timer { font-variant-numeric: tabular-nums; font-weight: 800; font-size: 1.15rem; }
+    video { width: 100%; max-height: 60vh; background: #0d1117; border-radius: 12px; margin-top: 12px; }
+    .meters { display: grid; grid-template-columns: minmax(84px, 110px) 1fr; gap: 8px 10px; align-items: center; margin-top: 14px; }
+    meter { width: 100%; height: 18px; }
+    .muted { color: #5f6b7a; font-size: .9rem; }
+    .ok { color: #167249; font-weight: 700; }
+    .warn { color: #9a3412; font-weight: 700; }
+    #result, #screenHelp { display: none; }
+    ol, ul { padding-left: 20px; line-height: 1.6; margin: 0 0 10px; }
+    li { margin-bottom: 5px; }
+    /* password gate */
+    #gate { position: fixed; inset: 0; background: #101722; color: #e7edf5; display: flex; align-items: center;
+      justify-content: center; padding: 20px; z-index: 50; }
+    #gate .box { width: min(100%, 380px); background: #182231; border: 1px solid #2e3b4d; border-radius: 16px; padding: 22px; }
+    #gate h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    #gate p { color: #9fb0c4; font-size: .9rem; }
+    #gateMsg { min-height: 20px; font-size: .9rem; margin: 8px 0 0; }
+    #app { display: none; }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #e7edf5; background: #101722; }
+      .card { background:#182231; border-color:#2e3b4d; }
+      .secondary { background:#314055; color:#fff; }
+      .notice { background:#29244b; }
+      .alert { background:#3a2c17; }
+      .modes button { background:#243044; color:#dbe5f0; }
+      select, input[type="password"] { border-color:#536177; }
+      .muted { color:#9fb0c4; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="gate">
+  <form class="box" id="gateForm">
+    <h1>Tomarkar</h1>
+    <p>Enter the access code to continue.</p>
+    <label for="gatePass" class="sr-only" style="margin-top:12px">Access code</label>
+    <input id="gatePass" type="password" autocomplete="current-password" placeholder="Access code" aria-label="Access code">
+    <p id="gateMsg" role="status" aria-live="polite"></p>
+    <div class="controls"><button type="submit" class="primary">Unlock</button></div>
+  </form>
+</div>
+
+<main id="app">
+  <section class="card">
+    <h1>Tomarkar</h1>
+    <p>Records screen, camera and audio in the browser, and saves a single file you can keep.</p>
+    <div class="notice"><strong>Consent and privacy:</strong> Record only when everyone present has been informed and recording is permitted by your organization and by law. Nothing is uploaded anywhere &mdash; the file is produced in your browser and stays on your device.</div>
+  </section>
+
+  <section class="card">
+    <h2>What to record</h2>
+    <div class="modes" role="group" aria-label="Recording mode">
+      <button type="button" id="modeScreen" aria-pressed="true">Screen + audio</button>
+      <button type="button" id="modeCamera" aria-pressed="false">Camera + mic</button>
+      <button type="button" id="modeMic" aria-pressed="false">Microphone only</button>
+    </div>
+    <div id="platformNote" class="muted"></div>
+
+    <div id="screenHelp" class="alert">
+      <strong>Screen recording is not available in phone and tablet browsers.</strong>
+      <p style="margin:8px 0 6px">Neither Safari on iPhone or iPad nor Chrome on Android implements the screen-capture API, so no web page can record your screen on this device. Use the recorder built into the operating system instead, then come back here if you want a separate camera or voice recording.</p>
+      <ul id="screenHelpSteps"></ul>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="grid">
+      <div id="camWrap" style="display:none">
+        <label for="camSelect">Camera</label>
+        <select id="camSelect"><option value="">Default camera</option></select>
+      </div>
+      <div>
+        <label for="micSelect">Microphone</label>
+        <select id="micSelect"><option value="">Default microphone</option></select>
+      </div>
+      <div>
+        <label for="micGain">Microphone level: <span id="micGainValue">100%</span></label>
+        <input id="micGain" type="range" min="0" max="2" step="0.05" value="1">
+      </div>
+      <div id="sysWrap">
+        <label for="systemGain">Meeting/system level: <span id="systemGainValue">100%</span></label>
+        <input id="systemGain" type="range" min="0" max="2" step="0.05" value="1">
+      </div>
+    </div>
+
+    <div class="controls">
+      <button id="startBtn" class="primary">Start recording</button>
+      <button id="pauseBtn" class="secondary" disabled>Pause</button>
+      <button id="stopBtn" class="danger" disabled>Stop</button>
+      <button id="flipBtn" class="secondary" style="display:none">Flip camera</button>
+    </div>
+
+    <div class="statusline">
+      <span id="statusDot" class="dot"></span>
+      <span id="status" aria-live="polite">Ready</span>
+      <span id="timer" class="timer">00:00:00</span>
+    </div>
+
+    <div class="meters">
+      <span id="sysMeterLabel">Meeting audio</span><meter id="systemMeter" min="0" max="1" value="0"></meter>
+      <span>Microphone</span><meter id="micMeter" min="0" max="1" value="0"></meter>
+    </div>
+
+    <video id="livePreview" autoplay muted playsinline></video>
+  </section>
+
+  <section id="result" class="card">
+    <h2>Recording ready</h2>
+    <video id="playback" controls playsinline></video>
+    <div class="controls">
+      <a id="downloadLink" class="download primary" download>Save file</a>
+      <button id="shareBtn" class="secondary" style="display:none">Share / save to device</button>
+    </div>
+    <p id="fileInfo" class="muted"></p>
+    <p id="iosSaveHint" class="muted" style="display:none">On iPhone and iPad, tap <strong>Share / save to device</strong> to send the file to Files, Photos or another app. If that button is unavailable, press and hold the video above and choose Save.</p>
+  </section>
+
+  <section class="card">
+    <h2>Notes on each mode</h2>
+    <ul>
+      <li><strong>Screen + audio</strong> &mdash; desktop only. Use current Edge or Chrome on Windows for system-audio support, and tick <em>Share system audio</em> in the picker or other participants will not be recorded.</li>
+      <li><strong>Camera + mic</strong> &mdash; works on iPhone, Android and desktop. On phones you can switch between front and rear cameras while recording is stopped.</li>
+      <li><strong>Microphone only</strong> &mdash; works everywhere and produces a much smaller audio file.</li>
+    </ul>
+    <p class="muted">Output format depends on the browser: Chrome, Edge and Firefox produce WebM; Safari on Mac, iPhone and iPad produces MP4. Both play in the browser they were made in, and both are accepted by common video tools.</p>
+  </section>
+</main>
+
+<script>
+'use strict';
+
+/* ------------------------------------------------------------------ gate ---
+   A client-side gate keeps this page out of casual view. It is deliberately
+   NOT presented as security: anyone who opens developer tools can read the
+   check. Do not put anything genuinely sensitive behind it.                */
+const GATE_HASH = '9d5c3123db00a9867d5e9ea04a89c910b608fd5e26ce136c99891397f03024b9';
+const GATE_KEY = 'tomarkar-unlocked';
+
+async function sha256(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function openApp() {
+  document.getElementById('gate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initRecorder();
+}
+async function tryUnlock(value) {
+  const msg = document.getElementById('gateMsg');
+  if (!value) { msg.textContent = 'Enter the access code.'; msg.className = 'warn'; return; }
+  let hash;
+  try { hash = await sha256('tomarkar:' + value); }
+  catch { msg.textContent = 'This browser cannot check the code. Open the page over https.'; msg.className = 'warn'; return; }
+  if (hash === GATE_HASH) {
+    try { sessionStorage.setItem(GATE_KEY, '1'); } catch {}
+    openApp();
+  } else {
+    msg.textContent = 'That code is not right.';
+    msg.className = 'warn';
+    document.getElementById('gatePass').select();
+  }
+}
+document.getElementById('gateForm').addEventListener('submit', e => {
+  e.preventDefault();
+  tryUnlock(document.getElementById('gatePass').value.trim());
+});
+try { if (sessionStorage.getItem(GATE_KEY) === '1') openApp(); } catch {}
+
+/* -------------------------------------------------------------- recorder --- */
+let initialised = false;
+function initRecorder() {
+  if (initialised) return;
+  initialised = true;
+
+const $ = id => document.getElementById(id);
+const startBtn = $('startBtn'), pauseBtn = $('pauseBtn'), stopBtn = $('stopBtn'), flipBtn = $('flipBtn');
+const statusEl = $('status'), statusDot = $('statusDot'), timerEl = $('timer');
+const livePreview = $('livePreview'), playback = $('playback'), result = $('result');
+const micSelect = $('micSelect'), camSelect = $('camSelect');
+const micGainSlider = $('micGain'), systemGainSlider = $('systemGain');
+
+let displayStream, micStream, camStream, recordingStream, recorder, audioContext, destination;
+let micGainNode, systemGainNode, chunks = [], objectUrl, recordedBlob, timerId, meterFrame;
+let startedAt = 0, pausedAt = 0, totalPaused = 0, stopping = false;
+let mode = 'screen', facing = 'user';
+
+/* ---- platform capability, decided by feature detection, not by guessing --- */
+const canScreen = !!navigator.mediaDevices?.getDisplayMedia;
+const canRecord = typeof MediaRecorder !== 'undefined';
+const canMedia  = !!navigator.mediaDevices?.getUserMedia;
+const ua = navigator.userAgent;
+const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/.test(ua);
+const isMobile = isIOS || isAndroid;
+
+function describePlatform() {
+  const note = $('platformNote');
+  if (!canRecord) {
+    note.innerHTML = '<span class="warn">This browser cannot record media at all. Try current Chrome, Edge or Safari.</span>';
+    return;
+  }
+  if (canScreen && !isMobile) {
+    note.innerHTML = 'Screen, camera and microphone recording are all available on this device.';
+  } else {
+    note.innerHTML = '<span class="warn">Screen recording is not available on this device.</span> Camera and microphone recording work normally &mdash; choose one of those modes.';
+  }
+  const steps = $('screenHelpSteps');
+  steps.innerHTML = isIOS
+    ? '<li>Open <strong>Settings &rarr; Control Centre</strong> and add <strong>Screen Recording</strong>.</li>' +
+      '<li>Swipe down from the top-right corner and tap the record button.</li>' +
+      '<li>Press and hold that button first if you want microphone audio included.</li>' +
+      '<li>The video is saved to Photos when you stop.</li>'
+    : isAndroid
+    ? '<li>Swipe down twice from the top of the screen to open Quick Settings.</li>' +
+      '<li>Tap <strong>Screen record</strong>, and choose whether to include audio.</li>' +
+      '<li>The video is saved to your gallery when you stop.</li>'
+    : '<li>Use current Microsoft Edge or Google Chrome on a desktop computer.</li>' +
+      '<li>Make sure the page is served over https.</li>';
+}
+
+function setMode(next) {
+  mode = next;
+  $('modeScreen').setAttribute('aria-pressed', String(next === 'screen'));
+  $('modeCamera').setAttribute('aria-pressed', String(next === 'camera'));
+  $('modeMic').setAttribute('aria-pressed', String(next === 'mic'));
+  $('screenHelp').style.display = (next === 'screen' && (!canScreen || isMobile)) ? 'block' : 'none';
+  $('camWrap').style.display = next === 'camera' ? '' : 'none';
+  $('sysWrap').style.display = next === 'screen' ? '' : 'none';
+  $('sysMeterLabel').parentElement.querySelector('#systemMeter').style.opacity = next === 'screen' ? '1' : '.35';
+  livePreview.style.display = next === 'mic' ? 'none' : '';
+  flipBtn.style.display = (next === 'camera' && isMobile) ? '' : 'none';
+  const blocked = next === 'screen' && (!canScreen || isMobile);
+  startBtn.disabled = blocked || !canRecord;
+  startBtn.textContent = blocked ? 'Not available on this device' : 'Start recording';
+  setStatus('Ready');
+}
+
+function setStatus(text, kind = '') { statusEl.textContent = text; statusEl.className = kind; }
+function formatTime(ms) {
+  const s = Math.max(0, Math.floor(ms / 1000));
+  return [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map(v => String(v).padStart(2, '0')).join(':');
+}
+function updateTimer() {
+  const end = recorder?.state === 'paused' ? pausedAt : performance.now();
+  timerEl.textContent = formatTime(end - startedAt - totalPaused);
+}
+
+/* Safari produces MP4 and cannot make WebM; Chrome and Firefox are the reverse.
+   Offer both families and let the browser pick the first it actually supports. */
+function mimeCandidates(audioOnly) {
+  const video = [
+    'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4'
+  ];
+  const audio = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/aac'];
+  const list = (audioOnly ? audio : video).filter(t => MediaRecorder.isTypeSupported?.(t));
+  list.push('');                       // '' means "let the browser choose"
+  return list;
+}
+function supportedMimeType(audioOnly) { return mimeCandidates(audioOnly)[0] || ''; }
+function extensionFor(type) {
+  if (type.includes('mp4')) return 'mp4';
+  if (type.includes('aac')) return 'm4a';
+  if (type.startsWith('audio/')) return 'weba';
+  return 'webm';
+}
+
+async function loadDevices() {
+  if (!navigator.mediaDevices?.enumerateDevices) return;
+  let devices = [];
+  try { devices = await navigator.mediaDevices.enumerateDevices(); } catch { return; }
+  const fill = (select, kind, fallbackLabel) => {
+    const previous = select.value;
+    const list = devices.filter(d => d.kind === kind);
+    select.innerHTML = `<option value="">${fallbackLabel}</option>`;
+    list.forEach((d, i) => {
+      const option = document.createElement('option');
+      option.value = d.deviceId;
+      option.textContent = d.label || `${fallbackLabel.replace('Default ', '')} ${i + 1}`;
+      select.append(option);
+    });
+    if ([...select.options].some(o => o.value === previous)) select.value = previous;
+  };
+  fill(micSelect, 'audioinput', 'Default microphone');
+  fill(camSelect, 'videoinput', 'Default camera');
+}
+
+function makeMeter(stream, meterId) {
+  if (!stream?.getAudioTracks().length) return null;
+  const source = audioContext.createMediaStreamSource(new MediaStream(stream.getAudioTracks()));
+  const analyser = audioContext.createAnalyser();
+  analyser.fftSize = 512;
+  source.connect(analyser);
+  return { analyser, data: new Uint8Array(analyser.fftSize), element: $(meterId) };
+}
+function animateMeters(meters) {
+  const draw = () => {
+    meters.forEach(m => {
+      if (!m) return;
+      m.analyser.getByteTimeDomainData(m.data);
+      let sum = 0;
+      for (const v of m.data) { const n = (v - 128) / 128; sum += n * n; }
+      m.element.value = Math.min(1, Math.sqrt(sum / m.data.length) * 3.5);
+    });
+    meterFrame = requestAnimationFrame(draw);
+  };
+  draw();
+}
+function stopTracks(stream) { stream?.getTracks().forEach(t => t.stop()); }
+
+function micConstraints() {
+  return { audio: {
+    deviceId: micSelect.value ? { exact: micSelect.value } : undefined,
+    echoCancellation: true, noiseSuppression: true, autoGainControl: true
+  } };
+}
+
+/* MediaRecorder.isTypeSupported can return true for a codec the device cannot actually
+   encode: the recorder reaches "recording" and emits nothing. Rather than discover that
+   when the user stops, watch for the first chunk and step to the next candidate. */
+let candidates = [], candidateIndex = 0, audioOnlyRun = false, dataWatchdog = null, sawData = false;
+const FIRST_DATA_MS = 2500;
+
+function clearWatchdog() { if (dataWatchdog) { clearTimeout(dataWatchdog); dataWatchdog = null; } }
+
+function beginRecorder() {
+  while (candidateIndex < candidates.length) {
+    const mimeType = candidates[candidateIndex];
+    const options = mimeType ? { mimeType } : {};
+    if (!audioOnlyRun) options.videoBitsPerSecond = isMobile ? 3_000_000 : 6_000_000;
+    options.audioBitsPerSecond = 128_000;
+    try { recorder = new MediaRecorder(recordingStream, options); }
+    catch { candidateIndex++; continue; }
+
+    sawData = false;
+    recorder.ondataavailable = e => {
+      if (!e.data?.size) return;
+      sawData = true; clearWatchdog(); chunks.push(e.data);
+    };
+    recorder.onerror = e => setStatus(`Recorder error: ${e.error?.message || 'unknown'}`, 'warn');
+    const thisRecorder = recorder;
+    recorder.onstop = () => { if (!thisRecorder.__abandoned) finishRecording(); };
+    try { recorder.start(1000); }
+    catch { candidateIndex++; continue; }
+
+    clearWatchdog();
+    dataWatchdog = setTimeout(() => {
+      if (sawData || !recorder || recorder.state === 'inactive') return;
+      // this format claimed support and produced nothing: move on
+      const dead = recorder;
+      dead.__abandoned = true;
+      try { dead.stop(); } catch {}
+      chunks = [];
+      candidateIndex++;
+      if (beginRecorder()) {
+        setStatus('That video format produced no data, so a more compatible one is now in use.', 'warn');
+      } else {
+        stopRecording();
+        setStatus('This browser reported support for a recording format it cannot actually produce, and no fallback worked. Try a different browser.', 'warn');
+      }
+    }, FIRST_DATA_MS);
+    return true;
+  }
+  return false;
+}
+async function startRecording() {
+  if (!canRecord || !canMedia) {
+    setStatus('This browser cannot record media. Try current Chrome, Edge or Safari.', 'warn');
+    return;
+  }
+  try {
+    stopping = false;
+    startBtn.disabled = true;
+    chunks = [];
+    result.style.display = 'none';          // never leave the previous file on screen
+    $('fileInfo').textContent = '';
+    let videoTrack = null, hasSystemAudio = false;
+
+    if (mode === 'screen') {
+      setStatus('Choose a screen or window, and enable system audio…');
+      displayStream = await navigator.mediaDevices.getDisplayMedia({
+        video: { frameRate: { ideal: 30, max: 60 } },
+        audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+        systemAudio: 'include', surfaceSwitching: 'include', selfBrowserSurface: 'exclude'
+      });
+      videoTrack = displayStream.getVideoTracks()[0];
+      hasSystemAudio = displayStream.getAudioTracks().length > 0;
+    } else if (mode === 'camera') {
+      setStatus('Allow camera and microphone access…');
+      camStream = await navigator.mediaDevices.getUserMedia({
+        video: camSelect.value ? { deviceId: { exact: camSelect.value } }
+                               : { facingMode: isMobile ? facing : undefined,
+                                   width: { ideal: 1280 }, height: { ideal: 720 } },
+        audio: false
+      });
+      videoTrack = camStream.getVideoTracks()[0];
+    } else {
+      setStatus('Allow microphone access…');
+    }
+
+    if (mode !== 'screen' || true) {
+      try { micStream = await navigator.mediaDevices.getUserMedia(micConstraints()); }
+      catch (error) {
+        micStream = null;
+        if (mode === 'mic') throw error;
+        if (!confirm('Microphone access failed. Continue without your microphone?')) throw error;
+      }
+    }
+
+    if (mode === 'screen' && !hasSystemAudio) {
+      const stop = confirm('No system audio was shared, so other participants will NOT be recorded.\n\nOK to stop and try again with system audio enabled, or Cancel to continue with the microphone only.');
+      if (stop) { stopTracks(displayStream); stopTracks(micStream); resetUI(); setStatus('Ready'); return; }
+    }
+
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    await audioContext.resume();
+    destination = audioContext.createMediaStreamDestination();
+    if (hasSystemAudio) {
+      const src = audioContext.createMediaStreamSource(new MediaStream(displayStream.getAudioTracks()));
+      systemGainNode = audioContext.createGain();
+      systemGainNode.gain.value = Number(systemGainSlider.value);
+      src.connect(systemGainNode).connect(destination);
+    }
+    if (micStream?.getAudioTracks().length) {
+      const src = audioContext.createMediaStreamSource(new MediaStream(micStream.getAudioTracks()));
+      micGainNode = audioContext.createGain();
+      micGainNode.gain.value = Number(micGainSlider.value);
+      src.connect(micGainNode).connect(destination);
+    }
+
+    const audioTracks = destination.stream.getAudioTracks();
+    recordingStream = new MediaStream(videoTrack ? [videoTrack, ...audioTracks] : audioTracks);
+    if (videoTrack) livePreview.srcObject = mode === 'screen' ? displayStream : camStream;
+
+    const audioOnly = !videoTrack;
+    candidates = mimeCandidates(audioOnly);
+    candidateIndex = 0;
+    audioOnlyRun = audioOnly;
+    if (videoTrack) videoTrack.addEventListener('ended', stopRecording, { once: true });
+    if (!beginRecorder()) throw new Error('No usable recording format on this device.');
+    startedAt = performance.now(); totalPaused = 0;
+    timerId = setInterval(updateTimer, 250);
+    animateMeters([makeMeter(displayStream, 'systemMeter'), makeMeter(micStream, 'micMeter')]);
+
+    pauseBtn.disabled = false; stopBtn.disabled = false; flipBtn.disabled = true;
+    statusDot.classList.add('live');
+    setStatus(
+      mode === 'screen' ? (hasSystemAudio ? 'Recording screen, system audio and microphone' : 'Recording screen and microphone only')
+      : mode === 'camera' ? 'Recording camera and microphone'
+      : 'Recording microphone',
+      mode === 'screen' && !hasSystemAudio ? 'warn' : 'ok');
+    loadDevices().catch(() => {});
+  } catch (error) {
+    console.error(error);
+    cleanup(); resetUI();
+    const name = error?.name;
+    setStatus(
+      name === 'NotAllowedError' ? 'Permission was denied or the picker was cancelled.'
+      : name === 'NotFoundError' ? 'No suitable camera or microphone was found on this device.'
+      : name === 'NotSupportedError' ? 'This browser does not support that recording mode.'
+      : `Could not start: ${error?.message || name || 'unknown error'}`, 'warn');
+  }
+}
+
+function togglePause() {
+  if (!recorder) return;
+  if (recorder.state === 'recording') {
+    recorder.pause(); pausedAt = performance.now(); pauseBtn.textContent = 'Resume';
+    statusDot.classList.remove('live'); setStatus('Paused');
+  } else if (recorder.state === 'paused') {
+    totalPaused += performance.now() - pausedAt;
+    recorder.resume(); pauseBtn.textContent = 'Pause';
+    statusDot.classList.add('live'); setStatus('Recording resumed', 'ok');
+  }
+}
+function stopRecording() {
+  if (stopping) return;
+  stopping = true;
+  if (recorder && recorder.state !== 'inactive') recorder.stop();
+  else { cleanup(); resetUI(); }
+  stopTracks(displayStream); stopTracks(micStream); stopTracks(camStream);
+  setStatus('Finalizing recording…');
+  pauseBtn.disabled = true; stopBtn.disabled = true;
+}
+async function finishRecording() {
+  const type = recorder?.mimeType || supportedMimeType(false) || 'video/webm';
+  recordedBlob = new Blob(chunks, { type });
+  cleanup(false); resetUI();
+  if (!recordedBlob.size) { setStatus('No recording data was produced.', 'warn'); return; }
+  if (objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl = URL.createObjectURL(recordedBlob);
+  playback.src = objectUrl;
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const name = `tomarkar-${stamp}.${extensionFor(type)}`;
+  const link = $('downloadLink');
+  link.href = objectUrl; link.download = name;
+  $('fileInfo').textContent = `${(recordedBlob.size / 1048576).toFixed(1)} MB · ${type}`;
+
+  // iOS Safari ignores the download attribute; the share sheet is the way to keep a file.
+  const file = new File([recordedBlob], name, { type });
+  const canShare = !!navigator.canShare?.({ files: [file] });
+  $('shareBtn').style.display = canShare ? '' : 'none';
+  $('iosSaveHint').style.display = isIOS ? '' : 'none';
+  if (isIOS) link.textContent = 'Open file';
+  $('shareBtn').onclick = async () => {
+    try { await navigator.share({ files: [file], title: 'Tomarkar recording' }); }
+    catch (e) { if (e?.name !== 'AbortError') setStatus('Sharing was not completed.', 'warn'); }
+  };
+
+  result.style.display = 'block';
+  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setStatus('Recording ready to review and save.', 'ok');
+}
+function cleanup(closeAudio = true) {
+  clearInterval(timerId); cancelAnimationFrame(meterFrame); clearWatchdog();
+  stopTracks(displayStream); stopTracks(micStream); stopTracks(camStream); stopTracks(recordingStream);
+  livePreview.srcObject = null;
+  $('systemMeter').value = 0; $('micMeter').value = 0;
+  if (closeAudio && audioContext && audioContext.state !== 'closed') audioContext.close().catch(() => {});
+  displayStream = micStream = camStream = recordingStream = null;
+}
+function resetUI() {
+  clearInterval(timerId); cancelAnimationFrame(meterFrame);
+  pauseBtn.disabled = true; stopBtn.disabled = true; flipBtn.disabled = false;
+  pauseBtn.textContent = 'Pause'; statusDot.classList.remove('live');
+  timerEl.textContent = '00:00:00'; stopping = false;
+  setMode(mode);
+}
+
+micGainSlider.addEventListener('input', () => {
+  $('micGainValue').textContent = `${Math.round(micGainSlider.value * 100)}%`;
+  if (micGainNode) micGainNode.gain.value = Number(micGainSlider.value);
+});
+systemGainSlider.addEventListener('input', () => {
+  $('systemGainValue').textContent = `${Math.round(systemGainSlider.value * 100)}%`;
+  if (systemGainNode) systemGainNode.gain.value = Number(systemGainSlider.value);
+});
+startBtn.addEventListener('click', startRecording);
+pauseBtn.addEventListener('click', togglePause);
+stopBtn.addEventListener('click', stopRecording);
+flipBtn.addEventListener('click', () => {
+  facing = facing === 'user' ? 'environment' : 'user';
+  camSelect.value = '';
+  setStatus(`Camera set to ${facing === 'user' ? 'front' : 'rear'}. Press start.`);
+});
+$('modeScreen').addEventListener('click', () => setMode('screen'));
+$('modeCamera').addEventListener('click', () => setMode('camera'));
+$('modeMic').addEventListener('click', () => setMode('mic'));
+window.addEventListener('beforeunload', e => {
+  if (recorder && recorder.state !== 'inactive') { e.preventDefault(); e.returnValue = ''; }
+});
+navigator.mediaDevices?.addEventListener?.('devicechange', () => loadDevices().catch(() => {}));
+
+describePlatform();
+setMode(canScreen && !isMobile ? 'screen' : 'camera');
+loadDevices().catch(() => {});
+
+window.__tomarkar = { supportedMimeType, mimeCandidates, extensionFor, sha256, GATE_HASH,
+  canScreen, isMobile, isIOS, isAndroid, setMode, FIRST_DATA_MS };
+}
+</script>
+</body>
+</html>

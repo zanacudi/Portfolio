@@ -181,6 +181,13 @@ const MISC = [
     description: "An illustrated week of meals built around the foods that keep appearing in cognitive-health research — oily fish, berries, leafy greens, nuts, legumes and fermented foods — with the reasoning behind each one, a per-day shopping list, and meat-free alternatives throughout. Deliberately careful about the evidence: the mechanisms that are well established are separated from the gut–brain research that is still developing, and nothing is presented as preventing or treating any condition.",
     tags: ["Nutrition", "Interactive"],
     link: "brain-healthy-diet.html"
+  },
+  {
+    title: "Tomarkar",
+    meta: "Browser screen, camera and voice recorder — access code required",
+    description: "A self-contained recorder that runs entirely in the browser: screen plus system audio and microphone on desktop, or camera and microphone on a phone. Nothing is uploaded — the file is assembled locally and saved to your own device. Screen capture is desktop-only because neither iOS Safari nor Chrome for Android implements the screen-capture API; on a phone the page detects this and gives the steps for the recorder built into iOS or Android instead.",
+    tags: ["Tool", "Access code"],
+    link: "tomarkar.html"
   }
 ];
 
