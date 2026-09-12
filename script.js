@@ -16,7 +16,7 @@ function renderCards(containerId, items, { showDate = false } = {}) {
       <h3>${item.title}</h3>
       ${item.meta ? `<div class="entry-meta">${item.meta}</div>` : ""}
       ${showDate && item.date ? `<div class="entry-meta">${item.date}</div>` : ""}
-      <p>${item.description}</p>
+      ${item.description ? `<p>${item.description}</p>` : ""}
       ${(item.tags || []).map(t => `<span class="tag">${t}</span>`).join("")}
       ${item.link ? `<div><a href="${item.link}" target="_blank" rel="noopener">View →</a></div>` : ""}
     </div>

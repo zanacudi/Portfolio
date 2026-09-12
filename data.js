@@ -182,13 +182,9 @@ const MISC = [
     tags: ["Nutrition", "Interactive"],
     link: "brain-healthy-diet.html"
   },
-  {
-    title: "Tomarkar",
-    meta: "Browser screen, camera and voice recorder — access code required",
-    description: "A self-contained recorder that runs entirely in the browser: screen plus system audio and microphone on desktop, or camera and microphone on a phone. Nothing is uploaded — the file is assembled locally and saved to your own device. Screen capture is desktop-only because neither iOS Safari nor Chrome for Android implements the screen-capture API; on a phone the page detects this and gives the steps for the recorder built into iOS or Android instead.",
-    tags: ["Tool", "Access code"],
-    link: "tomarkar.html"
-  }
+  // Access-code tools: name only. What they do is shown inside each page, after the code.
+  { title: "Tomarkar", link: "tomarkar.html" },
+  { title: "Paywandi", link: "paywandi.html" }
 ];
 
 const CONTACT = [
