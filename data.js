@@ -182,9 +182,11 @@ const MISC = [
     tags: ["Nutrition", "Interactive"],
     link: "brain-healthy-diet.html"
   },
-  // Access-code tools: name only. What they do is shown inside each page, after the code.
-  { title: "Tomarkar", link: "tomarkar.html" },
-  { title: "Paywandi", link: "paywandi.html" }
+  // Access-code tools: names only, stacked in one card. What they do is shown inside each page, after the code.
+  { group: [
+    { title: "Tomar", link: "tomarkar.html" },
+    { title: "Paywandi", link: "paywandi.html" }
+  ] }
 ];
 
 const CONTACT = [

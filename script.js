@@ -11,7 +11,10 @@ function renderTimeline(containerId, items) {
 
 function renderCards(containerId, items, { showDate = false } = {}) {
   const container = document.getElementById(containerId);
-  container.innerHTML = items.map(item => `
+  container.innerHTML = items.map(item => item.group ? `
+    <div class="card card-stack">
+      ${item.group.map(g => `<div class="stack-item"><h3>${g.title}</h3><a href="${g.link}" target="_blank" rel="noopener">View →</a></div>`).join("")}
+    </div>` : `
     <div class="card">
       <h3>${item.title}</h3>
       ${item.meta ? `<div class="entry-meta">${item.meta}</div>` : ""}

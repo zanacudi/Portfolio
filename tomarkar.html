@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="robots" content="noindex, nofollow">
-  <title>Tomarkar</title>
+  <title>Tomar</title>
   <style>
     :root { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color: #172033; background: #eef2f7; }
     * { box-sizing: border-box; }
@@ -83,7 +83,7 @@
 
 <div id="gate">
   <form class="box" id="gateForm">
-    <h1>Tomarkar</h1>
+    <h1>Tomar</h1>
     <p>Enter the access code to continue.</p>
     <label for="gatePass" class="sr-only" style="margin-top:12px">Access code</label>
     <input id="gatePass" type="password" autocomplete="current-password" placeholder="Access code" aria-label="Access code">
@@ -94,7 +94,7 @@
 
 <main id="app">
   <section class="card">
-    <h1>Tomarkar</h1>
+    <h1>Tomar</h1>
     <p>Records screen, camera and audio in the browser, and saves a single file you can keep.</p>
     <div class="notice"><strong>Consent and privacy:</strong> Record only when everyone present has been informed and recording is permitted by your organization and by law. Nothing is uploaded anywhere &mdash; the file is produced in your browser and stays on your device.</div>
   </section>
@@ -182,7 +182,7 @@
     <div class="support">
       <a class="donate" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer">💧 Donate for clean water</a>
       <span class="views" id="viewCount" hidden></span>
-      <p>Tomarkar is free. If it helped, consider a donation to Humaniti’s clean-water work. It goes directly to Humaniti, a U.S. 501(c)(3) nonprofit — nothing passes through this site or its owner.</p>
+      <p>Tomar is free. If it helped, consider a donation to Humaniti’s clean-water work. It goes directly to Humaniti, a U.S. 501(c)(3) nonprofit — nothing passes through this site or its owner.</p>
     </div>
   </section>
 </main>
@@ -592,7 +592,7 @@ async function finishRecording() {
   $('iosSaveHint').style.display = isIOS ? '' : 'none';
   if (isIOS) link.textContent = 'Open file';
   $('shareBtn').onclick = async () => {
-    try { await navigator.share({ files: [file], title: 'Tomarkar recording' }); }
+    try { await navigator.share({ files: [file], title: 'Tomar recording' }); }
     catch (e) { if (e?.name !== 'AbortError') setStatus('Sharing was not completed.', 'warn'); }
   };
 
