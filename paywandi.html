@@ -95,6 +95,21 @@
     #toast.on { opacity: 1; }
     #soundBtn { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 55; display: none; }
     #soundBtn.on { display: inline-flex; }
+    .bgpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; margin-top: 8px; }
+    .bgpick button { padding: 0; min-height: 0; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; position: relative;
+      border: 2px solid transparent; background: #243044; font-size: .7rem; font-weight: 650; }
+    .bgpick button[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+    .bgpick img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .bgpick .cap { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(8,12,18,.72); padding: 2px 4px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bgpick .blurthumb { position: absolute; inset: -6px; filter: blur(var(--b, 3px));
+      background: radial-gradient(circle at 50% 70%, #c9b39a 0 16%, transparent 17%), radial-gradient(circle at 50% 38%, #c9b39a 0 11%, transparent 12%),
+      linear-gradient(135deg, #6b7c93, #2e3b4d); }
+    .bgpick .nonethumb { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--muted); }
+    #bgPanel { position: fixed; left: 50%; bottom: 78px; transform: translateX(-50%); width: min(600px, calc(100% - 16px));
+      background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; z-index: 45; display: none;
+      max-height: 60vh; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
+    #bgPanel.on { display: block; }
     .donate-mini { color: #fff; background: #0e7490; border-radius: 9px; padding: 6px 10px; font-size: .82rem; font-weight: 750;
       text-decoration: none; min-height: 34px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
     .donate-mini:hover { background: #0b5f76; }
@@ -156,6 +171,10 @@
       <button type="button" id="lobbyMic" aria-pressed="true">Mic on</button>
       <button type="button" id="lobbyCam" aria-pressed="true">Camera on</button>
     </div>
+    <details id="lobbyBgWrap" style="margin-top:10px">
+      <summary class="muted" style="cursor:pointer">Background: <span id="lobbyBgName">None</span></summary>
+      <div class="bgpick" id="lobbyBg"></div>
+    </details>
     <label for="nameInput">Your name</label>
     <input id="nameInput" maxlength="40" autocomplete="name" placeholder="How others will see you">
     <details style="margin-top:10px" id="deviceDetails">
@@ -217,6 +236,7 @@
     <button type="button" class="tog" id="camBtn" aria-pressed="true" title="Camera">📷<span class="lbl" id="camLbl">Stop video</span></button>
     <button type="button" id="flipBtn" title="Switch camera" style="display:none">🔄<span class="lbl">Flip</span></button>
     <button type="button" class="act" id="screenBtn" aria-pressed="false" title="Share screen">🖥️<span class="lbl" id="screenLbl">Share screen</span></button>
+    <button type="button" id="bgBtn" title="Background filters">🖼️<span class="lbl">Background</span></button>
     <button type="button" id="attBtn" title="Download attendance (CSV)" style="display:none">📋<span class="lbl">Attendance</span></button>
     <button type="button" id="chatBtn" title="Chat">💬<span class="lbl">Chat</span><span class="badge" id="chatBadge">0</span></button>
     <button type="button" class="danger" id="leaveBtn" title="Leave">Leave</button>
@@ -237,6 +257,12 @@
   </div>
 </section>
 
+<div id="bgPanel" role="dialog" aria-label="Background filters">
+  <div style="display:flex;align-items:center;gap:8px"><strong style="flex:1">Background filters</strong>
+    <button type="button" id="bgClose" style="min-height:32px;padding:5px 11px;font-size:.82rem">Done</button></div>
+  <div class="bgpick" id="callBg"></div>
+  <p class="muted" style="margin:10px 0 0;font-size:.78rem">Processed on your device &mdash; your camera image never leaves it unfiltered. Illustrations are original artwork. On older phones, video may be less smooth with a background on.</p>
+</div>
 <button type="button" class="primary" id="soundBtn">Tap to turn on call sound</button>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -448,7 +474,7 @@ function joinMeeting(code, asHost) {
   openLobby();
 }
 // code holders only: start a fresh meeting, or step into another one from its link
-function releaseMedia() { micTrack?.stop(); camTrack?.stop(); micTrack = camTrack = null; }
+function releaseMedia() { micTrack?.stop(); camTrack?.stop(); micTrack = camTrack = null; fxSource(null); }
 $('newMeetBtn').addEventListener('click', () => { releaseMedia(); startAsHost(); toast('New meeting created'); });
 $('otherMeetForm').addEventListener('submit', e => {
   e.preventDefault();
@@ -487,13 +513,216 @@ function getBlankTrack() {
   blankTrack.__blank = true;
   return blankTrack;
 }
-function outgoingVideo() { return screenTrack || (camOn && camTrack) || getBlankTrack(); }
+function outgoingVideo() { return screenTrack || camView() || getBlankTrack(); }
 let screenAudio = null, mixDest = null, mixNodes = [];
 function outgoingAudio() { return (mixDest && mixDest.stream.getAudioTracks()[0]) || micTrack || getSilentTrack(); }
 function outgoingStream() {
   const tracks = [outgoingAudio(), outgoingVideo()].filter(Boolean);
   return new MediaStream(tracks);
 }
+
+/* ------------------------------------------------------- background filters --- *
+ * The camera goes into a hidden <video>; MediaPipe's selfie segmenter (Google, Apache 2.0) returns,
+ * for every frame, how likely each pixel is to be the person. The person is cut out with that mask
+ * and drawn over a blurred copy of the frame or an illustration, on a canvas whose captureStream is
+ * what the call sends. Everything runs on this device.                                          */
+const BACKGROUNDS = [
+  { id: 'none', label: 'None' },
+  { id: 'blur', label: 'Blur', blur: 9 },
+  { id: 'blur-strong', label: 'Strong blur', blur: 22 },
+  { id: 'zagros-dawn', label: 'Zagros at dawn', img: 'paywandi-bg/zagros-dawn.svg' },
+  { id: 'kurdistan-flag', label: 'Kurdistan flag', img: 'paywandi-bg/kurdistan-flag.svg' },
+  { id: 'newroz-fires', label: 'Newroz fires', img: 'paywandi-bg/newroz-fires.svg' },
+  { id: 'erbil-citadel', label: 'Erbil Citadel', img: 'paywandi-bg/erbil-citadel.svg' },
+  { id: 'hawraman-village', label: 'Hawraman', img: 'paywandi-bg/hawraman-village.svg' },
+  { id: 'kilim', label: 'Kurdish kilim', img: 'paywandi-bg/kilim.svg' },
+];
+const BG_KEY = 'paywandi-bg';
+const TASKS_VISION = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1';
+const SEG_MODEL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite';
+const canFx = typeof WebAssembly === 'object' && typeof HTMLCanvasElement !== 'undefined' && 'captureStream' in HTMLCanvasElement.prototype;
+const FILTER_OK = (() => { try { const g = document.createElement('canvas').getContext('2d'); g.filter = 'blur(2px)'; return g.filter === 'blur(2px)'; } catch { return false; } })();
+
+const fx = { def: BACKGROUNDS[0], src: null, segmenter: null, loading: null, ready: false, running: false,
+  raf: 0, timer: 0, lastTs: 0, holder: null, video: null, out: null, outCtx: null, person: null, personCtx: null,
+  mask: null, maskCtx: null, maskImg: null, small: null, smallCtx: null, bgCanvas: null, bgReady: null };
+let fxTrack = null;
+try { const saved = localStorage.getItem(BG_KEY); const b = BACKGROUNDS.find(x => x.id === saved); if (b && canFx) fx.def = b; } catch {}
+
+// the camera as other people should see it right now
+function camView() {
+  if (!(camOn && camTrack)) return null;
+  return fx.def.id !== 'none' && fx.ready && fxTrack ? fxTrack : camTrack;
+}
+function applyCameraOutput() {
+  if ($('lobby').classList.contains('on')) refreshPreview();
+  if (peer) { refreshSelf(); if (!screenTrack) replaceOutgoing('video', outgoingVideo()); }
+}
+function fxSource(track) {
+  fx.src = track || null;
+  if (fx.video) {
+    fx.video.srcObject = fx.src ? new MediaStream([fx.src]) : null;
+    if (fx.src) fx.video.play().catch(() => {});
+  }
+  if (!fx.src) fxStop();
+  else fxMaybeStart();
+}
+function fxLoad() {
+  if (fx.segmenter) return Promise.resolve();
+  if (!fx.loading) {
+    fx.loading = (async () => {
+      const vision = await import(`${TASKS_VISION}/vision_bundle.mjs`);
+      const files = await vision.FilesetResolver.forVisionTasks(`${TASKS_VISION}/wasm`);
+      const make = delegate => vision.ImageSegmenter.createFromOptions(files, {
+        baseOptions: { modelAssetPath: SEG_MODEL, delegate }, runningMode: 'VIDEO',
+        outputCategoryMask: false, outputConfidenceMasks: true });
+      try { fx.segmenter = await make('GPU'); } catch { fx.segmenter = await make('CPU'); }
+    })();
+    fx.loading.catch(() => { fx.loading = null; });
+  }
+  return fx.loading;
+}
+async function fxMaybeStart() {
+  if (fx.def.id === 'none' || !fx.src) return fxStop();
+  try { await fxLoad(); }
+  catch { toast('Background filters could not load on this device.'); setBackground('none'); return; }
+  if (fx.def.id === 'none' || !fx.src) return;
+  fxSetup(); fxPrepareBackdrop(); fxRun();
+}
+function fxSetup() {
+  const mk = () => document.createElement('canvas');
+  if (!fx.holder) {
+    // kept in the page (not detached) so every browser keeps decoding and painting them
+    fx.holder = document.createElement('div');
+    fx.holder.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1';
+    document.body.appendChild(fx.holder);
+    fx.video = document.createElement('video');
+    fx.video.muted = true; fx.video.playsInline = true; fx.video.autoplay = true;
+    fx.out = mk(); fx.person = mk(); fx.mask = mk(); fx.small = mk();
+    fx.holder.append(fx.video, fx.out);
+    fx.outCtx = fx.out.getContext('2d'); fx.personCtx = fx.person.getContext('2d');
+    fx.maskCtx = fx.mask.getContext('2d'); fx.smallCtx = fx.small.getContext('2d');
+  }
+  if (fx.video.srcObject?.getVideoTracks()[0] !== fx.src) { fx.video.srcObject = new MediaStream([fx.src]); fx.video.play().catch(() => {}); }
+  fxSize();
+  if (!fxTrack) fxTrack = fx.out.captureStream(24).getVideoTracks()[0];
+}
+function fxSize() {
+  const st = fx.src?.getSettings?.() || {};
+  let w = fx.video.videoWidth || st.width || 640, h = fx.video.videoHeight || st.height || 360;
+  const k = Math.min(1, 960 / Math.max(w, h)); w = Math.round(w * k); h = Math.round(h * k);
+  if (fx.out.width === w && fx.out.height === h) return false;
+  fx.out.width = fx.person.width = w; fx.out.height = fx.person.height = h;
+  fx.bgReady = null; fxPrepareBackdrop();
+  return true;
+}
+const bgImages = new Map();
+function bgImage(b) {
+  if (!bgImages.has(b.id)) bgImages.set(b.id, new Promise((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = b.img; }));
+  return bgImages.get(b.id);
+}
+async function fxPrepareBackdrop() {
+  const b = fx.def;
+  if (b.blur) { fx.small.width = Math.max(8, fx.out.width / (b.blur > 15 ? 28 : 14) | 0); fx.small.height = Math.max(5, fx.out.height / (b.blur > 15 ? 28 : 14) | 0); return; }
+  if (!b.img || !fx.out.width) return;
+  let img; try { img = await bgImage(b); } catch { return; }
+  if (fx.def !== b) return;
+  const W = fx.out.width, H = fx.out.height;
+  fx.bgCanvas = fx.bgCanvas || document.createElement('canvas');
+  fx.bgCanvas.width = W; fx.bgCanvas.height = H;
+  const k = Math.max(W / img.naturalWidth, H / img.naturalHeight);   // cover, centred
+  const dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+  fx.bgCanvas.getContext('2d').drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  fx.bgReady = b.id;
+}
+function fxRun() {
+  if (fx.running) return;
+  fx.running = true;
+  fxTick();
+}
+function fxTick() {
+  if (!fx.running) return;
+  fxFrame();
+  // animation frames stop in a hidden tab; a timer keeps the background on while you look at another tab
+  if (document.hidden) fx.timer = setTimeout(fxTick, 42); else fx.raf = requestAnimationFrame(fxTick);
+}
+function fxStop() {
+  fx.running = false; cancelAnimationFrame(fx.raf); clearTimeout(fx.timer);
+  if (fx.ready) { fx.ready = false; applyCameraOutput(); }
+}
+function fxFrame() {
+  const v = fx.video;
+  if (!v || v.readyState < 2 || !fx.segmenter || !v.videoWidth) return;
+  const now = performance.now();
+  if (now - fx.lastTs < 38) return;                 // about 25 frames a second is plenty for a call
+  fx.lastTs = now;
+  fxSize();
+  try {
+    fx.segmenter.segmentForVideo(v, now, result => {
+      const m = result.confidenceMasks && result.confidenceMasks[0];
+      if (m) fxComposite(v, m);
+    });
+  } catch {}
+}
+function fxComposite(v, m) {
+  const W = fx.out.width, H = fx.out.height;
+  if (fx.mask.width !== m.width || fx.mask.height !== m.height || !fx.maskImg) {
+    fx.mask.width = m.width; fx.mask.height = m.height;
+    fx.maskImg = fx.maskCtx.createImageData(m.width, m.height);
+  }
+  const conf = m.getAsFloat32Array(), px = fx.maskImg.data;
+  for (let i = 0, j = 3; i < conf.length; i++, j += 4) {
+    const a = (conf[i] - 0.3) * 2.5;                 // tighten the soft edge so the old room does not ghost through
+    px[j] = a <= 0 ? 0 : a >= 1 ? 255 : a * 255;
+  }
+  fx.maskCtx.putImageData(fx.maskImg, 0, 0);
+  const p = fx.personCtx;
+  p.globalCompositeOperation = 'copy'; p.imageSmoothingEnabled = true;
+  p.drawImage(fx.mask, 0, 0, W, H);                 // upscaling the small mask feathers the outline
+  p.globalCompositeOperation = 'source-in';
+  p.drawImage(v, 0, 0, W, H);
+  const o = fx.outCtx, b = fx.def;
+  o.globalCompositeOperation = 'source-over';
+  if (b.blur) {
+    if (FILTER_OK) { o.filter = `blur(${Math.round(b.blur * W / 960)}px)`; o.drawImage(v, 0, 0, W, H); o.filter = 'none'; }
+    else { fx.smallCtx.drawImage(v, 0, 0, fx.small.width, fx.small.height); o.imageSmoothingEnabled = true; o.drawImage(fx.small, 0, 0, W, H); }
+  } else if (fx.bgReady === b.id) {
+    o.drawImage(fx.bgCanvas, 0, 0);
+  } else {
+    o.fillStyle = '#101722'; o.fillRect(0, 0, W, H);
+  }
+  o.drawImage(fx.person, 0, 0);
+  if (!fx.ready) { fx.ready = true; applyCameraOutput(); }   // swap to the filtered picture only once one exists
+}
+
+function setBackground(id) {
+  const b = BACKGROUNDS.find(x => x.id === id) || BACKGROUNDS[0];
+  fx.def = b;
+  try { localStorage.setItem(BG_KEY, b.id); } catch {}
+  renderBgPickers();
+  if (b.id === 'none') { fxStop(); return; }
+  if (!camTrack || !camOn) toast('Turn your camera on to see the background.');
+  else if (!fx.segmenter) toast('Loading background filters\u2026');
+  if (fx.out) fxPrepareBackdrop();
+  fxMaybeStart();
+}
+function renderBgPickers() {
+  const html = BACKGROUNDS.map(b => {
+    const thumb = b.img ? `<img src="${b.img}" alt="" loading="lazy">`
+      : b.blur ? `<span class="blurthumb" style="--b:${b.blur > 15 ? 6 : 3}px"></span>`
+      : `<span class="nonethumb">\u2298</span>`;
+    return `<button type="button" data-bg="${b.id}" aria-pressed="${b.id === fx.def.id}" title="${esc(b.label)}">${thumb}<span class="cap">${esc(b.label)}</span></button>`;
+  }).join('');
+  ['lobbyBg', 'callBg'].forEach(id => { $(id).innerHTML = html; });
+  $('lobbyBgName').textContent = fx.def.label;
+}
+['lobbyBg', 'callBg'].forEach(id => $(id).addEventListener('click', e => {
+  const btn = e.target.closest('button[data-bg]'); if (btn) setBackground(btn.dataset.bg);
+}));
+$('bgBtn').addEventListener('click', () => $('bgPanel').classList.toggle('on'));
+$('bgClose').addEventListener('click', () => $('bgPanel').classList.remove('on'));
+if (!canFx) { $('lobbyBgWrap').style.display = 'none'; $('bgBtn').style.display = 'none'; }
+renderBgPickers();
 
 async function openCamera(deviceId) {
   const video = deviceId ? { deviceId: { exact: deviceId } }
@@ -526,6 +755,7 @@ async function acquireMedia() {
   }
   if (!micTrack) micOn = false;
   if (!camTrack) camOn = false;
+  fxSource(camTrack);
   return msgs.length ? `No ${msgs.join(' or ')} available (or permission was declined) — you can still join.` : '';
 }
 async function listDevices() {
@@ -568,8 +798,8 @@ function updatePreviewInitials() {
 }
 function refreshPreview() {
   const v = $('previewVideo');
-  const showCam = camOn && camTrack;
-  v.srcObject = showCam ? new MediaStream([camTrack]) : null;
+  const showCam = camView();
+  if (v.srcObject?.getVideoTracks()[0] !== showCam) v.srcObject = showCam ? new MediaStream([showCam]) : null;
   $('previewAvatar').style.display = showCam ? 'none' : 'flex';
   setPressed($('lobbyMic'), micOn, 'Mic on', 'Mic off', !micTrack);
   setPressed($('lobbyCam'), camOn, 'Camera on', 'Camera off', !camTrack);
@@ -583,7 +813,7 @@ $('nameInput').addEventListener('input', updatePreviewInitials);
 $('lobbyMic').addEventListener('click', () => { micOn = !micOn; if (micTrack) micTrack.enabled = micOn; refreshPreview(); });
 $('lobbyCam').addEventListener('click', () => { camOn = !camOn; refreshPreview(); });
 $('camSelect').addEventListener('change', async e => {
-  try { const t = await openCamera(e.target.value); camTrack?.stop(); camTrack = t; camOn = true; refreshPreview(); }
+  try { const t = await openCamera(e.target.value); camTrack?.stop(); camTrack = t; camOn = true; fxSource(t); refreshPreview(); }
   catch { toast('Could not open that camera.'); }
 });
 $('micSelect').addEventListener('change', async e => {
@@ -671,7 +901,7 @@ function enterCall() {
   $('screenBtn').classList.toggle('unavail', !canScreen);
   $('flipBtn').style.display = isMobile && camTrack ? '' : 'none';
   if (micTrack) micTrack.enabled = micOn;
-  if (!camOn && camTrack) { camTrack.stop(); camTrack = null; }   // camera light off when joining with video off
+  if (!camOn && camTrack) { camTrack.stop(); camTrack = null; fxSource(null); }   // camera light off when joining with video off
   syncBarButtons();
   addSelfTile();
   peer.on('connection', onIncomingConn);
@@ -825,7 +1055,7 @@ function addSelfTile() {
 function refreshSelf() {
   if (!selfTile) return;
   const v = selfTile.querySelector('video');
-  const track = screenTrack || (camOn && camTrack) || null;
+  const track = screenTrack || camView() || null;
   v.srcObject = track ? new MediaStream([track]) : null;
   selfTile.classList.toggle('camoff', !track);
   selfTile.classList.toggle('sharing', !!screenTrack);
@@ -959,11 +1189,13 @@ $('camBtn').addEventListener('click', async () => {
   if (camOn) {
     camOn = false;
     camTrack?.stop(); camTrack = null;                // really release the camera, light included
+    fxSource(null);
     if (!screenTrack) replaceOutgoing('video', getBlankTrack());
   } else {
     try { camTrack = await openCamera($('camSelect').value || undefined); camOn = true; }
     catch { toast('Could not start the camera — check the browser permission.'); return; }
-    if (!screenTrack) replaceOutgoing('video', camTrack);
+    fxSource(camTrack);
+    if (!screenTrack) replaceOutgoing('video', outgoingVideo());
   }
   syncBarButtons(); refreshSelf(); broadcastState();
 });
@@ -972,7 +1204,8 @@ $('flipBtn').addEventListener('click', async () => {
   try {
     camTrack?.stop();                                // iOS will not open a second camera while one is live
     camTrack = await openCamera(); camOn = true;
-    replaceOutgoing('video', camTrack);
+    fxSource(camTrack);
+    replaceOutgoing('video', outgoingVideo());
     selfTile.classList.toggle('self', facing === 'user');   // do not mirror the rear camera
     refreshSelf();
   } catch { toast('Could not switch camera.'); }
@@ -1012,7 +1245,7 @@ $('screenBtn').addEventListener('click', async () => {
 function stopScreen() {
   if (!screenTrack) return;
   const t = screenTrack; screenTrack = null; t.stop();
-  replaceOutgoing('video', (camOn && camTrack) || getBlankTrack());
+  replaceOutgoing('video', outgoingVideo());
   if (mixDest) {
     mixNodes.forEach(n => { try { n.disconnect(); } catch {} }); mixNodes = [];
     mixDest = null;
@@ -1077,7 +1310,8 @@ function leave(final) {
   try { peer?.destroy(); } catch {}
   peer = null; mySeat = -1; pending.clear();
   if (screenTrack) stopScreen();
-  if (final) { micTrack?.stop(); camTrack?.stop(); micTrack = camTrack = null; }
+  if (final) { micTrack?.stop(); camTrack?.stop(); micTrack = camTrack = null; fxSource(null); }
+  $('bgPanel').classList.remove('on');
 }
 $('leaveBtn').addEventListener('click', () => {
   leave(true);
@@ -1120,7 +1354,7 @@ function route() {
 
 route();
 
-window.__paywandi = { att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { fx, camView, setBackground, BACKGROUNDS, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
