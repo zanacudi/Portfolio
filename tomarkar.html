@@ -53,6 +53,12 @@
     .recglyph svg { width: 24px; height: 24px; }
     ol, ul { padding-left: 20px; line-height: 1.6; margin: 0 0 10px; }
     li { margin-bottom: 5px; }
+    .support { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+    .support .donate { background: #0e7490; color: #fff; border-radius: 11px; padding: 11px 16px; font-weight: 750;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+    .support .donate:hover { background: #0b5f76; }
+    .support .views { font-size: .85rem; font-weight: 700; opacity: .75; font-variant-numeric: tabular-nums; }
+    .support p { flex: 1 1 100%; margin: 0; font-size: .82rem; line-height: 1.5; opacity: .8; }
     /* password gate */
     #gate { position: fixed; inset: 0; background: #101722; color: #e7edf5; display: flex; align-items: center;
       justify-content: center; padding: 20px; z-index: 50; }
@@ -170,6 +176,14 @@
       <li><strong>Microphone only</strong> &mdash; works everywhere and produces a much smaller audio file.</li>
     </ul>
     <p class="muted">Output format depends on the browser: Chrome, Edge and Firefox produce WebM; Safari on Mac, iPhone and iPad produces MP4. Both play in the browser they were made in, and both are accepted by common video tools.</p>
+  </section>
+
+  <section class="card">
+    <div class="support">
+      <a class="donate" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer">💧 Donate for clean water</a>
+      <span class="views" id="viewCount" hidden></span>
+      <p>Tomarkar is free. If it helped, consider a donation to Humaniti’s clean-water work. It goes directly to Humaniti, a U.S. 501(c)(3) nonprofit — nothing passes through this site or its owner.</p>
+    </div>
   </section>
 </main>
 
@@ -633,6 +647,25 @@ loadDevices().catch(() => {});
 window.__tomarkar = { supportedMimeType, mimeCandidates, extensionFor, sha256, GATE_HASH,
   canScreen, isMobile, isIOS, isAndroid, setMode, FIRST_DATA_MS };
 }
+
+/* ------------------------------------------------------------ view count --- */
+(function countView() {
+  const el = document.getElementById('viewCount');
+  const SEEN = 'tomarkar-view-counted';
+  let seen = false; try { seen = sessionStorage.getItem(SEEN) === '1'; } catch {}
+  // only the published site counts; local previews write to a separate dev counter
+  const ns = location.hostname === 'zanacudi.github.io' ? 'zanacudi-portfolio' : 'zanacudi-portfolio-dev';
+  fetch('https://abacus.jasoncameron.dev/' + (seen ? 'get' : 'hit') + '/' + ns + '/tomarkar',
+        { cache: 'no-store', referrerPolicy: 'no-referrer' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d || typeof d.value !== 'number') return;
+      try { sessionStorage.setItem(SEEN, '1'); } catch {}
+      el.textContent = d.value.toLocaleString() + (d.value === 1 ? ' view' : ' views');
+      el.hidden = false;
+    })
+    .catch(() => {});   // a counter outage must never affect the tool itself
+})();
 
 restoreUnlocked();
 </script>

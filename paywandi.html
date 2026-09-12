@@ -108,6 +108,13 @@
     .tile.spot .enlarge { display: inline-flex; }
     .tile:fullscreen video { object-fit: contain; }
     .bar button.unavail { opacity: .5; }
+    .support { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+    .support .donate { background: #0e7490; color: #fff; border-radius: 11px; padding: 11px 16px; font-weight: 750;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
+    .support .donate:hover { background: #0b5f76; }
+    .support .views { font-size: .85rem; font-weight: 700; opacity: .75; font-variant-numeric: tabular-nums; }
+    .support p { flex: 1 1 100%; margin: 0; font-size: .82rem; line-height: 1.5; opacity: .8; }
+    .support { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     @media (max-width: 700px) {
       #chat { position: fixed; inset: 0 0 0 0; width: 100%; z-index: 40; padding-top: env(safe-area-inset-top); }
@@ -173,6 +180,11 @@
       </details>
     </form>
     <p class="muted" style="margin:12px 0 0;font-size:.8rem" id="aboutNote"></p>
+    <div class="support">
+      <a class="donate" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer">💧 Donate for clean water</a>
+      <span class="views" id="viewCount" hidden></span>
+      <p>Paywandi is free. If it helped, consider a donation to Humaniti’s clean-water work. It goes directly to Humaniti, a U.S. 501(c)(3) nonprofit — nothing passes through this site or its owner.</p>
+    </div>
   </div>
 </section>
 
@@ -210,6 +222,10 @@
     <h1>You left the call</h1>
     <p class="muted" id="leftNote"></p>
     <div class="row"><button type="button" class="primary" id="rejoinBtn">Rejoin</button></div>
+    <div class="support">
+      <a class="donate" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer">💧 Donate for clean water</a>
+      <p>Paywandi is free. If the call helped, consider a donation to Humaniti’s clean-water work — it goes directly to Humaniti, not to this site.</p>
+    </div>
   </div>
 </section>
 
@@ -942,6 +958,25 @@ function route() {
   show('gate');
   setTimeout(() => $('gatePass').focus(), 50);
 }
+/* ------------------------------------------------------------ view count --- */
+(function countView() {
+  const el = document.getElementById('viewCount');
+  const SEEN = 'paywandi-view-counted';
+  let seen = false; try { seen = sessionStorage.getItem(SEEN) === '1'; } catch {}
+  // only the published site counts; local previews write to a separate dev counter
+  const ns = location.hostname === 'zanacudi.github.io' ? 'zanacudi-portfolio' : 'zanacudi-portfolio-dev';
+  fetch('https://abacus.jasoncameron.dev/' + (seen ? 'get' : 'hit') + '/' + ns + '/paywandi',
+        { cache: 'no-store', referrerPolicy: 'no-referrer' })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => {
+      if (!d || typeof d.value !== 'number') return;
+      try { sessionStorage.setItem(SEEN, '1'); } catch {}
+      el.textContent = d.value.toLocaleString() + (d.value === 1 ? ' view' : ' views');
+      el.hidden = false;
+    })
+    .catch(() => {});   // a counter outage must never affect the tool itself
+})();
+
 route();
 
 window.__paywandi = { newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
