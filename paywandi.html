@@ -95,6 +95,10 @@
     #toast.on { opacity: 1; }
     #soundBtn { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 55; display: none; }
     #soundBtn.on { display: inline-flex; }
+    .donate-mini { color: #fff; background: #0e7490; border-radius: 9px; padding: 6px 10px; font-size: .82rem; font-weight: 750;
+      text-decoration: none; min-height: 34px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+    .donate-mini:hover { background: #0b5f76; }
+    @media (max-width: 700px) { .donate-mini .lbl { display: none; } }
     .mid { font-family: ui-monospace, "SF Mono", Consolas, monospace; letter-spacing: .04em; }
     .midrow { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: .92rem; }
     .midrow .mid { font-size: 1.05rem; font-weight: 700; color: #fff; }
@@ -196,6 +200,8 @@
     <span class="mid" id="callMid" title="Meeting ID"></span>
     <span class="grow muted" id="callStatus"></span>
     <span class="muted hide-sm" id="callTimer">00:00</span>
+    <a class="donate-mini" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer"
+       title="Donate for clean water — goes directly to Humaniti">💧<span class="lbl">Donate</span></a>
     <button type="button" id="copyTop" style="min-height:34px;padding:6px 12px;font-size:.85rem">Invite</button>
   </div>
   <div class="stagewrap">
@@ -211,6 +217,7 @@
     <button type="button" class="tog" id="camBtn" aria-pressed="true" title="Camera">📷<span class="lbl" id="camLbl">Stop video</span></button>
     <button type="button" id="flipBtn" title="Switch camera" style="display:none">🔄<span class="lbl">Flip</span></button>
     <button type="button" class="act" id="screenBtn" aria-pressed="false" title="Share screen">🖥️<span class="lbl" id="screenLbl">Share screen</span></button>
+    <button type="button" id="attBtn" title="Download attendance (CSV)" style="display:none">📋<span class="lbl">Attendance</span></button>
     <button type="button" id="chatBtn" title="Chat">💬<span class="lbl">Chat</span><span class="badge" id="chatBadge">0</span></button>
     <button type="button" class="danger" id="leaveBtn" title="Leave">Leave</button>
   </div>
@@ -221,7 +228,8 @@
   <div class="box">
     <h1>You left the call</h1>
     <p class="muted" id="leftNote"></p>
-    <div class="row"><button type="button" class="primary" id="rejoinBtn">Rejoin</button></div>
+    <div class="row"><button type="button" class="primary" id="rejoinBtn">Rejoin</button>
+      <button type="button" id="attLeftBtn" style="display:none">📋 Download attendance</button></div>
     <div class="support">
       <a class="donate" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer">💧 Donate for clean water</a>
       <p>Paywandi is free. If the call helped, consider a donation to Humaniti’s clean-water work — it goes directly to Humaniti, not to this site.</p>
@@ -246,6 +254,9 @@ const ROOM_RE = /^[a-z2-9]{12}$/;  // what an invite link carries after the #
 const RESCAN_MS = 4000;            // how often to look for people who took a lower seat after us
 const PENDING_MS = 12000;          // give up on an unanswered connection attempt after this
 const NAME_KEY = 'paywandi-name';
+const CID_KEY = 'paywandi-cid';
+const SLOT_MS = 10 * 60 * 1000;   // attendance is tracked in 10-minute blocks
+const ATT_TICK_MS = 15000;
 
 const qs = new URLSearchParams(location.search);
 const ua = navigator.userAgent;
@@ -310,14 +321,129 @@ $('gateForm').addEventListener('submit', async e => {
 });
 function unlocked() { try { return sessionStorage.getItem(GATE_KEY) === '1'; } catch { return false; } }
 
+/* ------------------------------------------------------------- attendance --- *
+ * No server keeps a register, so every browser in the meeting keeps one and they share it.
+ * A "session" is one person's continuous stay: keyed by their browser id and the moment they
+ * joined, with the last time anyone confirmed them present. Copies merge by taking the latest
+ * confirmation, so a host who arrives late still receives who was there before, and a stay
+ * simply stops growing once nobody can see that person any more.                        */
+const myCid = (() => {
+  let id = null; try { id = localStorage.getItem(CID_KEY); } catch {}
+  if (!id || !/^[a-z0-9]{16}$/.test(id)) {
+    id = [...crypto.getRandomValues(new Uint8Array(16))].map(b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
+    try { localStorage.setItem(CID_KEY, id); } catch {}
+  }
+  return id;
+})();
+let att = new Map();       // `${cid}|${start}` -> { c, n, s, e }
+let attRoom = null, attTickId = null, attTicks = 0;
+
+function attKey() { return 'paywandi-att-' + attRoom; }
+function useAttendanceFor(code) {
+  if (attRoom === code) return;
+  attRoom = code; att = new Map();
+  try { mergeAtt(JSON.parse(sessionStorage.getItem(attKey()) || '[]')); } catch {}
+}
+function saveAtt() { try { sessionStorage.setItem(attKey(), JSON.stringify([...att.values()])); } catch {} }
+function touch(cid, name, start, at) {
+  if (!cid || !start) return;
+  const k = cid + '|' + start;
+  const x = att.get(k);
+  if (x) { x.e = Math.max(x.e, at); if (name) x.n = name; }
+  else att.set(k, { c: cid, n: name || 'Guest', s: start, e: Math.max(start, at) });
+}
+function mergeAtt(list) {
+  if (!Array.isArray(list)) return;
+  const now = Date.now();
+  for (const x of list.slice(0, 500)) {
+    if (!x || typeof x.c !== 'string' || !/^[a-z0-9]{16}$/.test(x.c)) continue;
+    const st = +x.s, en = +x.e;
+    // ignore anything malformed, from the future, or older than two days
+    if (!isFinite(st) || !isFinite(en) || en < st || en > now + 120000 || st < now - 172800000) continue;
+    touch(x.c, cleanName(x.n), st, en);
+  }
+}
+function attTick(share) {
+  if (!peer) return;
+  const now = Date.now();
+  touch(myCid, myName, joinedAt, now);
+  peers.forEach(r => { if (r.conn?.open && r.cid && r.since) touch(r.cid, r.name, r.since, now); });
+  saveAtt();
+  if (share) broadcast({ t: 'att', log: [...att.values()] });
+}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+function hhmm(t) { const d = new Date(t); return pad2(d.getHours()) + ':' + pad2(d.getMinutes()); }
+function ymd(t) { const d = new Date(t); return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function csvCell(v) {
+  let t = String(v);
+  if (/^[=+\-@\t\r]/.test(t)) t = "'" + t;          // never let a name run as a spreadsheet formula
+  return /[",\r\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+}
+function attendanceRows() {
+  const people = new Map();
+  // a person is a browser plus a name: the same name in two tabs is one person, while two
+  // people taking turns on one shared computer stay separate rows
+  for (const x of att.values()) {
+    const who = x.c + '|' + (x.n || '').toLowerCase();
+    const p = people.get(who) || { name: x.n, iv: [] };
+    p.iv.push([x.s, x.e]);
+    people.set(who, p);
+  }
+  if (!people.size) return null;
+  // one person in two tabs, or a brief reconnect, must not count twice: union the stays
+  for (const p of people.values()) {
+    p.iv.sort((a, b) => a[0] - b[0]);
+    const u = [];
+    for (const [a, b] of p.iv) {
+      const last = u[u.length - 1];
+      if (last && a <= last[1] + ATT_TICK_MS + 5000) last[1] = Math.max(last[1], b); else u.push([a, b]);
+    }
+    p.iv = u;
+    p.first = u[0][0]; p.last = u[u.length - 1][1];
+    p.total = u.reduce((t, [a, b]) => t + (b - a), 0);
+  }
+  const list = [...people.values()].sort((a, b) => a.first - b.first);
+  const t0 = Math.floor(Math.min(...list.map(p => p.first)) / SLOT_MS) * SLOT_MS;   // align to the clock: 14:00, 14:10 ...
+  const t1 = Math.max(...list.map(p => p.last));
+  const slots = Math.max(1, Math.ceil((t1 - t0) / SLOT_MS));
+  const header = ['Name', 'Date', 'First joined', 'Last left', 'Minutes attended', 'Times joined'];
+  for (let i = 0; i < slots; i++) header.push(hhmm(t0 + i * SLOT_MS) + '-' + hhmm(t0 + (i + 1) * SLOT_MS));
+  const rows = list.map(p => {
+    const row = [p.name, ymd(p.first), hhmm(p.first), hhmm(p.last), Math.round(p.total / 60000), p.iv.length];
+    for (let i = 0; i < slots; i++) {
+      const a = t0 + i * SLOT_MS, b = a + SLOT_MS;
+      const ms = p.iv.reduce((t, [x, y]) => t + Math.max(0, Math.min(b, y) - Math.max(a, x)), 0);
+      row.push(Math.round(ms / 60000));              // minutes present in this 10-minute block
+    }
+    return row;
+  });
+  return { header, rows, t0 };
+}
+function downloadAttendance() {
+  attTick(false);
+  const table = attendanceRows();
+  if (!table) { toast('No attendance recorded yet.'); return; }
+  const csv = [table.header, ...table.rows].map(r => r.map(csvCell).join(',')).join('\r\n') + '\r\n';
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });   // BOM: Excel reads non-Latin names correctly
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `paywandi-attendance-${formatId(attRoom)}-${ymd(table.t0)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  toast(`Attendance downloaded \u2014 ${table.rows.length} ${table.rows.length === 1 ? 'person' : 'people'}`);
+}
+
 function startAsHost() {
   isHost = true;
   room = newRoomCode();
+  useAttendanceFor(room);
   history.replaceState(null, '', '#' + formatId(room));   // the address bar now *is* the invite link
   openLobby();
 }
 function joinMeeting(code, asHost) {
   isHost = !!asHost; room = code;
+  useAttendanceFor(room);
   history.replaceState(null, '', '#' + formatId(room));
   openLobby();
 }
@@ -555,6 +681,9 @@ function enterCall() {
   for (let s = 0; s < mySeat; s++) dial(s);
   rescanId = setInterval(rescan, RESCAN_MS);
   timerId = setInterval(tick, 1000);
+  $('attBtn').style.display = isHost ? '' : 'none';
+  attTick(false);
+  attTickId = setInterval(() => attTick(++attTicks % 4 === 0), ATT_TICK_MS);   // share the register every minute
   setNet(true);
   updateStatus();
 }
@@ -589,6 +718,7 @@ function wireConn(conn, seat, outgoing) {
     rec.name = cleanName(conn.metadata?.name) || rec.name || 'Guest';
     renderTileInfo(rec);
     send(rec, helloMsg());
+    send(rec, { t: 'att', log: [...att.values()] });
     if (outgoing) {
       const call = peer.call(conn.peer, outgoingStream(), { metadata: { name: myName } });
       wireCall(call, seat);
@@ -636,7 +766,7 @@ function onPeerError(err) {
 }
 
 /* ------------------------------------------------------------ data channel --- */
-function helloMsg() { return { t: 'hello', name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
+function helloMsg() { return { t: 'hello', cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
 function send(rec, msg) { try { if (rec.conn?.open) rec.conn.send(msg); } catch {} }
 function broadcast(msg) { peers.forEach(r => send(r, msg)); }
 function broadcastState() { const m = helloMsg(); m.t = 'state'; broadcast(m); }
@@ -648,11 +778,17 @@ function onData(seat, conn, data) {
     case 'hello':
     case 'state':
       rec.name = cleanName(data.name) || rec.name;
+      if (typeof data.cid === 'string' && /^[a-z0-9]{16}$/.test(data.cid)) rec.cid = data.cid;
+      if (isFinite(data.since) && data.since <= Date.now() + 60000 && data.since > Date.now() - 172800000) rec.since = +data.since;
+      if (rec.cid && rec.since) touch(rec.cid, rec.name, rec.since, Date.now());
       rec.mic = !!data.mic; rec.cam = !!data.cam;
       if (data.t === 'hello' && !rec.joined) { rec.joined = true; if (Date.now() - joinedAt > 1500) toast(`${rec.name} joined`); }
       if (data.screen && !rec.screen) toast(`${rec.name} is sharing their screen`);
       rec.screen = !!data.screen;
       renderTileInfo(rec);
+      break;
+    case 'att':
+      mergeAtt(data.log);
       break;
     case 'chat':
       addChat(rec.name, String(data.text || '').slice(0, 1000), false);
@@ -738,6 +874,7 @@ $('soundBtn').addEventListener('click', () => {
 
 function dropPeer(seat, silent) {
   const rec = peers.get(seat); if (!rec) return;
+  if (rec.cid && rec.since && rec.joined) touch(rec.cid, rec.name, rec.since, Date.now());   // last moment they were here
   peers.delete(seat); pending.delete(seat);
   try { rec.call?.close(); } catch {}
   try { rec.conn?.close(); } catch {}
@@ -932,8 +1069,9 @@ function tick() {
 /* leaving */
 function leave(final) {
   leaving = true;
+  attTick(true);                                   // hand the final register to whoever stays
   broadcast({ t: 'bye' });
-  clearInterval(rescanId); clearInterval(timerId);
+  clearInterval(rescanId); clearInterval(timerId); clearInterval(attTickId);
   [...peers.keys()].forEach(s => dropPeer(s, true));
   selfTile?.__stopLevel?.(); selfTile?.remove(); selfTile = null;
   try { peer?.destroy(); } catch {}
@@ -945,8 +1083,11 @@ $('leaveBtn').addEventListener('click', () => {
   leave(true);
   $('chat').classList.remove('on');
   $('leftNote').textContent = 'Your camera and microphone are off. The invite link still works if you want to go back in.';
+  $('attLeftBtn').style.display = isHost ? '' : 'none';
   show('left');
 });
+$('attBtn').addEventListener('click', downloadAttendance);
+$('attLeftBtn').addEventListener('click', downloadAttendance);
 $('rejoinBtn').addEventListener('click', () => { $('joinBtn').disabled = false; openLobby(); });
 addEventListener('pagehide', () => { if (peer) leave(true); });
 
@@ -979,7 +1120,7 @@ function route() {
 
 route();
 
-window.__paywandi = { newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
