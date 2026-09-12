@@ -96,9 +96,14 @@
     #soundBtn { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 55; display: none; }
     #soundBtn.on { display: inline-flex; }
     .bgpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; margin-top: 8px; }
-    .bgpick button { padding: 0; min-height: 0; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; position: relative;
-      border: 2px solid transparent; background: #243044; font-size: .7rem; font-weight: 650; }
-    .bgpick button[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+    .bgpick .bgitem { position: relative; }
+    .bgpick .sel { width: 100%; padding: 0; min-height: 0; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; position: relative;
+      border: 2px solid transparent; background: #243044; font-size: .7rem; font-weight: 650; display: block; }
+    .bgpick .sel[aria-pressed="true"] { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
+    .bgpick .add { border: 2px dashed #536177; background: transparent; }
+    .bgpick .rm { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; min-height: 0; padding: 0; border-radius: 50%;
+      background: rgba(8,12,18,.85); font-size: .85rem; line-height: 1; z-index: 1; }
+    .bgpick.dragover { outline: 2px dashed var(--accent); outline-offset: 4px; border-radius: 8px; }
     .bgpick img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .bgpick .cap { position: absolute; left: 0; right: 0; bottom: 0; background: rgba(8,12,18,.72); padding: 2px 4px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -261,8 +266,9 @@
   <div style="display:flex;align-items:center;gap:8px"><strong style="flex:1">Background filters</strong>
     <button type="button" id="bgClose" style="min-height:32px;padding:5px 11px;font-size:.82rem">Done</button></div>
   <div class="bgpick" id="callBg"></div>
-  <p class="muted" style="margin:10px 0 0;font-size:.78rem">Processed on your device &mdash; your camera image never leaves it unfiltered. Illustrations are original artwork. On older phones, video may be less smooth with a background on.</p>
+  <p class="muted" style="margin:10px 0 0;font-size:.78rem">Processed on your device &mdash; your camera image never leaves it unfiltered, and images you add stay in this browser. Illustrations are original artwork. On older phones, video may be less smooth with a background on.</p>
 </div>
+<input type="file" id="bgFile" accept="image/*" hidden>
 <button type="button" class="primary" id="soundBtn">Tap to turn on call sound</button>
 <div id="toast" role="status" aria-live="polite"></div>
 
@@ -526,18 +532,26 @@ function outgoingStream() {
  * for every frame, how likely each pixel is to be the person. The person is cut out with that mask
  * and drawn over a blurred copy of the frame or an illustration, on a canvas whose captureStream is
  * what the call sends. Everything runs on this device.                                          */
-const BACKGROUNDS = [
+const BUILTIN_BACKGROUNDS = [
   { id: 'none', label: 'None' },
   { id: 'blur', label: 'Blur', blur: 9 },
   { id: 'blur-strong', label: 'Strong blur', blur: 22 },
   { id: 'zagros-dawn', label: 'Zagros at dawn', img: 'paywandi-bg/zagros-dawn.svg' },
   { id: 'kurdistan-flag', label: 'Kurdistan flag', img: 'paywandi-bg/kurdistan-flag.svg' },
-  { id: 'newroz-fires', label: 'Newroz fires', img: 'paywandi-bg/newroz-fires.svg' },
-  { id: 'erbil-citadel', label: 'Erbil Citadel', img: 'paywandi-bg/erbil-citadel.svg' },
-  { id: 'hawraman-village', label: 'Hawraman', img: 'paywandi-bg/hawraman-village.svg' },
-  { id: 'kilim', label: 'Kurdish kilim', img: 'paywandi-bg/kilim.svg' },
+  { id: 'kurdish-rug', label: 'Kurdish rug', img: 'paywandi-bg/kurdish-rug.svg' },
 ];
 const BG_KEY = 'paywandi-bg';
+const CUSTOM_KEY = 'paywandi-bg-custom';
+const MAX_CUSTOM = 4;
+// Images people add are shrunk to at most 1600 px, re-encoded as JPEG and kept in this browser only.
+let customBgs = [];
+try {
+  customBgs = (JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]') || [])
+    .filter(x => x && /^custom-[a-z0-9]{8}$/.test(x.id) && typeof x.img === 'string' && x.img.startsWith('data:image/jpeg;base64,'))
+    .slice(0, MAX_CUSTOM)
+    .map(x => ({ id: x.id, label: 'Your image', img: x.img, custom: true }));
+} catch {}
+let BACKGROUNDS = [...BUILTIN_BACKGROUNDS, ...customBgs];
 const TASKS_VISION = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1';
 const SEG_MODEL = 'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter_landscape/float16/latest/selfie_segmenter_landscape.tflite';
 const canFx = typeof WebAssembly === 'object' && typeof HTMLCanvasElement !== 'undefined' && 'captureStream' in HTMLCanvasElement.prototype;
@@ -711,14 +725,72 @@ function renderBgPickers() {
     const thumb = b.img ? `<img src="${b.img}" alt="" loading="lazy">`
       : b.blur ? `<span class="blurthumb" style="--b:${b.blur > 15 ? 6 : 3}px"></span>`
       : `<span class="nonethumb">\u2298</span>`;
-    return `<button type="button" data-bg="${b.id}" aria-pressed="${b.id === fx.def.id}" title="${esc(b.label)}">${thumb}<span class="cap">${esc(b.label)}</span></button>`;
-  }).join('');
+    return `<div class="bgitem"><button type="button" class="sel" data-bg="${b.id}" aria-pressed="${b.id === fx.def.id}" title="${esc(b.label)}">${thumb}<span class="cap">${esc(b.label)}</span></button>`
+      + (b.custom ? `<button type="button" class="rm" data-rm="${b.id}" title="Remove this image" aria-label="Remove this image">\u00d7</button>` : '')
+      + `</div>`;
+  }).join('')
+    + `<div class="bgitem"><button type="button" class="sel add" data-add="1" title="Add an image from your device"><span class="nonethumb">\uff0b</span><span class="cap">Add image</span></button></div>`;
   ['lobbyBg', 'callBg'].forEach(id => { $(id).innerHTML = html; });
   $('lobbyBgName').textContent = fx.def.label;
 }
-['lobbyBg', 'callBg'].forEach(id => $(id).addEventListener('click', e => {
-  const btn = e.target.closest('button[data-bg]'); if (btn) setBackground(btn.dataset.bg);
-}));
+['lobbyBg', 'callBg'].forEach(id => {
+  const el = $(id);
+  el.addEventListener('click', e => {
+    const rm = e.target.closest('[data-rm]'); if (rm) return removeCustomBackground(rm.dataset.rm);
+    if (e.target.closest('[data-add]')) return $('bgFile').click();
+    const btn = e.target.closest('[data-bg]'); if (btn) setBackground(btn.dataset.bg);
+  });
+  // an image can also be dragged from the desktop straight onto the picker
+  el.addEventListener('dragover', e => { if ([...(e.dataTransfer?.types || [])].includes('Files')) { e.preventDefault(); el.classList.add('dragover'); } });
+  el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+  el.addEventListener('drop', e => { e.preventDefault(); el.classList.remove('dragover'); addCustomBackground(e.dataTransfer?.files?.[0]); });
+});
+$('bgFile').addEventListener('change', e => { addCustomBackground(e.target.files?.[0]); e.target.value = ''; });
+
+function loadFileImage(file) {
+  return new Promise((ok, bad) => {
+    const url = URL.createObjectURL(file);
+    const i = new Image();
+    i.onload = () => { URL.revokeObjectURL(url); ok(i); };
+    i.onerror = () => { URL.revokeObjectURL(url); bad(new Error('decode')); };
+    i.src = url;
+  });
+}
+function saveCustomBgs() {
+  try { localStorage.setItem(CUSTOM_KEY, JSON.stringify(customBgs.map(({ id, img }) => ({ id, img })))); return true; }
+  catch { return false; }
+}
+async function addCustomBackground(file) {
+  if (!file) return;
+  if (!/^image\//.test(file.type)) { toast('That is not an image \u2014 choose a JPG, PNG or WebP.'); return; }
+  if (file.size > 30 * 1024 * 1024) { toast('That image is too large (30 MB maximum).'); return; }
+  let img;
+  try { img = await loadFileImage(file); }
+  catch { toast('This browser could not open that image. Try a JPG or PNG.'); return; }
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (!w || !h) { toast('That image appears to be empty.'); return; }
+  const k = Math.min(1, 1600 / Math.max(w, h));
+  const c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const g = c.getContext('2d');
+  g.fillStyle = '#101722'; g.fillRect(0, 0, c.width, c.height);   // transparent PNGs get a dark backdrop, not black
+  g.drawImage(img, 0, 0, c.width, c.height);
+  const dataUrl = c.toDataURL('image/jpeg', 0.86);
+  const id = 'custom-' + [...crypto.getRandomValues(new Uint8Array(8))].map(b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
+  customBgs.unshift({ id, label: 'Your image', img: dataUrl, custom: true });
+  while (customBgs.length > MAX_CUSTOM) { const old = customBgs.pop(); bgImages.delete(old.id); }
+  const kept = saveCustomBgs();
+  BACKGROUNDS = [...BUILTIN_BACKGROUNDS, ...customBgs];
+  setBackground(id);
+  if (!kept) toast('Image added for this visit only \u2014 this browser has no room to keep it.');
+}
+function removeCustomBackground(id) {
+  customBgs = customBgs.filter(x => x.id !== id);
+  bgImages.delete(id);
+  saveCustomBgs();
+  BACKGROUNDS = [...BUILTIN_BACKGROUNDS, ...customBgs];
+  if (fx.def.id === id) setBackground('none'); else renderBgPickers();
+}
 $('bgBtn').addEventListener('click', () => $('bgPanel').classList.toggle('on'));
 $('bgClose').addEventListener('click', () => $('bgPanel').classList.remove('on'));
 if (!canFx) { $('lobbyBgWrap').style.display = 'none'; $('bgBtn').style.display = 'none'; }
@@ -1354,7 +1426,7 @@ function route() {
 
 route();
 
-window.__paywandi = { fx, camView, setBackground, BACKGROUNDS, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>

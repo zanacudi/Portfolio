@@ -1,5 +1,6 @@
 """Original illustrated call backgrounds for Paywandi, 1280x720.
-All artwork is drawn here from shapes and gradients: no photographs, no third-party images."""
+All artwork is drawn here from shapes and gradients: no photographs, no third-party images.
+Run from anywhere: writes into ../paywandi-bg next to this script."""
 import math, random, os, io
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'paywandi-bg')
@@ -21,8 +22,15 @@ def ridge(rng, base, amp, n=48, sharp=1.0, phase=0.0, freq=2.2):
         y = base - amp * (0.55 * math.sin(t * math.pi * freq + phase) + 0.45 * math.sin(t * math.pi * freq * 2.7 + phase * 1.7))
         y -= amp * 0.35 * (rng.random() ** sharp)
         pts.append((x, y))
-    d = f'M0 {H} L' + ' L'.join(f'{f(x)} {f(y)}' for x, y in pts) + f' L{W} {H} Z'
-    return d
+    return f'M0 {H} L' + ' L'.join(f'{f(x)} {f(y)}' for x, y in pts) + f' L{W} {H} Z'
+
+def star(cx, cy, R, r, n, rot=-90):
+    pts = []
+    for i in range(2 * n):
+        a = math.radians(rot + i * 180 / n)
+        rad = R if i % 2 == 0 else r
+        pts.append(f'{f(cx + rad * math.cos(a))},{f(cy + rad * math.sin(a))}')
+    return ' '.join(pts)
 
 def save(name, content):
     io.open(os.path.join(OUT, name), 'w', encoding='utf-8', newline='\n').write(content)
@@ -50,13 +58,6 @@ for bx, by, s in [(760, 250, 1), (800, 270, .8), (835, 240, .7), (712, 285, .6)]
 save('zagros-dawn.svg', svg(body, defs))
 
 # ------------------------------------------------------------------ 2. Kurdistan flag
-def star(cx, cy, R, r, n, rot=-90):
-    pts = []
-    for i in range(2 * n):
-        a = math.radians(rot + i * 180 / n)
-        rad = R if i % 2 == 0 else r
-        pts.append(f'{f(cx + rad * math.cos(a))},{f(cy + rad * math.sin(a))}')
-    return ' '.join(pts)
 defs = '<linearGradient id="fold" x1="0" y1="0" x2="1" y2="0">'
 for i in range(13):
     op = .16 * (0.5 + 0.5 * math.sin(i * 1.3)) ** 2
@@ -72,167 +73,117 @@ body = (f'<rect width="{W}" height="240" fill="#ED2024"/><rect y="240" width="{W
         f'<rect width="{W}" height="{H}" fill="url(#fold)"/><rect width="{W}" height="{H}" fill="url(#sheen)"/>')
 save('kurdistan-flag.svg', svg(body, defs))
 
-# ------------------------------------------------------------------ 3. Newroz fires
-rng = random.Random(21)
-defs = ('<linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#060a1e"/>'
-        '<stop offset=".55" stop-color="#1b1640"/><stop offset=".85" stop-color="#4a2346"/><stop offset="1" stop-color="#6b2d3c"/></linearGradient>'
-        '<radialGradient id="fireglow"><stop offset="0" stop-color="#ffcf6b" stop-opacity=".9"/>'
-        '<stop offset=".3" stop-color="#ff8a3d" stop-opacity=".45"/><stop offset="1" stop-color="#ff5a1f" stop-opacity="0"/></radialGradient>'
-        '<radialGradient id="torch"><stop offset="0" stop-color="#fff0b0"/><stop offset=".35" stop-color="#ffab45" stop-opacity=".85"/>'
-        '<stop offset="1" stop-color="#ff7a1f" stop-opacity="0"/></radialGradient>'
-        '<linearGradient id="flame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff5a1f"/>'
-        '<stop offset=".55" stop-color="#ffa030"/><stop offset="1" stop-color="#ffe7a0"/></linearGradient>')
-body = f'<rect width="{W}" height="{H}" fill="url(#night)"/>'
-for _ in range(190):
-    x, y = rng.uniform(0, W), rng.uniform(0, 430) ** 1.0
-    body += f'<circle cx="{f(x)}" cy="{f(y)}" r="{f(rng.uniform(.5, 1.7))}" fill="#fff" opacity="{rng.uniform(.25, .95):.2f}"/>'
-far_d = ridge(rng, 520, 60, n=50, sharp=1.2, phase=.4, freq=1.4)
-far_pts = [tuple(map(float, p.split())) for p in far_d.split(' L')[1:-1]]
-def far_y(x):
-    for (xa, ya), (xb, yb) in zip(far_pts, far_pts[1:]):
-        if xa <= x <= xb: return ya + (yb - ya) * (x - xa) / (xb - xa) + 4
-    return 520
-def near_y(x):   # the near mountain's right flank runs from the peak (930,300) down to (1280,470)
-    return 300 + (470 - 300) * (x - 930) / (1280 - 930) + 6
-body += f'<path d="{far_d}" fill="#1a1636"/>'
-# the near mountain, peaking right of centre, with a torch procession climbing to the fire
-peak = (930, 300)
-near = f'M0 {H} L0 640 C 260 610 520 520 700 430 S 880 300 {peak[0]} {peak[1]} S 1100 380 {W} 470 L{W} {H} Z'
-body += f'<path d="{near}" fill="#0b0a18"/>'
-# switchbacks: points walk up the slope line, swinging side to side across it, so the path never crosses itself
-x0, y0, x9, y9 = 110, 700, 900, 318
-L = math.hypot(x9 - x0, y9 - y0); nx, ny = -(y9 - y0) / L, (x9 - x0) / L
-trail = []
-for k in range(15):
-    t = k / 14
-    swing = 0 if k in (0, 14) else (34 if k % 2 else -34) * (1 - .5 * t)
-    trail.append((x0 + (x9 - x0) * t + nx * swing, y0 + (y9 - y0) * t + ny * swing))
-for (x1, y1), (x2, y2) in zip(trail, trail[1:]):
-    steps = max(3, int(math.hypot(x2 - x1, y2 - y1) / 26))
-    for s in range(steps):
-        t = s / steps
-        x, y = x1 + (x2 - x1) * t, y1 + (y2 - y1) * t
-        body += f'<circle cx="{f(x)}" cy="{f(y)}" r="9" fill="url(#torch)"/>'
-fx, fy = peak
-body += f'<circle cx="{fx}" cy="{fy - 30}" r="200" fill="url(#fireglow)"/>'
-body += (f'<path d="M{fx - 40} {fy} C {fx - 50} {fy - 50} {fx - 10} {fy - 60} {fx - 12} {fy - 110} '
-         f'C {fx + 20} {fy - 70} {fx + 45} {fy - 60} {fx + 40} {fy} Z" fill="url(#flame)"/>'
-         f'<path d="M{fx - 18} {fy} C {fx - 22} {fy - 30} {fx} {fy - 40} {fx + 2} {fy - 72} '
-         f'C {fx + 18} {fy - 40} {fx + 26} {fy - 30} {fx + 20} {fy} Z" fill="#fff1b8" opacity=".85"/>')
-for _ in range(26):
-    body += f'<circle cx="{f(fx + rng.uniform(-70, 70))}" cy="{f(fy - rng.uniform(80, 230))}" r="{f(rng.uniform(1, 2.6))}" fill="#ffb347" opacity="{rng.uniform(.35, .9):.2f}"/>'
-# smaller fires on the far ridges
-for x, y in [(210, far_y(210)), (455, far_y(455)), (1185, near_y(1185))]:
-    body += f'<circle cx="{x}" cy="{y}" r="40" fill="url(#fireglow)"/><circle cx="{x}" cy="{y}" r="4" fill="#ffe7a0"/>'
-save('newroz-fires.svg', svg(body, defs))
+# ------------------------------------------------------------------ 3. Kurdish rug
+# A pile carpet in the Bijar / Senneh manner: madder-red field under a small lattice, a central
+# medallion with pendants, corner spandrels, a navy main border of stars and botehs, guard stripes.
+RED, RED_DK, NAVY, GOLD, IVORY, TEAL = '#8e1c1f', '#6c1417', '#1d2a4d', '#c8922f', '#ece0c4', '#2f6b6a'
+X0, X1 = 36, W - 36            # rug body; fringe beyond on the short ends
+def inset(d): return (X0 + d, d, X1 - d, H - d)
 
-# ------------------------------------------------------------------ 4. Erbil Citadel at golden hour
-rng = random.Random(3)
-defs = ('<linearGradient id="gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d86b0"/>'
-        '<stop offset=".5" stop-color="#e9b980"/><stop offset="1" stop-color="#f8deaa"/></linearGradient>'
-        '<linearGradient id="mound" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c39461"/><stop offset="1" stop-color="#8a5f3a"/></linearGradient>'
-        '<radialGradient id="sun2"><stop offset="0" stop-color="#fff2c8"/><stop offset=".2" stop-color="#ffd98f" stop-opacity=".6"/>'
-        '<stop offset="1" stop-color="#ffc070" stop-opacity="0"/></radialGradient>')
-body = f'<rect width="{W}" height="{H}" fill="url(#gold)"/><circle cx="210" cy="330" r="230" fill="url(#sun2)"/><circle cx="210" cy="330" r="38" fill="#fff0c4"/>'
-for cx, cy, rx in [(520, 150, 120), (620, 170, 90), (1010, 120, 140)]:
-    body += f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="18" fill="#fff" opacity=".35"/>'
-top_y = 420
-body += f'<path d="M110 {H - 70} C 230 {H - 90} 260 {top_y + 10} 330 {top_y} L 950 {top_y} C 1020 {top_y + 10} 1050 {H - 90} 1170 {H - 70} Z" fill="url(#mound)"/>'
-x = 322
-while x < 958:
-    w = rng.choice([22, 28, 34, 40])
-    h = rng.choice([26, 34, 42, 50])
-    if 600 < x < 680:
-        x = 680
-        continue
-    shade = rng.choice(['#e0bb86', '#d4aa73', '#caa06a'])
-    body += f'<rect x="{x}" y="{top_y - h}" width="{w}" height="{h + 4}" fill="{shade}"/>'
-    for wy in range(top_y - h + 8, top_y - 6, 14):
-        for wx in range(x + 5, x + w - 6, 11):
-            if rng.random() < .55:
-                body += f'<rect x="{wx}" y="{wy}" width="4" height="7" fill="#6e4a2b" opacity=".8"/>'
-    x += w
-# the great gate
-body += (f'<rect x="600" y="{top_y - 92}" width="80" height="96" fill="#e7c893"/>'
-         f'<path d="M618 {top_y + 4} L618 {top_y - 40} A22 22 0 0 1 662 {top_y - 40} L662 {top_y + 4} Z" fill="#7b5230"/>'
-         f'<rect x="596" y="{top_y - 100}" width="88" height="10" fill="#d4ae78"/>'
-         f'<line x1="640" y1="{top_y - 100}" x2="640" y2="{top_y - 150}" stroke="#5b3d24" stroke-width="3"/>'
-         f'<rect x="641" y="{top_y - 150}" width="36" height="8" fill="#ED2024"/><rect x="641" y="{top_y - 142}" width="36" height="8" fill="#fff"/>'
-         f'<rect x="641" y="{top_y - 134}" width="36" height="8" fill="#278E43"/><circle cx="659" cy="{top_y - 138}" r="3" fill="#FEBD11"/>')
-# the modern city at its foot
-x = 0
-while x < W:
-    w = rng.randint(40, 110); h = rng.randint(30, 90)
-    body += f'<rect x="{x}" y="{H - h}" width="{w}" height="{h}" fill="{rng.choice(["#6e4f37", "#5f4430", "#7a583d"])}"/>'
-    x += w - 2
-for tx in [60, 150, 1110, 1215]:
-    body += f'<rect x="{tx - 3}" y="{H - 140}" width="6" height="80" fill="#4a3322"/>'
-    body += ''.join(f'<path d="M{tx} {H - 140} q{dx} -10 {dx * 2} 14" stroke="#3f5a2c" stroke-width="7" fill="none" stroke-linecap="round"/>' for dx in (-22, -12, 12, 22))
-save('erbil-citadel.svg', svg(body, defs))
+def boteh(cx, cy, s, rot, fill, inner):
+    # the paisley: a teardrop whose tip curls over
+    p = (f'M0 {f(-20 * s)} C {f(14 * s)} {f(-20 * s)} {f(18 * s)} {f(6 * s)} 0 {f(18 * s)} '
+         f'C {f(-16 * s)} {f(8 * s)} {f(-14 * s)} {f(-8 * s)} {f(-4 * s)} {f(-12 * s)} '
+         f'C {f(-10 * s)} {f(-16 * s)} {f(-6 * s)} {f(-22 * s)} 0 {f(-20 * s)} Z')
+    return (f'<g transform="translate({f(cx)} {f(cy)}) rotate({rot})"><path d="{p}" fill="{fill}"/>'
+            f'<circle cx="{f(2 * s)}" cy="{f(2 * s)}" r="{f(6 * s)}" fill="{inner}"/></g>')
 
-# ------------------------------------------------------------------ 5. Hawraman terraced village
-rng = random.Random(11)
-defs = ('<linearGradient id="day" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fbfe6"/><stop offset="1" stop-color="#e2f2f6"/></linearGradient>'
-        '<linearGradient id="slope" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6f9b55"/><stop offset="1" stop-color="#3e6a3a"/></linearGradient>')
-body = f'<rect width="{W}" height="{H}" fill="url(#day)"/>'
-for cx, cy, s in [(250, 110, 1), (330, 95, .7), (900, 80, 1.2), (1010, 100, .8)]:
-    body += f'<ellipse cx="{cx}" cy="{cy}" rx="{f(80 * s)}" ry="{f(20 * s)}" fill="#fff" opacity=".85"/>'
-body += f'<path d="{ridge(rng, 330, 70, n=40, sharp=1.1, phase=.9, freq=1.3)}" fill="#8fb1b8"/>'
-body += f'<path d="{ridge(rng, 400, 60, n=40, sharp=1.1, phase=2.1, freq=1.1)}" fill="#6f9a86"/>'
-body += f'<path d="M0 300 C 300 330 520 470 760 560 S 1100 690 {W} 700 L{W} {H} L0 {H} Z" fill="url(#slope)"/>'
-body += f'<path d="M{W} 360 C 1060 400 960 520 880 720 L{W} {H} Z" fill="#4d7a44"/>'
+def eight(cx, cy, R, fill):
+    return f'<polygon points="{star(cx, cy, R, R * .62, 8, rot=-90 + 22.5)}" fill="{fill}"/>'
 
-def house(x, y, w, h, tone):
-    s = f'<rect x="{x}" y="{y - h}" width="{w}" height="{h}" fill="{tone}"/>'
-    s += f'<rect x="{x - 2}" y="{y - h - 5}" width="{w + 4}" height="6" fill="#8b6f4e"/>'
-    for wx in range(x + 7, x + w - 10, 16):
-        s += f'<rect x="{wx}" y="{y - h + 10}" width="7" height="10" fill="#45382a"/>'
-    return s
-# stepped rows climbing the left slope: each roof is the next house's yard
-for row in range(7):
-    y0 = 690 - row * 52
-    x0 = 20 + row * 34
-    xs = x0
-    while xs < x0 + 380 - row * 30:
-        w = rng.choice([44, 52, 60])
-        body += house(xs, y0, w, rng.choice([34, 40, 46]), rng.choice(['#d8c6a2', '#cbb58c', '#e2d3b3', '#bfa37a']))
-        xs += w + rng.choice([0, 4, 8])
-for row in range(5):
-    y0 = 700 - row * 50
-    x0 = 1260 - row * 26
-    xs = x0
-    while xs > x0 - 260 + row * 20:
-        w = rng.choice([44, 52])
-        body += house(xs - w, y0, w, rng.choice([34, 40]), rng.choice(['#d8c6a2', '#cbb58c', '#e2d3b3']))
-        xs -= w + rng.choice([0, 6])
-# trees only on the open slope between the two villages, clumped along its fall line
-for _ in range(34):
-    t = rng.random()
-    tx = 480 + 360 * t + rng.uniform(-40, 40)
-    ty = 470 + 190 * t + rng.uniform(-30, 30)
-    r = rng.uniform(9, 17)
-    body += f'<circle cx="{f(tx)}" cy="{f(ty)}" r="{f(r)}" fill="{rng.choice(["#3f6b35", "#4f7d3f", "#355c2e"])}"/>'
-body += '<path d="M420 720 C 520 690 600 700 700 680 S 860 650 940 720 Z" fill="#6fb3d2" opacity=".85"/>'
-save('hawraman-village.svg', svg(body, defs))
+def hexagon(cx, cy, hw, hh, cut):
+    return f'{f(cx - hw)},{f(cy)} {f(cx - hw + cut)},{f(cy - hh)} {f(cx + hw - cut)},{f(cy - hh)} {f(cx + hw)},{f(cy)} {f(cx + hw - cut)},{f(cy + hh)} {f(cx - hw + cut)},{f(cy + hh)}'
 
-# ------------------------------------------------------------------ 6. Kilim
-T = 120  # one motif tile
-defs = (f'<pattern id="motif" width="{T}" height="{T}" patternUnits="userSpaceOnUse" x="40" y="0">'
-        f'<rect width="{T}" height="{T}" fill="#7d1f22"/>'
-        f'<polygon points="60,6 114,60 60,114 6,60" fill="#1f2f5c"/>'
-        f'<polygon points="60,22 98,60 60,98 22,60" fill="#d69a2d"/>'
-        f'<polygon points="60,38 82,60 60,82 38,60" fill="#7d1f22"/>'
-        f'<polygon points="60,50 70,60 60,70 50,60" fill="#efe3c8"/>'
-        # hooks at the four tips: the "ram's horn" motif common in Kurdish weaving
-        f'<path d="M60 6 l0 -6 M54 0 h12 M60 114 l0 6 M54 120 h12 M6 60 h-6 M0 54 v12 M114 60 h6 M120 54 v12" stroke="#efe3c8" stroke-width="5"/>'
-        f'<rect x="0" y="0" width="10" height="10" fill="#efe3c8"/><rect x="{T - 10}" y="0" width="10" height="10" fill="#efe3c8"/>'
-        f'<rect x="0" y="{T - 10}" width="10" height="10" fill="#efe3c8"/><rect x="{T - 10}" y="{T - 10}" width="10" height="10" fill="#efe3c8"/>'
-        f'</pattern>'
-        '<pattern id="zig" width="40" height="40" patternUnits="userSpaceOnUse">'
-        '<rect width="40" height="40" fill="#1f2f5c"/><path d="M0 30 L10 10 L20 30 L30 10 L40 30" stroke="#d69a2d" stroke-width="6" fill="none"/></pattern>'
-        '<radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".45"/></radialGradient>')
-body = (f'<rect width="{W}" height="{H}" fill="url(#motif)"/>'
-        f'<rect width="{W}" height="56" fill="url(#zig)"/><rect y="56" width="{W}" height="10" fill="#efe3c8"/>'
-        f'<rect y="{H - 56}" width="{W}" height="56" fill="url(#zig)"/><rect y="{H - 66}" width="{W}" height="10" fill="#efe3c8"/>'
-        f'<rect width="{W}" height="{H}" fill="url(#vig)"/>')
-save('kilim.svg', svg(body, defs))
+defs = (f'<pattern id="lattice" width="52" height="52" patternUnits="userSpaceOnUse" x="{X0 + 90}" y="90">'
+        f'<rect width="52" height="52" fill="{RED}"/>'
+        f'<path d="M26 0 L52 26 L26 52 L0 26 Z" fill="none" stroke="{RED_DK}" stroke-width="3"/>'
+        f'<circle cx="26" cy="26" r="5" fill="{GOLD}"/>'
+        + ''.join(f'<ellipse cx="{f(26 + 9 * math.cos(math.radians(a)))}" cy="{f(26 + 9 * math.sin(math.radians(a)))}" rx="4" ry="2.2" '
+                  f'transform="rotate({a} {f(26 + 9 * math.cos(math.radians(a)))} {f(26 + 9 * math.sin(math.radians(a)))})" fill="{IVORY}" opacity=".85"/>'
+                  for a in (0, 90, 180, 270)) +
+        f'<circle cx="0" cy="0" r="3" fill="{NAVY}"/><circle cx="52" cy="0" r="3" fill="{NAVY}"/>'
+        f'<circle cx="0" cy="52" r="3" fill="{NAVY}"/><circle cx="52" cy="52" r="3" fill="{NAVY}"/></pattern>'
+        # warp and weft: the faint grid that makes it read as woven rather than printed
+        '<pattern id="weave" width="4" height="4" patternUnits="userSpaceOnUse">'
+        '<rect width="4" height="4" fill="#000" opacity="0"/><rect width="1" height="4" fill="#000" opacity=".07"/>'
+        '<rect width="4" height="1" fill="#fff" opacity=".03"/></pattern>'
+        # abrash: the gentle banding of hand-dyed wool
+        '<linearGradient id="abrash" x1="0" y1="0" x2="1" y2="0">'
+        + ''.join(f'<stop offset="{i / 10:.2f}" stop-color="#000" stop-opacity="{.04 + .05 * (0.5 + 0.5 * math.sin(i * 2.1)):.3f}"/>' for i in range(11)) +
+        '</linearGradient>'
+        '<radialGradient id="rugvig" cx=".5" cy=".5" r=".7"><stop offset=".55" stop-color="#000" stop-opacity="0"/>'
+        '<stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient>')
+
+body = f'<rect width="{W}" height="{H}" fill="#2b1d16"/>'
+# fringe on the short ends
+for y in range(4, H, 7):
+    body += (f'<line x1="2" y1="{y}" x2="{X0}" y2="{y + 1}" stroke="{IVORY}" stroke-width="3" opacity=".9"/>'
+             f'<line x1="{X1}" y1="{y + 1}" x2="{W - 2}" y2="{y}" stroke="{IVORY}" stroke-width="3" opacity=".9"/>')
+# outer guard: ivory with red dots
+x, y, x2, y2 = inset(0)
+body += f'<rect x="{x}" y="{y}" width="{x2 - x}" height="{y2 - y}" fill="{IVORY}"/>'
+x, y, x2, y2 = inset(12)
+body += f'<rect x="{x}" y="{y}" width="{x2 - x}" height="{y2 - y}" fill="{NAVY}"/>'
+for t in range(X0 + 10, X1 - 6, 18):
+    body += f'<circle cx="{t}" cy="6" r="2.6" fill="{RED}"/><circle cx="{t}" cy="{H - 6}" r="2.6" fill="{RED}"/>'
+for t in range(12, H - 6, 18):
+    body += f'<circle cx="{X0 + 6}" cy="{t}" r="2.6" fill="{RED}"/><circle cx="{X1 - 6}" cy="{t}" r="2.6" fill="{RED}"/>'
+# main border motifs, alternating star and boteh, on all four sides
+mid = 12 + 32   # centre line of the 64 px navy border
+def along(a, b, step):
+    n = max(1, round((b - a) / step)); return [a + (b - a) * (i + .5) / n for i in range(n)]
+k = 0
+for t in along(X0 + 76, X1 - 76, 78):
+    for yy, rot in ((mid, 0), (H - mid, 180)):
+        body += eight(t, yy, 20, IVORY) + f'<circle cx="{f(t)}" cy="{yy}" r="6" fill="{RED}"/>' if k % 2 == 0 else boteh(t, yy, 1.05, 90 + rot, GOLD, RED)
+    k += 1
+k = 0
+for t in along(76, H - 76, 78):
+    for xx, rot in ((X0 + mid, 0), (X1 - mid, 180)):
+        body += eight(xx, t, 20, IVORY) + f'<circle cx="{xx}" cy="{f(t)}" r="6" fill="{RED}"/>' if k % 2 == 0 else boteh(xx, t, 1.05, rot, GOLD, RED)
+    k += 1
+for cx, cy in ((X0 + mid, mid), (X1 - mid, mid), (X0 + mid, H - mid), (X1 - mid, H - mid)):
+    body += eight(cx, cy, 24, GOLD) + f'<circle cx="{cx}" cy="{cy}" r="8" fill="{NAVY}"/><circle cx="{cx}" cy="{cy}" r="4" fill="{IVORY}"/>'
+# inner guard: gold with a running navy reciprocal
+x, y, x2, y2 = inset(76)
+body += f'<rect x="{x}" y="{y}" width="{x2 - x}" height="{y2 - y}" fill="{GOLD}"/>'
+for t in range(X0 + 84, X1 - 80, 16):
+    body += f'<polygon points="{t},79 {t + 8},85 {t},91 {t - 8},85" fill="{NAVY}"/><polygon points="{t},{H - 91} {t + 8},{H - 85} {t},{H - 79} {t - 8},{H - 85}" fill="{NAVY}"/>'
+for t in range(92, H - 84, 16):
+    body += f'<polygon points="{X0 + 85},{t - 8} {X0 + 91},{t} {X0 + 85},{t + 8} {X0 + 79},{t}" fill="{NAVY}"/><polygon points="{X1 - 85},{t - 8} {X1 - 79},{t} {X1 - 85},{t + 8} {X1 - 91},{t}" fill="{NAVY}"/>'
+# the field
+fx0, fy0, fx1, fy1 = inset(94)
+body += f'<rect x="{fx0}" y="{fy0}" width="{fx1 - fx0}" height="{fy1 - fy0}" fill="url(#lattice)"/>'
+# corner spandrels: quarter medallions
+for cx, cy, sx, sy in ((fx0, fy0, 1, 1), (fx1, fy0, -1, 1), (fx0, fy1, 1, -1), (fx1, fy1, -1, -1)):
+    body += (f'<path d="M{cx} {cy} h{sx * 190} q{-sx * 20} {sy * 90} {-sx * 190} {sy * 140} Z" fill="{GOLD}"/>'
+             f'<path d="M{cx} {cy} h{sx * 176} q{-sx * 20} {sy * 82} {-sx * 176} {sy * 128} Z" fill="{NAVY}"/>'
+             + eight(cx + sx * 62, cy + sy * 44, 18, IVORY) + boteh(cx + sx * 120, cy + sy * 26, .8, 0 if sx > 0 else 180, TEAL, GOLD))
+# central medallion with pendants
+cx, cy = 640, 360
+for (dy, s) in ((-1, 1), (1, 1)):
+    py = cy + dy * 232          # sits just outside the medallion's gold edge
+    body += (f'<polygon points="{cx},{py - 34} {cx + 34},{py} {cx},{py + 34} {cx - 34},{py}" fill="{GOLD}"/>'
+             f'<polygon points="{cx},{py - 24} {cx + 24},{py} {cx},{py + 24} {cx - 24},{py}" fill="{NAVY}"/>'
+             f'<circle cx="{cx}" cy="{py}" r="7" fill="{IVORY}"/>'
+             f'<rect x="{cx - 3}" y="{py + dy * 30 - (14 if dy < 0 else 0)}" width="6" height="14" fill="{GOLD}"/>')
+body += (f'<polygon points="{hexagon(cx, cy, 330, 196, 120)}" fill="{GOLD}"/>'
+         f'<polygon points="{hexagon(cx, cy, 318, 186, 116)}" fill="{NAVY}"/>')
+# motifs placed midway between the outer and inner hexagons, so none sits on a frame
+for sy in (-1, 1):
+    body += eight(cx, cy + sy * 151, 15, IVORY)
+    for sx in (-1, 1):
+        body += boteh(cx + sx * 112, cy + sy * 151, .75, 90 if sx > 0 else 270, TEAL, GOLD)
+        body += boteh(cx + sx * 208, cy + sy * 80, .7, (90 if sx > 0 else 270) + sx * sy * 35, TEAL, GOLD)
+for sx in (-1, 1):
+    body += eight(cx + sx * 257, cy, 15, IVORY)
+body += (f'<polygon points="{hexagon(cx, cy, 196, 116, 70)}" fill="{IVORY}"/>'
+         f'<polygon points="{hexagon(cx, cy, 182, 106, 64)}" fill="{RED}"/>'
+         + eight(cx, cy, 78, GOLD) + eight(cx, cy, 50, NAVY) + eight(cx, cy, 26, IVORY) +
+         f'<circle cx="{cx}" cy="{cy}" r="9" fill="{RED}"/>')
+for dx in (-128, 128):
+    body += boteh(cx + dx, cy, 1.1, 90 if dx > 0 else 270, GOLD, NAVY)
+body += (f'<rect x="{X0}" y="0" width="{X1 - X0}" height="{H}" fill="url(#abrash)"/>'
+         f'<rect x="{X0}" y="0" width="{X1 - X0}" height="{H}" fill="url(#weave)"/>'
+         f'<rect width="{W}" height="{H}" fill="url(#rugvig)"/>')
+save('kurdish-rug.svg', svg(body, defs))
