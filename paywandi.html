@@ -74,6 +74,10 @@
     .tile .state { position: absolute; top: 8px; left: 8px; background: rgba(8,12,18,.72); padding: 3px 8px; border-radius: 8px;
       font-size: .75rem; color: var(--muted); display: none; }
     .tile.connecting .state { display: block; }
+    .tile.unreachable .state { display: block; color: #fdba74; font-weight: 700; white-space: normal; right: 8px; }
+    .tile.unreachable { border-color: #7c4a14; }
+    .tile.unreachable .avatar { display: flex; opacity: .55; }
+    #stage.diwan .tile.unreachable .state { display: block; font-size: .62rem; top: 4px; left: 4px; right: 4px; padding: 2px 5px; }
     #chat { width: min(340px, 100%); border-left: 1px solid var(--line); background: #0f1621; display: none; flex-direction: column; }
     #chat.on { display: flex; }
     #chatLog { flex: 1; overflow-y: auto; padding: 10px 12px; font-size: .9rem; }
@@ -297,6 +301,13 @@ const GATE_HASH = 'c341d7c0834bed628ba21fe4a53edea04bc132dd3f67b242bd49f10409fbe
 const GATE_KEY = 'paywandi-unlocked';
 const MAX_PEOPLE = 8;              // full mesh: every person sends to every other, so keep rooms small
 const ROOM_RE = /^[a-z2-9]{12}$/;  // what an invite link carries after the #
+// Browsers find each other's public address through STUN. When a firewall or a mobile network blocks a
+// direct path, audio and video must go through a TURN relay instead. PeerJS's built-in relay no longer
+// exists, so relays are configured here: paste relay credentials (e.g. ExpressTURN's free plan) into
+// TURN_SERVERS as { urls: [...], username: '...', credential: '...' }.
+const TURN_SERVERS = [];
+const ICE_SERVERS = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] }, ...TURN_SERVERS];
+const REACH_MS = 12000;            // someone answered the knock but no connection formed in this long: unreachable
 const RESCAN_MS = 4000;            // how often to look for people who took a lower seat after us
 const PENDING_MS = 12000;          // give up on an unanswered connection attempt after this
 const NAME_KEY = 'paywandi-name';
@@ -961,7 +972,7 @@ function claimSeat(seat) {
     $('lobbyMsg').textContent = `This call is full (${MAX_PEOPLE} people).`; $('lobbyMsg').className = 'warn';
     return;
   }
-  const p = new Peer(seatId(seat), { debug: 0 });
+  const p = new Peer(seatId(seat), { debug: 0, config: { iceServers: ICE_SERVERS } });
   let settled = false;
   // once: PeerJS fires 'open' again after every broker reconnect, which must not re-enter the call
   p.once('open', () => { settled = true; peer = p; mySeat = seat; enterCall(); });
@@ -1004,17 +1015,61 @@ function enterCall() {
   updateStatus();
 }
 
+/* ------------------------------------------------------------ reachability --- *
+ * "Everyone alone" must never be silent. If someone is in the call (their browser answered, or ours was
+ * knocked on) but no connection forms, show their tile marked as unreachable, and say why.         */
+const ghosts = new Map();          // seat -> { name, tile, lastTry }
+const unavailableAt = new Map();   // seat -> when the broker said nobody sits there
+const dialConns = new Map();       // seat -> our latest outgoing attempt
+let reachTipShown = false;
+function watchReach(seat, conn, name) {
+  const started = Date.now();
+  setTimeout(() => {
+    if (!peer || conn.open || peers.get(seat)?.conn?.open) return;
+    if ((unavailableAt.get(seat) || 0) >= started) return;             // nobody there after all
+    showGhost(seat, name, started);
+  }, REACH_MS);
+}
+function showGhost(seat, name, triedAt) {
+  let g = ghosts.get(seat);
+  if (!g) {
+    const tile = makeTile('ghost' + seat, name || 'Someone', false);
+    tile.classList.remove('connecting'); tile.classList.add('unreachable', 'camoff');
+    tile.querySelector('.state').textContent = "Can't connect \u2014 a network is blocking the call";
+    g = { name: name || 'Someone', tile, lastTry: triedAt };
+    ghosts.set(seat, g);
+  }
+  if (name) g.name = name;
+  g.lastTry = Math.max(g.lastTry, triedAt);          // when they last knocked, not when our timer fired
+  g.tile.querySelector('.nm').textContent = g.name;
+  g.tile.querySelector('.initials').textContent = initials(g.name);
+  layout(); updateStatus();
+  if (!reachTipShown) {
+    reachTipShown = true;
+    toast("Someone is in this call but your networks can't connect. Try a different Wi-Fi or mobile data.", 7000);
+  }
+}
+function removeGhost(seat) {
+  const g = ghosts.get(seat); if (!g) return;
+  ghosts.delete(seat); g.tile.remove(); layout(); updateStatus();
+}
+
 function rescan() {
   const now = Date.now();
   for (const [s, t] of pending) if (now - t > PENDING_MS) pending.delete(s);
+  for (const [s, g] of ghosts) if (now - g.lastTry > 2.5 * PENDING_MS) removeGhost(s);   // no knock for ~30 s: they have gone
   for (let s = 0; s < mySeat; s++) if (!peers.has(s) && !pending.has(s)) dial(s);
 }
 
 function dial(seat) {
   if (!peer || peer.destroyed || peer.disconnected) return;
   pending.set(seat, Date.now());
+  const prev = dialConns.get(seat);
+  if (prev && !prev.open) { try { prev.close(); } catch {} }            // a stale attempt: free it before retrying
   const conn = peer.connect(seatId(seat), { reliable: true, metadata: { name: myName } });
+  dialConns.set(seat, conn);
   wireConn(conn, seat, true);
+  watchReach(seat, conn, ghosts.get(seat)?.name);
 }
 function onIncomingConn(conn) {
   const seat = seatOf(conn.peer);
@@ -1024,11 +1079,15 @@ function onIncomingConn(conn) {
   const old = peers.get(seat);
   if (old && old.conn && old.conn !== conn) dropPeer(seat, true);
   wireConn(conn, seat, false);
+  const knocker = cleanName(conn.metadata?.name);
+  if (ghosts.has(seat)) { const g = ghosts.get(seat); g.lastTry = Date.now(); if (knocker) g.name = knocker; }
+  watchReach(seat, conn, knocker);
 }
 
 function wireConn(conn, seat, outgoing) {
   conn.on('open', () => {
     pending.delete(seat);
+    removeGhost(seat);
     const rec = ensurePeer(seat, conn.peer);
     rec.conn = conn;
     rec.name = cleanName(conn.metadata?.name) || rec.name || 'Guest';
@@ -1073,7 +1132,7 @@ function onPeerError(err) {
   if (err.type === 'peer-unavailable') {
     // nobody sits in that seat: the broker tells us by naming the id we tried
     const m = /peer\s+(\S+)/.exec(err.message || '');
-    if (m) pending.delete(seatOf(m[1]));
+    if (m) { const sn = seatOf(m[1]); pending.delete(sn); unavailableAt.set(sn, Date.now()); }
     return;
   }
   if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type)) {
@@ -1295,7 +1354,7 @@ function applyCamera() {
   const ox = g.W / 2 - cam.cx * k, oy = g.H / 2 - cam.cy * k;
   stage.style.backgroundSize = `${DIWAN.w * k}px ${DIWAN.h * k}px`;
   stage.style.backgroundPosition = `${ox}px ${oy}px`;
-  const seated = [[mySeat, selfTile], ...[...peers.values()].map(r => [r.seat, r.tile])];
+  const seated = [[mySeat, selfTile], ...[...peers.values()].map(r => [r.seat, r.tile]), ...[...ghosts].map(([sn, g]) => [sn, g.tile])];
   for (const [seat, tile] of seated) {
     if (!tile) continue;
     const spot = DIWAN.spots[seat];
@@ -1537,6 +1596,11 @@ function setNet(ok, text) {
 }
 function updateStatus() {
   const others = peers.size;
+  if (ghosts.size) {
+    const names = [...ghosts.values()].map(g => g.name).join(', ');
+    $('callStatus').textContent = `Can't connect to ${names}` + (others ? ` \u00b7 ${others + 1} connected` : '');
+    return;
+  }
   $('callStatus').textContent = others === 0
     ? (isHost ? 'Waiting for others — tap Invite to share the link' : 'Waiting for others to join…')
     : `${others + 1} people in the call`;
@@ -1554,6 +1618,7 @@ function leave(final) {
   broadcast({ t: 'bye' });
   clearInterval(rescanId); clearInterval(timerId); clearInterval(attTickId);
   [...peers.keys()].forEach(s => dropPeer(s, true));
+  [...ghosts.keys()].forEach(removeGhost); unavailableAt.clear(); dialConns.clear(); reachTipShown = false;
   selfTile?.__stopLevel?.(); selfTile?.remove(); selfTile = null;
   try { peer?.destroy(); } catch {}
   peer = null; mySeat = -1; pending.clear();
@@ -1602,7 +1667,7 @@ function route() {
 
 route();
 
-window.__paywandi = { cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { ghosts, ICE_SERVERS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
