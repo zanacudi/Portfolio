@@ -253,7 +253,7 @@
     <button type="button" class="tog" id="camBtn" aria-pressed="true" title="Camera">📷<span class="lbl" id="camLbl">Stop video</span></button>
     <button type="button" id="flipBtn" title="Switch camera" style="display:none">🔄<span class="lbl">Flip</span></button>
     <button type="button" class="act" id="screenBtn" aria-pressed="false" title="Share screen">🖥️<span class="lbl" id="screenLbl">Share screen</span></button>
-    <button type="button" class="view" id="diwanBtn" aria-pressed="false" title="Sit together in a diwan" style="display:none">🛋️<span class="lbl">Diwan</span></button>
+    <button type="button" class="view" id="diwanBtn" aria-pressed="false" title="Switch between the diwan room and the grid" style="display:none">🛋️<span class="lbl">Diwan</span></button>
     <button type="button" class="view" id="autoCamBtn" aria-pressed="true" title="Camera follows whoever is speaking" style="display:none">🎥<span class="lbl">Auto camera</span></button>
     <button type="button" id="bgBtn" title="Background filters">🖼️<span class="lbl">Background</span></button>
     <button type="button" id="attBtn" title="Download attendance (CSV)" style="display:none">📋<span class="lbl">Attendance</span></button>
@@ -1218,8 +1218,9 @@ const DIWAN = {
     { x: .095, y: .880, w: .210, ry: 30 },    // seat 7: left, nearest the door
   ],
 };
-let viewMode = 'grid', diwanReady = false;
-try { if (localStorage.getItem('paywandi-view') === 'diwan') viewMode = 'diwan'; } catch {}
+// the gathering is the default; someone who switches to the grid keeps that choice
+let viewMode = 'diwan', diwanReady = false;
+try { if (localStorage.getItem('paywandi-view') === 'grid') viewMode = 'grid'; } catch {}
 (() => {   // offer the view only once the room photo has actually loaded
   const i = new Image();
   i.onload = () => { diwanReady = true; $('diwanBtn').style.display = ''; syncViewButton(); layout(); };
