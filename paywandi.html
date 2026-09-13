@@ -95,6 +95,18 @@
     #toast.on { opacity: 1; }
     #soundBtn { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 55; display: none; }
     #soundBtn.on { display: inline-flex; }
+    /* diwan view: everyone's screen sits on a cushion in one shared room */
+    #stage.diwan { display: block; position: relative; padding: 0; background-color: #0b0806; background-image: var(--scene);
+      background-repeat: no-repeat; perspective: 1100px; overflow: hidden; }
+    #stage.diwan .tile { position: absolute; aspect-ratio: 16 / 10; min-height: 0; border: 3px solid #17110c; border-radius: 9px;
+      transform: translate(-50%, -50%) rotateY(var(--ry, 0deg)); transform-origin: 50% 50%;
+      box-shadow: 0 14px 18px -6px rgba(0,0,0,.65), 0 0 0 1px rgba(255,235,200,.12); }
+    #stage.diwan .tile.speaking { border-color: var(--ok); }
+    #stage.diwan .tile .tag { font-size: .68rem; padding: 2px 6px; left: 4px; bottom: 4px; }
+    #stage.diwan .tile .initials { width: 38%; font-size: clamp(.8rem, 2.2vw, 1.6rem); }
+    #stage.diwan .tile .state, #stage.diwan .tile .enlarge { display: none; }
+    #stage.diwan .tile.unseated { display: none; }
+    .bar button[aria-pressed="true"].view { background: var(--accent); }
     .bgpick { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; margin-top: 8px; }
     .bgpick .bgitem { position: relative; }
     .bgpick .sel { width: 100%; padding: 0; min-height: 0; aspect-ratio: 16/9; border-radius: 8px; overflow: hidden; position: relative;
@@ -241,6 +253,8 @@
     <button type="button" class="tog" id="camBtn" aria-pressed="true" title="Camera">📷<span class="lbl" id="camLbl">Stop video</span></button>
     <button type="button" id="flipBtn" title="Switch camera" style="display:none">🔄<span class="lbl">Flip</span></button>
     <button type="button" class="act" id="screenBtn" aria-pressed="false" title="Share screen">🖥️<span class="lbl" id="screenLbl">Share screen</span></button>
+    <button type="button" class="view" id="diwanBtn" aria-pressed="false" title="Sit together in a diwan" style="display:none">🛋️<span class="lbl">Diwan</span></button>
+    <button type="button" class="view" id="autoCamBtn" aria-pressed="true" title="Camera follows whoever is speaking" style="display:none">🎥<span class="lbl">Auto camera</span></button>
     <button type="button" id="bgBtn" title="Background filters">🖼️<span class="lbl">Background</span></button>
     <button type="button" id="attBtn" title="Download attendance (CSV)" style="display:none">📋<span class="lbl">Attendance</span></button>
     <button type="button" id="chatBtn" title="Chat">💬<span class="lbl">Chat</span><span class="badge" id="chatBadge">0</span></button>
@@ -1187,6 +1201,164 @@ function dropPeer(seat, silent) {
 }
 function leaveNotice(seat) { if (peers.has(seat)) dropPeer(seat, false); }
 
+/* ------------------------------------------------------------- diwan view --- *
+ * A shared room with a seat for each place in the call. Seats follow the call's own seat numbers,
+ * so every viewer sees the same person on the same cushion. Spot x, y are the centre of the screen
+ * and w its width, all as fractions of the photo; ry turns side screens to face across the room.  */
+const DIWAN = {
+  img: 'paywandi-bg/diwan-room.webp', w: 1140, h: 855,
+  spots: [
+    { x: .300, y: .578, w: .150, ry: 22 },    // seat 0: left bench, middle
+    { x: .712, y: .578, w: .150, ry: -22 },   // seat 1: right bench, middle, facing seat 0
+    { x: .535, y: .462, w: .110, ry: 0 },     // seat 2: back, under the window
+    { x: .185, y: .705, w: .190, ry: 26 },    // seat 3: left bench, near
+    { x: .838, y: .705, w: .190, ry: -26 },   // seat 4: right bench, near
+    { x: .388, y: .482, w: .095, ry: 12 },    // seat 5: back left
+    { x: .684, y: .482, w: .095, ry: -12 },   // seat 6: back right
+    { x: .095, y: .880, w: .210, ry: 30 },    // seat 7: left, nearest the door
+  ],
+};
+let viewMode = 'grid', diwanReady = false;
+try { if (localStorage.getItem('paywandi-view') === 'diwan') viewMode = 'diwan'; } catch {}
+(() => {   // offer the view only once the room photo has actually loaded
+  const i = new Image();
+  i.onload = () => { diwanReady = true; $('diwanBtn').style.display = ''; syncViewButton(); layout(); };
+  i.src = DIWAN.img;
+})();
+function syncViewButton() {
+  const on = viewMode === 'diwan' && diwanReady;
+  $('diwanBtn').setAttribute('aria-pressed', String(on));
+  $('autoCamBtn').style.display = on ? '' : 'none';
+  $('autoCamBtn').setAttribute('aria-pressed', String(autoCam));
+}
+
+/* the room camera: a director picks who to frame, the camera glides there */
+const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let autoCam = !REDUCED_MOTION;
+try { const v = localStorage.getItem('paywandi-autocam'); if (v) autoCam = v === 'on'; } catch {}
+const cam = { cx: DIWAN.w / 2, cy: DIWAN.h / 2, z: 1, tx: DIWAN.w / 2, ty: DIWAN.h / 2, tz: 1, raf: 0, last: 0 };
+const director = { focus: [], since: 0, streak: new Map(), lastSpoke: new Map(), timer: 0 };
+$('autoCamBtn').addEventListener('click', () => {
+  autoCam = !autoCam;
+  try { localStorage.setItem('paywandi-autocam', autoCam ? 'on' : 'off'); } catch {}
+  syncViewButton();
+  director.focus = []; director.since = 0; aimCamera();
+});
+
+function diwanGeom(stage) {
+  const W = stage.clientWidth || 1, H = stage.clientHeight || 1;
+  return { W, H, k0: Math.min(W / DIWAN.w, H / DIWAN.h) };   // k0: the whole room fitted, the wide shot
+}
+// The shot that frames these seats: one speaker fills about 40% of the width, two share the frame.
+function shotFor(seats, g) {
+  const spots = seats.map(sn => DIWAN.spots[sn]).filter(Boolean);
+  if (!spots.length) return { cx: DIWAN.w / 2, cy: DIWAN.h / 2, z: 1 };
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const sp of spots) {
+    const w = sp.w * DIWAN.w, h = w * 10 / 16, cx = sp.x * DIWAN.w, cy = sp.y * DIWAN.h;
+    x0 = Math.min(x0, cx - w / 2); x1 = Math.max(x1, cx + w / 2); y0 = Math.min(y0, cy - h / 2); y1 = Math.max(y1, cy + h / 2);
+  }
+  let bw = x1 - x0, bh = y1 - y0;
+  if (spots.length === 1) { bw /= 0.4; bh *= 2.6; } else { bw *= 1.5; bh *= 1.8; }
+  const aspect = g.W / g.H;
+  if (bw / bh < aspect) bw = bh * aspect; else bh = bw / aspect;
+  // capped: past ~2.6x the 1140 px photo turns soft; the screens themselves stay sharp either way
+  const z = Math.max(1, Math.min(2.6, Math.min(g.W / (bw * g.k0), g.H / (bh * g.k0))));
+  let cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  const visW = g.W / (g.k0 * z), visH = g.H / (g.k0 * z);           // never show past the edge of the photo
+  cx = visW >= DIWAN.w ? DIWAN.w / 2 : Math.min(Math.max(cx, visW / 2), DIWAN.w - visW / 2);
+  cy = visH >= DIWAN.h ? DIWAN.h / 2 : Math.min(Math.max(cy, visH / 2), DIWAN.h - visH / 2);
+  return { cx, cy, z };
+}
+function aimCamera() {
+  const stage = $('stage'); if (!stage.classList.contains('diwan')) return;
+  const t = shotFor(autoCam ? director.focus : [], diwanGeom(stage));
+  cam.tx = t.cx; cam.ty = t.cy; cam.tz = t.z;
+  if (REDUCED_MOTION) { cam.cx = t.cx; cam.cy = t.cy; cam.z = t.z; applyCamera(); return; }
+  if (!cam.raf) { cam.last = performance.now(); cam.raf = requestAnimationFrame(stepCamera); }
+}
+function stepCamera(now) {
+  const dt = Math.min(100, now - cam.last); cam.last = now;
+  const a = 1 - Math.exp(-dt / 520);                               // a slow dolly, not a snap
+  cam.cx += (cam.tx - cam.cx) * a; cam.cy += (cam.ty - cam.cy) * a;
+  cam.z = Math.exp(Math.log(cam.z) + (Math.log(cam.tz) - Math.log(cam.z)) * a);   // zoom evenly in log space
+  applyCamera();
+  const done = Math.abs(cam.tx - cam.cx) < .3 && Math.abs(cam.ty - cam.cy) < .3 && Math.abs(cam.tz - cam.z) < .002;
+  if (done) { cam.cx = cam.tx; cam.cy = cam.ty; cam.z = cam.tz; applyCamera(); cam.raf = 0; }
+  else cam.raf = requestAnimationFrame(stepCamera);
+}
+// place the photo and every screen for the current camera
+function applyCamera() {
+  const stage = $('stage'); if (!stage.classList.contains('diwan')) return;
+  const g = diwanGeom(stage), k = g.k0 * cam.z;
+  const ox = g.W / 2 - cam.cx * k, oy = g.H / 2 - cam.cy * k;
+  stage.style.backgroundSize = `${DIWAN.w * k}px ${DIWAN.h * k}px`;
+  stage.style.backgroundPosition = `${ox}px ${oy}px`;
+  const seated = [[mySeat, selfTile], ...[...peers.values()].map(r => [r.seat, r.tile])];
+  for (const [seat, tile] of seated) {
+    if (!tile) continue;
+    const spot = DIWAN.spots[seat];
+    tile.classList.toggle('unseated', !spot);
+    if (!spot) continue;
+    tile.style.left = (ox + spot.x * DIWAN.w * k) + 'px';
+    tile.style.top = (oy + spot.y * DIWAN.h * k) + 'px';
+    tile.style.width = (spot.w * DIWAN.w * k) + 'px';
+    tile.style.setProperty('--ry', spot.ry + 'deg');
+  }
+}
+// Every quarter second: who is really talking? Hold each shot a moment so the room never jitters.
+function directorTick() {
+  const stage = $('stage');
+  if (!stage.classList.contains('diwan')) { clearInterval(director.timer); director.timer = 0; return; }
+  const now = performance.now();
+  const talking = [];
+  for (const seat of [...director.streak.keys()]) if (!peers.has(seat)) { director.streak.delete(seat); director.lastSpoke.delete(seat); }
+  peers.forEach(r => {
+    if (!DIWAN.spots[r.seat]) return;
+    const on = r.tile.classList.contains('speaking');
+    const n = on ? (director.streak.get(r.seat) || 0) + 1 : 0;
+    director.streak.set(r.seat, n);
+    if (n >= 3) { talking.push(r.seat); director.lastSpoke.set(r.seat, now); }   // three ticks: a voice, not a cough
+  });
+  let target;
+  if (!autoCam) target = [];
+  else if (talking.length) {
+    // the person talking, plus whoever spoke just before them: a conversation stays in one frame
+    const recent = [...director.lastSpoke].filter(([, t]) => now - t < 4000).sort((a, b) => b[1] - a[1]).map(([sn]) => sn);
+    target = [...new Set([...talking, ...recent])].slice(0, 2);
+  } else {
+    const last = Math.max(0, ...director.lastSpoke.values());
+    target = now - last < 3500 ? director.focus : [];                 // a pause holds the shot; silence returns to the room
+  }
+  const same = target.length === director.focus.length && target.every(sn => director.focus.includes(sn));
+  if (same) return;
+  if (director.focus.length && now - director.since < 2200) return;  // minimum shot length
+  director.focus = target; director.since = now;
+  aimCamera();
+}
+$('diwanBtn').addEventListener('click', () => {
+  viewMode = viewMode === 'diwan' ? 'grid' : 'diwan';
+  try { localStorage.setItem('paywandi-view', viewMode); } catch {}
+  syncViewButton(); layout();
+});
+function clearDiwan(stage) {
+  if (!stage.classList.contains('diwan')) return;
+  stage.classList.remove('diwan');
+  stage.style.removeProperty('--scene');
+  stage.style.backgroundSize = stage.style.backgroundPosition = '';
+  cancelAnimationFrame(cam.raf); cam.raf = 0;
+  clearInterval(director.timer); director.timer = 0; director.focus = [];
+  cam.cx = cam.tx = DIWAN.w / 2; cam.cy = cam.ty = DIWAN.h / 2; cam.z = cam.tz = 1;
+  [...stage.children].forEach(t => { t.style.left = t.style.top = t.style.width = ''; t.style.removeProperty('--ry'); t.classList.remove('unseated'); });
+}
+function layoutDiwan(stage) {
+  stage.classList.add('diwan');
+  stage.style.setProperty('--scene', `url("${DIWAN.img}")`);
+  if (!director.timer) director.timer = setInterval(directorTick, 250);
+  applyCamera();                                         // new people or a resized window: place everything now
+  aimCamera();                                           // and re-aim, since the best shot depends on the window shape
+}
+
 let spotSeat = null;
 function layout() {
   const stage = $('stage');
@@ -1195,11 +1367,14 @@ function layout() {
   if (!sharers.some(r => r.seat === spotSeat)) spotSeat = sharers.length ? sharers[sharers.length - 1].seat : null;
   peers.forEach(r => r.tile.classList.toggle('spot', r.seat === spotSeat));
   if (spotSeat !== null) {
+    clearDiwan(stage);                                   // a shared screen always gets the big presenter view
     stage.classList.add('present');
     stage.style.setProperty('--strip', Math.max(1, stage.children.length - 1));
     return;
   }
   stage.classList.remove('present');
+  if (viewMode === 'diwan' && diwanReady && mySeat >= 0) return layoutDiwan(stage);
+  clearDiwan(stage);
   const n = stage.children.length || 1;
   const w = stage.clientWidth || innerWidth, h = stage.clientHeight || innerHeight;
   // pick the column count that makes 16:9 tiles as large as possible in this space
@@ -1426,7 +1601,7 @@ function route() {
 
 route();
 
-window.__paywandi = { fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
