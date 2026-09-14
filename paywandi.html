@@ -131,6 +131,11 @@
       background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; z-index: 45; display: none;
       max-height: 60vh; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
     #bgPanel.on { display: block; }
+    .recdot { background: #b42318; color: #fff; border-radius: 6px; padding: 2px 7px; font-size: .72rem; font-weight: 800;
+      letter-spacing: .05em; white-space: nowrap; animation: recblink 1.6s ease-in-out infinite; }
+    @keyframes recblink { 50% { opacity: .55; } }
+    @media (prefers-reduced-motion: reduce) { .recdot { animation: none; } }
+    .bar button.recording { background: var(--danger); }
     .donate-mini { color: #fff; background: #0e7490; border-radius: 9px; padding: 6px 10px; font-size: .82rem; font-weight: 750;
       text-decoration: none; min-height: 34px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
     .donate-mini:hover { background: #0b5f76; }
@@ -238,6 +243,7 @@
     <span class="netdot" id="netDot" title="Connection"></span>
     <strong class="hide-sm">Paywandi</strong>
     <span class="mid" id="callMid" title="Meeting ID"></span>
+    <span class="recdot" id="recIndicator" hidden>● REC</span>
     <span class="grow muted" id="callStatus"></span>
     <span class="muted hide-sm" id="callTimer">00:00</span>
     <a class="donate-mini" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer"
@@ -256,6 +262,7 @@
     <button type="button" class="tog" id="micBtn" aria-pressed="true" title="Microphone">🎤<span class="lbl" id="micLbl">Mute</span></button>
     <button type="button" class="tog" id="camBtn" aria-pressed="true" title="Camera">📷<span class="lbl" id="camLbl">Stop video</span></button>
     <button type="button" id="flipBtn" title="Switch camera" style="display:none">🔄<span class="lbl">Flip</span></button>
+    <button type="button" id="recBtn" title="Record this call">⏺<span class="lbl" id="recLbl">Record</span></button>
     <button type="button" class="act" id="screenBtn" aria-pressed="false" title="Share screen">🖥️<span class="lbl" id="screenLbl">Share screen</span></button>
     <button type="button" class="view" id="diwanBtn" aria-pressed="false" title="Switch between the diwan room and the grid" style="display:none">🛋️<span class="lbl">Diwan</span></button>
     <button type="button" class="view" id="autoCamBtn" aria-pressed="true" title="Camera follows whoever is speaking" style="display:none">🎥<span class="lbl">Auto camera</span></button>
@@ -306,8 +313,11 @@ const ROOM_RE = /^[a-z2-9]{12}$/;  // what an invite link carries after the #
 // exists, so relays are configured here: paste relay credentials (e.g. ExpressTURN's free plan) into
 // TURN_SERVERS as { urls: [...], username: '...', credential: '...' }.
 const TURN_SERVERS = [];
-const ICE_SERVERS = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun.cloudflare.com:3478'] }, ...TURN_SERVERS];
-const REACH_MS = 12000;            // someone answered the knock but no connection formed in this long: unreachable
+// With no relay configured, PeerJS keeps its own defaults exactly as the first version did.
+const PEER_OPTIONS = TURN_SERVERS.length
+  ? { debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, ...TURN_SERVERS], sdpSemantics: 'unified-plan' } }
+  : { debug: 0 };
+const REACH_MS = 25000;            // only a label: after this long with no connection, show the person as unreachable
 const RESCAN_MS = 4000;            // how often to look for people who took a lower seat after us
 const PENDING_MS = 12000;          // give up on an unanswered connection attempt after this
 const NAME_KEY = 'paywandi-name';
@@ -934,10 +944,11 @@ $('joinBtn').addEventListener('click', () => {
 async function shareInvite() {
   const url = inviteUrl();
   if (isMobile && navigator.share) {
-    try { await navigator.share({ title: 'Paywandi', text: `Join my Paywandi call \u2014 Meeting ID: ${formatId(room)}`, url }); return; }
+    // url only: share targets that keep just the text (or "Copy") would otherwise drop the link
+    try { await navigator.share({ url }); return; }
     catch (e) { if (e.name === 'AbortError') return; }
   }
-  try { await navigator.clipboard.writeText(inviteText()); toast('Invite copied \u2014 link and meeting ID'); }
+  try { await navigator.clipboard.writeText(url); toast('Invite link copied'); }
   catch { $('inviteInput').select(); document.execCommand?.('copy'); toast('Invite link selected — copy it'); }
 }
 
@@ -972,7 +983,7 @@ function claimSeat(seat) {
     $('lobbyMsg').textContent = `This call is full (${MAX_PEOPLE} people).`; $('lobbyMsg').className = 'warn';
     return;
   }
-  const p = new Peer(seatId(seat), { debug: 0, config: { iceServers: ICE_SERVERS } });
+  const p = new Peer(seatId(seat), PEER_OPTIONS);
   let settled = false;
   // once: PeerJS fires 'open' again after every broker reconnect, which must not re-enter the call
   p.once('open', () => { settled = true; peer = p; mySeat = seat; enterCall(); });
@@ -1020,7 +1031,6 @@ function enterCall() {
  * knocked on) but no connection forms, show their tile marked as unreachable, and say why.         */
 const ghosts = new Map();          // seat -> { name, tile, lastTry }
 const unavailableAt = new Map();   // seat -> when the broker said nobody sits there
-const dialConns = new Map();       // seat -> our latest outgoing attempt
 let reachTipShown = false;
 function watchReach(seat, conn, name) {
   const started = Date.now();
@@ -1064,10 +1074,9 @@ function rescan() {
 function dial(seat) {
   if (!peer || peer.destroyed || peer.disconnected) return;
   pending.set(seat, Date.now());
-  const prev = dialConns.get(seat);
-  if (prev && !prev.open) { try { prev.close(); } catch {} }            // a stale attempt: free it before retrying
+  // As in the first version, an earlier attempt is never closed: between networks a connection can take
+  // longer than the retry interval, and closing slow attempts meant none ever finished.
   const conn = peer.connect(seatId(seat), { reliable: true, metadata: { name: myName } });
-  dialConns.set(seat, conn);
   wireConn(conn, seat, true);
   watchReach(seat, conn, ghosts.get(seat)?.name);
 }
@@ -1141,7 +1150,7 @@ function onPeerError(err) {
 }
 
 /* ------------------------------------------------------------ data channel --- */
-function helloMsg() { return { t: 'hello', cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
+function helloMsg() { return { t: 'hello', rec: recording(), cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
 function send(rec, msg) { try { if (rec.conn?.open) rec.conn.send(msg); } catch {} }
 function broadcast(msg) { peers.forEach(r => send(r, msg)); }
 function broadcastState() { const m = helloMsg(); m.t = 'state'; broadcast(m); }
@@ -1157,6 +1166,8 @@ function onData(seat, conn, data) {
       if (isFinite(data.since) && data.since <= Date.now() + 60000 && data.since > Date.now() - 172800000) rec.since = +data.since;
       if (rec.cid && rec.since) touch(rec.cid, rec.name, rec.since, Date.now());
       rec.mic = !!data.mic; rec.cam = !!data.cam;
+      if (data.rec && !othersRecording.has(seat)) { othersRecording.set(seat, rec.name); syncRecIndicator(); toast(`${rec.name} is recording this call`, 5000); }
+      else if (!data.rec && othersRecording.has(seat)) { othersRecording.delete(seat); syncRecIndicator(); }
       if (data.t === 'hello' && !rec.joined) { rec.joined = true; if (Date.now() - joinedAt > 1500) toast(`${rec.name} joined`); }
       if (data.screen && !rec.screen) toast(`${rec.name} is sharing their screen`);
       rec.screen = !!data.screen;
@@ -1167,6 +1178,11 @@ function onData(seat, conn, data) {
       break;
     case 'chat':
       addChat(rec.name, String(data.text || '').slice(0, 1000), false);
+      break;
+    case 'rec':
+      if (data.on) { if (!othersRecording.has(seat)) toast(`${rec.name} started recording this call`, 5000); othersRecording.set(seat, rec.name); }
+      else if (othersRecording.delete(seat)) toast(`${rec.name} stopped recording`, 3500);
+      syncRecIndicator();
       break;
     case 'bye':
       leaveNotice(seat);
@@ -1233,6 +1249,7 @@ function enlarge(tile) {
 }
 function attachRemote(rec, stream) {
   if (rec.video.srcObject !== stream) rec.video.srcObject = stream;
+  if (callRec.dest) addToRecording(rec.seat, stream);   // someone joined mid-recording: their voice joins the mix
   rec.tile.classList.remove('connecting');
   playWithSound(rec.video);
   if (!rec.levelWatched && stream.getAudioTracks().length) { rec.levelWatched = true; watchLevel(rec.tile, stream, () => rec.mic); }
@@ -1249,6 +1266,7 @@ $('soundBtn').addEventListener('click', () => {
 
 function dropPeer(seat, silent) {
   const rec = peers.get(seat); if (!rec) return;
+  if (othersRecording.delete(seat)) syncRecIndicator();
   if (rec.cid && rec.since && rec.joined) touch(rec.cid, rec.name, rec.since, Date.now());   // last moment they were here
   peers.delete(seat); pending.delete(seat);
   try { rec.call?.close(); } catch {}
@@ -1611,14 +1629,137 @@ function tick() {
   $('callTimer').textContent = (hh ? hh + ':' : '') + String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
 }
 
+/* ---------------------------------------------------------------- recording --- *
+ * Like Tomar, the picture is the screen (Chrome offers this tab first). The sound is not taken from the
+ * screen: every voice is mixed straight from the call, plus your own microphone, so it works in every
+ * browser and never records echo. Everyone in the call is told while a recording runs.            */
+const callRec = { recorder: null, chunks: [], display: null, dest: null, sources: new Map(), started: 0,
+  timer: 0, watchdog: 0, candidates: [], idx: 0, sawData: false };
+const othersRecording = new Map();   // seat -> name of someone else who is recording
+const REC_FIRST_DATA_MS = 2500;
+function recording() { return !!callRec.recorder && callRec.recorder.state !== 'inactive'; }
+function recMimeCandidates() {
+  const list = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm',
+    'video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4'].filter(t => MediaRecorder.isTypeSupported?.(t));
+  list.push('');
+  return list;
+}
+function addToRecording(key, stream) {
+  if (!callRec.dest || !stream || !stream.getAudioTracks().length) return;
+  const c = ctx(); if (!c) return;
+  try { callRec.sources.get(key)?.disconnect(); } catch {}
+  try { const src = c.createMediaStreamSource(stream); src.connect(callRec.dest); callRec.sources.set(key, src); } catch {}
+}
+function syncRecIndicator() {
+  const mine = recording();
+  const names = [...othersRecording.values()];
+  const ind = $('recIndicator');
+  ind.hidden = !mine && !names.length;
+  ind.title = [mine ? 'You are recording' : '', ...names.map(n => `${n} is recording`)].filter(Boolean).join(' \u00b7 ');
+  $('recBtn').classList.toggle('recording', mine);
+  if (mine) {
+    const sec = Math.floor((Date.now() - callRec.started) / 1000);
+    $('recLbl').textContent = `Stop ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+  } else $('recLbl').textContent = 'Record';
+}
+function beginCallRecorder(stream) {
+  while (callRec.idx < callRec.candidates.length) {
+    const mimeType = callRec.candidates[callRec.idx];
+    const options = { videoBitsPerSecond: 4_000_000, audioBitsPerSecond: 128_000 };
+    if (mimeType) options.mimeType = mimeType;
+    let r;
+    try { r = new MediaRecorder(stream, options); } catch { callRec.idx++; continue; }
+    callRec.sawData = false;
+    r.ondataavailable = e => { if (e.data?.size) { callRec.sawData = true; clearTimeout(callRec.watchdog); callRec.chunks.push(e.data); } };
+    r.onstop = () => { if (!r.__abandoned) finishCallRecording(r); };
+    try { r.start(1000); } catch { callRec.idx++; continue; }
+    callRec.recorder = r;
+    clearTimeout(callRec.watchdog);
+    callRec.watchdog = setTimeout(() => {
+      // a format that claims support but produces nothing: abandon it and try the next (a lesson from Tomar)
+      if (callRec.sawData || r.state === 'inactive') return;
+      r.__abandoned = true; try { r.stop(); } catch {}
+      callRec.chunks = []; callRec.idx++;
+      if (!beginCallRecorder(stream)) { toast('This browser could not produce a recording.'); cleanupRecording(); }
+    }, REC_FIRST_DATA_MS);
+    return true;
+  }
+  return false;
+}
+async function startCallRecording() {
+  if (recording()) return stopCallRecording();
+  if (!canScreen || typeof MediaRecorder === 'undefined') {
+    toast(isMobile
+      ? "Phones don't let web pages record the screen. Use the built-in recorder: Control Centre on iPhone, Quick Settings on Android."
+      : 'This browser cannot record the screen. Try current Chrome or Edge.', 8000);
+    return;
+  }
+  let display;
+  try {
+    display = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: 30 }, audio: false,
+      preferCurrentTab: true, selfBrowserSurface: 'include', surfaceSwitching: 'exclude' });
+  } catch (e) {
+    if (e.name !== 'NotAllowedError' && e.name !== 'AbortError') toast('Could not start recording.');
+    return;
+  }
+  const c = ctx();
+  callRec.display = display;
+  callRec.dest = c ? c.createMediaStreamDestination() : null;
+  callRec.chunks = []; callRec.sources.clear();
+  addToRecording('self', micTrack ? new MediaStream([micTrack]) : null);
+  peers.forEach(r => addToRecording(r.seat, r.video.srcObject));
+  const tracks = [display.getVideoTracks()[0]];
+  if (callRec.dest) tracks.push(callRec.dest.stream.getAudioTracks()[0]);
+  display.getVideoTracks()[0].addEventListener('ended', stopCallRecording);   // the browser's own "Stop sharing"
+  callRec.candidates = recMimeCandidates(); callRec.idx = 0;
+  if (!beginCallRecorder(new MediaStream(tracks))) { toast('This browser cannot record video.'); cleanupRecording(); return; }
+  callRec.started = Date.now();
+  callRec.timer = setInterval(syncRecIndicator, 1000);
+  syncRecIndicator();
+  broadcast({ t: 'rec', on: true });
+  toast('Recording \u2014 everyone in the call can see that you are recording', 4500);
+}
+function stopCallRecording() {
+  const r = callRec.recorder;
+  if (r && r.state !== 'inactive') { try { r.requestData(); } catch {} try { r.stop(); } catch {} }
+  else cleanupRecording();
+}
+function cleanupRecording() {
+  clearInterval(callRec.timer); clearTimeout(callRec.watchdog);
+  callRec.display?.getTracks().forEach(t => t.stop());
+  callRec.sources.forEach(src => { try { src.disconnect(); } catch {} });
+  callRec.sources.clear();
+  callRec.display = null; callRec.dest = null; callRec.recorder = null;
+  syncRecIndicator();
+  broadcast({ t: 'rec', on: false });
+}
+function finishCallRecording(r) {
+  const type = r.mimeType || callRec.candidates[callRec.idx] || 'video/webm';
+  const blob = new Blob(callRec.chunks, { type });
+  const started = callRec.started;
+  callRec.chunks = [];
+  cleanupRecording();
+  if (!blob.size) { toast('The recording came out empty, so nothing was saved.'); return; }
+  const ext = type.includes('mp4') ? 'mp4' : 'webm';
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `paywandi-${formatId(room || 'call')}-${ymd(started)}-${hhmm(started).replace(':', '')}.${ext}`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  toast(`Recording saved \u2014 ${(blob.size / 1048576).toFixed(1)} MB`, 4500);
+}
+$('recBtn').addEventListener('click', startCallRecording);
+addEventListener('beforeunload', e => { if (recording()) { e.preventDefault(); e.returnValue = ''; } });
+
 /* leaving */
 function leave(final) {
+  if (recording()) stopCallRecording();            // save what was recorded before the call is torn down
   leaving = true;
   attTick(true);                                   // hand the final register to whoever stays
   broadcast({ t: 'bye' });
   clearInterval(rescanId); clearInterval(timerId); clearInterval(attTickId);
   [...peers.keys()].forEach(s => dropPeer(s, true));
-  [...ghosts.keys()].forEach(removeGhost); unavailableAt.clear(); dialConns.clear(); reachTipShown = false;
+  [...ghosts.keys()].forEach(removeGhost); unavailableAt.clear(); reachTipShown = false;
   selfTile?.__stopLevel?.(); selfTile?.remove(); selfTile = null;
   try { peer?.destroy(); } catch {}
   peer = null; mySeat = -1; pending.clear();
@@ -1667,7 +1808,7 @@ function route() {
 
 route();
 
-window.__paywandi = { ghosts, ICE_SERVERS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
