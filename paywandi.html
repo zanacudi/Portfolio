@@ -387,7 +387,12 @@ const ROOM_RE = /^[a-z2-9]{12}$/;  // what an invite link carries after the #
 // direct path, audio and video must go through a TURN relay instead. PeerJS's built-in relay no longer
 // exists, so relays are configured here: paste relay credentials (e.g. ExpressTURN's free plan) into
 // TURN_SERVERS as { urls: [...], username: '...', credential: '...' }.
-const TURN_SERVERS = [];
+const TURN_SERVERS = [
+  // ExpressTURN free plan (relay in Paris). UDP first, TCP for networks that block UDP.
+  // These are public in this page by necessity; if they are ever abused, reset them in the ExpressTURN dashboard.
+  { urls: ['turn:free.expressturn.com:3478', 'turn:free.expressturn.com:3478?transport=tcp'],
+    username: '000000002104841641', credential: 'vXpGGw3UD+/DbqkSdaV4DDJL3Bc=' },
+];
 // With no relay configured, PeerJS keeps its own defaults exactly as the first version did.
 const PEER_OPTIONS = TURN_SERVERS.length
   ? { debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, ...TURN_SERVERS], sdpSemantics: 'unified-plan' } }
