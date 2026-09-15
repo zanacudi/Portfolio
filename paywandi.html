@@ -113,9 +113,11 @@
       background-repeat: no-repeat; perspective: 1100px; overflow: hidden; }
     #stage.diwan .tile { position: absolute; aspect-ratio: 16 / 10; min-height: 0; border: 3px solid #17110c; border-radius: 9px;
       transform: translate(-50%, -50%) rotateY(var(--ry, 0deg)) scale(var(--boost, 1)); transform-origin: 50% 50%;
-      transition: transform .6s ease; z-index: var(--z, 1);
+      z-index: var(--z, 1);
       box-shadow: 0 14px 18px -6px rgba(0,0,0,.65), 0 0 0 1px rgba(255,235,200,.12); }
     #stage.diwan .tile.speaking { border-color: var(--ok); }
+    #stage.diwan::before { content: ""; position: absolute; inset: 0; background: #05070b; opacity: var(--dim, 0);
+      pointer-events: none; z-index: 2; }
     #stage.diwan .tile .tag { font-size: .68rem; padding: 2px 6px; left: 4px; bottom: 4px; }
     #stage.diwan .tile .initials { width: 38%; font-size: clamp(.8rem, 2.2vw, 1.6rem); }
     #stage.diwan .tile .state, #stage.diwan .tile .enlarge { display: none; }
@@ -307,6 +309,7 @@
     <button type="button" class="view sec" id="diwanBtn" aria-pressed="false" title="Switch between the diwan room and the grid" style="display:none">🛋️<span class="lbl">Diwan</span></button>
     <button type="button" class="view sec" id="autoCamBtn" aria-pressed="true" title="Camera follows whoever is speaking" style="display:none">🎥<span class="lbl">Auto camera</span></button>
     <button type="button" class="sec" id="netBtn" title="Check whether your network can connect calls">🩺<span class="lbl">Connection check</span></button>
+    <button type="button" class="view sec" id="voiceBtn" aria-pressed="true" title="Make your voice louder for everyone">📢<span class="lbl" id="voiceLbl">Voice: loud</span></button>
     <button type="button" class="view sec" id="saverBtn" aria-pressed="false" title="Data saver: lighter video for slow or costly connections">📶<span class="lbl">Data saver</span></button>
     <button type="button" class="sec" id="bgBtn" title="Background filters">🖼️<span class="lbl">Background</span></button>
     <button type="button" class="sec" id="attBtn" title="Download attendance (CSV)" style="display:none">📋<span class="lbl">Attendance</span></button>
@@ -680,6 +683,53 @@ $('saverBtn').addEventListener('click', () => {
 });
 syncSaverButton();
 
+/* ------------------------------------------------------------ voice boost --- *
+ * Browsers cannot pick a phone's loudspeaker, and boosting playback on the listener's side would bypass
+ * echo cancellation. So the voice is made louder where it starts: the microphone (already cleaned of
+ * echo by the browser) goes through a gain and a limiter before it is sent, so everyone hears it louder
+ * on any speaker without distortion. If the audio engine is ever suspended the raw microphone is sent.  */
+const VOICE_LEVELS = [
+  { id: 'normal', gain: 1, label: 'Voice: normal' },
+  { id: 'loud', gain: 2.2, label: 'Voice: loud' },
+  { id: 'louder', gain: 3.5, label: 'Voice: louder' },
+];
+let voiceLevel = VOICE_LEVELS[1];
+try { const v = localStorage.getItem('paywandi-voice'); const f = VOICE_LEVELS.find(x => x.id === v); if (f) voiceLevel = f; } catch {}
+const voice = { forTrack: null, src: null, gain: null, limiter: null, dest: null };
+function voiceTrack() {
+  if (!micTrack || voiceLevel.gain === 1) return null;
+  const c = ctx();
+  if (!c || c.state !== 'running') return null;               // never send silence because the engine is asleep
+  if (voice.forTrack !== micTrack) {
+    try { voice.src?.disconnect(); } catch {}
+    voice.src = c.createMediaStreamSource(new MediaStream([micTrack]));
+    voice.gain = voice.gain || c.createGain();
+    if (!voice.limiter) {
+      voice.limiter = c.createDynamicsCompressor();          // a limiter: loud, never clipped
+      voice.limiter.threshold.value = -12; voice.limiter.knee.value = 6; voice.limiter.ratio.value = 12;
+      voice.limiter.attack.value = 0.003; voice.limiter.release.value = 0.2;
+      voice.dest = c.createMediaStreamDestination();
+      voice.gain.connect(voice.limiter).connect(voice.dest);
+    }
+    voice.src.connect(voice.gain);
+    voice.forTrack = micTrack;
+  }
+  voice.gain.gain.value = voiceLevel.gain;
+  return voice.dest.stream.getAudioTracks()[0];
+}
+function syncVoiceButton() {
+  $('voiceBtn').setAttribute('aria-pressed', String(voiceLevel.gain > 1));
+  $('voiceLbl').textContent = voiceLevel.label;
+}
+function resendAudio() { if (typeof peer !== 'undefined' && peer && !mixDest) replaceOutgoing('audio', outgoingAudio()); }
+$('voiceBtn').addEventListener('click', () => {
+  voiceLevel = VOICE_LEVELS[(VOICE_LEVELS.indexOf(voiceLevel) + 1) % VOICE_LEVELS.length];
+  try { localStorage.setItem('paywandi-voice', voiceLevel.id); } catch {}
+  syncVoiceButton(); resendAudio();
+  toast(voiceLevel.gain > 1 ? `${voiceLevel.label} \u2014 everyone hears you louder` : 'Voice: normal');
+});
+syncVoiceButton();
+
 /* ------------------------------------------------------- connection check --- *
  * Asks two public STUN servers what address this device appears from. If the network hands out a
  * different public port for each server, it is a "symmetric" (carrier-grade) NAT, common on mobile data:
@@ -1041,8 +1091,10 @@ let micTrack = null, camTrack = null, screenTrack = null;
 let micOn = true, camOn = true, facing = 'user';
 let audioCtx = null, silentTrack = null, blankTrack = null;
 
+let ctxWatched = false;
 function ctx() {
   if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
+  if (audioCtx && !ctxWatched) { ctxWatched = true; audioCtx.addEventListener('statechange', () => resendAudio()); }
   if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
   return audioCtx;
 }
@@ -1067,7 +1119,7 @@ function getBlankTrack() {
 }
 function outgoingVideo() { return screenTrack || camView() || getBlankTrack(); }
 let screenAudio = null, mixDest = null, mixNodes = [];
-function outgoingAudio() { return (mixDest && mixDest.stream.getAudioTracks()[0]) || micTrack || getSilentTrack(); }
+function outgoingAudio() { return (mixDest && mixDest.stream.getAudioTracks()[0]) || voiceTrack() || micTrack || getSilentTrack(); }
 function outgoingStream() {
   const tracks = [outgoingAudio(), outgoingVideo()].filter(Boolean);
   return new MediaStream(tracks);
@@ -1868,6 +1920,9 @@ const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let autoCam = !REDUCED_MOTION;
 try { const v = localStorage.getItem('paywandi-autocam'); if (v) autoCam = v === 'on'; } catch {}
 const cam = { cx: DIWAN.w / 2, cy: DIWAN.h / 2, z: 1, tx: DIWAN.w / 2, ty: DIWAN.h / 2, tz: 1, raf: 0, last: 0 };
+// how far each person's screen has come off its cushion (0 seated .. 1 close-up), and where it was heading
+const closeness = new Map(), lastSlot = new Map();
+function closeTarget(seat) { return autoCam && director.focus.includes(seat) ? 1 : 0; }
 const director = { focus: [], since: 0, streak: new Map(), lastSpoke: new Map(), timer: 0 };
 $('autoCamBtn').addEventListener('click', () => {
   autoCam = !autoCam;
@@ -1907,16 +1962,28 @@ function aimCamera() {
   const stage = $('stage'); if (!stage.classList.contains('diwan')) return;
   const t = shotFor(autoCam ? director.focus : [], diwanGeom(stage));
   cam.tx = t.cx; cam.ty = t.cy; cam.tz = t.z;
-  if (REDUCED_MOTION) { cam.cx = t.cx; cam.cy = t.cy; cam.z = t.z; applyCamera(); return; }
+  if (REDUCED_MOTION) {
+    cam.cx = t.cx; cam.cy = t.cy; cam.z = t.z;
+    for (const sn of new Set([...closeness.keys(), ...director.focus])) closeness.set(sn, closeTarget(sn));
+    applyCamera(); return;
+  }
   if (!cam.raf) { cam.last = performance.now(); cam.raf = requestAnimationFrame(stepCamera); }
 }
 function stepCamera(now) {
-  const dt = Math.min(100, now - cam.last); cam.last = now;
+  // real elapsed time (up to 1 s): a slow or busy device still finishes the move on time instead of crawling
+  const dt = Math.min(1000, Math.max(0, now - cam.last)); cam.last = now;
   const a = 1 - Math.exp(-dt / 520);                               // a slow dolly, not a snap
   cam.cx += (cam.tx - cam.cx) * a; cam.cy += (cam.ty - cam.cy) * a;
   cam.z = Math.exp(Math.log(cam.z) + (Math.log(cam.tz) - Math.log(cam.z)) * a);   // zoom evenly in log space
+  let settled = true;
+  for (const sn of new Set([...closeness.keys(), ...(autoCam ? director.focus : [])])) {
+    const v = closeness.get(sn) || 0, tv = closeTarget(sn);
+    const nv = v + (tv - v) * a;
+    closeness.set(sn, Math.abs(tv - nv) < .002 ? tv : nv);
+    if (Math.abs(tv - nv) >= .002) settled = false;
+  }
   applyCamera();
-  const done = Math.abs(cam.tx - cam.cx) < .3 && Math.abs(cam.ty - cam.cy) < .3 && Math.abs(cam.tz - cam.z) < .002;
+  const done = settled && Math.abs(cam.tx - cam.cx) < .3 && Math.abs(cam.ty - cam.cy) < .3 && Math.abs(cam.tz - cam.z) < .002;
   if (done) { cam.cx = cam.tx; cam.cy = cam.ty; cam.z = cam.tz; applyCamera(); cam.raf = 0; }
   else cam.raf = requestAnimationFrame(stepCamera);
 }
@@ -1928,19 +1995,45 @@ function applyCamera() {
   stage.style.backgroundSize = `${DIWAN.w * k}px ${DIWAN.h * k}px`;
   stage.style.backgroundPosition = `${ox}px ${oy}px`;
   const seated = [[mySeat, selfTile], ...[...peers.values()].map(r => [r.seat, r.tile]), ...[...ghosts].map(([sn, g]) => [sn, g.tile])];
-  const focus = new Set(autoCam ? director.focus : []);
+  // Close-up: the speaker's screen leaves its cushion and fills the frame (two people share it side by side),
+  // while the room stays visible, dimmed, behind them.
+  const focusSeats = (autoCam ? director.focus : []).filter(sn => DIWAN.spots[sn]).sort((a, b) => DIWAN.spots[a].x - DIWAN.spots[b].x).slice(0, 2);
+  const slot = new Map();
+  if (focusSeats.length) {
+    const n = focusSeats.length;
+    // take the shape of the call area itself: close to edge to edge on a laptop as well as on a phone
+    const tw = g.W * (n === 1 ? 0.94 : 0.475), th = g.H * 0.9;
+    focusSeats.forEach((sn, i) => slot.set(sn, { cx: n === 1 ? g.W / 2 : g.W * (i === 0 ? 0.26 : 0.74), cy: g.H / 2, w: tw, h: th }));
+  }
+  focusSeats.forEach(sn => lastSlot.set(sn, slot.get(sn)));        // remember where a leaving speaker was, to glide back from
+  stage.style.setProperty('--dim', (0.6 * Math.max(0, ...closeness.values())).toFixed(3));
   for (const [seat, tile] of seated) {
     if (!tile) continue;
     const spot = DIWAN.spots[seat];
     tile.classList.toggle('unseated', !spot);
     if (!spot) continue;
-    const on = focus.has(seat);
-    tile.style.left = (ox + spot.x * DIWAN.w * k) + 'px';
-    tile.style.top = (oy + spot.y * DIWAN.h * k) + 'px';
-    tile.style.width = (spot.w * DIWAN.w * k) + 'px';
-    tile.style.setProperty('--ry', (on ? spot.ry * 0.35 : spot.ry) + 'deg');   // the speaker turns towards the camera
-    tile.style.setProperty('--boost', on ? boostFor(spot) : 1);                // and comes a little closer
-    tile.style.setProperty('--z', on ? 2 : 1);
+    const seatX = ox + spot.x * DIWAN.w * k, seatY = oy + spot.y * DIWAN.h * k, seatW = spot.w * DIWAN.w * k;
+    const c = closeness.get(seat) || 0;
+    const sl = slot.get(seat) || lastSlot.get(seat);
+    if (!slot.has(seat) && c === 0) { closeness.delete(seat); lastSlot.delete(seat); }
+    if (sl && c > 0) {
+      tile.style.left = (seatX + (sl.cx - seatX) * c) + 'px';
+      tile.style.top = (seatY + (sl.cy - seatY) * c) + 'px';
+      tile.style.width = (seatW + (sl.w - seatW) * c) + 'px';
+      tile.style.aspectRatio = 'auto';
+      tile.style.height = (seatW * 10 / 16 + (sl.h - seatW * 10 / 16) * c) + 'px';
+      tile.style.setProperty('--ry', (spot.ry * (1 - c)) + 'deg');          // turns to face the camera
+      tile.style.setProperty('--boost', 1 + (boostFor(spot) - 1) * (1 - c));
+      tile.style.setProperty('--z', 3);                                     // above the dimmed room
+    } else {
+      tile.style.left = seatX + 'px';
+      tile.style.top = seatY + 'px';
+      tile.style.width = seatW + 'px';
+      tile.style.height = ''; tile.style.aspectRatio = '';
+      tile.style.setProperty('--ry', spot.ry + 'deg');
+      tile.style.setProperty('--boost', 1);
+      tile.style.setProperty('--z', 1);
+    }
   }
 }
 // Every quarter second: who is really talking? Hold each shot a moment so the room never jitters.
@@ -1949,14 +2042,17 @@ function directorTick() {
   if (!stage.classList.contains('diwan')) { clearInterval(director.timer); director.timer = 0; return; }
   const now = performance.now();
   const talking = [];
-  for (const seat of [...director.streak.keys()]) if (!peers.has(seat)) { director.streak.delete(seat); director.lastSpoke.delete(seat); }
-  peers.forEach(r => {
-    if (!DIWAN.spots[r.seat]) return;
-    const on = r.tile.classList.contains('speaking');
-    const n = on ? (director.streak.get(r.seat) || 0) + 1 : 0;
-    director.streak.set(r.seat, n);
-    if (n >= 3) { talking.push(r.seat); director.lastSpoke.set(r.seat, now); }   // three ticks: a voice, not a cough
-  });
+  for (const seat of [...director.streak.keys()]) if (seat !== mySeat && !peers.has(seat)) { director.streak.delete(seat); director.lastSpoke.delete(seat); }
+  // everyone who can be seen talking, you included, so the manager's own voice brings them up close too
+  const speakers = [...peers.values()].map(r => [r.seat, r.tile]);
+  if (selfTile && mySeat >= 0) speakers.push([mySeat, selfTile]);
+  for (const [seat, tile] of speakers) {
+    if (!DIWAN.spots[seat]) continue;
+    const on = tile.classList.contains('speaking');
+    const n = on ? (director.streak.get(seat) || 0) + 1 : 0;
+    director.streak.set(seat, n);
+    if (n >= 3) { talking.push(seat); director.lastSpoke.set(seat, now); }   // three ticks: a voice, not a cough
+  }
   let target;
   if (!autoCam) target = [];
   else if (talking.length) {
@@ -1986,8 +2082,9 @@ function clearDiwan(stage) {
   stage.style.backgroundSize = stage.style.backgroundPosition = '';
   cancelAnimationFrame(cam.raf); cam.raf = 0;
   clearInterval(director.timer); director.timer = 0; director.focus = [];
-  cam.cx = cam.tx = DIWAN.w / 2; cam.cy = cam.ty = DIWAN.h / 2; cam.z = cam.tz = 1;
-  [...stage.children].forEach(t => { t.style.left = t.style.top = t.style.width = ''; t.style.removeProperty('--ry'); t.classList.remove('unseated'); });
+  cam.cx = cam.tx = DIWAN.w / 2; cam.cy = cam.ty = DIWAN.h / 2; cam.z = cam.tz = 1; closeness.clear(); lastSlot.clear();
+  stage.style.removeProperty('--dim');
+  [...stage.children].forEach(t => { t.style.left = t.style.top = t.style.width = t.style.height = t.style.aspectRatio = ''; t.style.removeProperty('--ry'); t.classList.remove('unseated'); });
 }
 function layoutDiwan(stage) {
   stage.classList.add('diwan');
@@ -2126,7 +2223,8 @@ $('screenBtn').addEventListener('click', async () => {
   if (c) {
     // mix the shared sound with the microphone into one outgoing track; muting still silences the mic
     mixDest = c.createMediaStreamDestination();
-    if (micTrack) { const m = c.createMediaStreamSource(new MediaStream([micTrack])); m.connect(mixDest); mixNodes.push(m); }
+    const mic = voiceTrack() || micTrack;                   // a boosted voice stays boosted while presenting
+    if (mic) { const m = c.createMediaStreamSource(new MediaStream([mic])); m.connect(mixDest); mixNodes.push(m); }
     const a = c.createMediaStreamSource(new MediaStream([screenAudio])); a.connect(mixDest); mixNodes.push(a);
     replaceOutgoing('audio', mixDest.stream.getAudioTracks()[0]);
   }
@@ -2382,7 +2480,7 @@ function route() {
 route();
 showInAppGuide();
 
-window.__paywandi = { probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
