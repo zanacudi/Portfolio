@@ -165,6 +165,14 @@
     #stage.diwan .tile .mgrbtn { top: 3px; left: 3px; width: 24px; min-height: 22px; font-size: .8rem; border-radius: 6px; }
     .tile .crown { display: none; }
     .tile.manager .crown { display: inline; }
+    .tile .ctlbadge { display: none; }
+    .tile.has-control .ctlbadge { display: inline; }
+    .overlay { position: fixed; inset: 0; z-index: 90; background: rgba(8,12,18,.95); display: flex; align-items: center;
+      justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px 16px; overflow-y: auto; }
+    .overlay h2 { margin: 0 0 6px; font-size: 1.25rem; }
+    .overlay .steps { margin: 12px 0 4px; padding-left: 22px; line-height: 1.55; font-size: .95rem; }
+    .overlay .row a { flex: 1 1 auto; text-align: center; text-decoration: none; color: #fff; background: var(--accent);
+      border-radius: 11px; padding: 12px 16px; font-weight: 750; }
     #mgrMenu { position: fixed; z-index: 70; background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
       padding: 6px; min-width: 230px; box-shadow: 0 14px 36px rgba(0,0,0,.55); }
     #mgrMenu .who { font-size: .76rem; color: var(--muted); padding: 5px 10px 7px; }
@@ -289,6 +297,7 @@
     <button type="button" class="act sec" id="screenBtn" aria-pressed="false" title="Share screen">🖥️<span class="lbl" id="screenLbl">Share screen</span></button>
     <button type="button" class="view sec" id="diwanBtn" aria-pressed="false" title="Switch between the diwan room and the grid" style="display:none">🛋️<span class="lbl">Diwan</span></button>
     <button type="button" class="view sec" id="autoCamBtn" aria-pressed="true" title="Camera follows whoever is speaking" style="display:none">🎥<span class="lbl">Auto camera</span></button>
+    <button type="button" class="view sec" id="saverBtn" aria-pressed="false" title="Data saver: lighter video for slow or costly connections">📶<span class="lbl">Data saver</span></button>
     <button type="button" class="sec" id="bgBtn" title="Background filters">🖼️<span class="lbl">Background</span></button>
     <button type="button" class="sec" id="attBtn" title="Download attendance (CSV)" style="display:none">📋<span class="lbl">Attendance</span></button>
     <button type="button" id="moreBtn" aria-expanded="false" title="More controls">⋯<span class="lbl">More</span></button>
@@ -319,6 +328,24 @@
 </div>
 <input type="file" id="bgFile" accept="image/*" hidden>
 <button type="button" class="primary" id="soundBtn">Tap to turn on call sound</button>
+<div id="inAppBox" class="overlay" role="dialog" aria-labelledby="inAppTitle" hidden>
+  <div class="box">
+    <h2 id="inAppTitle">Open Paywandi in your browser</h2>
+    <p class="muted" id="inAppWhy"></p>
+    <div class="row" id="inAppActions"></div>
+    <ol class="steps" id="inAppSteps"></ol>
+    <div class="linkbox"><input id="inAppLink" readonly aria-label="Link to this page"><button type="button" id="inAppCopy">Copy link</button></div>
+    <div class="row"><button type="button" id="inAppStay">Continue here anyway</button></div>
+  </div>
+</div>
+<div id="copyBox" class="overlay" role="dialog" aria-labelledby="copyTitle" hidden>
+  <div class="box">
+    <h2 id="copyTitle">Copy this link</h2>
+    <p class="muted">This browser would not copy automatically. Press and hold the link, choose Copy, then send it.</p>
+    <input id="copyInput" readonly aria-label="Invite link">
+    <div class="row"><button type="button" class="primary" id="copyClose">Done</button></div>
+  </div>
+</div>
 <div id="mgrMenu" role="menu" hidden></div>
 <div id="askBox" role="alertdialog" aria-live="assertive" hidden>
   <span>The meeting manager is asking you to unmute.</span>
@@ -327,7 +354,8 @@
 </div>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.5/peerjs.min.js"
+<!-- served from this site: one less outside server for people on restrictive networks or in in-app browsers -->
+<script src="vendor/peerjs-1.5.5.min.js"
   integrity="sha512-XEKeWX+mI3Ov+tg2evDlVQFzVOIp4T8J3cNcCEPaEUGpxJV3eZaN8rHuvnFPvQpGJBHPmrozJDMpm2xcDvtmyQ=="
   crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
@@ -531,6 +559,105 @@ function downloadAttendance() {
   toast(`Attendance downloaded \u2014 ${table.rows.length} ${table.rows.length === 1 ? 'person' : 'people'}`);
 }
 
+/* -------------------------------------------------------- in-app browsers --- *
+ * Messenger, Facebook, Instagram and similar apps open links in their own web view, which usually blocks
+ * the camera and microphone for web pages, and Meta blocks the usual tricks for jumping to a real browser.
+ * So: recognise them, offer the escape that does work on that platform, and explain the rest plainly.   */
+const IN_APP = (() => {
+  const forced = new URLSearchParams(location.search).get('inapp');      // ?inapp=messenger for testing
+  if (forced) return forced[0].toUpperCase() + forced.slice(1);
+  if (/Instagram/i.test(ua)) return 'Instagram';
+  if (/Messenger|FB_IAB\/MESSENGER/i.test(ua)) return 'Messenger';
+  if (/FBAN|FBAV|FB_IAB|FBIOS|FB4A|FBDV/.test(ua)) return 'Facebook';
+  if (/Snapchat/i.test(ua)) return 'Snapchat';
+  if (/musical_ly|TikTok|BytedanceWebview/i.test(ua)) return 'TikTok';
+  if (/\bLine\//.test(ua)) return 'LINE';
+  if (/MicroMessenger/i.test(ua)) return 'WeChat';
+  return null;
+})();
+const isAndroid = /Android/.test(ua) || new URLSearchParams(location.search).get('inapp-os') === 'android';
+function pageUrl() {
+  // keep the meeting in the query as well: some hand-offs drop the part after #
+  const code = room || parseMeeting(location.hash);
+  const u = new URL(location.origin + location.pathname);
+  if (code) u.searchParams.set('m', formatId(code));
+  return u.toString() + (code ? '#' + formatId(code) : '');
+}
+function showInAppGuide() {
+  if (!IN_APP) return;
+  try { if (sessionStorage.getItem('paywandi-inapp-ok') === '1') return; } catch {}
+  const url = pageUrl();
+  const plain = url.split('#')[0];
+  $('inAppWhy').textContent = `You opened this link inside ${IN_APP}. ${IN_APP} does not let web pages use your camera or microphone, so the call works properly only in your phone's own browser.`;
+  const actions = [], steps = [];
+  if (isAndroid) {
+    const intent = `intent://${plain.replace(/^[a-z]+:\/\//i, '')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+    actions.push(`<a href="${esc(intent)}">Open in Chrome</a>`);
+    steps.push('Tap <strong>Open in Chrome</strong> above.');
+    steps.push('If nothing happens, tap <strong>\u22ee</strong> (top right) and choose <strong>Open in browser</strong>, or copy the link below into Chrome.');
+  } else {
+    if (IN_APP === 'Instagram') actions.push(`<a href="instagram://extbrowser/?url=${encodeURIComponent(url)}">Open in browser</a>`);
+    actions.push(`<a href="x-safari-${esc(url)}">Try opening in Safari</a>`);
+    steps.push('Tap <strong>\u2022\u2022\u2022</strong> at the top right (or the share icon at the bottom).');
+    steps.push('Choose <strong>Open in external browser</strong> or <strong>Open in Safari</strong>.');
+    steps.push('If you do not see that option, copy the link below and paste it into Safari.');
+  }
+  $('inAppActions').innerHTML = actions.join('');
+  $('inAppActions').hidden = !actions.length;
+  $('inAppSteps').innerHTML = steps.map(t => `<li>${t}</li>`).join('');
+  $('inAppLink').value = url;
+  $('inAppBox').hidden = false;
+}
+$('inAppCopy').addEventListener('click', async () => {
+  const url = $('inAppLink').value;
+  try { await navigator.clipboard.writeText(url); toast('Link copied \u2014 paste it into your browser'); }
+  catch { $('inAppLink').focus(); $('inAppLink').select(); toast('Press and hold the link to copy it'); }
+});
+$('inAppStay').addEventListener('click', () => {
+  try { sessionStorage.setItem('paywandi-inapp-ok', '1'); } catch {}
+  $('inAppBox').hidden = true;
+});
+function showCopyBox(url) {
+  $('copyInput').value = url;
+  $('copyBox').hidden = false;
+  setTimeout(() => { $('copyInput').focus(); $('copyInput').select(); }, 50);
+}
+$('copyClose').addEventListener('click', () => { $('copyBox').hidden = true; });
+
+/* ------------------------------------------------------------- data saver --- *
+ * Mobile data is slow or costly in many places. With data saver on, video you send is capped (about 250
+ * kbit/s, half resolution, 15 fps), and everyone else also sends lighter video to you. It switches on by
+ * itself when the browser reports a slow or data-saving connection.                                   */
+const netInfo = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+let dataSaver = false;
+try {
+  const saved = localStorage.getItem('paywandi-datasaver');
+  dataSaver = saved ? saved === 'on' : !!(netInfo && (netInfo.saveData || /(^|-)(2g|3g)$/.test(netInfo.effectiveType || '')));
+} catch {}
+function tuneSenders(rec) {
+  const pc = rec.call?.peerConnection; if (!pc) return;
+  const lite = dataSaver || rec.lite;                 // lighter if I asked for it, or they did
+  for (const sender of pc.getSenders()) {
+    if (sender.track?.kind !== 'video') continue;
+    let prm; try { prm = sender.getParameters(); } catch { continue; }
+    if (!prm.encodings || !prm.encodings.length) continue;   // not negotiated yet: tuned again once connected
+    const e = prm.encodings[0];
+    if (lite && screenTrack) { e.maxBitrate = 500_000; e.scaleResolutionDownBy = 1; e.maxFramerate = 5; }   // keep shared text readable
+    else if (lite) { e.maxBitrate = 250_000; e.scaleResolutionDownBy = 2; e.maxFramerate = 15; }
+    else { delete e.maxBitrate; delete e.scaleResolutionDownBy; delete e.maxFramerate; }
+    sender.setParameters(prm).catch(() => {});
+  }
+}
+function tuneAllSenders() { peers.forEach(tuneSenders); }
+function syncSaverButton() { $('saverBtn').setAttribute('aria-pressed', String(dataSaver)); }
+$('saverBtn').addEventListener('click', () => {
+  dataSaver = !dataSaver;
+  try { localStorage.setItem('paywandi-datasaver', dataSaver ? 'on' : 'off'); } catch {}
+  syncSaverButton(); tuneAllSenders(); broadcastState();
+  toast(dataSaver ? 'Data saver on \u2014 lighter video both ways' : 'Data saver off');
+});
+syncSaverButton();
+
 /* ---------------------------------------------------------- meeting manager --- *
  * Whoever creates a meeting manages it. The meeting ID is not random: it is the first 60 bits of the
  * SHA-256 of a public key made on the creator's device, whose private half never leaves it. Anyone who
@@ -568,7 +695,8 @@ function loadManagerFor(code) {
   const own = ownedRooms()[code];
   manager.mine = !!own; manager.pub = own ? own.pub : null;
   manager.privP = own ? crypto.subtle.importKey('jwk', own.priv, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign']) : null;
-  document.body.classList.toggle('is-manager', manager.mine);
+  control.mine = false; control.grant = null; control.priv = null;
+  syncManageUi();
 }
 async function checkManagerClaim(rec, data) {
   if (rec.isManager || rec.mgrChecking || typeof data.mgr !== 'string' || data.mgr.length > 400) return;
@@ -599,6 +727,109 @@ async function checkProof(rec, sig) {
   if (rec.pendingSpot !== undefined) { mgrSpot = rec.pendingSpot; rec.pendingSpot = undefined; layout(); }
 }
 
+/* ---------------------------------------------------- give and take control --- *
+ * The creator can hand control of the meeting to someone. That person makes a key on their own device;
+ * the creator signs a grant naming it; the holder shows the grant to everyone, who check the creator's
+ * signature (and that the creator's key is this meeting's ID) and then challenge the holder to prove they
+ * own the named key. Only the creator can take control back; the holder can hand it back. A grant lasts
+ * six hours at most, and the creator tells late joiners which grants have been taken back.            */
+const control = { mine: false, grant: null, priv: null, pending: null };
+const revokedGrants = new Set();
+const GRANT_MS = 6 * 3600 * 1000;
+const grantText = (pub, exp) => new TextEncoder().encode(`paywandi-grant|${room}|${pub}|${exp}`);
+const controlText = nonce => new TextEncoder().encode(`paywandi-control|${room}|${nonce}`);
+const importVerifyKey = spki => crypto.subtle.importKey('spki', spki, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify']);
+function canManage() { return manager.mine || control.mine; }
+function syncManageUi() {
+  document.body.classList.toggle('is-manager', canManage());
+  selfTile?.classList.toggle('manager', manager.mine);
+  selfTile?.classList.toggle('has-control', control.mine);
+}
+function giveControl(seat) {
+  const r = peers.get(seat); if (!manager.mine || !r) return;
+  r.ctlOffered = true;
+  send(r, { t: 'ctlOffer' });
+  toast(`Giving control to ${r.name}\u2026`);
+}
+async function onControlOffer(rec) {
+  if (!rec.isManager) return;                                     // only the verified creator can offer
+  control.pending = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify']);
+  const pub = b64(new Uint8Array(await crypto.subtle.exportKey('spki', control.pending.publicKey)));
+  control.pendingPub = pub;
+  send(rec, { t: 'ctlKey', pub });
+}
+async function onControlKey(rec, pub) {
+  if (!manager.mine || !rec.ctlOffered || typeof pub !== 'string' || pub.length > 400) return;
+  rec.ctlOffered = false;
+  const exp = Date.now() + GRANT_MS;
+  const sig = b64(new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, await manager.privP, grantText(pub, exp))));
+  revokedGrants.delete(pub);
+  send(rec, { t: 'ctlGrant', grant: { pub, exp, sig, owner: manager.pub } });
+}
+function onControlGrant(rec, grant) {
+  if (!rec.isManager || !grant || grant.pub !== control.pendingPub) return;
+  control.mine = true; control.grant = grant; control.priv = control.pending.privateKey;
+  control.pending = null; control.pendingPub = null;
+  syncManageUi(); broadcastState();                               // announce the grant to everyone
+  toast('You now have control of the meeting', 5000);
+}
+async function checkControlClaim(rec, g) {
+  if (rec.hasControl || rec.ctlChecking || !g || typeof g.pub !== 'string' || typeof g.sig !== 'string'
+      || typeof g.owner !== 'string' || !Number.isFinite(g.exp) || g.pub.length > 400 || g.owner.length > 400) return;
+  if (g.exp < Date.now() || g.exp > Date.now() + GRANT_MS + 60000 || revokedGrants.has(g.pub)) return;
+  rec.ctlChecking = true;
+  try {
+    const ownerSpki = unb64(g.owner);
+    if (await codeFromKey(ownerSpki) !== room) return;           // the grant must come from this meeting's creator
+    const ownerKey = await importVerifyKey(ownerSpki);
+    if (!await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, ownerKey, unb64(g.sig), grantText(g.pub, g.exp))) return;
+    rec.ctlKey = await importVerifyKey(unb64(g.pub));
+    rec.ctlPub = g.pub; rec.ctlExp = g.exp;
+    rec.ctlNonce = b64(crypto.getRandomValues(new Uint8Array(18)));
+    send(rec, { t: 'ctlChallenge', nonce: rec.ctlNonce });
+  } catch {} finally { rec.ctlChecking = false; }
+}
+async function answerControlChallenge(rec, nonce) {
+  if (!control.mine || typeof nonce !== 'string' || nonce.length > 64) return;
+  try { send(rec, { t: 'ctlProof', sig: b64(new Uint8Array(await crypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, control.priv, controlText(nonce)))) }); } catch {}
+}
+async function checkControlProof(rec, sig) {
+  const nonce = rec.ctlNonce; rec.ctlNonce = null;
+  if (!rec.ctlKey || !nonce || typeof sig !== 'string' || sig.length > 200 || revokedGrants.has(rec.ctlPub)) return;
+  let ok = false;
+  try { ok = await crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, rec.ctlKey, unb64(sig), controlText(nonce)); } catch {}
+  if (!ok) return;
+  rec.hasControl = true;
+  rec.tile.classList.add('has-control');
+  if (rec.pendingSpot !== undefined) { mgrSpot = rec.pendingSpot; rec.pendingSpot = undefined; layout(); }
+  if (manager.mine) toast(`${rec.name} now has control`);
+}
+function dropControl(rec) { rec.hasControl = false; rec.tile.classList.remove('has-control'); }
+function takeControl(seat) {
+  const r = peers.get(seat); if (!manager.mine || !r?.ctlPub) return;
+  revokedGrants.add(r.ctlPub);
+  broadcast({ t: 'ctlRevoke', pub: r.ctlPub });
+  dropControl(r);
+  toast(`You took back control from ${r.name}`);
+}
+function onControlRevoke(rec, pub) {
+  if (!rec.isManager || typeof pub !== 'string') return;          // only the creator can take control back
+  revokedGrants.add(pub);
+  peers.forEach(r => { if (r.ctlPub === pub) dropControl(r); });
+  if (control.grant?.pub === pub) {
+    control.mine = false; control.grant = null; control.priv = null;
+    syncManageUi(); closeMgrMenu(); broadcastState();
+    toast('The meeting manager took back control', 5000);
+  }
+}
+function resignControl() {
+  if (!control.mine) return;
+  broadcast({ t: 'ctlResign' });
+  control.mine = false; control.grant = null; control.priv = null;
+  syncManageUi(); broadcastState();
+  toast('You handed control back');
+}
+
 function seatOfTile(tile) {
   if (tile === selfTile) return mySeat;
   for (const r of peers.values()) if (r.tile === tile) return r.seat;
@@ -606,10 +837,12 @@ function seatOfTile(tile) {
 }
 function closeMgrMenu() { $('mgrMenu').hidden = true; }
 function openMgrMenu(tile, anchor) {
-  if (!manager.mine) return;
+  if (!canManage()) return;
   const seat = seatOfTile(tile); if (seat === null) return;
   const self = seat === mySeat, r = peers.get(seat);
   const items = [];
+  if (manager.mine && !self && r) items.push(r.hasControl ? ['take', '\u21A9  Take back control'] : ['give', '\u{1F39B}\uFE0F  Give control']);
+  if (self && control.mine) items.push(['resign', '\u21A9  Hand control back']);
   items.push(mgrSpot === seat ? ['unspot', '\u25a2  Minimize \u2014 end spotlight'] : ['spot', '\u26f6  Spotlight for everyone']);
   if (!self && r) items.push(r.mic ? ['mute', '\u{1F507}  Mute'] : ['ask', '\u{1F3A4}  Ask to unmute']);
   if (peers.size) items.push(['muteall', '\u{1F507}  Mute everyone else']);
@@ -632,7 +865,10 @@ document.addEventListener('click', e => { if (!e.target.closest('#mgrMenu, .mgrb
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMgrMenu(); });
 
 function managerCommand(cmd, seat) {
-  if (!manager.mine) return;
+  if (cmd === 'give') return giveControl(seat);
+  if (cmd === 'take') return takeControl(seat);
+  if (cmd === 'resign') return resignControl();
+  if (!canManage()) return;
   const msg = { t: 'mgr', cmd, seat };
   broadcast(msg);
   applyManagerCommand(msg, true);
@@ -654,7 +890,8 @@ function applyManagerCommand(m, fromMe) {
       else if (fromMe) toast(`Muted ${target?.name || 'them'}`);
       break;
     case 'muteall':
-      if (!manager.mine) forceMute(); else toast('Everyone else has been muted');
+      if (fromMe) toast('Everyone else has been muted');
+      else if (!manager.mine) forceMute();                   // the creator is never muted by someone they gave control to
       break;
     case 'ask':
       if (m.seat === mySeat && micTrack && !micOn) $('askBox').hidden = false;
@@ -1038,6 +1275,7 @@ async function acquireMedia() {
   if (!micTrack) micOn = false;
   if (!camTrack) camOn = false;
   fxSource(camTrack);
+  if (msgs.length && IN_APP) return `${IN_APP} blocks the ${msgs.join(' and ')} for web pages. You can still join and listen \u2014 open the link in Chrome or Safari to talk.`;
   return msgs.length ? `No ${msgs.join(' or ')} available (or permission was declined) — you can still join.` : '';
 }
 async function listDevices() {
@@ -1124,7 +1362,7 @@ async function shareInvite() {
     catch (e) { if (e.name === 'AbortError') return; }
   }
   try { await navigator.clipboard.writeText(url); toast('Invite link copied'); }
-  catch { $('inviteInput').select(); document.execCommand?.('copy'); toast('Invite link selected — copy it'); }
+  catch { showCopyBox(url); }        // in-app browsers often refuse the clipboard
 }
 
 /* ------------------------------------------------------------------- call --- *
@@ -1187,7 +1425,7 @@ function enterCall() {
   if (!camOn && camTrack) { camTrack.stop(); camTrack = null; fxSource(null); }   // camera light off when joining with video off
   syncBarButtons();
   addSelfTile();
-  selfTile.classList.toggle('manager', manager.mine);
+  syncManageUi();
   peer.on('connection', onIncomingConn);
   peer.on('call', onIncomingCall);
   peer.on('disconnected', () => { if (!leaving) { setNet(false, 'Reconnecting to the call service…'); try { peer.reconnect(); } catch {} } });
@@ -1310,6 +1548,7 @@ function wireCall(call, seat) {
     r.tile.classList.toggle('connecting', st === 'checking' || st === 'new' || st === 'disconnected');
     r.tile.querySelector('.state').textContent = st === 'disconnected' ? 'Reconnecting…' : 'Connecting…';
     if (st === 'failed' || st === 'closed') leaveNotice(seat);
+    if (st === 'connected' || st === 'completed') tuneSenders(r);   // encodings exist only once connected
   });
 }
 
@@ -1326,7 +1565,8 @@ function onPeerError(err) {
 }
 
 /* ------------------------------------------------------------ data channel --- */
-function helloMsg() { return { t: 'hello', ...(manager.mine ? { mgr: manager.pub, spot: mgrSpot } : {}), rec: recording(), cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
+function helloMsg() { return { t: 'hello', ...(manager.mine ? { mgr: manager.pub, spot: mgrSpot, revoked: [...revokedGrants].slice(-20) } : {}),
+  ...(control.mine ? { ctl: control.grant, spot: mgrSpot } : {}), lite: dataSaver, rec: recording(), cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
 function send(rec, msg) { try { if (rec.conn?.open) rec.conn.send(msg); } catch {} }
 function broadcast(msg) { peers.forEach(r => send(r, msg)); }
 function broadcastState() { const m = helloMsg(); m.t = 'state'; broadcast(m); }
@@ -1344,8 +1584,17 @@ function onData(seat, conn, data) {
       rec.mic = !!data.mic; rec.cam = !!data.cam;
       if (data.mgr) {
         const sp = Number.isInteger(data.spot) ? data.spot : null;
-        if (rec.isManager) { if (sp !== mgrSpot) { mgrSpot = sp; layout(); } } else { rec.pendingSpot = sp; checkManagerClaim(rec, data); }
+        if (rec.isManager) {
+          if (sp !== mgrSpot) { mgrSpot = sp; layout(); }
+          if (Array.isArray(data.revoked)) data.revoked.slice(0, 20).forEach(pub => { if (typeof pub === 'string') { revokedGrants.add(pub); peers.forEach(r => { if (r.ctlPub === pub) dropControl(r); }); } });
+        } else { rec.pendingSpot = sp; checkManagerClaim(rec, data); }
       }
+      if (data.ctl) {
+        if (rec.hasControl) { const sp = Number.isInteger(data.spot) ? data.spot : null; if (sp !== mgrSpot) { mgrSpot = sp; layout(); } }
+        else { rec.pendingSpot = Number.isInteger(data.spot) ? data.spot : null; checkControlClaim(rec, data.ctl); }
+      } else if (rec.hasControl) dropControl(rec);                    // they handed it back or lost it
+      const wasLite = rec.lite; rec.lite = !!data.lite;
+      if (wasLite !== rec.lite) tuneSenders(rec);                     // they asked for lighter video, or stopped asking
       if (data.rec && !othersRecording.has(seat)) { othersRecording.set(seat, rec.name); syncRecIndicator(); toast(`${rec.name} is recording this call`, 5000); }
       else if (!data.rec && othersRecording.has(seat)) { othersRecording.delete(seat); syncRecIndicator(); }
       if (data.t === 'hello' && !rec.joined) { rec.joined = true; if (Date.now() - joinedAt > 1500) toast(`${rec.name} joined`); }
@@ -1366,8 +1615,15 @@ function onData(seat, conn, data) {
       checkProof(rec, data.sig);
       break;
     case 'mgr':
-      if (rec.isManager && typeof data.cmd === 'string') applyManagerCommand(data, false);   // only the verified manager
+      if ((rec.isManager || rec.hasControl) && typeof data.cmd === 'string') applyManagerCommand(data, false);   // verified manager or control holder only
       break;
+    case 'ctlOffer': onControlOffer(rec); break;
+    case 'ctlKey': onControlKey(rec, data.pub); break;
+    case 'ctlGrant': onControlGrant(rec, data.grant); break;
+    case 'ctlChallenge': answerControlChallenge(rec, data.nonce); break;
+    case 'ctlProof': checkControlProof(rec, data.sig); break;
+    case 'ctlRevoke': onControlRevoke(rec, data.pub); break;
+    case 'ctlResign': if (rec.hasControl) { dropControl(rec); if (manager.mine) toast(`${rec.name} handed control back`); } break;
     case 'rec':
       if (data.on) { if (!othersRecording.has(seat)) toast(`${rec.name} started recording this call`, 5000); othersRecording.set(seat, rec.name); }
       else if (othersRecording.delete(seat)) toast(`${rec.name} stopped recording`, 3500);
@@ -1389,7 +1645,7 @@ function makeTile(key, name, self) {
     <div class="state">Connecting…</div>
     <button type="button" class="enlarge" title="Full screen">\u26f6 Full screen</button>
     <button type="button" class="mgrbtn" title="Manage this person" aria-label="Manage this person">\u22ef</button>
-    <div class="tag"><span class="crown" title="Meeting manager">\u{1F451}</span><span class="mic" aria-label="muted">\u{1F507}</span><span class="nm"></span></div>`;
+    <div class="tag"><span class="crown" title="Meeting manager">\u{1F451}</span><span class="ctlbadge" title="Has control of the meeting">\u{1F39B}\uFE0F</span><span class="mic" aria-label="muted">\u{1F507}</span><span class="nm"></span></div>`;
   tile.querySelector('.initials').style.background = colourFor(name + key);
   tile.querySelector('.enlarge').addEventListener('click', () => enlarge(tile));
   tile.querySelector('.mgrbtn').addEventListener('click', e => { e.stopPropagation(); openMgrMenu(tile, e.currentTarget); });
@@ -1464,7 +1720,7 @@ $('soundBtn').addEventListener('click', () => {
 function dropPeer(seat, silent) {
   const rec = peers.get(seat); if (!rec) return;
   if (othersRecording.delete(seat)) syncRecIndicator();
-  if (rec.isManager && mgrSpot !== null) mgrSpot = null;   // nobody left to end the spotlight
+  if (rec.isManager && mgrSpot !== null && !control.mine && ![...peers.values()].some(r => r.hasControl && r !== rec)) mgrSpot = null;   // nobody left to end the spotlight
   if (rec.cid && rec.since && rec.joined) touch(rec.cid, rec.name, rec.since, Date.now());   // last moment they were here
   peers.delete(seat); pending.delete(seat);
   try { rec.call?.close(); } catch {}
@@ -1775,7 +2031,7 @@ $('screenBtn').addEventListener('click', async () => {
     const a = c.createMediaStreamSource(new MediaStream([screenAudio])); a.connect(mixDest); mixNodes.push(a);
     replaceOutgoing('audio', mixDest.stream.getAudioTracks()[0]);
   }
-  syncBarButtons(); refreshSelf(); broadcastState();
+  syncBarButtons(); refreshSelf(); broadcastState(); tuneAllSenders();
   toast(screenAudio ? 'You are sharing your screen, with its sound' : 'You are sharing your screen');
 });
 function stopScreen() {
@@ -1999,7 +2255,7 @@ addEventListener('pagehide', () => { if (peer) leave(true); });
 
 /* ------------------------------------------------------------------ start --- */
 function route() {
-  const code = parseMeeting(location.hash);
+  const code = parseMeeting(location.hash) || parseMeeting(new URLSearchParams(location.search).get('m') || '');
   if (code) return joinMeeting(code, unlocked());    // invite links go straight to the lobby
   if (unlocked()) return startAsHost();
   show('gate');
@@ -2025,8 +2281,9 @@ function route() {
 })();
 
 route();
+showInAppGuide();
 
-window.__paywandi = { manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
