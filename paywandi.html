@@ -1577,10 +1577,9 @@ function enterCall() {
   syncBarButtons();
   addSelfTile();
   syncManageUi();
-  peer.on('connection', onIncomingConn);
-  peer.on('call', onIncomingCall);
-  peer.on('disconnected', () => { if (!leaving) { setNet(false, 'Reconnecting to the call service…'); try { peer.reconnect(); } catch {} } });
-  peer.on('open', () => setNet(true));
+  wirePeerEvents(peer);
+  armBackGuard();                                        // the phone's Back button must not end the call
+  keepAwake();                                           // nor the screen locking by itself
   for (let s = 0; s < mySeat; s++) dial(s);
   rescanId = setInterval(rescan, RESCAN_MS);
   timerId = setInterval(tick, 1000);
@@ -1590,6 +1589,96 @@ function enterCall() {
   setNet(true);
   updateStatus();
 }
+
+function wirePeerEvents(p) {
+  p.on('connection', onIncomingConn);
+  p.on('call', onIncomingCall);
+  p.on('disconnected', () => { if (!leaving && p === peer) { setNet(false, 'Reconnecting to the call service\u2026'); try { p.reconnect(); } catch {} } });
+  p.on('open', () => { if (p === peer) setNet(true); });
+}
+
+/* ---------------------------------------------------------- stay in the call --- *
+ * On a phone a call used to end by accident: Back left the page, links could replace it, the screen
+ * locked, or iOS stopped the camera and microphone while the app was in the background or a phone call
+ * came in. Now Back stays in the call, links open elsewhere, the screen is kept awake, and coming back
+ * repairs the microphone, camera and connection without the person doing anything.                    */
+let backGuard = false, wakeLock = null, rejoining = false;
+function armBackGuard() {
+  if (backGuard) return;
+  backGuard = true;
+  try { history.pushState({ paywandiCall: true }, '', location.href); } catch {}
+}
+addEventListener('popstate', () => {
+  if (!peer || !backGuard) return;
+  try { history.pushState({ paywandiCall: true }, '', location.href); } catch {}
+  toast('You are still in the call \u2014 tap Leave to end it', 3500);
+});
+async function keepAwake() {
+  if (!peer || wakeLock || document.visibilityState !== 'visible' || !navigator.wakeLock) return;
+  try { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } catch {}
+}
+function releaseAwake() { try { wakeLock?.release(); } catch {} wakeLock = null; }
+
+// links never take the call page away: during a call they open in a new tab, or are offered to copy
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="http"]');
+  if (!a || !peer) return;
+  e.preventDefault();
+  let w = null;
+  if (!IN_APP) { try { w = window.open(a.href, '_blank'); if (w) w.opener = null; } catch {} }
+  if (!w) showCopyBox(a.href);                              // in-app browsers would replace the call: copy it for later
+  else toast('Opened in a new tab \u2014 your call continues here', 3000);
+}, true);
+
+async function recoverCall() {
+  if (!peer && !rejoining) return;
+  if (leaving) return;
+  // iOS ends capture when the phone locks, the app is backgrounded for long, or a phone call takes the mic
+  if (micTrack && micTrack.readyState === 'ended') {
+    try {
+      const t = await openMic(); t.enabled = micOn; micTrack = t;
+      if (!mixDest) replaceOutgoing('audio', outgoingAudio());
+      selfTile?.__stopLevel?.(); if (selfTile) watchLevel(selfTile, new MediaStream([micTrack]), () => micOn);
+    } catch {}
+  }
+  if (camOn && camTrack && camTrack.readyState === 'ended') {
+    try { camTrack = await openCamera(); fxSource(camTrack); if (!screenTrack) replaceOutgoing('video', outgoingVideo()); refreshSelf(); } catch {}
+  }
+  if (peer && peer.destroyed) rejoinQuietly();
+  else if (peer && peer.disconnected) { try { peer.reconnect(); } catch {} }
+  keepAwake();
+  if (peer && !peer.destroyed) rescan();
+}
+// the call service lost us for good (a long lock or network change): take a seat again, keeping everything else
+function rejoinQuietly() {
+  if (rejoining || leaving) return;
+  rejoining = true;
+  [...peers.keys()].forEach(sn => dropPeer(sn, true));
+  const old = peer; peer = null;
+  try { old?.destroy(); } catch {}
+  const tryClaim = (seat, tries) => {
+    if (seat >= MAX_PEOPLE) { rejoining = false; toast('Could not rejoin \u2014 the call is full'); return; }
+    const p = new Peer(seatId(seat), PEER_OPTIONS);
+    let ok = false;
+    p.once('open', () => {
+      ok = true; peer = p; mySeat = seat; rejoining = false;
+      wirePeerEvents(p);
+      setNet(true); layout(); updateStatus(); rescan();
+      toast('Reconnected to the call', 2500);
+    });
+    p.on('error', err => {
+      if (ok) return onPeerError(err);
+      try { p.destroy(); } catch {}
+      if (err.type === 'unavailable-id') return tryClaim(seat + 1, tries);
+      if (tries < 5) setTimeout(() => tryClaim(seat, tries + 1), 3000); else { rejoining = false; setNet(false, 'Could not reach the call service'); }
+    });
+  };
+  setNet(false, 'Reconnecting to the call\u2026');
+  tryClaim(Math.max(0, mySeat), 0);
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recoverCall(); });
+addEventListener('pageshow', e => { if (e.persisted) recoverCall(); });
+addEventListener('online', () => recoverCall());
 
 /* ------------------------------------------------------------ reachability --- *
  * "Everyone alone" must never be silent. If someone is in the call (their browser answered, or ours was
@@ -2419,11 +2508,12 @@ $('moreBtn').addEventListener('click', () => {
   $('moreBtn').setAttribute('aria-expanded', String(open));
   requestAnimationFrame(layout);                          // the call area changed size
 });
-addEventListener('beforeunload', e => { if (recording()) { e.preventDefault(); e.returnValue = ''; } });
+addEventListener('beforeunload', e => { if (peer || recording()) { e.preventDefault(); e.returnValue = ''; } });   // closing the tab asks first
 
 /* leaving */
 function leave(final) {
   if (recording()) stopCallRecording();            // save what was recorded before the call is torn down
+  releaseAwake(); backGuard = false; rejoining = false;
   mgrSpot = null; closeMgrMenu(); $('askBox').hidden = true;
   leaving = true;
   attTick(true);                                   // hand the final register to whoever stays
@@ -2448,7 +2538,9 @@ $('leaveBtn').addEventListener('click', () => {
 $('attBtn').addEventListener('click', downloadAttendance);
 $('attLeftBtn').addEventListener('click', downloadAttendance);
 $('rejoinBtn').addEventListener('click', () => { $('joinBtn').disabled = false; openLobby(); });
-addEventListener('pagehide', () => { if (peer) leave(true); });
+// A hidden page is not a finished call: phones fire this when switching apps or opening links. Only save a
+// recording if the page is really going away; the others notice a closed tab by themselves.
+addEventListener('pagehide', e => { if (!e.persisted && recording()) stopCallRecording(); });
 
 /* ------------------------------------------------------------------ start --- */
 function route() {
@@ -2480,7 +2572,7 @@ function route() {
 route();
 showInAppGuide();
 
-window.__paywandi = { closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
