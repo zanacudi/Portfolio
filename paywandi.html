@@ -384,7 +384,6 @@
 const $ = id => document.getElementById(id);
 const GATE_HASH = 'c341d7c0834bed628ba21fe4a53edea04bc132dd3f67b242bd49f10409fbe995'; // sha256('paywandi:' + code)
 const GATE_KEY = 'paywandi-unlocked';
-const MAX_PEOPLE = 8;              // full mesh: every person sends to every other, so keep rooms small
 const ROOM_RE = /^[a-z2-9]{12}$/;  // what an invite link carries after the #
 // Browsers find each other's public address through STUN. When a firewall or a mobile network blocks a
 // direct path, audio and video must go through a TURN relay instead. PeerJS's built-in relay no longer
@@ -662,14 +661,22 @@ try {
 function tuneSenders(rec) {
   const pc = rec.call?.peerConnection; if (!pc) return;
   const lite = dataSaver || rec.lite;                 // lighter if I asked for it, or they did
+  // Everyone sends video to everyone, so a device's upload is shared by all the others. From four people
+  // up the budget is split between them, and resolution steps down as the call grows; small calls keep full quality.
+  const others = Math.max(1, peers.size);
+  const share = others >= 3 ? Math.max(120_000, Math.floor((isMobile ? 1_500_000 : 3_000_000) / others)) : Infinity;
+  const crowdScale = others >= 11 ? 3 : others >= 5 ? 2 : 1;
   for (const sender of pc.getSenders()) {
     if (sender.track?.kind !== 'video') continue;
     let prm; try { prm = sender.getParameters(); } catch { continue; }
     if (!prm.encodings || !prm.encodings.length) continue;   // not negotiated yet: tuned again once connected
     const e = prm.encodings[0];
-    if (lite && screenTrack) { e.maxBitrate = 500_000; e.scaleResolutionDownBy = 1; e.maxFramerate = 5; }   // keep shared text readable
-    else if (lite) { e.maxBitrate = 250_000; e.scaleResolutionDownBy = 2; e.maxFramerate = 15; }
-    else { delete e.maxBitrate; delete e.scaleResolutionDownBy; delete e.maxFramerate; }
+    let bitrate = Math.min(lite ? (screenTrack ? 500_000 : 250_000) : Infinity, screenTrack ? Math.max(400_000, share * 2) : share);
+    let scale = screenTrack ? 1 : Math.max(lite ? 2 : 1, crowdScale);   // keep shared text readable
+    let fps = screenTrack ? (lite || others >= 5 ? 5 : 0) : (lite || others >= 7 ? 15 : 0);
+    if (Number.isFinite(bitrate)) e.maxBitrate = bitrate; else delete e.maxBitrate;
+    if (scale > 1) e.scaleResolutionDownBy = scale; else delete e.scaleResolutionDownBy;
+    if (fps) e.maxFramerate = fps; else delete e.maxFramerate;
     sender.setParameters(prm).catch(() => {});
   }
 }
@@ -1455,7 +1462,7 @@ async function openLobby() {
   $('otherMeetForm').style.display = isHost ? '' : 'none';
   $('inviteInput').value = inviteUrl();
   $('lobbyMid').textContent = formatId(room);
-  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. Works best for up to six people.';
+  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. There is no limit on how many people can join; video quality adjusts automatically as the call grows.';
   updatePreviewInitials();
   $('lobbyMsg').textContent = 'Checking camera and microphone…'; $('lobbyMsg').className = 'muted';
   const warning = await acquireMedia();
@@ -1541,28 +1548,27 @@ function joinCall(name) {
   claimSeat(0);
 }
 
+// There is no limit on seats. A joiner takes the lowest free seat, trying one at a time: the call service
+// rate-limits connections per internet address (Cloudflare 429 / error 1015, about an hour), so several
+// people joining from one home must never open bursts of parallel connections.
 function claimSeat(seat) {
-  if (seat >= MAX_PEOPLE) {
-    $('joinBtn').disabled = false;
-    $('lobbyMsg').textContent = `This call is full (${MAX_PEOPLE} people).`; $('lobbyMsg').className = 'warn';
-    return;
-  }
   const p = new Peer(seatId(seat), PEER_OPTIONS);
   let settled = false;
   // once: PeerJS fires 'open' again after every broker reconnect, which must not re-enter the call
   p.once('open', () => { settled = true; peer = p; mySeat = seat; enterCall(); });
   p.on('error', err => {
     if (!settled) {
+      settled = true;
       try { p.destroy(); } catch {}
       if (err.type === 'unavailable-id') return claimSeat(seat + 1);
       $('joinBtn').disabled = false;
       $('lobbyMsg').textContent = err.type === 'browser-incompatible'
         ? 'This browser does not support calls. Try current Chrome, Edge, Firefox or Safari.'
-        : 'Could not reach the call service. Check your connection and try again.';
+        : 'Could not reach the call service. If many people just joined from this same internet connection, the service may be pausing it for a while \u2014 try mobile data, or again later.';
       $('lobbyMsg').className = 'warn';
       return;
     }
-    onPeerError(err);
+    if (p === peer) onPeerError(err);
   });
 }
 
@@ -1657,7 +1663,6 @@ function rejoinQuietly() {
   const old = peer; peer = null;
   try { old?.destroy(); } catch {}
   const tryClaim = (seat, tries) => {
-    if (seat >= MAX_PEOPLE) { rejoining = false; toast('Could not rejoin \u2014 the call is full'); return; }
     const p = new Peer(seatId(seat), PEER_OPTIONS);
     let ok = false;
     p.once('open', () => {
@@ -1987,6 +1992,7 @@ const DIWAN = {
     { x: .388, y: .482, w: .095, ry: 12 },    // seat 5: back left
     { x: .684, y: .482, w: .095, ry: -12 },   // seat 6: back right
     { x: .095, y: .880, w: .210, ry: 30 },    // seat 7: left, nearest the door
+    { x: .905, y: .880, w: .210, ry: -30 },   // seat 8: right, nearest the door
   ],
 };
 // the gathering is the default; someone who switches to the grid keeps that choice
@@ -2086,7 +2092,18 @@ function applyCamera() {
   const seated = [[mySeat, selfTile], ...[...peers.values()].map(r => [r.seat, r.tile]), ...[...ghosts].map(([sn, g]) => [sn, g.tile])];
   // Close-up: the speaker's screen leaves its cushion and fills the frame (two people share it side by side),
   // while the room stays visible, dimmed, behind them.
-  const focusSeats = (autoCam ? director.focus : []).filter(sn => DIWAN.spots[sn]).sort((a, b) => DIWAN.spots[a].x - DIWAN.spots[b].x).slice(0, 2);
+  // More people than cushions: the rest sit in a row of small screens along the top of the room.
+  const overflow = seated.filter(([sn, t]) => t && !DIWAN.spots[sn]).map(([sn]) => sn).sort((a, b) => a - b);
+  const ofW = Math.max(64, Math.min(g.W * 0.13, 150)), ofH = ofW * 10 / 16, gap = 6;
+  const perRow = Math.max(1, Math.floor((g.W - gap) / (ofW + gap)));
+  const baseRect = sn => {
+    const spot = DIWAN.spots[sn];
+    if (spot) return { x: ox + spot.x * DIWAN.w * k, y: oy + spot.y * DIWAN.h * k, w: spot.w * DIWAN.w * k, ry: spot.ry, boost: boostFor(spot) };
+    const i = overflow.indexOf(sn);
+    return { x: gap + (i % perRow) * (ofW + gap) + ofW / 2, y: gap + Math.floor(i / perRow) * (ofH + gap) + ofH / 2, w: ofW, ry: 0, boost: 1 };
+  };
+  const inCall = new Set(seated.filter(([, t]) => t).map(([sn]) => sn));
+  const focusSeats = (autoCam ? director.focus : []).filter(sn => inCall.has(sn)).sort((a, b) => baseRect(a).x - baseRect(b).x).slice(0, 2);
   const slot = new Map();
   if (focusSeats.length) {
     const n = focusSeats.length;
@@ -2098,10 +2115,9 @@ function applyCamera() {
   stage.style.setProperty('--dim', (0.6 * Math.max(0, ...closeness.values())).toFixed(3));
   for (const [seat, tile] of seated) {
     if (!tile) continue;
-    const spot = DIWAN.spots[seat];
-    tile.classList.toggle('unseated', !spot);
-    if (!spot) continue;
-    const seatX = ox + spot.x * DIWAN.w * k, seatY = oy + spot.y * DIWAN.h * k, seatW = spot.w * DIWAN.w * k;
+    tile.classList.remove('unseated');                 // nobody is hidden any more
+    const spot = baseRect(seat);
+    const seatX = spot.x, seatY = spot.y, seatW = spot.w;
     const c = closeness.get(seat) || 0;
     const sl = slot.get(seat) || lastSlot.get(seat);
     if (!slot.has(seat) && c === 0) { closeness.delete(seat); lastSlot.delete(seat); }
@@ -2112,7 +2128,7 @@ function applyCamera() {
       tile.style.aspectRatio = 'auto';
       tile.style.height = (seatW * 10 / 16 + (sl.h - seatW * 10 / 16) * c) + 'px';
       tile.style.setProperty('--ry', (spot.ry * (1 - c)) + 'deg');          // turns to face the camera
-      tile.style.setProperty('--boost', 1 + (boostFor(spot) - 1) * (1 - c));
+      tile.style.setProperty('--boost', 1 + (spot.boost - 1) * (1 - c));
       tile.style.setProperty('--z', 3);                                     // above the dimmed room
     } else {
       tile.style.left = seatX + 'px';
@@ -2121,7 +2137,7 @@ function applyCamera() {
       tile.style.height = ''; tile.style.aspectRatio = '';
       tile.style.setProperty('--ry', spot.ry + 'deg');
       tile.style.setProperty('--boost', 1);
-      tile.style.setProperty('--z', 1);
+      tile.style.setProperty('--z', DIWAN.spots[seat] ? 1 : 2);   // the top row stays above the room
     }
   }
 }
@@ -2136,7 +2152,6 @@ function directorTick() {
   const speakers = [...peers.values()].map(r => [r.seat, r.tile]);
   if (selfTile && mySeat >= 0) speakers.push([mySeat, selfTile]);
   for (const [seat, tile] of speakers) {
-    if (!DIWAN.spots[seat]) continue;
     const on = tile.classList.contains('speaking');
     const n = on ? (director.streak.get(seat) || 0) + 1 : 0;
     director.streak.set(seat, n);
@@ -2365,7 +2380,9 @@ function setNet(ok, text) {
   $('netDot').classList.toggle('bad', !ok);
   if (text) $('callStatus').textContent = text; else updateStatus();
 }
+let tunedForCount = -1;
 function updateStatus() {
+  if (peers.size !== tunedForCount) { tunedForCount = peers.size; tuneAllSenders(); }   // the call grew or shrank: re-share the upload
   const others = peers.size;
   if (ghosts.size) {
     const names = [...ghosts.values()].map(g => g.name).join(', ');
@@ -2572,7 +2589,7 @@ function route() {
 route();
 showInAppGuide();
 
-window.__paywandi = { recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, MAX_PEOPLE, GATE_HASH, sha256,
+window.__paywandi = { recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
