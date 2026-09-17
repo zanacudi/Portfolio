@@ -1462,7 +1462,7 @@ async function openLobby() {
   $('otherMeetForm').style.display = isHost ? '' : 'none';
   $('inviteInput').value = inviteUrl();
   $('lobbyMid').textContent = formatId(room);
-  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. There is no limit on how many people can join; video quality adjusts automatically as the call grows.';
+  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. There is no limit on how many people can join; in calls with more than four people your camera starts off, and video quality adjusts automatically as the call grows.';
   updatePreviewInitials();
   $('lobbyMsg').textContent = 'Checking camera and microphone…'; $('lobbyMsg').className = 'muted';
   const warning = await acquireMedia();
@@ -1579,6 +1579,20 @@ function enterCall() {
   $('screenBtn').classList.toggle('unavail', !canScreen);
   $('flipBtn').style.display = isMobile && camTrack ? '' : 'none';
   if (micTrack) micTrack.enabled = micOn;
+  // Big calls start with video off. Seats fill from the lowest, so taking seat 4 or higher means at least four
+  // people are already here: turn the camera off before any video is sent. A later check covers seats freed by leavers.
+  camTouched = false;
+  if (camOn && camTrack && mySeat >= BIG_CALL) {
+    camOn = false;
+    setTimeout(() => toast(`Your camera is off because this call has more than ${BIG_CALL} people \u2014 tap the camera to turn it on`, 6000), 600);
+  }
+  clearTimeout(bigCallCheck);
+  bigCallCheck = setTimeout(() => {
+    if (peer && camOn && !camTouched && peers.size + 1 > BIG_CALL) {
+      turnCameraOff();
+      toast(`Your camera is off because this call has more than ${BIG_CALL} people \u2014 tap the camera to turn it on`, 6000);
+    }
+  }, 7000);
   if (!camOn && camTrack) { camTrack.stop(); camTrack = null; fxSource(null); }   // camera light off when joining with video off
   syncBarButtons();
   addSelfTile();
@@ -2277,12 +2291,20 @@ $('micBtn').addEventListener('click', () => {
   micOn = !micOn; micTrack.enabled = micOn;
   syncBarButtons(); refreshSelf(); broadcastState();
 });
+const BIG_CALL = 4;                                   // more people than this: cameras start off
+let camTouched = false, bigCallCheck = 0;
+function turnCameraOff() {
+  camOn = false;
+  camTrack?.stop(); camTrack = null;                  // really release the camera, light included
+  fxSource(null);
+  if (!screenTrack) replaceOutgoing('video', getBlankTrack());
+  syncBarButtons(); refreshSelf(); broadcastState();
+}
 $('camBtn').addEventListener('click', async () => {
+  camTouched = true;                                  // the person chose: the big-call rule leaves them alone
   if (camOn) {
-    camOn = false;
-    camTrack?.stop(); camTrack = null;                // really release the camera, light included
-    fxSource(null);
-    if (!screenTrack) replaceOutgoing('video', getBlankTrack());
+    turnCameraOff();
+    return;
   } else {
     try { camTrack = await openCamera($('camSelect').value || undefined); camOn = true; }
     catch { toast('Could not start the camera — check the browser permission.'); return; }
@@ -2530,7 +2552,7 @@ addEventListener('beforeunload', e => { if (peer || recording()) { e.preventDefa
 /* leaving */
 function leave(final) {
   if (recording()) stopCallRecording();            // save what was recorded before the call is torn down
-  releaseAwake(); backGuard = false; rejoining = false;
+  releaseAwake(); backGuard = false; rejoining = false; clearTimeout(bigCallCheck);
   mgrSpot = null; closeMgrMenu(); $('askBox').hidden = true;
   leaving = true;
   attTick(true);                                   // hand the final register to whoever stays
@@ -2589,7 +2611,7 @@ function route() {
 route();
 showInAppGuide();
 
-window.__paywandi = { recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
+window.__paywandi = { BIG_CALL, camTouched: () => camTouched, recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
