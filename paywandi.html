@@ -87,6 +87,22 @@
     #netResult dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: .88rem; margin: 8px 0 0; }
     #netResult dt { color: var(--muted); }
     #netResult dd { margin: 0; }
+    #people { width: min(320px, 100%); border-left: 1px solid var(--line); background: #0f1621; display: none; flex-direction: column; }
+    #people.on { display: flex; }
+    #peopleList { list-style: none; margin: 0; padding: 6px 6px 12px; overflow-y: auto; flex: 1; }
+    #peopleList li { display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: 9px; }
+    #peopleList li.talking { background: rgba(63,182,127,.14); }
+    #peopleList .pi { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: .74rem; font-weight: 800; color: #fff; flex: 0 0 auto; }
+    #peopleList .pn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .9rem; }
+    #peopleList .pb { font-size: .85rem; white-space: nowrap; }
+    #peopleList button { min-height: 30px; padding: 2px 10px; }
+    .tile.offstage { display: none !important; }
+    .tile .handb { display: none; }
+    .tile.hand-up .handb { display: inline; }
+    .tile.hand-up { border-color: #f5b93d; }
+    .more-tile { display: flex; align-items: center; justify-content: center; background: #1b2636; color: #fff;
+      font-weight: 800; font-size: 1.05rem; border: 2px dashed #3a4a60; cursor: pointer; }
     #chat { width: min(340px, 100%); border-left: 1px solid var(--line); background: #0f1621; display: none; flex-direction: column; }
     #chat.on { display: flex; }
     #chatLog { flex: 1; overflow-y: auto; padding: 10px 12px; font-size: .9rem; }
@@ -203,7 +219,7 @@
     .support { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
     @media (max-width: 700px) {
-      #chat { position: fixed; inset: 0 0 0 0; width: 100%; z-index: 40; padding-top: env(safe-area-inset-top); }
+      #chat, #people { position: fixed; inset: 0 0 0 0; width: 100%; z-index: 40; padding-top: env(safe-area-inset-top); }
       .bar .lbl { display: none; }
       .topbar .hide-sm { display: none; }
     }
@@ -290,6 +306,7 @@
     <span class="muted hide-sm" id="callTimer">00:00</span>
     <a class="donate-mini" href="https://humanitifoundation.org/causes/clean-water/" target="_blank" rel="noopener noreferrer"
        title="Donate for clean water — goes directly to Humaniti">💧<span class="lbl">Donate</span></a>
+    <button type="button" id="peopleBtn" title="People in the call" style="min-height:34px;padding:6px 10px;font-size:.85rem">👥<span id="peopleCount">1</span></button>
     <button type="button" id="copyTop" style="min-height:34px;padding:6px 12px;font-size:.85rem">Invite</button>
   </div>
   <div class="stagewrap">
@@ -298,6 +315,11 @@
       <div class="topbar"><strong class="grow">Chat</strong><button type="button" id="chatClose" style="min-height:34px;padding:6px 12px">Close</button></div>
       <div id="chatLog" aria-live="polite"><p class="sys">Messages go only to people in the call right now, and are not saved anywhere.</p></div>
       <form id="chatForm"><input id="chatInput" maxlength="1000" placeholder="Message" autocomplete="off"><button type="submit" class="primary">Send</button></form>
+    </aside>
+    <aside id="people" aria-label="People">
+      <div class="topbar"><strong class="grow" id="peopleTitle">People</strong><button type="button" id="peopleClose" style="min-height:34px;padding:6px 12px">Close</button></div>
+      <div style="padding:8px 10px 0"><input id="peopleSearch" placeholder="Search names" autocomplete="off" aria-label="Search names"></div>
+      <ul id="peopleList"></ul>
     </aside>
   </div>
   <div class="bar">
@@ -309,6 +331,7 @@
     <button type="button" class="view sec" id="diwanBtn" aria-pressed="false" title="Switch between the diwan room and the grid" style="display:none">🛋️<span class="lbl">Diwan</span></button>
     <button type="button" class="view sec" id="autoCamBtn" aria-pressed="true" title="Camera follows whoever is speaking" style="display:none">🎥<span class="lbl">Auto camera</span></button>
     <button type="button" class="sec" id="netBtn" title="Check whether your network can connect calls">🩺<span class="lbl">Connection check</span></button>
+    <button type="button" class="view sec" id="handBtn" aria-pressed="false" title="Raise your hand to speak">✋<span class="lbl">Raise hand</span></button>
     <button type="button" class="view sec" id="voiceBtn" aria-pressed="true" title="Make your voice louder for everyone">📢<span class="lbl" id="voiceLbl">Voice: loud</span></button>
     <button type="button" class="view sec" id="saverBtn" aria-pressed="false" title="Data saver: lighter video for slow or costly connections">📶<span class="lbl">Data saver</span></button>
     <button type="button" class="sec" id="bgBtn" title="Background filters">🖼️<span class="lbl">Background</span></button>
@@ -661,22 +684,35 @@ try {
 function tuneSenders(rec) {
   const pc = rec.call?.peerConnection; if (!pc) return;
   const lite = dataSaver || rec.lite;                 // lighter if I asked for it, or they did
-  // Everyone sends video to everyone, so a device's upload is shared by all the others. From four people
-  // up the budget is split between them, and resolution steps down as the call grows; small calls keep full quality.
-  const others = Math.max(1, peers.size);
-  const share = others >= 3 ? Math.max(120_000, Math.floor((isMobile ? 1_500_000 : 3_000_000) / others)) : Infinity;
-  const crowdScale = others >= 11 ? 3 : others >= 5 ? 2 : 1;
+  const n = peers.size + 1;
+  const wantOf = r => r.congested ? 'off' : (r.wantVideo || (n <= 4 ? 'full' : 'thumb'));
+  const want = wantOf(rec);
+  const all = [...peers.values()];
+  const fulls = Math.max(1, all.filter(r => wantOf(r) === 'full').length);
+  const thumbs = all.filter(r => wantOf(r) === 'thumb').length;
+  // the upload budget is shared only among the people actually watching
+  const budget = isMobile ? 1_500_000 : 3_000_000;
+  const thumbRate = thumbs ? Math.max(50_000, Math.min(150_000, Math.floor(budget * 0.35 / thumbs))) : 150_000;
+  const fullRate = Math.max(150_000, Math.floor((budget - thumbRate * thumbs) / fulls));
   for (const sender of pc.getSenders()) {
-    if (sender.track?.kind !== 'video') continue;
+    const kind = sender.track?.kind; if (!kind) continue;
     let prm; try { prm = sender.getParameters(); } catch { continue; }
     if (!prm.encodings || !prm.encodings.length) continue;   // not negotiated yet: tuned again once connected
     const e = prm.encodings[0];
-    let bitrate = Math.min(lite ? (screenTrack ? 500_000 : 250_000) : Infinity, screenTrack ? Math.max(400_000, share * 2) : share);
-    let scale = screenTrack ? 1 : Math.max(lite ? 2 : 1, crowdScale);   // keep shared text readable
-    let fps = screenTrack ? (lite || others >= 5 ? 5 : 0) : (lite || others >= 7 ? 15 : 0);
-    if (Number.isFinite(bitrate)) e.maxBitrate = bitrate; else delete e.maxBitrate;
-    if (scale > 1) e.scaleResolutionDownBy = scale; else delete e.scaleResolutionDownBy;
-    if (fps) e.maxFramerate = fps; else delete e.maxFramerate;
+    if (kind === 'audio') {
+      e.priority = 'high'; e.networkPriority = 'high';       // voice is protected before video
+      e.maxBitrate = lite ? 24_000 : 32_000;
+    } else {
+      e.priority = 'low'; e.networkPriority = 'low';
+      e.active = want !== 'off';                             // nobody here is looking: encode and send nothing
+      let bitrate = Infinity, scale = 1, fps = 0;
+      if (screenTrack) { bitrate = lite ? 500_000 : (n > 3 ? Math.max(400_000, fullRate) : Infinity); fps = lite || n > 5 ? 5 : 0; }   // shared text stays sharp
+      else if (want === 'thumb') { bitrate = lite ? 60_000 : thumbRate; scale = 4; fps = 12; }
+      else { bitrate = Math.min(lite ? 250_000 : Infinity, n > 3 ? fullRate : Infinity); scale = lite ? 2 : (fulls >= 5 ? 2 : 1); fps = lite ? 15 : 0; }
+      if (Number.isFinite(bitrate)) e.maxBitrate = bitrate; else delete e.maxBitrate;
+      if (scale > 1) e.scaleResolutionDownBy = scale; else delete e.scaleResolutionDownBy;
+      if (fps) e.maxFramerate = fps; else delete e.maxFramerate;
+    }
     sender.setParameters(prm).catch(() => {});
   }
 }
@@ -1001,7 +1037,9 @@ function openMgrMenu(tile, anchor) {
   if (self && control.mine) items.push(['resign', '\u21A9  Hand control back']);
   items.push(mgrSpot === seat ? ['unspot', '\u25a2  Minimize \u2014 end spotlight'] : ['spot', '\u26f6  Spotlight for everyone']);
   if (!self && r) items.push(r.mic ? ['mute', '\u{1F507}  Mute'] : ['ask', '\u{1F3A4}  Ask to unmute']);
+  if (!self && r?.hand) items.push(['lowerhand', '\u270B  Lower hand']);
   if (peers.size) items.push(['muteall', '\u{1F507}  Mute everyone else']);
+  if (handAt || [...peers.values()].some(x => x.hand)) items.push(['lowerall', '\u270B  Lower all hands']);
   const menu = $('mgrMenu');
   menu.innerHTML = `<div class="who">${esc(self ? 'You' : (r?.name || 'Guest'))}</div>` +
     items.map(([cmd, label]) => `<button type="button" role="menuitem" data-cmd="${cmd}">${label}</button>`).join('');
@@ -1017,7 +1055,7 @@ $('mgrMenu').addEventListener('click', e => {
   managerCommand(b.dataset.cmd, +$('mgrMenu').dataset.seat);
   closeMgrMenu();
 });
-document.addEventListener('click', e => { if (!e.target.closest('#mgrMenu, .mgrbtn')) closeMgrMenu(); });
+document.addEventListener('click', e => { if (!e.target.closest('#mgrMenu, .mgrbtn, [data-mgr]')) closeMgrMenu(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMgrMenu(); });
 
 function managerCommand(cmd, seat) {
@@ -1048,6 +1086,13 @@ function applyManagerCommand(m, fromMe) {
     case 'muteall':
       if (fromMe) toast('Everyone else has been muted');
       else if (!manager.mine) forceMute();                   // the creator is never muted by someone they gave control to
+      break;
+    case 'lowerhand':
+      if (m.seat === mySeat && handAt) setHand(false, 'The meeting manager lowered your hand');
+      break;
+    case 'lowerall':
+      if (fromMe) { if (handAt) setHand(false); toast('All hands lowered'); }
+      else if (handAt) setHand(false, 'The meeting manager lowered all hands');
       break;
     case 'ask':
       if (m.seat === mySeat && micTrack && !micOn) $('askBox').hidden = false;
@@ -1462,7 +1507,7 @@ async function openLobby() {
   $('otherMeetForm').style.display = isHost ? '' : 'none';
   $('inviteInput').value = inviteUrl();
   $('lobbyMid').textContent = formatId(room);
-  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. There is no limit on how many people can join; in calls with more than four people your camera starts off, and video quality adjusts automatically as the call grows.';
+  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. There is no limit on how many people can join; in calls with more than four people your camera starts off, from ten people you join muted, and in big calls voice always comes first while video is only sent to people who are on screen.';
   updatePreviewInitials();
   $('lobbyMsg').textContent = 'Checking camera and microphone…'; $('lobbyMsg').className = 'muted';
   const warning = await acquireMedia();
@@ -1551,7 +1596,7 @@ function joinCall(name) {
 // There is no limit on seats. A joiner takes the lowest free seat, trying one at a time: the call service
 // rate-limits connections per internet address (Cloudflare 429 / error 1015, about an hour), so several
 // people joining from one home must never open bursts of parallel connections.
-function claimSeat(seat) {
+function claimSeat(seat, onTaken) {
   const p = new Peer(seatId(seat), PEER_OPTIONS);
   let settled = false;
   // once: PeerJS fires 'open' again after every broker reconnect, which must not re-enter the call
@@ -1560,7 +1605,10 @@ function claimSeat(seat) {
     if (!settled) {
       settled = true;
       try { p.destroy(); } catch {}
-      if (err.type === 'unavailable-id') return claimSeat(seat + 1);
+      if (err.type === 'unavailable-id') {
+        if (onTaken) return onTaken();
+        return seat + 1 >= CENSUS_FROM ? startCensus(seat + 1) : claimSeat(seat + 1);   // a bigger call: ask which seats are free
+      }
       $('joinBtn').disabled = false;
       $('lobbyMsg').textContent = err.type === 'browser-incompatible'
         ? 'This browser does not support calls. Try current Chrome, Edge, Firefox or Safari.'
@@ -1581,7 +1629,11 @@ function enterCall() {
   if (micTrack) micTrack.enabled = micOn;
   // Big calls start with video off. Seats fill from the lowest, so taking seat 4 or higher means at least four
   // people are already here: turn the camera off before any video is sent. A later check covers seats freed by leavers.
-  camTouched = false;
+  camTouched = false; micTouched = false;
+  if (micTrack && micOn && mySeat >= LARGE_CALL - 1) {        // at least nine people already here
+    micOn = false; micTrack.enabled = false;
+    setTimeout(() => toast(`You joined muted because this is a big call \u2014 tap the microphone to speak, or raise your hand`, 6000), 1400);
+  }
   if (camOn && camTrack && mySeat >= BIG_CALL) {
     camOn = false;
     setTimeout(() => toast(`Your camera is off because this call has more than ${BIG_CALL} people \u2014 tap the camera to turn it on`, 6000), 600);
@@ -1592,6 +1644,11 @@ function enterCall() {
       turnCameraOff();
       toast(`Your camera is off because this call has more than ${BIG_CALL} people \u2014 tap the camera to turn it on`, 6000);
     }
+    if (peer && micTrack && micOn && !micTouched && peers.size + 1 >= LARGE_CALL) {
+      micOn = false; micTrack.enabled = false;
+      syncBarButtons(); refreshSelf(); broadcastState();
+      setTimeout(() => toast('You are muted because this is a big call \u2014 tap the microphone to speak, or raise your hand', 6000), 1500);
+    }
   }, 7000);
   if (!camOn && camTrack) { camTrack.stop(); camTrack = null; fxSource(null); }   // camera light off when joining with video off
   syncBarButtons();
@@ -1600,6 +1657,7 @@ function enterCall() {
   wirePeerEvents(peer);
   armBackGuard();                                        // the phone's Back button must not end the call
   keepAwake();                                           // nor the screen locking by itself
+  clearInterval(policyTimer); policyTimer = setInterval(policyTick, 700);   // who is watched, who is heard, who is on screen
   for (let s = 0; s < mySeat; s++) dial(s);
   rescanId = setInterval(rescan, RESCAN_MS);
   timerId = setInterval(tick, 1000);
@@ -1615,6 +1673,210 @@ function wirePeerEvents(p) {
   p.on('call', onIncomingCall);
   p.on('disconnected', () => { if (!leaving && p === peer) { setNet(false, 'Reconnecting to the call service\u2026'); try { p.reconnect(); } catch {} } });
   p.on('open', () => { if (p === peer) setNet(true); });
+}
+
+/* ---------------------------------------------------------------- big calls --- *
+ * No media server: every phone sends to every other, so a big call is run by attention.
+ * - Voice always reaches everyone. Opus uses DTX (silence costs almost nothing) at speech bitrate, and
+ *   audio is given network priority over video.
+ * - Video is sent only where someone is looking. Every second each person tells each sender what they
+ *   need: 'full' for the speaker, a shared screen, a spotlight or a big tile; 'thumb' for a small tile on
+ *   screen; 'off' for anyone not on screen or with the camera off. Senders stop
+ *   encoding for 'off', and share their upload only among those who want full video.
+ * - A connection that turns weak gets voice only until it recovers.
+ * - Screens show the most recently active people with a "+N more" tile; everyone is in the People list.
+ * - Hands can be raised; from ten people newcomers join muted; big calls find a seat with one connection.  */
+const LARGE_CALL = 10;
+const CENSUS_FROM = +(new URLSearchParams(location.search).get('censusfrom')) || 4;
+const TILE_LIMIT = () => isMobile ? 6 : 12;
+let handAt = 0, micTouched = false, speakMs = 0, policyTimer = 0, policyTicks = 0, peopleOpen = false;
+const moreTile = document.createElement('button');
+moreTile.type = 'button'; moreTile.className = 'tile more-tile'; moreTile.hidden = true;
+moreTile.addEventListener('click', () => openPeople());
+function stageTiles(stage) { return [...stage.children].filter(t => t !== moreTile); }
+function tileOfSeat(sn) { return sn === mySeat ? selfTile : peers.get(sn)?.tile || ghosts.get(sn)?.tile || null; }
+
+// Opus for speech: discontinuous transmission, in-band error correction, a speech bitrate.
+function voiceSdp(sdp) {
+  const m = /a=rtpmap:(\d+) opus\/48000/i.exec(sdp || '');
+  if (!m) return sdp;
+  return sdp.replace(new RegExp(`a=fmtp:${m[1]} ([^\\r\\n]*)`), (line, params) => {
+    const kept = params.split(';').map(x => x.trim()).filter(x => x && !/^(usedtx|useinbandfec|maxaveragebitrate)=/i.test(x));
+    return `a=fmtp:${m[1]} ${[...kept, 'useinbandfec=1', 'usedtx=1', 'maxaveragebitrate=32000'].join(';')}`;
+  });
+}
+
+function mustShowTiles() {
+  const must = new Set();
+  peers.forEach(r => { if (r.tile.classList.contains('speaking') || r.hand) must.add(r.tile); });
+  (autoCam ? director.focus : []).forEach(sn => { const t = tileOfSeat(sn); if (t) must.add(t); });
+  if (mgrSpot !== null) { const t = tileOfSeat(mgrSpot); if (t) must.add(t); }
+  if (spotSeat !== null) { const t = tileOfSeat(spotSeat); if (t) must.add(t); }
+  return must;
+}
+// Show at most `limit` tiles: you, then whoever must be seen, then the most recently active; the rest wait behind "+N".
+function applyTileLimit(stage, limit, must) {
+  if (!moreTile.isConnected) stage.appendChild(moreTile);
+  const tiles = stageTiles(stage);
+  if (tiles.length <= limit) {
+    tiles.forEach(t => { t.classList.remove('offstage'); t.style.order = ''; });
+    moreTile.hidden = true;
+    return tiles.length;
+  }
+  const info = new Map([...peers.values()].map(r => [r.tile, r]));
+  const seatOfT = t => t === selfTile ? -1 : (info.get(t)?.seat ?? 1e6);
+  const recency = t => t === selfTile ? 1e15 : (info.get(t)?.lastActive || 0);
+  const ranked = [...tiles].sort((a, b) => (Number(must.has(b)) - Number(must.has(a))) || (recency(b) - recency(a)) || (seatOfT(a) - seatOfT(b)));
+  const visible = new Set(ranked.slice(0, limit - 1));
+  tiles.forEach(t => {
+    const on = visible.has(t);
+    t.classList.toggle('offstage', !on);
+    t.style.order = on ? String(seatOfT(t) + 2) : '';     // on screen: stable seat order, so tiles do not jump around
+  });
+  moreTile.hidden = false;
+  moreTile.style.order = '999999';
+  moreTile.textContent = `+${tiles.length - visible.size} more`;
+  return visible.size + 1;
+}
+
+function desiredVideo() {
+  const want = new Map(), list = [...peers.values()], n = list.length + 1, now = Date.now();
+  const full = new Set();
+  if (spotSeat !== null) full.add(spotSeat);
+  if (mgrSpot !== null) full.add(mgrSpot);
+  (autoCam ? director.focus : []).forEach(sn => full.add(sn));
+  list.filter(r => r.lastActive && now - r.lastActive < 12000).sort((a, b) => b.lastActive - a.lastActive)
+    .slice(0, isMobile ? 1 : 2).forEach(r => full.add(r.seat));
+  for (const r of list) {
+    let v;
+    if (r.cam === false && !r.screen) v = 'off';                                                 // their camera is off: nothing to receive
+    else if (full.has(r.seat)) v = 'full';
+    else if (r.tile.classList.contains('offstage') || !r.tile.isConnected || !r.tile.getClientRects().length) v = 'off';   // not on my screen
+    else v = (n <= 4 || r.tile.getBoundingClientRect().width >= 240) ? 'full' : 'thumb';
+    want.set(r.seat, v);
+  }
+  return want;
+}
+
+async function checkCongestion(rec) {
+  const pc = rec.call?.peerConnection; if (!pc) return;
+  let avail = null, rtt = null;
+  try {
+    const st = await pc.getStats();
+    st.forEach(x => { if (x.type === 'candidate-pair' && x.nominated && x.state === 'succeeded') { avail = x.availableOutgoingBitrate ?? avail; rtt = x.currentRoundTripTime ?? rtt; } });
+  } catch { return; }
+  // while video is paused the bitrate estimate cannot grow, so recovery is judged on round-trip time alone
+  const bad = rec.congested ? (rtt != null && rtt > 0.8) : ((avail != null && avail < 180_000) || (rtt != null && rtt > 0.8));
+  const now = Date.now();
+  if (bad) {
+    rec.goodSince = 0; rec.badSince = rec.badSince || now;
+    if (!rec.congested && now - rec.badSince > 4000) { rec.congested = true; tuneAllSenders(); updateStatus(); }
+  } else {
+    rec.badSince = 0; rec.goodSince = rec.goodSince || now;
+    if (rec.congested && now - rec.goodSince > 20000) { rec.congested = false; tuneAllSenders(); updateStatus(); }
+  }
+}
+
+function policyTick() {
+  if (!peer) return;
+  const now = Date.now();
+  peers.forEach(r => { if (r.tile.classList.contains('speaking')) r.lastActive = now; });
+  if (selfTile?.classList.contains('speaking') && micOn) {
+    speakMs += 700;
+    if (handAt && speakMs >= 4200) setHand(false, 'Hand lowered \u2014 you have the floor');
+  } else speakMs = 0;
+  if (peers.size + 1 > Math.min(TILE_LIMIT(), 9)) { if ($('stage').classList.contains('diwan')) applyCamera(); else layout(); }                  // keep the most active people on screen
+  desiredVideo().forEach((v, seat) => {
+    const r = peers.get(seat);
+    if (r && r.conn?.open && r.askedVideo !== v) { r.askedVideo = v; send(r, { t: 'want', v }); }
+  });
+  if (++policyTicks % 7 === 0) peers.forEach(checkCongestion);
+  if (peopleOpen) renderPeople();
+}
+
+/* raise hand */
+function setHand(up, message) {
+  handAt = up ? Date.now() : 0;
+  selfTile?.classList.toggle('hand-up', !!handAt);
+  $('handBtn').setAttribute('aria-pressed', String(!!handAt));
+  broadcastState();
+  if (peopleOpen) renderPeople();
+  if (message) toast(message, 3500);
+}
+$('handBtn').addEventListener('click', () => {
+  if (handAt) setHand(false, 'Hand lowered');
+  else setHand(true, 'Hand raised \u2014 everyone can see you are waiting to speak');
+});
+
+/* people list */
+function openPeople() {
+  peopleOpen = true;
+  $('chat').classList.remove('on');
+  $('people').classList.add('on');
+  renderPeople(); layout();
+}
+function closePeople() { peopleOpen = false; $('people').classList.remove('on'); layout(); }
+$('peopleBtn').addEventListener('click', () => (peopleOpen ? closePeople() : openPeople()));
+$('peopleClose').addEventListener('click', closePeople);
+$('peopleSearch').addEventListener('input', () => renderPeople());
+$('peopleList').addEventListener('click', e => {
+  const b = e.target.closest('[data-mgr]'); if (!b) return;
+  const t = tileOfSeat(+b.dataset.mgr);
+  if (t) openMgrMenu(t, b);
+});
+function renderPeople() {
+  const q = $('peopleSearch').value.trim().toLowerCase(), now = Date.now();
+  const rows = [
+    { seat: mySeat, name: `${myName} (you)`, mic: micOn && !!micTrack, hand: handAt, talking: !!selfTile?.classList.contains('speaking'), mgr: manager.mine, ctl: control.mine, self: true },
+    ...[...peers.values()].map(r => ({ seat: r.seat, name: r.name, mic: r.mic, hand: r.hand || 0, mgr: !!r.isManager, ctl: !!r.hasControl,
+      talking: r.tile.classList.contains('speaking') || !!(r.lastActive && now - r.lastActive < 3000) })),
+    ...[...ghosts].map(([sn, g]) => ({ seat: sn, name: g.name, ghost: true })),
+  ];
+  const queue = new Map(rows.filter(r => r.hand).sort((a, b) => a.hand - b.hand).map((r, i) => [r.seat, i + 1]));
+  rows.sort((a, b) => ((b.self ? 1 : 0) - (a.self ? 1 : 0)) || ((a.hand ? 0 : 1) - (b.hand ? 0 : 1)) || ((a.hand || 0) - (b.hand || 0))
+    || ((b.talking ? 1 : 0) - (a.talking ? 1 : 0)) || a.name.localeCompare(b.name));
+  $('peopleTitle').textContent = `People (${rows.filter(r => !r.ghost).length})`;
+  $('peopleSearch').parentElement.hidden = rows.length < 8;
+  $('peopleList').innerHTML = rows.filter(r => !q || r.name.toLowerCase().includes(q)).map(r =>
+    `<li class="${r.talking ? 'talking' : ''}"><span class="pi" style="background:${colourFor(r.name)}">${esc(initials(r.name))}</span>` +
+    `<span class="pn">${esc(r.name)}</span><span class="pb">${r.mgr ? '\u{1F451}' : ''}${r.ctl ? '\u{1F39B}\uFE0F' : ''}` +
+    `${r.hand ? '\u270B' + queue.get(r.seat) : ''}${r.ghost ? '\u26A0\uFE0F' : r.mic ? '' : '\u{1F507}'}</span>` +
+    `${canManage() && !r.ghost ? `<button type="button" data-mgr="${r.seat}" aria-label="Manage ${esc(r.name)}">\u22ef</button>` : ''}</li>`).join('');
+}
+
+/* joining a big call: one connection asks which seats are free, instead of trying seats one connection at a time */
+function claimSeatExact(seat, onTaken) { claimSeat(seat, onTaken); }
+function startCensus(from) {
+  $('lobbyMsg').textContent = 'Big call \u2014 finding you a seat\u2026'; $('lobbyMsg').className = 'muted';
+  const SPAN = 40;
+  const probe = new Peer(`pw-${room}-x${Math.random().toString(36).slice(2, 10)}`, PEER_OPTIONS);
+  const free = new Set();
+  let finished = false;
+  const plain = s => claimSeat(s, () => plain(s + 1));
+  const finish = () => {
+    if (finished) return; finished = true;
+    try { probe.destroy(); } catch {}
+    if (!free.size) return plain(from);                   // the census learnt nothing: take seats one by one, as before
+    const seats = [...free].sort((a, b) => a - b);
+    const next = () => seats.length ? claimSeatExact(seats.shift(), next) : startCensus(from + SPAN);
+    next();
+  };
+  probe.on('error', err => {
+    if (err.type === 'peer-unavailable') {                     // nobody in that seat: the broker says so by name
+      const m = /peer\s+(\S+)/.exec(err.message || '');
+      if (m) { const sn = +m[1].split('-').pop(); if (sn >= from) free.add(sn); }
+      return;
+    }
+    if (!finished) { finished = true; try { probe.destroy(); } catch {} plain(from); }   // no census possible: plain claims
+  });
+  probe.once('open', () => {
+    let i = 0;
+    const wave = () => {
+      for (let k = 0; k < 10 && i < SPAN; k++, i++) { const c = probe.connect(seatId(from + i)); c.on('error', () => {}); }
+      if (i < SPAN) setTimeout(wave, 200); else setTimeout(finish, 6500);
+    };
+    wave();
+  });
 }
 
 /* ---------------------------------------------------------- stay in the call --- *
@@ -1777,7 +2039,7 @@ function wireConn(conn, seat, outgoing) {
     send(rec, helloMsg());
     send(rec, { t: 'att', log: [...att.values()] });
     if (outgoing) {
-      const call = peer.call(conn.peer, outgoingStream(), { metadata: { name: myName } });
+      const call = peer.call(conn.peer, outgoingStream(), { metadata: { name: myName }, sdpTransform: voiceSdp });
       wireCall(call, seat);
     }
     updateStatus();
@@ -1789,7 +2051,7 @@ function wireConn(conn, seat, outgoing) {
 function onIncomingCall(call) {
   const seat = seatOf(call.peer);
   if (seat < 0 || seat <= mySeat) { call.close(); return; }
-  call.answer(outgoingStream());
+  call.answer(outgoingStream(), { sdpTransform: voiceSdp });
   wireCall(call, seat);
 }
 function wireCall(call, seat) {
@@ -1825,7 +2087,7 @@ function onPeerError(err) {
 
 /* ------------------------------------------------------------ data channel --- */
 function helloMsg() { return { t: 'hello', ...(manager.mine ? { mgr: manager.pub, spot: mgrSpot, revoked: [...revokedGrants].slice(-20) } : {}),
-  ...(control.mine ? { ctl: control.grant, spot: mgrSpot } : {}), lite: dataSaver, rec: recording(), cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
+  ...(control.mine ? { ctl: control.grant, spot: mgrSpot } : {}), lite: dataSaver, hand: handAt, rec: recording(), cid: myCid, since: joinedAt, name: myName, mic: micOn && !!micTrack, cam: !!screenTrack || (camOn && !!camTrack), screen: !!screenTrack }; }
 function send(rec, msg) { try { if (rec.conn?.open) rec.conn.send(msg); } catch {} }
 function broadcast(msg) { peers.forEach(r => send(r, msg)); }
 function broadcastState() { const m = helloMsg(); m.t = 'state'; broadcast(m); }
@@ -1852,6 +2114,10 @@ function onData(seat, conn, data) {
         if (rec.hasControl) { const sp = Number.isInteger(data.spot) ? data.spot : null; if (sp !== mgrSpot) { mgrSpot = sp; layout(); } }
         else { rec.pendingSpot = Number.isInteger(data.spot) ? data.spot : null; checkControlClaim(rec, data.ctl); }
       } else if (rec.hasControl) dropControl(rec);                    // they handed it back or lost it
+      const hand = Number(data.hand) > 0 ? Number(data.hand) : 0;
+      if (hand && !rec.hand && canManage()) toast(`\u270B ${rec.name} raised their hand`, 4000);
+      rec.hand = hand;
+      rec.tile.classList.toggle('hand-up', !!hand);
       const wasLite = rec.lite; rec.lite = !!data.lite;
       if (wasLite !== rec.lite) tuneSenders(rec);                     // they asked for lighter video, or stopped asking
       if (data.rec && !othersRecording.has(seat)) { othersRecording.set(seat, rec.name); syncRecIndicator(); toast(`${rec.name} is recording this call`, 5000); }
@@ -1875,6 +2141,9 @@ function onData(seat, conn, data) {
       break;
     case 'mgr':
       if ((rec.isManager || rec.hasControl) && typeof data.cmd === 'string') applyManagerCommand(data, false);   // verified manager or control holder only
+      break;
+    case 'want':
+      if (['full', 'thumb', 'off'].includes(data.v) && rec.wantVideo !== data.v) { rec.wantVideo = data.v; tuneAllSenders(); }
       break;
     case 'ctlOffer': onControlOffer(rec); break;
     case 'ctlKey': onControlKey(rec, data.pub); break;
@@ -1904,7 +2173,7 @@ function makeTile(key, name, self) {
     <div class="state">Connecting…</div>
     <button type="button" class="enlarge" title="Full screen">\u26f6 Full screen</button>
     <button type="button" class="mgrbtn" title="Manage this person" aria-label="Manage this person">\u22ef</button>
-    <div class="tag"><span class="crown" title="Meeting manager">\u{1F451}</span><span class="ctlbadge" title="Has control of the meeting">\u{1F39B}\uFE0F</span><span class="warn-dot" aria-label="cannot connect">\u26A0\uFE0F</span><span class="mic" aria-label="muted">\u{1F507}</span><span class="nm"></span></div>`;
+    <div class="tag"><span class="handb" title="Hand raised">\u270B</span><span class="crown" title="Meeting manager">\u{1F451}</span><span class="ctlbadge" title="Has control of the meeting">\u{1F39B}\uFE0F</span><span class="warn-dot" aria-label="cannot connect">\u26A0\uFE0F</span><span class="mic" aria-label="muted">\u{1F507}</span><span class="nm"></span></div>`;
   tile.querySelector('.initials').style.background = colourFor(name + key);
   tile.querySelector('.enlarge').addEventListener('click', () => enlarge(tile));
   tile.querySelector('.mgrbtn').addEventListener('click', e => { e.stopPropagation(); openMgrMenu(tile, e.currentTarget); });
@@ -2010,8 +2279,8 @@ const DIWAN = {
   ],
 };
 // the gathering is the default; someone who switches to the grid keeps that choice
-let viewMode = 'diwan', diwanReady = false;
-try { if (localStorage.getItem('paywandi-view') === 'grid') viewMode = 'grid'; } catch {}
+let viewMode = 'grid', diwanReady = false;          // the grid first; the diwan room is one tap away
+try { if (localStorage.getItem('paywandi-view') === 'diwan') viewMode = 'diwan'; } catch {}
 (() => {   // offer the view only once the room photo has actually loaded
   const i = new Image();
   i.onload = () => { diwanReady = true; $('diwanBtn').style.display = ''; syncViewButton(); layout(); };
@@ -2107,9 +2376,28 @@ function applyCamera() {
   // Close-up: the speaker's screen leaves its cushion and fills the frame (two people share it side by side),
   // while the room stays visible, dimmed, behind them.
   // More people than cushions: the rest sit in a row of small screens along the top of the room.
-  const overflow = seated.filter(([sn, t]) => t && !DIWAN.spots[sn]).map(([sn]) => sn).sort((a, b) => a - b);
+  const overflowAll = seated.filter(([sn, t]) => t && !DIWAN.spots[sn]).map(([sn]) => sn);
   const ofW = Math.max(64, Math.min(g.W * 0.13, 150)), ofH = ofW * 10 / 16, gap = 6;
   const perRow = Math.max(1, Math.floor((g.W - gap) / (ofW + gap)));
+  // one row at most: whoever is talking, up close or waiting with a hand up, then the most recently active
+  const mustSeats = new Set([...(autoCam ? director.focus : []), ...[...peers.values()].filter(r => r.tile.classList.contains('speaking') || r.hand).map(r => r.seat)]);
+  const recencyOf = sn => sn === mySeat ? 1e15 : (peers.get(sn)?.lastActive || 0);
+  let overflow = [...overflowAll].sort((a, b) => a - b), hiddenOverflow = [];
+  if (overflowAll.length > perRow) {
+    const ranked = [...overflowAll].sort((a, b) => (Number(mustSeats.has(b)) - Number(mustSeats.has(a))) || (recencyOf(b) - recencyOf(a)) || a - b);
+    overflow = ranked.slice(0, perRow - 1).sort((a, b) => a - b);
+    hiddenOverflow = ranked.slice(perRow - 1);
+  }
+  const hiddenSeats = new Set(hiddenOverflow);
+  if (!moreTile.isConnected) stage.appendChild(moreTile);
+  moreTile.hidden = !hiddenOverflow.length;
+  if (hiddenOverflow.length) {
+    moreTile.textContent = `+${hiddenOverflow.length}`;
+    moreTile.style.left = (gap + (perRow - 1) * (ofW + gap) + ofW / 2) + 'px';
+    moreTile.style.top = (gap + ofH / 2) + 'px';
+    moreTile.style.width = ofW + 'px';
+    moreTile.style.setProperty('--z', 2);
+  }
   const baseRect = sn => {
     const spot = DIWAN.spots[sn];
     if (spot) return { x: ox + spot.x * DIWAN.w * k, y: oy + spot.y * DIWAN.h * k, w: spot.w * DIWAN.w * k, ry: spot.ry, boost: boostFor(spot) };
@@ -2129,7 +2417,9 @@ function applyCamera() {
   stage.style.setProperty('--dim', (0.6 * Math.max(0, ...closeness.values())).toFixed(3));
   for (const [seat, tile] of seated) {
     if (!tile) continue;
-    tile.classList.remove('unseated');                 // nobody is hidden any more
+    tile.classList.remove('unseated');
+    tile.classList.toggle('offstage', hiddenSeats.has(seat));   // beyond the top row: behind "+N" (always in the People list)
+    if (hiddenSeats.has(seat)) continue;
     const spot = baseRect(seat);
     const seatX = spot.x, seatY = spot.y, seatW = spot.w;
     const c = closeness.get(seat) || 0;
@@ -2226,7 +2516,7 @@ function layout() {
   if (spotTile) {
     clearDiwan(stage);                                   // a spotlight or shared screen always gets the big view
     stage.classList.add('present');
-    const others = stage.children.length - 1;
+    const others = applyTileLimit(stage, (isMobile ? 5 : 9) + 1, new Set([...mustShowTiles(), spotTile])) - 1;
     stage.style.setProperty('--strip', Math.max(1, others));
     if (others) stage.style.removeProperty('--striph'); else stage.style.setProperty('--striph', '0px');
     return;
@@ -2234,7 +2524,7 @@ function layout() {
   stage.classList.remove('present');
   if (viewMode === 'diwan' && diwanReady && mySeat >= 0) return layoutDiwan(stage);
   clearDiwan(stage);
-  const n = stage.children.length || 1;
+  const n = applyTileLimit(stage, TILE_LIMIT(), mustShowTiles()) || 1;
   const w = stage.clientWidth || innerWidth, h = stage.clientHeight || innerHeight;
   // pick the column count that makes 16:9 tiles as large as possible in this space
   let best = 1, bestArea = 0;
@@ -2288,6 +2578,7 @@ function syncBarButtons() {
 }
 $('micBtn').addEventListener('click', () => {
   if (!micTrack) return;
+  micTouched = true;
   micOn = !micOn; micTrack.enabled = micOn;
   syncBarButtons(); refreshSelf(); broadcastState();
 });
@@ -2385,6 +2676,7 @@ function addChat(who, text, mine) {
 }
 $('chatBtn').addEventListener('click', () => {
   const on = !$('chat').classList.contains('on');
+  if (on && peopleOpen) { peopleOpen = false; $('people').classList.remove('on'); }
   $('chat').classList.toggle('on', on);
   if (on) { unread = 0; $('chatBadge').classList.remove('on'); setTimeout(() => $('chatInput').focus(), 50); }
   layout();
@@ -2404,6 +2696,7 @@ function setNet(ok, text) {
 }
 let tunedForCount = -1;
 function updateStatus() {
+  $('peopleCount').textContent = String(peers.size + 1);
   if (peers.size !== tunedForCount) { tunedForCount = peers.size; tuneAllSenders(); }   // the call grew or shrank: re-share the upload
   const others = peers.size;
   if (ghosts.size) {
@@ -2413,7 +2706,8 @@ function updateStatus() {
   }
   $('callStatus').textContent = others === 0
     ? (isHost ? 'Waiting for others — tap Invite to share the link' : 'Waiting for others to join…')
-    : `${others + 1} people in the call`;
+    : `${others + 1} people in the call` + (others + 1 >= LARGE_CALL ? ' \u00b7 big-call mode' : '')
+      + ([...peers.values()].some(r => r.congested) ? ' \u00b7 video paused on a weak connection, voice kept' : '');
 }
 function tick() {
   const s = Math.floor((Date.now() - joinedAt) / 1000);
@@ -2552,7 +2846,7 @@ addEventListener('beforeunload', e => { if (peer || recording()) { e.preventDefa
 /* leaving */
 function leave(final) {
   if (recording()) stopCallRecording();            // save what was recorded before the call is torn down
-  releaseAwake(); backGuard = false; rejoining = false; clearTimeout(bigCallCheck);
+  releaseAwake(); backGuard = false; rejoining = false; clearTimeout(bigCallCheck); clearInterval(policyTimer); handAt = 0;
   mgrSpot = null; closeMgrMenu(); $('askBox').hidden = true;
   leaving = true;
   attTick(true);                                   // hand the final register to whoever stays
@@ -2611,7 +2905,7 @@ function route() {
 route();
 showInAppGuide();
 
-window.__paywandi = { BIG_CALL, camTouched: () => camTouched, recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
+window.__paywandi = { LARGE_CALL, peers, ensurePeer, renderTileInfo, applyCamera, handAt: () => handAt, micOn: () => micOn, desiredVideo, voiceSdp, applyTileLimit, renderPeople, startCensus, setHand, policyTick, checkCongestion, moreTile, BIG_CALL, camTouched: () => camTouched, recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
