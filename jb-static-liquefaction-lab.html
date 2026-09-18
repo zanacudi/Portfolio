@@ -419,7 +419,7 @@ body{padding-bottom:54px}
 </div>
 </div>
 <div class="callout" id="upNote" aria-live="polite"></div>
-<div class="warning"><b>Read the shape, not just the numbers.</b> Drag &psi;<sub>o</sub> from positive to negative and the whole character changes: a contractive soil turns over early and ends far to the left, while a dilative one climbs the critical state line and ends stronger than it started. The peak stops being a peak. That transition &mdash; not a threshold stress ratio &mdash; is what separates a flowslide from a slump. This is a schematic of the mechanism, drawn from the critical-state relationships rather than integrated from NorSand; Module 1 has the full constitutive simulator.</div>
+<div class="warning"><b>Read the shape, not just the numbers.</b> Drag &psi;<sub>o</sub> from positive to negative and the whole character changes: a contractive soil turns over early and ends far to the left, while a dilative one climbs alongside the critical state line and ends stronger than it started. The peak stops being a peak. That transition &mdash; not a threshold stress ratio &mdash; is what separates a flowslide from a slump. <b>The path here is computed</b>, by the same NorSand integration Section 6 opens up, with the moduli held at representative values (H = 54, I<sub>r</sub> = 150, &chi;<sub>tc</sub> = 3.8, N = 0.30) so that this section stays about the shape of the mechanism; Section 6 puts those moduli on sliders and shows how much they matter. The critical-state point is marked from Eq. 6.4 rather than from the run, because a very loose sample needs more strain to reach it than a test window shows.</div>
 </div>
 
 <div class="card" id="norsand-undrained">
@@ -698,7 +698,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="about-tool">
-<div class="warning"><b>About this tool.</b> <b>Sections 6, 7 and 8 integrate NorSand's own published equations</b> (Table 3.1: the yield surface, the hardening limit of Eq. 3.38, the dimensionless hardening law of Eq. 3.40, stress&ndash;dilatancy D<sup>p</sup>=M<sub>i</sub>&minus;&eta;, and the consistency condition of Eq. C.51) together with Eqs. 6.6&ndash;6.8 for the undrained condition, using an explicit forward-Euler step in plastic shear strain and <b>without</b> the extra term Appendix C adds to the hardening law for rapidly falling p&prime;. Poisson's ratio is fixed at 0.2, the value the book uses for these soils, and N is not published for Erksak sand, so 0.30 is used there as a literature-typical value (as in Module 1). The simulator reproduces the directions the book states for both moduli and lands within the &eta;<sub>L</sub> range Fig. 6.27 quotes, but it is not the book's own spreadsheet: for Erksak test G609 the measured peak came at &eta;<sub>L</sub>=0.62 while these equations peak nearer &eta;&asymp;1, and the K<sub>o</sub> at which strength falls immediately comes out lower than the book's own figure of about 0.55. Both disagreements are stated on the figures concerned. Section 7's &eta;<sub>L</sub> curves are computed at every point rather than traced from Fig. 6.27; only the 0.75&ndash;1.0 band is quoted. Section 8's constant-deviator path is exact bookkeeping (total stress unchanged, so pore pressure comes straight off p&prime;), with the collapse branch computed from Section 6 once the locus is crossed. Section 3's laboratory table is Table 6.1 of the book (Bishop, 1971) transcribed as published, with &eta; at peak derived from &phi;&prime;<sub>f</sub> through sin&phi;&prime;=3&eta;/(6+&eta;); the brittleness points on the I<sub>B</sub> chart are placed by inverting Eq. 6.4, because the source table gives no state parameter, and the figure says so. Section 11's void-ratio calculator is Eq. 6.4's exponential and nothing else. Section 12's thresholds are quoted from Section 6.11; the K<sub>o</sub> arithmetic beside them is this page's own reading of the book's argument, not a published formula. Section 3 uses Eq. 6.4 with the sign resolved from first principles &mdash; p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows from the CSL definition (Eq. 2.1), and the book's restatement at Eq. 6.16/6.4 confirms the minus sign. It was cross-checked against the book's own result that peak &asymp; residual at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub>. Section 5's stress path is a schematic built from the critical-state relationships, not a NorSand integration; Module 1 has the real simulator. Section 6's &eta;<sub>L</sub> curve interpolates between Fig. 6.27's two explicitly cited endpoints, which are marked. Section 7's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly; its two branches agree to within 0.03% at the &psi;=&lambda;<sub>10</sub> anchor. Robertson's Eq. 6.15 is plotted against Q<sub>tn,cs</sub> directly, without deriving the I<sub>c</sub>/K<sub>c</sub> chain. Case-history values are the ranges published in Table 6.5.</div>
+<div class="warning"><b>About this tool.</b> <b>Sections 6, 7 and 8 integrate NorSand's own published equations</b> (Table 3.1: the yield surface, the hardening limit of Eq. 3.38, the dimensionless hardening law of Eq. 3.40, stress&ndash;dilatancy D<sup>p</sup>=M<sub>i</sub>&minus;&eta;, and the consistency condition of Eq. C.51) together with Eqs. 6.6&ndash;6.8 for the undrained condition, using an explicit forward-Euler step in plastic shear strain and <b>without</b> the extra term Appendix C adds to the hardening law for rapidly falling p&prime;. Poisson's ratio is fixed at 0.2, the value the book uses for these soils, and N is not published for Erksak sand, so 0.30 is used there as a literature-typical value (as in Module 1). The simulator reproduces the directions the book states for both moduli and lands within the &eta;<sub>L</sub> range Fig. 6.27 quotes, but it is not the book's own spreadsheet: for Erksak test G609 the measured peak came at &eta;<sub>L</sub>=0.62 while these equations peak nearer &eta;&asymp;1, and the K<sub>o</sub> at which strength falls immediately comes out lower than the book's own figure of about 0.55. Both disagreements are stated on the figures concerned. Section 7's &eta;<sub>L</sub> curves are computed at every point rather than traced from Fig. 6.27; only the 0.75&ndash;1.0 band is quoted. Section 8's constant-deviator path is exact bookkeeping (total stress unchanged, so pore pressure comes straight off p&prime;), with the collapse branch computed from Section 6 once the locus is crossed. Section 3's laboratory table is Table 6.1 of the book (Bishop, 1971) transcribed as published, with &eta; at peak derived from &phi;&prime;<sub>f</sub> through sin&phi;&prime;=3&eta;/(6+&eta;); the brittleness points on the I<sub>B</sub> chart are placed by inverting Eq. 6.4, because the source table gives no state parameter, and the figure says so. Section 11's void-ratio calculator is Eq. 6.4's exponential and nothing else. Section 12's thresholds are quoted from Section 6.11; the K<sub>o</sub> arithmetic beside them is this page's own reading of the book's argument, not a published formula. Section 3 uses Eq. 6.4 with the sign resolved from first principles &mdash; p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows from the CSL definition (Eq. 2.1), and the book's restatement at Eq. 6.16/6.4 confirms the minus sign. It was cross-checked against the book's own result that peak &asymp; residual at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub>. Section 5's stress path is the same NorSand integration as Section 6, run with fixed representative moduli (H = 54, I<sub>r</sub> = 150, &chi;<sub>tc</sub> = 3.8, N = 0.30) and with the critical-state point placed from Eq. 6.4 rather than from the end of the run. Section 6's &eta;<sub>L</sub> curve interpolates between Fig. 6.27's two explicitly cited endpoints, which are marked. Section 7's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly; its two branches agree to within 0.03% at the &psi;=&lambda;<sub>10</sub> anchor. Robertson's Eq. 6.15 is plotted against Q<sub>tn,cs</sub> directly, without deriving the I<sub>c</sub>/K<sub>c</sub> chain. Case-history values are the ranges published in Table 6.5.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
 
@@ -1079,88 +1079,90 @@ function drawBrittleChart(Mtc,lam10,psi,su){
 }
 
 // ---------------------------------------------------------------- Section 5
+// The path here is computed, not drawn: the same integration Section 6 exposes in full, run
+// with representative moduli so that this section can stay about the shape of the mechanism.
+var UP_H = 54, UP_IR = 150, UP_CHI = 3.8, UP_N = 0.30;
 function updateUndrainedPath(){
   var psi=num('upPsi'), Mtc=num('upM'), lam10=num('upL'), po=num('upP');
   el('upPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
   el('upMOut').textContent=Mtc.toFixed(2);
   el('upLOut').textContent=lam10.toFixed(3);
   el('upPOut').textContent=po.toFixed(0);
-  // critical state is reached at p'c = p'o * exp(-psi/lambda_e); q_c = M * p'c
+  // where the soil must end up: p'c = p'o*exp(-psi/lambda_e) from the CSL definition (Eq. 6.4)
   var pc=po*Math.exp(-psi/lamE(lam10));
   var qc=Mtc*pc, sr=qc/2;
-  // peak of an undrained path on a contractive soil, as a fraction of the way down
-  var suRatio=0.20;                    // representative peak ratio, Fig. 6.10
-  var su=suRatio*po, qPeak=2*su;
   var contractive = pc<po;
+  // A contractive sample is run well past the strain a real test reaches, so the path visibly
+  // arrives at the critical state Eq. 6.4 predicts for it. A dilative one is stopped at a
+  // test's worth of strain instead: it would otherwise climb to pressures no test ever sees.
+  var r=nsUndrained({psi0:psi, p0:po, Mtc:Mtc, lam10:lam10, chitc:UP_CHI, N:UP_N, H:UP_H, Ir:UP_IR,
+                     R:1, nu:0.2, steps:contractive?6000:1500, dEqp:1e-4});
+  // a state only just looser than critical never turns over inside a test's worth of strain,
+  // so the peak marker follows the run rather than the sign of psi
+  var turned = r.iPeak < r.S.q.length-3;
+  var su=r.qPeak/2;
   el('upStats').innerHTML =
     '<div class="stat"><small>p&prime; at critical state</small><strong>'+pc.toFixed(0)+' kPa</strong></div>'+
     '<div class="stat"><small>p&prime; lost to pore pressure</small><strong>'+Math.max(0,po-pc).toFixed(0)+' kPa</strong></div>'+
-    '<div class="stat hi"><small>residual s<sub>r</sub> = q<sub>c</sub>/2</small><strong>'+sr.toFixed(1)+' kPa</strong></div>'+
+    (turned
+      ? '<div class="stat hi"><small>peak s<sub>u</sub> computed</small><strong>'+su.toFixed(1)+' kPa</strong></div>'
+      : '<div class="stat"><small>s<sub>u</sub> at '+r.S.eq[r.S.eq.length-1].toFixed(0)+'% strain &mdash; no peak</small><strong>'+su.toFixed(1)+' kPa</strong><span class="badge dilate">still rising</span></div>')+
+    '<div class="stat hi"><small>s<sub>r</sub> at critical state (p&prime;<sub>c</sub>='+pc.toFixed(0)+' kPa)</small><strong>'+sr.toFixed(1)+' kPa</strong></div>'+
     '<div class="stat"><small>behaviour</small><strong style="font-size:12.5px">'+(contractive?'contractive':'dilative')+'</strong>'+
-      (contractive?'<span class="badge contract">sheds strength</span>':'<span class="badge dilate">gains strength</span>')+'</div>';
+      (contractive
+        ? (turned ? '<span class="badge contract">sheds strength</span>' : '<span class="badge caution">contracts, but keeps its strength</span>')
+        : '<span class="badge dilate">gains strength</span>')+'</div>'+
+    '<div class="stat"><small>I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub></small><strong>'+
+      (turned && su>0 ? Math.max(0,Math.min(1,(su-sr)/su)).toFixed(2) : '&mdash;')+'</strong>'+
+      (turned?'':'<span class="badge dilate">nothing is lost</span>')+'</div>';
   el('upNote').innerHTML =
     '<b>What the path is telling you.</b> Starting at p&prime;<sub>o</sub> = '+po.toFixed(0)+'&nbsp;kPa with &psi;<sub>o</sub> = '+(psi>=0?'+':'')+psi.toFixed(3)+
     ', critical state sits at p&prime; = '+pc.toFixed(0)+'&nbsp;kPa. '+
     (contractive
-      ? 'That is <b>'+Math.max(0,po-pc).toFixed(0)+'&nbsp;kPa of mean effective stress destroyed by pore pressure</b> with no change in total stress at all. The soil ends at s<sub>r</sub> = '+sr.toFixed(1)+'&nbsp;kPa, and everything above that on the path is strength it had and gave back.'
-      : 'Critical state sits to the <i>right</i> of where it started, so shearing this soil undrained raises its mean effective stress rather than destroying it. There is no strength to give back and no flowslide to have.')+
+      ? 'That is <b>'+Math.max(0,po-pc).toFixed(0)+'&nbsp;kPa of mean effective stress destroyed by pore pressure</b> with no change in total stress at all. '+
+        (turned ? 'The computed path peaks at s<sub>u</sub> = '+su.toFixed(0)+'&nbsp;kPa and is heading for s<sub>r</sub> = '+sr.toFixed(1)+'&nbsp;kPa, so everything between the two is strength it had and gave back.'
+                : 'This state is only just looser than critical, so the path has not turned over inside a test’s worth of strain: it is still climbing at '+su.toFixed(0)+'&nbsp;kPa, on its way to s<sub>r</sub> = '+sr.toFixed(1)+'&nbsp;kPa. Brittleness needs a state well past critical, not merely a positive &psi;.')
+      : 'Critical state sits to the <i>right</i> of where it started, so shearing this soil undrained raises its mean effective stress rather than destroying it. The computed path never turns over &mdash; at '+
+        r.S.eq[r.S.eq.length-1].toFixed(0)+'% strain it is still climbing, and it would go on climbing to p&prime;<sub>c</sub> = '+pc.toFixed(0)+
+        '&nbsp;kPa, a pressure no laboratory test reaches. There is no strength to give back and no flowslide to have.')+
     ' Nothing in this picture required a collapse surface, a metastable fabric, or a trigger stress ratio &mdash; only a soil that starts on the wrong side of critical.';
-  drawPathChart(psi,Mtc,lam10,po,pc,qc,qPeak);
+  drawPathChart(r, {psi:psi, Mtc:Mtc, po:po, pc:pc, qc:qc, contractive:contractive, turned:turned});
 }
-function drawPathChart(psi,Mtc,lam10,po,pc,qc,qPeak){
-  var host=el('pathChart'); if(!host) return;
-  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
-  var pMax=Math.max(po,pc)*1.25, qMax=Math.max(qc,qPeak)*1.35;
-  if(!(pMax>0)) pMax=1000; if(!(qMax>0)) qMax=500;
-  function X(p){ return ml+pw*Math.max(0,Math.min(1,p/pMax)); }
-  function Y(q){ return mt+ph*(1-Math.max(0,Math.min(1,q/qMax))); }
-  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  var xt=niceTicks(0,pMax,4), yt=niceTicks(0,qMax,4);
-  xt.values.forEach(function(v){ if(v>pMax) return; var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
-  yt.values.forEach(function(v){ if(v>qMax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
-  // critical state line q = M p'
-  ctx.strokeStyle='#268160'; ctx.lineWidth=2; ctx.beginPath();
-  ctx.moveTo(X(0),Y(0)); ctx.lineTo(X(pMax), Y(Math.min(qMax, Mtc*pMax))); ctx.stroke();
-  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
-  var csx=Math.min(X(pMax)-70, X(qMax/Mtc*0.85));
-  haloText(ctx,'CSL: q = M p′', csx, Y(Math.min(qMax, Mtc*(csx-ml)/pw*pMax))-4, '#1d6b4f');
-  // the undrained path: rise to a peak, then curve down to critical state
-  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
-  var N=120;
-  for(var i=0;i<=N;i++){
-    var t=i/N;
-    // p' walks from p'o to p'c; q rises to the peak then relaxes onto the CSL
-    var p = po + (pc-po)*t;
-    var q;
-    if(pc<po){ var tp=0.35; q = t<tp ? qPeak*(t/tp) : qPeak + (qc-qPeak)*((t-tp)/(1-tp)); }
-    else { q = qc*t; }
-    if(i===0) ctx.moveTo(X(p),Y(q)); else ctx.lineTo(X(p),Y(q));
+function drawPathChart(r, o){
+  var S=r.S, n=S.p.length;
+  // The frame follows the computed path, never the critical state: a dense sample's critical
+  // state sits at a pressure no test reaches, and letting it set the axes flattens everything
+  // that actually happened into a sliver along the bottom.
+  var pathP=0, pathQ=0;
+  for(var k=0;k<n;k++){ pathP=Math.max(pathP,S.p[k]); pathQ=Math.max(pathQ,S.q[k]); }
+  var pMax=Math.max(o.po*1.25, Math.min(pathP*1.15, o.po*3));
+  var qMax=Math.max(pathQ*1.25, o.Mtc*o.po*0.5);
+  if(o.turned) qMax=Math.max(qMax, o.qc*1.3);       // the drop to critical state must stay visible
+  var path=[];
+  for(var i=0;i<n;i+=Math.max(1,Math.floor(n/400))){
+    if(S.p[i]>pMax) break;                      // drop the tail rather than smear it along the frame
+    path.push([S.p[i], S.q[i]]);
   }
-  ctx.stroke();
-  // the strength given back
-  if(pc<po && qPeak>qc){
-    ctx.strokeStyle='#e38a22'; ctx.lineWidth=2; ctx.setLineDash([4,3]);
-    ctx.beginPath(); ctx.moveTo(X(pc), Y(qPeak)); ctx.lineTo(X(pc), Y(qc)); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font='700 9px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
-    haloText(ctx,'lost', X(pc)-5, (Y(qPeak)+Y(qc))/2, '#b06d12');
+  var series=[{pts:[[0,0],[pMax, Math.min(qMax, o.Mtc*pMax)]], color:'#268160', w:2},
+              {pts:path, color:'#1479b8', w:2.6}];
+  var pts=[{x:o.po, y:0, color:'#8a97a0', r:4.5, label:'start'}];
+  if(o.turned){
+    series.push({pts:[[r.pPeak, r.qPeak],[Math.max(o.pc,1), r.qPeak]], color:'#e38a22', w:1.8, dash:[4,3]});
+    series.push({pts:[[Math.max(o.pc,1), r.qPeak],[Math.max(o.pc,1), o.qc]], color:'#e38a22', w:2, dash:[4,3]});
+    pts.push({x:r.pPeak, y:r.qPeak, color:'#c64852', r:5.5, label:'peak'});
+    pts.push({x:Math.max(o.pc,1), y:o.qc, color:'#123b4a', r:5, label:'critical state'});
   }
-  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
-  // start, peak, residual
-  ctx.fillStyle='#8a97a0'; ctx.beginPath(); ctx.arc(X(po),Y(0),4,0,7); ctx.fill();
-  if(pc<po){ ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(po+(pc-po)*0.35),Y(qPeak),5.5,0,7); ctx.fill();
-             ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke(); }
-  ctx.fillStyle='#123b4a'; ctx.beginPath(); ctx.arc(X(pc),Y(qc),5.5,0,7); ctx.fill();
-  ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
-  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-  xt.values.forEach(function(v){ if(v>pMax) return; var lab=v.toFixed(0); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
-  ctx.font='10.5px Arial'; ctx.fillText("mean effective stress p′, kPa", ml+pw/2, mt+ph+20);
-  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  yt.values.forEach(function(v){ if(v>qMax) return; ctx.fillText(v.toFixed(0), ml-7, Y(v)); });
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText('deviator stress q, kPa',0,0); ctx.restore();
+  var lab=[{x:pMax*0.62, y:Math.min(qMax*0.98, o.Mtc*pMax*0.62), text:'CSL: q = M p\u2032', color:'#1d6b4f'}];
+  if(o.turned) lab.push({x:Math.max(o.pc,1), y:(r.qPeak+o.qc)/2, text:'  lost', color:'#b06d12'});
+  // Mark critical state only where it really is. Off the frame, say so in words rather than
+  // parking a dot on the border that would read as a place the soil arrives at.
+  if(!o.turned){
+    if(o.pc<=pMax && o.qc<=qMax) pts.push({x:o.pc, y:o.qc, color:'#123b4a', r:5, label:'critical state'});
+    else lab.push({x:pMax*0.5, y:qMax*0.12, text:'critical state is off this chart, at p\u2032 = '+o.pc.toFixed(0)+' kPa', color:'#123b4a'});
+  }
+  plotXY('pathChart', {h:300, xmin:0, xmax:pMax, ymin:0, ymax:qMax,
+    xlab:"mean effective stress p\u2032, kPa", ylab:'deviator stress q, kPa',
+    series:series, points:pts, labels:lab});
 }
 
 // ---------------------------------------------------------------- Section 6: undrained NorSand
@@ -1783,8 +1785,8 @@ var figureInfo={
  'Horizontal axis is the state parameter at the start of shearing; vertical is strength as a fraction of the initial mean effective stress. <b>Blue curve:</b> residual strength from Eq. 6.4. <b>Green dashed line:</b> the peak strength you set on the slider, which Eq. 6.4 does not predict. <b>Pink shading between them:</b> the strength that is lost -- Bishop&rsquo;s brittleness index is that gap divided by the peak. <b>Grey dashed vertical line:</b> psi = 0.7 lambda_e, the brittleness onset the book quotes. <b>Red dot:</b> the current state.',
  'Read the vertical gap, not the curve height. A soil can have a perfectly respectable peak strength and still be lethal if almost all of it sits in the pink. Drag psi to the right and watch the residual curve dive while the peak stays put -- that divergence is what turns a slope failure into a flowslide. Then drag lambda_10: a flatter critical state line moves the whole problem, because it is the ratio psi/lambda_e, not psi alone, that sets how much is lost.'],
 'pathChart':['What undrained shearing does to a contractive soil',
- 'The effective stress path in q against p&prime;. <b>Green line:</b> the critical state line, q = M p&prime;, where the soil must finish. <b>Blue curve:</b> the path taken -- rising to a peak, then turning left and down onto the CSL. <b>Red dot:</b> the peak, where instability begins. <b>Navy dot:</b> the residual at critical state. <b>Orange dashed bar:</b> the deviator stress given back between the two. <b>Grey dot on the axis:</b> where the soil started.',
- 'Watch the horizontal movement first. Total stress never changes in this picture -- every bit of leftward travel is mean effective stress destroyed by pore pressure the soil cannot shed. Then drag psi from positive to negative. The critical state point crosses to the right of the start, the peak stops being a peak, and the orange bar vanishes: the same equations that describe a flowslide describe a soil that simply gets stronger. Nothing switched on. The soil just started on the other side of critical.'],
+ 'The computed effective stress path in q against p&prime;. <b>Green line:</b> the critical state line, q = M p&prime;, where the soil must finish. <b>Blue curve:</b> the path, integrated from NorSand at fixed moduli. <b>Red dot:</b> the peak, where instability begins. <b>Navy dot:</b> the critical state the soil is heading for, placed from Eq. 6.4. <b>Orange dashed bar:</b> the deviator stress given back between the two. <b>Grey dot on the axis:</b> where the soil started.',
+ 'Watch the horizontal movement first. Total stress never changes in this picture -- every bit of leftward travel is mean effective stress destroyed by pore pressure the soil cannot shed. The path bends continuously, because the yield surface is hardening while the mean stress falls; the peak is simply where the second process overtakes the first, not a corner the soil turns. Then drag psi from positive to negative. The critical state point crosses to the right of the start, the peak stops being a peak, and the orange bar vanishes: the same equations that describe a flowslide describe a soil that simply gets stronger. Nothing switched on. The soil just started on the other side of critical.'],
 'hirChart':['The instability stress ratio is not a soil property',
  'Horizontal axis is H/Ir, the ratio of plastic hardening modulus to elastic rigidity; vertical is the stress ratio at instability, computed by running this page’s NorSand integration at every point. <b>Blue curve:</b> Ir held at 150, H varied. <b>Purple dashed curve:</b> H held at 80, Ir varied. <b>Pink band:</b> the 0.75 to 1.0 range the book states for this figure. <b>Red dot:</b> the current setting.',
  'The soil does not change anywhere on this chart -- same Mtc, same lambda_10, same psi, same Guindon silty sand throughout. Only the ratio of hardening to rigidity moves, and eta_L moves across a range about a third as wide as its own value. If instability happened at a fixed stress ratio the way the collapse-surface picture claims, both curves would be flat. Neither is, and that is the argument. The band is quoted from the book; the curves are this page’s own computation, so read their direction as what these equations do rather than as a digitised figure.'],
@@ -2289,12 +2291,42 @@ window.runModule3SelfTests = function(){
     check(el('caseTableBody').querySelectorAll('tr').length===rows.length, "the table lists every case");
   })();
 
-  // ---- undrained path ----
+  // ---- undrained path (Section 5) ----
   (function(){
     var po=500, lam=0.05;
     var pcLoose=po*Math.exp(-0.10/lamE(lam)), pcDense=po*Math.exp(0.05/lamE(lam));
     check(pcLoose<po, "a contractive soil ends at a LOWER mean effective stress");
-    check(pcDense>po, "a dilative soil ends at a HIGHER mean effective stress");
+    check(pcDense>po, "a dilatant soil ends at a HIGHER mean effective stress");
+    // Section 5 must draw a computed path, not a pair of straight lines through an assumed peak
+    var r=nsUndrained({psi0:0.068, p0:500, Mtc:1.25, lam10:0.05, chitc:UP_CHI, N:UP_N, H:UP_H, Ir:UP_IR, R:1, nu:0.2, steps:2400, dEqp:5e-5});
+    check(r.S.p.length>200, "the Section 5 path is integrated, not two line segments");
+    check(r.qPeak>0 && r.pPeak<500, "the computed path peaks after losing mean effective stress");
+    // a real path curves: the mid-point must sit off the chord between start and peak
+    (function(){
+      var iP=r.iPeak, iM=Math.floor(iP/2);
+      var chordQ = r.qPeak*(500-r.S.p[iM])/(500-r.pPeak);
+      check(Math.abs(r.S.q[iM]-chordQ)/Math.max(1,r.qPeak) > 0.05, "the pre-peak path is curved, not straight");
+    })();
+    // the peak is computed, so its height, its stress ratio and the strain it needs all move with
+    // the state (the fraction of p'o lost happens to be nearly constant in these equations, which
+    // is a property of the model rather than something the drawing imposes)
+    var rB=nsUndrained({psi0:0.02, p0:500, Mtc:1.25, lam10:0.05, chitc:UP_CHI, N:UP_N, H:UP_H, Ir:UP_IR, R:1, nu:0.2, steps:2400, dEqp:5e-5});
+    check(rB.qPeak > r.qPeak, "a state closer to critical peaks higher");
+    check(rB.eqPeak > r.eqPeak, "and needs more strain to get there");
+    check(Math.abs(rB.etaL - r.etaL) > 0.05, "the stress ratio at the peak moves with the state");
+    // a state barely looser than critical should not be labelled with a peak it never reached
+    var rFlat=nsUndrained({psi0:0.005, p0:500, Mtc:1.25, lam10:0.05, chitc:UP_CHI, N:UP_N, H:UP_H, Ir:UP_IR, R:1, nu:0.2, steps:2400, dEqp:5e-5});
+    check(rFlat.iPeak >= rFlat.S.q.length-3, "a nearly-critical state is still climbing at the end of the run");
+    // the strongest check available: carried far enough, the integration must arrive at the
+    // critical state that Eq. 6.4 predicts independently from the CSL definition
+    (function(){
+      var far=nsUndrained({psi0:0.068, p0:500, Mtc:1.25, lam10:0.05, chitc:UP_CHI, N:UP_N, H:UP_H, Ir:UP_IR, R:1, nu:0.2, steps:9000, dEqp:1.5e-4});
+      var pcExact=500*Math.exp(-0.068/lamE(0.05));
+      check(Math.abs(far.pEnd/pcExact-1) < 0.12, "the integrated path converges on the critical state Eq. 6.4 predicts");
+      check(Math.abs(far.qEnd/(1.25*far.pEnd)-1) < 0.05, "and arrives on the critical state line, q = M p'");
+    })();
+    var rD=nsUndrained({psi0:-0.06, p0:500, Mtc:1.25, lam10:0.05, chitc:UP_CHI, N:UP_N, H:UP_H, Ir:UP_IR, R:1, nu:0.2, steps:2400, dEqp:5e-5});
+    check(rD.pEnd>500, "the dilatant case in Section 5 moves to the right, as its critical state does");
   })();
 
   // ---- figures and wiring ----
