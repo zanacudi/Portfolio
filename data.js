@@ -145,7 +145,7 @@ const LITREVIEW = [
   {
     title: "Jefferies & Been — Soil Liquefaction: A Critical State Approach (2015)",
     meta: "Module 3: Static Liquefaction & Post-Liquefaction Strength — Chapter 6 (+ Chapter 1 case histories)",
-    description: "The chapter the whole book builds toward: real flow-failure case histories (Fort Peck 1938, Nerlerk 1983, Aberfan 1966, Merriespruit 1994), why brittleness rather than peak strength is the real hazard, why the traditional 'collapse surface' picture doesn't match the evidence, and an interactive rebuild of the book's own published design function for post-liquefaction residual strength — checked directly against real published case-history data (Table 6.5) including Nerlerk and Fort Peck.",
+    description: "The chapter the whole book builds toward: real flow-failure case histories (Fort Peck 1938, Nerlerk 1983, Aberfan 1966, Merriespruit 1994), why brittleness rather than peak strength is the real hazard, and Bishop's own 1971 laboratory table showing peak strength ratios that look ordinary beside brittleness indices from 10% to 94%. Three sections then run NorSand's published equations live for undrained loading: liquefaction appears with no collapse surface anywhere in the model, an 'instability line' emerges as a by-product of drainage conditions rather than a soil property, and a slope is brought to failure by a rising water table alone — the Aberfan mechanism — with no change in load. Closes with the book's published design function for post-liquefaction residual strength checked against eleven real failures (Table 6.5), why the older steady-state method reads too high, and what 'dense enough' actually means.",
     link: "jb-static-liquefaction-lab.html"
   },
   {

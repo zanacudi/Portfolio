@@ -91,6 +91,16 @@ canvas{display:block;width:100%;height:260px}
 #psikEq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
 #table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
 #table54 tbody tr.sel td{font-weight:700}
+.ns-figs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+.ns-figs .chart-host{min-width:0}
+@media(max-width:1080px){.ns-figs{grid-template-columns:1fr}}
+.preset-row{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 8px}
+.preset-row button{font-size:11px;background:#647680;padding:6px 9px}
+.preset-row button.on{background:var(--navy)}
+.tbl-scroll{overflow-x:auto;max-height:290px;overflow-y:auto}
+#bishopTable tbody tr{cursor:pointer}
+#bishopTable tbody tr:hover{background:#f2f7f9}
+#bishopTable tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
 .quiz-breakdown{width:100%;margin:10px 0 0;font-size:12px}
 .quiz-breakdown th{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 .quiz-breakdown td{vertical-align:middle}
@@ -270,7 +280,7 @@ body{padding-bottom:54px}
 </div></header>
 
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">1. Start here</a><a href="#case-histories">2. Four failures</a><a href="#brittleness">3. Brittleness</a><a href="#notation">4. Notation</a><a href="#undrained-path">5. Undrained path</a><a href="#collapse-surface">6. Collapse surface</a><a href="#residual-strength">7. Residual strength</a><a href="#case-check">8. Against the record</a><a href="#knowledge-check">9. Check learning</a>
+<a href="#start">1. Start here</a><a href="#case-histories">2. Four failures</a><a href="#brittleness">3. Brittleness</a><a href="#notation">4. Notation</a><a href="#undrained-path">5. Undrained path</a><a href="#norsand-undrained">6. Undrained NorSand</a><a href="#collapse-surface">7. Collapse surface</a><a href="#csd-path">8. Failure with no new load</a><a href="#residual-strength">9. Residual strength</a><a href="#case-check">10. Against the record</a><a href="#steady-state">11. Steady-state critique</a><a href="#dense-enough">12. How dense is enough</a><a href="#knowledge-check">13. Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -293,12 +303,12 @@ body{padding-bottom:54px}
 <p>Modules 1 and 2 were about <i>measuring</i> state. This one is about what state <i>does</i>. A contractive soil sheared undrained does not simply reach a lower strength &mdash; it reaches a peak, then sheds most of that strength on the way to critical state, and it is that <b>drop</b>, not the final value, that turns a slope into a flowslide.</p>
 <p>Everything here runs on the &psi; you learned to estimate in Module 2. Where Module 2 ended by asking which characteristic &psi;<sub>k</sub> to carry forward, this module answers what that number buys you: a residual strength, a brittleness, and a judgement about whether the ground is dense enough to leave alone.</p>
 </div>
-<div class="callout"><b>What you will be able to do by the end.</b> Read a flow failure and say which of its features were predictable. Compute residual strength from &psi; and say how brittle the soil is. Explain, with the book's own data, why the &ldquo;collapse surface&rdquo; picture is wrong and what replaces it. Run the book's published design function and check it against eleven real failures.</p></div>
+<div class="callout"><b>What you will be able to do by the end.</b> Read a flow failure and say which of its features were predictable. Compute residual strength from &psi; and say how brittle the soil is. Run NorSand's own equations for an undrained test and watch liquefaction happen with no collapse surface anywhere in them. Explain why the instability line is an outcome rather than a property, and why a slope can fail with no new load at all. Run the book's published design function, check it against eleven real failures, and say how dense is dense enough &mdash; and why the older steady-state method reads too high.</div>
 </div>
 
 <div class="card" id="about-module">
 <h2>About this module</h2>
-<div class="explain"><p>The interactive parts use the book's own equations and its own published case-history table. Where a figure could not be digitised point by point, the page says so on the figure rather than presenting an interpolation as data. The final page carries the full disclosure.</p></div>
+<div class="explain"><p>The interactive parts use the book's own equations, its own published case-history table and its own constitutive model. Sections 6 to 8 integrate NorSand directly rather than drawing schematics, so the figures there are computed in front of you from the parameters on the sliders. Where a figure of the book could not be digitised point by point, this page computes the same relationship from the equations instead and says so on the figure, rather than presenting an interpolation as data. The final page carries the full disclosure.</p></div>
 </div>
 
 <div class="card" id="case-histories">
@@ -345,6 +355,37 @@ body{padding-bottom:54px}
 <div class="callout" id="s1Note" aria-live="polite"></div>
 <div class="warning"><b>The reference point.</b> Test G609 on Erksak 330/0.7 sand &mdash; the loosest clean-sand liquefaction test in the book's database (e<sub>o</sub>=0.800, p&prime;<sub>o</sub>=500&nbsp;kPa, &psi;<sub>o</sub>=+0.068) &mdash; is the default slider state. It showed an <b>80% peak-to-residual strength drop</b>, with stress ratio and pore pressure both mobilising smoothly through the whole test. No sudden collapse. That smoothness is the book's key evidence against the traditional picture, which is Section 6.</div>
 
+<h3>Where these numbers come from: the trends in the laboratory data</h3>
+<div class="explain">
+<p>The equation above is not fitted to anything &mdash; it falls out of the definition of the critical state line. What the laboratory data supply is the <i>other</i> half of the picture: how high the peak sits, and therefore how big the drop is. Plotting both against &psi;<sub>o</sub>/&lambda;<sub>e</sub> rather than &psi;<sub>o</sub> alone (Fig. 6.13) is what makes the two comparable, because it is that ratio, not &psi;<sub>o</sub>, that governs brittleness.</p>
+<p>Two reference points anchor the chart. Wroth's (1984) critical-state result for a <b>normally consolidated clay</b>, (s<sub>u</sub>/p&prime;<sub>o</sub>)<sub>nc</sub> = (M/2)(1/2)<sup>&Lambda;</sup> with &Lambda;&asymp;0.8 (Eq. 6.3), gives about 0.35 at M=1.25 &mdash; and a spacing ratio of two is the same thing as &psi;<sub>o</sub> = 0.69&lambda;<sub>e</sub>. That is why the book can say there is <b>no substantive difference</b> between the peak undrained strength of loose sand and of normally consolidated clay, and why brittleness only begins at &psi;<sub>o</sub>/&lambda;<sub>e</sub> &gt; 0.7 (Fig. 6.14): below it, peak and residual are the same number.</p>
+</div>
+<div class="grid2">
+<div>
+<div class="chart-host"><canvas id="trendChart" role="img" aria-label="Peak and residual undrained strength ratio against the state parameter divided by the natural-log CSL slope, with Wroth's normally consolidated clay value marked."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>residual, Eq. 6.4</span><span><i style="background:#268160"></i>peak band, Fig. 6.10 (0.15&ndash;0.30)</span><span><i style="background:#7653a6"></i>Wroth's NC clay, Eq. 6.3</span><span><i style="background:#c64852"></i>current state</span></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="ibChart" role="img" aria-label="Brittleness index against the state parameter divided by the natural-log CSL slope, with Bishop's 1971 measurements shown as points."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>I<sub>B</sub> implied by Eq. 6.4</span><span><i style="background:#687a82"></i>Bishop (1971) measurements</span><span><i style="background:#8a97a0"></i>brittleness onset, 0.7</span></div>
+</div>
+</div>
+
+<h3>The measurements themselves &mdash; Bishop's 1971 table, still the reference 40 years on</h3>
+<div class="explain"><p>Table 6.1 of the book reproduces Bishop's own summary of consolidated-undrained tests on cohesionless soils. It is worth reading one row at a time, because it contains the whole chapter in miniature: peak strength ratios that look ordinary, brittleness indices from 10% to 94% in the <i>same</i> sand, and mobilized friction angles at peak (&phi;&prime;<sub>f</sub>) far below the critical-state value (&phi;&prime;<sub>r</sub>) the same soil ends at. Select a row to place it on the chart.</p></div>
+<div class="grid2">
+<div class="tbl-scroll"><table id="bishopTable">
+<thead><tr><th>Material</th><th>State</th><th>Test</th><th>(s<sub>u</sub>/p&prime;)<sub>n</sub></th><th>&phi;&prime;<sub>f</sub></th><th>&phi;&prime;<sub>r</sub></th><th>&eta; at peak</th><th>I<sub>B</sub></th></tr></thead>
+<tbody id="bishopBody"></tbody>
+</table></div>
+<div>
+<div class="chart-host"><canvas id="bishopChart" role="img" aria-label="Mobilized friction angle at peak against the critical state friction angle for Bishop's tests, with the line of equality."></canvas></div>
+<div class="legend"><span><i style="background:#c64852"></i>brittle tests (I<sub>B</sub> &ge; 0.5)</span><span><i style="background:#1479b8"></i>the rest</span><span><i style="background:#123b4a"></i>peak = critical state</span></div>
+<div class="callout" id="bishopNote" aria-live="polite" style="margin-top:10px"></div>
+</div>
+</div>
+<div class="warning"><b>Why this table matters twice.</b> Read down the &phi;&prime;<sub>f</sub> column and you are reading instability stress ratios: &eta; at peak follows from sin&phi;&prime; = 3&eta;/(6+&eta;), and it ranges from about 0.65 to 1.2 across these tests. The &ldquo;collapse surface&rdquo; picture in Section 7 needs that number to be a property of the soil. Three Banding sand tests at the same confining stress give 17.0&deg;, 21.8&deg; and 24.3&deg;. It is not a property.</div>
+
 <div class="quiz-checkpoint" id="quizCheckA">
 <h3>Quick check &mdash; before moving on</h3>
 <p class="explain" style="font-size:12px;margin-top:0">10 questions on brittleness, residual strength and Eq. 6.4.</p>
@@ -381,24 +422,106 @@ body{padding-bottom:54px}
 <div class="warning"><b>Read the shape, not just the numbers.</b> Drag &psi;<sub>o</sub> from positive to negative and the whole character changes: a contractive soil turns over early and ends far to the left, while a dilative one climbs the critical state line and ends stronger than it started. The peak stops being a peak. That transition &mdash; not a threshold stress ratio &mdash; is what separates a flowslide from a slump. This is a schematic of the mechanism, drawn from the critical-state relationships rather than integrated from NorSand; Module 1 has the full constitutive simulator.</div>
 </div>
 
+<div class="card" id="norsand-undrained">
+<h2>6. Undrained NorSand: the mechanism, computed</h2>
+<div class="explain">
+<p>Section 5 drew the stress path by hand from the critical-state relationships. This section computes it. Below is a direct numerical integration of NorSand's own governing equations (Table 3.1) for an <b>undrained triaxial compression test</b> &mdash; the same calculation the book's downloadable <i>NorSandM.xls</i> performs in its <code>NorTxlU</code> routine, and the one Section 6.5 uses to answer the question the collapse-surface debate could not: if liquefaction is not a fabric collapse, what is it?</p>
+<p>The undrained condition is not a soil property but a boundary condition (Eq. 6.6): total volumetric strain is zero, so the plastic contraction the soil wants must be cancelled by an equal elastic expansion, and that costs mean effective stress (Eq. 6.7):</p>
+</div>
+<div class="eq">&epsilon;&#775;<sub>v</sub> = 0 &nbsp;&rArr;&nbsp; &epsilon;&#775;<sub>v</sub><sup>e</sup> = &minus;&epsilon;&#775;<sub>v</sub><sup>p</sup> &nbsp;&nbsp;(6.6) &nbsp;&nbsp;&nbsp; p&#775;&prime; = &minus;K&middot;&epsilon;&#775;<sub>v</sub><sup>p</sup> &nbsp;&nbsp;(6.7) &nbsp;&nbsp;&nbsp; with &nbsp; D<sup>p</sup> = M<sub>i</sub> &minus; &eta; &nbsp; and &nbsp; K = 2G(1+&nu;)/[3(1&minus;2&nu;)], &nbsp; G = I<sub>r</sub>p&prime;</div>
+<div class="explain"><p>That is the whole mechanism. A contractive soil (D<sup>p</sup> &gt; 0) destroys its own mean effective stress as it shears, while the yield surface hardens only as fast as the hardening law allows. <b>Liquefaction is what happens when the first process outruns the second</b> &mdash; nothing collapses, and no trigger stress ratio appears anywhere in the equations.</p></div>
+
+<div class="preset-row" id="nsuPresets"></div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="nsuPsi"><span>Initial state parameter, &psi;<sub>o</sub></span> <span class="readout" id="nsuPsiOut">+0.068</span></label><input id="nsuPsi" type="range" min="-0.12" max="0.15" step="0.001" value="0.068"></div>
+<div class="slider-block"><label for="nsuP0"><span>p&prime;<sub>o</sub> (kPa)</span> <span class="readout" id="nsuP0Out">500</span></label><input id="nsuP0" type="range" min="50" max="1000" step="10" value="500"></div>
+<div class="snd-row2">
+<div class="slider-block"><label for="nsuH"><span>H</span> <span class="readout" id="nsuHOut">140</span></label><input id="nsuH" type="range" min="10" max="500" step="5" value="140"><div class="hint">plastic hardening modulus</div></div>
+<div class="slider-block"><label for="nsuIr"><span>I<sub>r</sub></span> <span class="readout" id="nsuIrOut">140</span></label><input id="nsuIr" type="range" min="40" max="600" step="5" value="140"><div class="hint">elastic shear rigidity G/p&prime;</div></div>
+</div>
+<div class="snd-row2">
+<div class="slider-block"><label for="nsuM"><span>M<sub>tc</sub></span> <span class="readout" id="nsuMOut">1.26</span></label><input id="nsuM" type="range" min="1.1" max="1.5" step="0.01" value="1.26"></div>
+<div class="slider-block"><label for="nsuL"><span>&lambda;<sub>10</sub></span> <span class="readout" id="nsuLOut">0.031</span></label><input id="nsuL" type="range" min="0.01" max="0.12" step="0.001" value="0.031"></div>
+</div>
+<div class="snd-row2">
+<div class="slider-block"><label for="nsuChi"><span>&chi;<sub>tc</sub></span> <span class="readout" id="nsuChiOut">3.8</span></label><input id="nsuChi" type="range" min="2" max="8" step="0.1" value="3.8"></div>
+<div class="slider-block"><label for="nsuN"><span>N</span> <span class="readout" id="nsuNOut">0.30</span></label><input id="nsuN" type="range" min="0.1" max="0.6" step="0.01" value="0.30"></div>
+</div>
+<div class="statgrid n2" id="nsuStats"></div>
+<h3 class="snd-eq-title">What the model is doing, step by step</h3>
+<div class="eq" id="nsuEq"></div>
+</div>
+<div>
+<div class="ns-figs">
+<div>
+<div class="chart-host"><canvas id="nsuQChart" role="img" aria-label="Deviator stress against axial strain from the undrained NorSand simulation, with the peak marked."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>q against strain</span><span><i style="background:#c64852"></i>peak (onset of liquefaction)</span></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="nsuPathChart" role="img" aria-label="Computed undrained effective stress path with the critical state line and the peak marked."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>effective stress path</span><span><i style="background:#268160"></i>critical state line</span><span><i style="background:#c64852"></i>peak</span></div>
+</div>
+</div>
+<div class="chart-host" style="margin-top:12px"><canvas id="nsuUChart" role="img" aria-label="Excess pore pressure against axial strain from the undrained NorSand simulation."></canvas></div>
+<div class="legend"><span><i style="background:#7653a6"></i>excess pore pressure &Delta;u</span><span><i style="background:#8a97a0"></i>strain at peak strength</span></div>
+</div>
+</div>
+
+<div class="guided-panel"><h3 style="margin-top:0">The book's own two experiments (Figs. 6.20 and 6.21)</h3>
+<p class="explain" style="font-size:12px">Each button changes <b>one</b> modulus and leaves the soil untouched. Watch the peak, the pore pressure and the post-peak slope.</p>
+<div class="preset-row" id="nsuExp">
+<button type="button" data-nsuexp="ir2">Double I<sub>r</sub></button>
+<button type="button" data-nsuexp="ir05">Halve I<sub>r</sub></button>
+<button type="button" data-nsuexp="h2">Double H</button>
+<button type="button" data-nsuexp="h05">Halve H</button>
+<button type="button" data-nsuexp="reset">Back to the preset</button>
+</div>
+<div class="experiment-status" id="nsuExpStatus" aria-live="polite">The book's result: doubling the elastic rigidity lowers the peak strength and raises the pore pressure, while a stiffer plastic modulus raises the peak and makes the post-peak drop sharper.</div>
+</div>
+
+<div class="quiz-checkpoint" id="quizCheckD">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on the undrained condition, the moduli and how NorSand produces liquefaction.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotD">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotD">Hide questions</button></div>
+<div id="quizSlotD"></div>
+</div>
+
+<div class="warning"><b>What this simulator is, and where it disagrees with the book.</b> It integrates NorSand's published equations &mdash; the yield surface, the hardening limit (Eq. 3.38), the dimensionless hardening law (Eq. 3.40), stress&ndash;dilatancy D<sup>p</sup> = M<sub>i</sub>&minus;&eta;, and Eqs. 6.6&ndash;6.8 for the undrained condition &mdash; with an explicit forward-Euler step and <b>without</b> the extra cap-crossing term Appendix C adds for rapidly falling p&prime;. It reproduces both of the book's stated directions (stiffer elasticity &rarr; weaker peak and more pore pressure; stiffer plastic modulus &rarr; stronger peak and a sharper drop). It does not reproduce every number: for Erksak test G609 the measured peak came at a stress ratio of &eta;<sub>L</sub>=0.62, while these equations at the book's quoted fit parameters peak nearer &eta;&asymp;1. Treat the curves as the mechanism, not as a replacement for the book's own spreadsheet.</div>
+</div>
+
 <div class="card" id="collapse-surface">
-<h2>6. Why &ldquo;collapse surface&rdquo; is the wrong picture</h2>
+<h2>7. Why &ldquo;collapse surface&rdquo; is the wrong picture</h2>
 <div class="explain">
 <p>The traditional explanation for static liquefaction is a &ldquo;collapse surface&rdquo; or &ldquo;instability line&rdquo;: loose sand supposedly holds together in a metastable particle arrangement until a critical stress ratio triggers a sudden rearrangement. The book tested that directly against Test G609. Stress ratio and excess pore pressure both mobilise <b>smoothly</b> with strain, with no inflection at peak strength (&eta;<sub>L</sub>=0.62) that would mark a structural event. A companion drained test on an even looser sample (e=0.820) showed no change in behaviour at all when its stress path crossed the same ratio.</p>
 <p>NorSand simulations show why the idea misleads: the stress ratio at instability is not a soil property. Holding M<sub>tc</sub> fixed and varying only the ratio of plastic hardening modulus to elastic rigidity, H/I<sub>r</sub>, moved &eta;<sub>L</sub> from <b>0.75 to 1.0</b> in simulations of real Guindon silty sand (33% fines, &psi;<sub>o</sub>=+0.065, Fig. 6.27). Liquefaction is ordinary strain-softening plasticity that becomes catastrophic only when drainage cannot keep up with pore pressure generation &mdash; Drucker's instability postulate (Eq. 6.20).</p>
 </div>
 <div class="snd-layout">
 <div class="snd-controls">
-<div class="slider-block"><label for="hirSlide"><span>H/I<sub>r</sub> &mdash; plastic hardening over elastic rigidity</span> <span class="readout" id="hirOut">1.00</span></label><input id="hirSlide" type="range" min="0" max="4" step="0.05" value="1"><div class="hint">The same range Fig. 6.27 explores, for the book's own Guindon silty sand parameters (&Gamma;=0.902, &lambda;<sub>10</sub>=0.05, M<sub>tc</sub>=1.25, N=0.5, &chi;<sub>tc</sub>=6.0, &psi;<sub>o</sub>=+0.065, OCR=1.15, K<sub>o</sub>=1.0, &nu;=0.2).</div></div>
+<div class="slider-block"><label for="hirSlide"><span>H/I<sub>r</sub> &mdash; plastic hardening over elastic rigidity</span> <span class="readout" id="hirOut">0.53</span></label><input id="hirSlide" type="range" min="0.05" max="4" step="0.05" value="0.55"><div class="hint">The same range Fig. 6.27 explores, for the book's own Guindon silty sand parameters (&Gamma;=0.902, &lambda;<sub>10</sub>=0.05, M<sub>tc</sub>=1.25, N=0.5, &chi;<sub>tc</sub>=6.0, &psi;<sub>o</sub>=+0.065, OCR=1.15, K<sub>o</sub>=1.0, &nu;=0.2).</div></div>
 <div class="statgrid n2" id="hirStats"></div>
-<div class="callout" style="font-size:11.5px">If &eta;<sub>L</sub> were a soil property it could not move at all while the soil stays the same. It moves by a third. That is the argument.</div>
+<div class="callout" style="font-size:11.5px">If &eta;<sub>L</sub> were a soil property it could not move at all while the soil stays the same. Every point on this chart is the same silty sand at the same state. That is the argument. <b>Note also that the two curves fall almost on top of each other</b> &mdash; varying H and varying I<sub>r</sub> give the same answer at the same ratio, which is why the book plots against H/I<sub>r</sub> in the first place.</div>
 </div>
 <div>
-<div class="chart-host"><canvas id="hirChart" role="img" aria-label="Instability stress ratio against the ratio of plastic hardening modulus to elastic rigidity, between the two endpoint values cited in Figure 6.27."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>&eta;<sub>L</sub> across the H/I<sub>r</sub> range</span><span><i style="background:#c64852"></i>current H/I<sub>r</sub></span><span><i style="background:#687a82"></i>Fig. 6.27's two cited endpoints</span></div>
+<div class="chart-host"><canvas id="hirChart" role="img" aria-label="Instability stress ratio against the ratio of plastic hardening modulus to elastic rigidity, computed by this page's NorSand integration along two paths, with the range the book cites shaded."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>I<sub>r</sub> fixed at 150, H varied</span><span><i style="background:#7653a6"></i>H fixed at 80, I<sub>r</sub> varied</span><span><i style="background:#e9b7bb"></i>the &eta;<sub>L</sub> = 0.75&ndash;1.0 range the book cites</span><span><i style="background:#c64852"></i>current H/I<sub>r</sub></span></div>
 </div>
 </div>
-<div class="warning"><b>What is real here and what is drawn.</b> The two endpoint values (&eta;<sub>L</sub>&asymp;0.75 at H/I<sub>r</sub>&asymp;0 and &asymp;1.0 at H/I<sub>r</sub>&asymp;4) are the book's own explicitly stated results and are marked on the figure. The curve between them is a smooth monotonic interpolation &mdash; Fig. 6.27 was not available to digitise point by point, so treat its <i>shape</i> as illustrative and the endpoints as the cited result.</div>
+<div class="warning"><b>Computed, not traced.</b> Figure 6.27 itself could not be digitised point by point, so rather than draw a shape between two assumed endpoints, this chart <b>runs Section 6's NorSand integration</b> at each H/I<sub>r</sub> along the figure's own two paths &mdash; holding I<sub>r</sub>=150 and varying H, then holding H=80 and varying I<sub>r</sub> &mdash; using the Guindon properties printed in the figure. What the book states in words is the <i>range</i>: &ldquo;the instability stress ratio can vary easily from &eta;<sub>L</sub> = 0.75 to &eta;<sub>L</sub> = 1.0 for the same value of critical friction ratio M<sub>tc</sub>&rdquo;. That range is shaded. The direction of the trend within it is this page's own computation, not a quotation: in these equations a stiffer plastic modulus relative to the elastic rigidity brings the peak on earlier, at a <i>lower</i> stress ratio but a <i>higher</i> deviator stress.</div>
+
+<h3>Where an &ldquo;instability line&rdquo; actually comes from (Fig. 6.25)</h3>
+<div class="explain"><p>NorSand has no instability line in its formulation, yet one appears anyway. Shear the same soil undrained from different K<sub>o</sub> conditions &mdash; that is, with different amounts of shear stress already locked in before drainage stops &mdash; and the locus through the peaks is close to a straight line through the origin. The book's own reading: <b>instability is caused by drainage conditions, not by metastable collapse</b>, and the line moves with state and with the moduli, so it is not a soil property either. Note what happens as K<sub>o</sub> falls: the peak strength rises, because less of the path is in the weaker undrained mode &mdash; until the starting stress ratio is already above the locus, at which point the soil sheds strength the instant drainage stops.</p></div>
+<div class="grid2">
+<div>
+<div class="chart-host"><canvas id="ilChart" role="img" aria-label="Undrained effective stress paths computed from four starting Ko conditions, with the locus through their peaks drawn as a straight line."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>computed stress paths</span><span><i style="background:#c64852"></i>peak of each path</span><span><i style="background:#123b4a"></i>the locus through the peaks</span><span><i style="background:#268160"></i>critical state line</span></div>
+</div>
+<div>
+<div class="statgrid n2" id="ilStats"></div>
+<div class="callout" id="ilNote" aria-live="polite"></div>
+<div class="slider-block"><label for="ilPsi"><span>&psi;<sub>o</sub> for the whole set</span> <span class="readout" id="ilPsiOut">+0.050</span></label><input id="ilPsi" type="range" min="-0.02" max="0.12" step="0.005" value="0.05"><div class="hint">Erksak 330/0.7 properties at p&prime;<sub>o</sub>=200&nbsp;kPa, as in Fig. 6.25. Move the state and the whole locus moves with it &mdash; which is the point.</div></div>
+</div>
+</div>
 
 <div class="quiz-checkpoint" id="quizCheckB">
 <h3>Quick check &mdash; before moving on</h3>
@@ -408,8 +531,38 @@ body{padding-bottom:54px}
 </div>
 </div>
 
+<div class="card" id="csd-path">
+<h2>8. Failure with no new load at all</h2>
+<div class="explain">
+<p>Every test so far raised the stress ratio &eta; = q/p&prime; by raising q. That is how laboratory shearing works, and it is most of what soil mechanics teaches. But &eta; can just as easily be raised by <b>lowering p&prime;</b> &mdash; water infiltrating a slope, a rising water table, a blocked drain. The shear stress never changes. Nothing is built on top. The soil simply runs out of effective stress.</p>
+<p>This was the trigger at <b>Aberfan</b> (Section 6.6.5). The tip was inspected the day before the failure and showed no tension cracks, no bulging, nothing. Sasitharan's laboratory version of the same path collapsed at an axial strain of <b>0.4%</b> &mdash; and with such violence that, in the authors' words, the whole laboratory felt the loading head hit its stops. Constant-shear-drained tests by Junaideen and others, and the book's own test on Fraser River sand, all show the same sequence: an elastic limit well below M, then yielding, then a limiting stress ratio the equipment can no longer hold.</p>
+</div>
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="csdPsi"><span>State parameter at the start, &psi;<sub>o</sub></span> <span class="readout" id="csdPsiOut">+0.050</span></label><input id="csdPsi" type="range" min="-0.05" max="0.12" step="0.005" value="0.05"></div>
+<div class="slider-block"><label for="csdKo"><span>K<sub>o</sub> &mdash; how much shear the slope already carries</span> <span class="readout" id="csdKoOut">0.50</span></label><input id="csdKo" type="range" min="0.4" max="1" step="0.01" value="0.5"><div class="hint">&eta;<sub>o</sub> = 3(1&minus;K<sub>o</sub>)/(1+2K<sub>o</sub>). A slope carries shear stress before anything happens to it; flat ground does not.</div></div>
+<div class="slider-block"><label for="csdP0"><span>p&prime; before the water rises (kPa)</span> <span class="readout" id="csdP0Out">200</span></label><input id="csdP0" type="range" min="50" max="600" step="10" value="200"></div>
+<div class="slider-block"><label for="csdRise"><span>Rise in pore pressure (m of water)</span> <span class="readout" id="csdRiseOut">0.0</span></label><input id="csdRise" type="range" min="0" max="12" step="0.1" value="0"><div class="hint">Drag this and nothing is added to the slope &mdash; only water. Watch &eta; climb anyway.</div></div>
+<div class="statgrid n2" id="csdStats"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="csdChart" role="img" aria-label="Stress path at constant deviator stress moving left as pore pressure rises, with the instability locus and, once it is crossed, the undrained collapse path that follows."></canvas></div>
+<div class="legend"><span><i style="background:#e38a22"></i>the constant-q path as water rises</span><span><i style="background:#123b4a"></i>instability locus, computed</span><span><i style="background:#c64852"></i>collapse once it is crossed</span><span><i style="background:#268160"></i>critical state line</span></div>
+<div class="callout" id="csdNote" aria-live="polite"></div>
+</div>
+</div>
+<div class="quiz-checkpoint" id="quizCheckE">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on the instability locus and on failure with no change in load.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotE">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotE">Hide questions</button></div>
+<div id="quizSlotE"></div>
+</div>
+
+<div class="warning"><b>What is computed and what is assumed.</b> The horizontal path is exact bookkeeping: total stress is unchanged, so every kilopascal of pore pressure is a kilopascal off p&prime;, and &eta; = q/p&prime; rises on its own. The instability locus is not assumed &mdash; it is Section 7's computed locus, run for this soil at this state. The collapse branch is Section 6's undrained integration, started from the point where the rising path meets that locus, which is the book's own description of what a stress perturbation above the locus does. Real infiltration is slower and partly drained, so treat the collapse branch as the upper bound on how quickly strength can be lost, not as a runout prediction.</div>
+</div>
+
 <div class="card" id="residual-strength">
-<h2>7. Predicting post-liquefaction residual strength</h2>
+<h2>9. Predicting post-liquefaction residual strength</h2>
 <div class="explain"><p>The book's recommended design tool, reproduced here exactly as the VBA function published in Fig. 6.48, blends the exact critical-state result for very loose soils with a conservative linear fit anchored to the case-history record for everything else. The switch happens at &psi;=&lambda;<sub>10</sub>:</p></div>
 <div class="eq">s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;(M<sub>tc</sub>/2)&middot;exp(&minus;&psi;/&lambda;<sub>e</sub>) &nbsp;&nbsp; if &psi; &gt; &lambda;<sub>10</sub><br>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> = [(1+2K<sub>o</sub>)/3]&middot;0.0501&middot;M<sub>tc</sub> + 0.8&middot;(&lambda;<sub>10</sub> &minus; &psi;) &nbsp;&nbsp; otherwise</div>
 
@@ -428,7 +581,7 @@ body{padding-bottom:54px}
 </div>
 <div class="eq" id="s3Eq" style="margin-top:10px"></div>
 <div class="callout" id="denseFlag" aria-live="polite"></div>
-<div class="callout"><b>How dense is dense enough?</b> Laboratory and case-history evidence converge on a practical threshold: soils denser than about <b>&psi; &lt; &minus;0.05</b> do not show the phase-transformation behaviour that leads to damaging strength loss (Section 6.11). Robertson's independent CPT-based criterion (Q<sub>tn,cs</sub> &asymp; 70) lines up with the same boundary. Below that line the engineering conversation is about ground improvement; above it, about tolerable movements. It is the same &minus;0.05 that Module 2 used to shade its logs.</div>
+<div class="callout"><b>How dense is dense enough?</b> Laboratory and case-history evidence converge on a practical threshold: soils denser than about <b>&psi; &lt; &minus;0.05</b> do not show the phase-transformation behaviour that leads to damaging strength loss. Robertson's independent CPT-based criterion (Q<sub>tn,cs</sub> &asymp; 70) lines up with the same boundary, and it is the same &minus;0.05 that Module 2 used to shade its logs. <a href="#dense-enough">Section 12</a> takes that threshold apart: where each of the three numbers comes from, and why the one carried into design is looser than the one the laboratory gives.</div>
 
 <h3>The other method in common use &mdash; Robertson (2010), direct from CPT</h3>
 <div class="explain"><p>This one is applied directly to normalized clean-sand-equivalent CPT resistance rather than through &psi;. It is plotted on its own axis rather than on the chart above, because converting Q<sub>tn,cs</sub> to &psi; needs the full I<sub>c</sub>/K<sub>c</sub> normalization chain (Eqs. 6.11&ndash;6.14) that this tool does not reproduce.</p></div>
@@ -447,7 +600,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="case-check">
-<h2>8. Checking the design function against the record</h2>
+<h2>10. Checking the design function against the record</h2>
 <div class="explain"><p>A design function that cannot reproduce the failures it was fitted to is not worth much. Table 6.5 gives eleven flow failures with back-figured residual strength ratios and estimated state parameters, both as ranges rather than points. Here the function is run at each case's own &lambda;<sub>10</sub> and compared against what actually happened.</p></div>
 <div class="grid2">
 <div>
@@ -466,19 +619,86 @@ body{padding-bottom:54px}
 <div class="warning"><b>Read the scatter honestly.</b> Both axes are uncertain: the observed strengths are back-figured from failures whose geometry and pore pressures were themselves reconstructed, and the state parameters are ranges the book itself declines to sharpen. A factor of two either way, on data like this, is not a poor fit &mdash; but it is also not precision, and the function should be read as a design envelope rather than a prediction. Calaveras Dam and the Mochikoshi dams are omitted because the book flags them as unreliable.</div>
 </div>
 
+<div class="card" id="steady-state">
+<h2>11. Why the older steady-state method reads too high</h2>
+<div class="explain">
+<p>Before the state-parameter framework, residual strength was measured directly: take undisturbed samples, test them undrained, correct the measured strength for the difference between the sample's void ratio and the in-situ void ratio, and read off a minimum assured strength. It is an appealing method, and the book spends Section 6.8 taking it apart. Every one of its shortcomings pushes the answer the same way &mdash; <b>towards too much strength</b>.</p>
+</div>
+<div class="note-grid">
+<details class="diag" open><summary>The correction itself is the weak point <span>&mdash; Section 6.8.3</span></summary><div>Residual strength depends on void ratio through an exponential, so the correction from the sample's void ratio to the in-situ one amplifies every error in either number. The calculator below is that exponential, and nothing else.</div></details>
+<details class="diag diag-warn"><summary>Reducing the measured strength by 30% <span>&mdash; the &ldquo;failure plane&rdquo; correction</span></summary><div>The steady-state procedure multiplies laboratory strengths by roughly cos&phi;&prime; to get the stress on the failure plane. But the limit equilibrium analysis it feeds works in (&sigma;&prime;<sub>1</sub>&minus;&sigma;&prime;<sub>3</sub>)/2 and does not know the strength has been adjusted. The book's verdict is unusually blunt: the cosine factor is &ldquo;misguided and incorrect&rdquo;.</div></details>
+<details class="diag"><summary>Blending samples changes the soil <span>&mdash; the CSL is silt-sensitive</span></summary><div>Compositing several samples to get enough material for testing produces a gradation that may exist nowhere in the deposit, and Chapter 2 shows the critical state line moves with even small changes in silt content. A single &lambda; for a whole stratum is generally wrong.</div></details>
+<details class="diag"><summary>Triaxial M is not field M <span>&mdash; about 5%</span></summary><div>Most real failures are close to plane strain, where the critical friction ratio differs from its triaxial compression value; the book's own simulations put the effect at roughly 5% on field strength (Fig. 6.38).</div></details>
+<details class="diag diag-warn"><summary>&ldquo;Minimum assured strength&rdquo; is a theoretical error <span>&mdash; unless the soil is totally contractive</span></summary><div>Only soils looser than about &psi; &gt; +0.03 are contractive all the way to critical state. The troublesome range is <b>&minus;0.1 &lt; &psi; &lt; 0</b>: lightly dilatant soils, which contract first and dilate afterwards, and for which a single minimum strength does not exist.</div></details>
+<details class="diag diag-warn"><summary>Undrained is an assumption, not a fact <span>&mdash; minutes matter</span></summary><div>In a large hydraulic fill of Erksak sand with 15&nbsp;m of double drainage, 20% of the excess pore pressure was gone <b>two minutes</b> after cycling stopped and it had dissipated completely in about eight. Lower San Fernando did not move during the shaking &mdash; it started about 30 seconds later. And in dilatant soils the drainage path is shorter still, because shear bands form and feed water in from the surrounding soil.</div></details>
+</div>
+
+<h3>How accurately would you have to know the void ratio?</h3>
+<div class="explain"><p>This is the question the whole method turns on. Residual strength goes as exp(&minus;&psi;/&lambda;<sub>e</sub>), so an error in void ratio is an error in &psi; of the same size, and it comes out multiplied &mdash; hardest in exactly the tight, low-&lambda; sands where sampling is most difficult.</p></div>
+<div class="grid2">
+<div>
+<div class="slider-block"><label for="ssErr"><span>Error in void ratio, &Delta;e</span> <span class="readout" id="ssErrOut">0.010</span></label><input id="ssErr" type="range" min="0.002" max="0.05" step="0.001" value="0.01"><div class="hint">Sampling disturbance, thawing strain in a frozen core, or simply the scatter between a sample and the ground beside it.</div></div>
+<div class="slider-block"><label for="ssLam"><span>&lambda;<sub>10</sub> of the soil</span> <span class="readout" id="ssLamOut">0.031</span></label><input id="ssLam" type="range" min="0.01" max="0.20" step="0.005" value="0.03"></div>
+<div class="statgrid n2" id="ssStats"></div>
+<div class="callout" id="ssNote" aria-live="polite"></div>
+</div>
+<div>
+<div class="chart-host"><canvas id="ssChart" role="img" aria-label="Factor by which the estimated residual strength changes for a given void ratio error, for several critical state line slopes."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>this soil's &lambda;<sub>10</sub></span><span><i style="background:#8a97a0"></i>other &lambda;<sub>10</sub> values</span><span><i style="background:#c64852"></i>your current error</span></div>
+</div>
+</div>
+<div class="warning"><b>The point is not that testing is useless.</b> Frozen sampling and careful laboratory work are still the best direct measurement available, and the book says so. The point is that a method whose answer moves by a factor of two for a void ratio error of one hundredth needs its uncertainty carried through to the design number &mdash; which is exactly what working in &psi;, with a characteristic value chosen from a distribution, does instead.</div>
+
+<div class="quiz-checkpoint" id="quizCheckF">
+<h3>Quick check &mdash; before moving on</h3>
+<p class="explain" style="font-size:12px;margin-top:0">10 questions on the steady-state critique and on how dense is dense enough.</p>
+<div class="quiz-block-controls"><button type="button" class="expandGroup" data-group="quizSlotF">Show questions</button><button type="button" class="collapseGroup" data-group="quizSlotF">Hide questions</button></div>
+<div id="quizSlotF"></div>
+</div>
+</div>
+
+<div class="card" id="dense-enough">
+<h2>12. How dense is dense enough?</h2>
+<div class="explain">
+<p>This is the question Chapter 6 opened with, and it is the one a project actually has to answer: at what state does the conversation stop being about tolerable movements and start being about ground improvement? The book gives three thresholds from three directions, and they very nearly agree.</p>
+</div>
+<div class="grid2">
+<div>
+<div class="chart-host"><canvas id="denseChart" role="img" aria-label="A state parameter scale showing the laboratory, design and fully contractive thresholds, with the design function's residual strength ratio drawn across it."></canvas></div>
+<div class="legend"><span><i style="background:#268160"></i>dilatant &mdash; no damaging strength loss</span><span><i style="background:#e9b7bb"></i>lightly dilatant &mdash; the awkward range</span><span><i style="background:#c64852"></i>contractive</span><span><i style="background:#123b4a"></i>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> from Section 9</span></div>
+</div>
+<div>
+<table>
+<thead><tr><th>Where it comes from</th><th>Threshold</th></tr></thead>
+<tbody>
+<tr><td>Isotropic triaxial compression: no phase transformation denser than this</td><td><b>&psi; &lt; &minus;0.08</b></td></tr>
+<tr><td>Simple shear tests, where some shear stress is already locked in</td><td><b>&psi; &lt; &minus;0.05</b></td></tr>
+<tr><td>Lower-bound trend of undrained strength meeting the drained strength (Fig. 6.22)</td><td><b>&psi; &asymp; &minus;0.06</b></td></tr>
+<tr><td>Robertson (2010), straight from normalized CPT resistance</td><td><b>Q<sub>tn,cs</sub> &asymp; 70</b> (50 fits the reliable cases better)</td></tr>
+<tr><td>Fully contractive &mdash; a minimum assured strength does exist here</td><td><b>&psi; &gt; +0.03</b></td></tr>
+</tbody>
+</table>
+<div class="slider-block" style="margin-top:12px"><label for="deKo"><span>In-situ K<sub>o</sub></span> <span class="readout" id="deKoOut">0.65</span></label><input id="deKo" type="range" min="0.4" max="1" step="0.01" value="0.65"><div class="hint">Laboratory thresholds come from isotropic samples, where the <i>whole</i> path is undrained. In the ground, part of the path has already been walked drained.</div></div>
+<div class="statgrid n2" id="deStats"></div>
+</div>
+</div>
+<div class="callout" id="deNote" aria-live="polite"></div>
+<div class="warning"><b>Why the design line is looser than the laboratory line.</b> The laboratory threshold of &psi; &lt; &minus;0.08 comes from isotropically consolidated samples, where every bit of the path to failure is undrained. Real ground is rarely at K<sub>o</sub>=1; the usual range is 0.5&ndash;0.8, so a share of the loading path has already been taken drained and less excess pore pressure is available at the onset of instability. The book's conclusion is that <b>&psi; &lt; &minus;0.05 from laboratory testing should be conservative in practice</b> &mdash; and that is the same line Module 2 shaded its logs with and Section 9 marks on its chart. The K<sub>o</sub> arithmetic beside the slider is this page's own reading of that argument, not a published formula.</div>
+</div>
+
 <div class="card" id="knowledge-check">
-<h2>9. Check learning</h2>
-<p class="explain">Three blocks of questions, each placed after the section that taught it. <b>&ldquo;Check my understanding&rdquo; grades every block together</b>, so it is fine to submit even if you skipped some. You get a score per block, a button back to the section behind it, and a filter that shows only what you missed.</p>
-<div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 30 answered</div>
+<h2>13. Check learning</h2>
+<p class="explain">Six blocks of questions, each placed after the section that taught it. <b>&ldquo;Check my understanding&rdquo; grades every block together</b>, so it is fine to submit even if you skipped some. You get a score per block, a button back to the section behind it, and a filter that shows only what you missed.</p>
+<div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 60 answered</div>
 <div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
 
-<div class="callout" style="margin-top:14px"><b>Where this leaves you.</b> Module 1 gave you &psi; and what it means. Module 2 gave you &psi; from a cone, and how much to trust it. This module turned &psi; into a residual strength and a brittleness, and checked that against eleven real failures. <a href="jb-cyclic-liquefaction-lab.html">Module 4</a> takes the last step: what happens when the trigger is an earthquake rather than static loading.</div>
+<div class="callout" style="margin-top:14px"><b>Where this leaves you.</b> Module 1 gave you &psi; and what it means. Module 2 gave you &psi; from a cone, and how much to trust it. This module turned &psi; into a mechanism you can run, a residual strength and a brittleness, checked that against eleven real failures, and set a threshold for when the conversation has to turn to ground improvement. <a href="jb-cyclic-liquefaction-lab.html">Module 4</a> takes the last step: what happens when the trigger is an earthquake rather than static loading.</div>
 
 <h3>Quick-reference glossary</h3><div class="glossary-grid" id="glossaryGrid"></div>
 </div>
 
 <div class="card" id="about-tool">
-<div class="warning"><b>About this tool.</b> Section 3 uses Eq. 6.4 with the sign resolved from first principles &mdash; p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows from the CSL definition (Eq. 2.1), and the book's restatement at Eq. 6.16/6.4 confirms the minus sign. It was cross-checked against the book's own result that peak &asymp; residual at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub>. Section 5's stress path is a schematic built from the critical-state relationships, not a NorSand integration; Module 1 has the real simulator. Section 6's &eta;<sub>L</sub> curve interpolates between Fig. 6.27's two explicitly cited endpoints, which are marked. Section 7's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly; its two branches agree to within 0.03% at the &psi;=&lambda;<sub>10</sub> anchor. Robertson's Eq. 6.15 is plotted against Q<sub>tn,cs</sub> directly, without deriving the I<sub>c</sub>/K<sub>c</sub> chain. Case-history values are the ranges published in Table 6.5.</div>
+<div class="warning"><b>About this tool.</b> <b>Sections 6, 7 and 8 integrate NorSand's own published equations</b> (Table 3.1: the yield surface, the hardening limit of Eq. 3.38, the dimensionless hardening law of Eq. 3.40, stress&ndash;dilatancy D<sup>p</sup>=M<sub>i</sub>&minus;&eta;, and the consistency condition of Eq. C.51) together with Eqs. 6.6&ndash;6.8 for the undrained condition, using an explicit forward-Euler step in plastic shear strain and <b>without</b> the extra term Appendix C adds to the hardening law for rapidly falling p&prime;. Poisson's ratio is fixed at 0.2, the value the book uses for these soils, and N is not published for Erksak sand, so 0.30 is used there as a literature-typical value (as in Module 1). The simulator reproduces the directions the book states for both moduli and lands within the &eta;<sub>L</sub> range Fig. 6.27 quotes, but it is not the book's own spreadsheet: for Erksak test G609 the measured peak came at &eta;<sub>L</sub>=0.62 while these equations peak nearer &eta;&asymp;1, and the K<sub>o</sub> at which strength falls immediately comes out lower than the book's own figure of about 0.55. Both disagreements are stated on the figures concerned. Section 7's &eta;<sub>L</sub> curves are computed at every point rather than traced from Fig. 6.27; only the 0.75&ndash;1.0 band is quoted. Section 8's constant-deviator path is exact bookkeeping (total stress unchanged, so pore pressure comes straight off p&prime;), with the collapse branch computed from Section 6 once the locus is crossed. Section 3's laboratory table is Table 6.1 of the book (Bishop, 1971) transcribed as published, with &eta; at peak derived from &phi;&prime;<sub>f</sub> through sin&phi;&prime;=3&eta;/(6+&eta;); the brittleness points on the I<sub>B</sub> chart are placed by inverting Eq. 6.4, because the source table gives no state parameter, and the figure says so. Section 11's void-ratio calculator is Eq. 6.4's exponential and nothing else. Section 12's thresholds are quoted from Section 6.11; the K<sub>o</sub> arithmetic beside them is this page's own reading of the book's argument, not a published formula. Section 3 uses Eq. 6.4 with the sign resolved from first principles &mdash; p&prime;<sub>c</sub>=p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) follows from the CSL definition (Eq. 2.1), and the book's restatement at Eq. 6.16/6.4 confirms the minus sign. It was cross-checked against the book's own result that peak &asymp; residual at &psi;<sub>o</sub>&asymp;0.7&lambda;<sub>e</sub>. Section 5's stress path is a schematic built from the critical-state relationships, not a NorSand integration; Module 1 has the real simulator. Section 6's &eta;<sub>L</sub> curve interpolates between Fig. 6.27's two explicitly cited endpoints, which are marked. Section 7's calculator is the book's own published VBA function (Fig. 6.48), transcribed exactly; its two branches agree to within 0.03% at the &psi;=&lambda;<sub>10</sub> anchor. Robertson's Eq. 6.15 is plotted against Q<sub>tn,cs</sub> directly, without deriving the I<sub>c</sub>/K<sub>c</sub> chain. Case-history values are the ranges published in Table 6.5.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
 
@@ -557,13 +777,132 @@ function srOverSigV(Mtc, ko, lam10, psi){
   return k0Factor*0.0501*Mtc + 0.8*(lam10-psi);
 }
 function robertsonEq615(Qtncs){ return 0.0055*Math.exp(0.05*Qtncs); }
-// Fig. 6.27: eta_L is not a soil property. Two cited endpoints, smooth between them.
+// Fig. 6.27: eta_L is not a soil property. The book states the range it spans (0.75 to 1.0);
+// the trend itself is computed here by running the Section 6 integration at each H/Ir, along
+// the figure's own two paths, for the Guindon silty sand properties printed on that figure.
 var ETA_L_LO=0.75, ETA_L_HI=1.00, ETA_L_HIR_MAX=4;
-function etaLFromHIr(hir){
-  var t=Math.max(0,Math.min(1,hir/ETA_L_HIR_MAX));
-  return ETA_L_LO + (ETA_L_HI-ETA_L_LO)*(t*t*(3-2*t));
+var GUINDON = {psi0:0.065, p0:200, Mtc:1.25, lam10:0.05, chitc:6.0, N:0.5, R:1.15, nu:0.2};
+function guindonRun(H, Ir){
+  var o={}; for(var k in GUINDON) o[k]=GUINDON[k];
+  o.H=H; o.Ir=Ir; return nsUndrained(o);
+}
+function etaLFromHIr(hir, mode){         // mode 'H' varies H at Ir=150; 'Ir' varies Ir at H=80
+  hir=Math.max(0.02,hir);
+  return mode==='Ir' ? guindonRun(80, 80/hir).etaL : guindonRun(150*hir, 150).etaL;
 }
 var PSI_DENSE_ENOUGH = -0.05;     // Section 6.11's practical threshold, as in Module 2
+
+/* ------------------------------------------------------------------ undrained NorSand ---
+ * A direct integration of NorSand (Table 3.1) for undrained triaxial compression, which is
+ * what Section 6.5 of the book uses to explain liquefaction without a collapse surface:
+ *   psi_i = psi - lambda*ln(p'/pi)          state at the image condition
+ *   chi_i = chi_tc/(1 - chi_tc*lambda/Mtc)  model parameter from the soil property
+ *   Mi    = Mtc - chi_i*N*|psi_i|           image stress ratio (triaxial compression)
+ *   eta   = Mi*(1 - ln(p'/pi))              yield surface
+ *   pi_max= p'*exp(-chi_i*psi_i/Mi)         hardening limit, Eq. 3.38 (the "internal cap")
+ *   dpi/pi= H*(pi_max/p' - pi/p')*deqp      hardening law, Eq. 3.40 (Mi = Mi,tc in compression)
+ *   Dp    = Mi - eta                        stress-dilatancy
+ *   dp'   = -K*Dp*deqp                      Eqs. 6.6/6.7: no volume change, so p' pays for it
+ *   deta  = eta*dMi/Mi + Mi*(dpi/pi - dp'/p')   consistency condition, Eq. C.51
+ * Elastic shear strain is added to the plastic strain, so the strain axis is the total.   */
+function nsUndrained(o){
+  var Mtc=o.Mtc, lam10=o.lam10, chitc=o.chitc, N=o.N, H=o.H, Ir=o.Ir;
+  var nu = (o.nu==null) ? 0.2 : o.nu;
+  var lam = lam10/LN10;
+  var chii = chitc/(1-chitc*lam/Mtc);
+  var steps = o.steps||2000, dEqp = o.dEqp||5e-5;
+  var p = o.p0, psi = o.psi0, eta = o.eta0||0, R = o.R||1;
+  // start on the yield surface: eta = Mi(1 - ln(p'/pi)), so pi = p'*exp(eta/Mi - 1), and R
+  // widens it for a lightly over-consolidated sample the way the book's fits do.
+  var pi = R*p*Math.exp(eta/Mtc - 1);
+  for(var k=0;k<4;k++){
+    var psii0 = psi - lam*Math.log(p/pi);
+    var Mi0 = Math.max(0.15*Mtc, Mtc - chii*N*Math.abs(psii0));
+    pi = R*p*Math.exp(eta/Mi0 - 1);
+  }
+  var q0 = eta*p, pTot0 = p + 0;                  // total mean stress at the start
+  var S={eq:[], q:[], p:[], eta:[], u:[], psi:[]};
+  var qPeak=-1e9, etaL=0, eqPeak=0, pPeak=p, iPeak=0;
+  var eq=0;
+  for(var i=0;i<steps;i++){
+    var psii = psi - lam*Math.log(p/pi);
+    var Mi = Math.max(0.15*Mtc, Mtc - chii*N*Math.abs(psii));
+    var etaHere = Mi*(1-Math.log(p/pi));
+    var q = etaHere*p;
+    // total stress path of a standard undrained test: cell pressure held, so p_total rises q/3
+    var u = (pTot0 + (q-q0)/3) - p;
+    S.eq.push(eq*100); S.q.push(q); S.p.push(p); S.eta.push(etaHere); S.u.push(u); S.psi.push(psi);
+    if(q>qPeak){ qPeak=q; etaL=etaHere; eqPeak=eq*100; pPeak=p; iPeak=i; }
+    var Dp = Mi - etaHere;
+    var G = Ir*p, K = 2*G*(1+nu)/(3*(1-2*nu));
+    var dp = -K*Dp*dEqp;
+    var dpi = pi*H*(Math.exp(-chii*psii/Mi) - pi/p)*dEqp;
+    var pNew = p + dp, piNew = Math.max(1e-3, pi + dpi);
+    if(!(pNew>0.5) || pNew>40*o.p0) break;                    // liquefied to nothing, or runaway dilation
+    var psiNew = psi + lam*Math.log(pNew/p);                  // void ratio is fixed; the CSL moves under it
+    var psiiN = psiNew - lam*Math.log(pNew/piNew);
+    var MiN = Math.max(0.15*Mtc, Mtc - chii*N*Math.abs(psiiN));
+    var dEta = etaHere*((MiN-Mi)/Mi) + Mi*(dpi/pi - dp/p);
+    var qNew = (etaHere+dEta)*pNew;
+    eq += dEqp + (qNew-q)/(3*G);                              // plastic plus elastic shear strain
+    p = pNew; pi = piNew; psi = psiNew;
+  }
+  var srCS = 0.5*Mtc*Math.exp(-o.psi0/lam)*o.p0;              // Eq. 6.4: where it must end up
+  return {S:S, qPeak:qPeak, etaL:etaL, eqPeak:eqPeak, pPeak:pPeak, iPeak:iPeak,
+          su:qPeak/2, suRatio:qPeak/2/o.p0, srCS:srCS, srRatio:srCS/o.p0,
+          IB: qPeak>0 ? Math.max(0,Math.min(1,1-(srCS/(qPeak/2)))) : 0,
+          qEnd:S.q[S.q.length-1], pEnd:S.p[S.p.length-1]};
+}
+function etaFromKo(ko){ return 3*(1-ko)/(1+2*ko); }           // initial stress ratio of a Ko state
+
+// A small general plotting helper, in this page's chart style, for the computed figures.
+function plotXY(hostId, opt){
+  var host=el(hostId); if(!host) return null;
+  var cvp=prepCanvas(host, opt.h||260, opt.minW||260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=opt.ml||52, mr=opt.mr||14, mt=opt.mt||14, mb=opt.mb||42;
+  var pw=W-ml-mr, ph=H-mt-mb;
+  var xs=opt.xmin, xe=opt.xmax, ys=opt.ymin, ye=opt.ymax;
+  function X(v){ return ml+pw*(Math.max(xs,Math.min(xe,v))-xs)/(xe-xs||1); }
+  function Y(v){ return mt+ph*(1-(Math.max(ys,Math.min(ye,v))-ys)/(ye-ys||1)); }
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  if(opt.bands) opt.bands.forEach(function(b){
+    ctx.fillStyle=b.color; ctx.globalAlpha=b.alpha==null?0.5:b.alpha;
+    ctx.fillRect(ml, Y(b.hi), pw, Y(b.lo)-Y(b.hi)); ctx.globalAlpha=1;
+  });
+  var xt=niceTicks(xs,xe,opt.xticks||4), yt=niceTicks(ys,ye,opt.yticks||4);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  xt.values.forEach(function(v){ if(v<xs||v>xe) return; ctx.beginPath(); ctx.moveTo(X(v),mt); ctx.lineTo(X(v),mt+ph); ctx.stroke(); });
+  yt.values.forEach(function(v){ if(v<ys||v>ye) return; ctx.beginPath(); ctx.moveTo(ml,Y(v)); ctx.lineTo(ml+pw,Y(v)); ctx.stroke(); });
+  (opt.series||[]).forEach(function(sr){
+    if(!sr.pts || sr.pts.length<2) return;
+    ctx.strokeStyle=sr.color; ctx.lineWidth=sr.w||2.2;
+    if(sr.dash) ctx.setLineDash(sr.dash);
+    ctx.beginPath();
+    sr.pts.forEach(function(pt,i){ var x=X(pt[0]), y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  (opt.points||[]).forEach(function(pt){
+    ctx.fillStyle=pt.color; ctx.beginPath(); ctx.arc(X(pt.x),Y(pt.y),pt.r||5.5,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.6; ctx.stroke();
+    if(pt.label){ ctx.font='700 9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+      var lx=X(pt.x)+7+ctx.measureText(pt.label).width>ml+pw ? X(pt.x)-7-ctx.measureText(pt.label).width : X(pt.x)+7;
+      haloText(ctx, pt.label, lx, Y(pt.y)-7, pt.labelColor||pt.color); }
+  });
+  (opt.labels||[]).forEach(function(l){
+    ctx.font='700 9px Arial'; ctx.textAlign=l.align||'left'; ctx.textBaseline=l.baseline||'top';
+    haloText(ctx, l.text, X(l.x), Y(l.y), l.color||'#6b7880');
+  });
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  xt.values.forEach(function(v){ if(v<xs||v>xe) return; var lab=v.toFixed(xt.dp); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText(opt.xlab||'', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<ys||v>ye) return; ctx.fillText(v.toFixed(yt.dp), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText(opt.ylab||'',0,0); ctx.restore();
+  return {X:X, Y:Y, ctx:ctx, ml:ml, mt:mt, pw:pw, ph:ph};
+}
 
 var CASE_HISTORIES = [
  {name:"Zeeland Coast",     psiLo:-0.09, psiHi:-0.02, srLo:0.13, srHi:0.13, lam10:0.06,  year:"1800s-1900s", where:"Netherlands"},
@@ -685,6 +1024,7 @@ function updateSection1(){
      : 'Little is lost, so failure would be a slump that arrests rather than a flowslide.')+
     ' The brittleness onset the book quotes sits at &psi;<sub>o</sub> &asymp; 0.7&lambda;<sub>e</sub> = '+(0.7*le).toFixed(3)+' for this &lambda;<sub>10</sub>.';
   drawBrittleChart(Mtc,lam10,psi,su);
+  drawTrendCharts(Mtc,lam10,psi,su);
 }
 function drawBrittleChart(Mtc,lam10,psi,su){
   var host=el('brittleChart'); if(!host) return;
@@ -823,51 +1163,197 @@ function drawPathChart(psi,Mtc,lam10,po,pc,qc,qPeak){
   ctx.fillText('deviator stress q, kPa',0,0); ctx.restore();
 }
 
-// ---------------------------------------------------------------- Section 6
-function updateHIr(){
-  var hir=num('hirSlide'), etaL=etaLFromHIr(hir);
-  el('hirOut').textContent=hir.toFixed(2);
-  var span=ETA_L_HI-ETA_L_LO;
-  el('hirStats').innerHTML =
-    '<div class="stat hi"><small>&eta;<sub>L</sub> at instability</small><strong>'+etaL.toFixed(3)+'</strong></div>'+
-    '<div class="stat"><small>moved from the low end by</small><strong>'+(100*(etaL-ETA_L_LO)/span).toFixed(0)+'%</strong></div>';
-  drawHIrChart(hir,etaL);
+// ---------------------------------------------------------------- Section 6: undrained NorSand
+// The book's own calibrations. Erksak is Chapter 6's recalibration (Gamma=0.817, chi_tc=3.8);
+// N is not published for Erksak, so 0.30 is used as a literature-typical value, as in Module 1.
+var NSU_PRESETS = [
+ {key:'L601',  name:'Erksak L601 &mdash; lightly contractive', psi0:0.025, p0:400, H:250, Ir:170, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.15,
+  note:'Fig. 6.19a. The book fits this test with H=250, I<sub>r</sub>=170 and a little over-consolidation (R=1.15).'},
+ {key:'L609',  name:'Erksak L609 &mdash; the very loose one', psi0:0.070, p0:500, H:140, Ir:140, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.15,
+  note:'Fig. 6.19b, the loosest clean-sand liquefaction test in the book\u2019s database &mdash; the same sample family as G609 in Section 3.'},
+ {key:'C634',  name:'Erksak C634 &mdash; lightly dilatant', psi0:-0.080, p0:600, H:300, Ir:250, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.20,
+  note:'Fig. 6.19c. Nothing about the model changes &mdash; only the state. The path turns the other way.'},
+ {key:'guindon', name:'Guindon silty sand CIU-03 (33% fines)', psi0:0.065, p0:400, H:80, Ir:150, Mtc:1.25, lam10:0.046, chitc:6.0, N:0.50, R:1.15,
+  note:'Fig. 6.26\u2019s soil: &lambda;<sub>10</sub>=0.046, M<sub>tc</sub>=1.25, N=0.5, &chi;=6, OCR=1.15, &nu;=0.2, &psi;=+0.065.'}
+];
+var nsuPreset = 1;
+function nsuInputs(){
+  return {psi0:num('nsuPsi'), p0:num('nsuP0'), H:num('nsuH'), Ir:num('nsuIr'),
+          Mtc:num('nsuM'), lam10:num('nsuL'), chitc:num('nsuChi'), N:num('nsuN'),
+          R:NSU_PRESETS[nsuPreset].R, nu:0.2};
 }
-function drawHIrChart(hir,etaL){
-  var host=el('hirChart'); if(!host) return;
-  var cvp=prepCanvas(host, 250, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=50, mr=16, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
-  var ymin=0.6, ymax=1.1;
-  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/ETA_L_HIR_MAX)); }
-  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
-  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  [0,1,2,3,4].forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
-  var yt=niceTicks(ymin,ymax,4);
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
-  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
-  for(var i=0;i<=120;i++){ var v=ETA_L_HIR_MAX*i/120, x=X(v), y=Y(etaLFromHIr(v));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-  ctx.stroke();
-  // the two values the book actually states
-  [[0,ETA_L_LO],[ETA_L_HIR_MAX,ETA_L_HI]].forEach(function(p){
-    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),5,0,7); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.font='700 9px Arial'; ctx.textAlign=p[0]===0?'left':'right'; ctx.textBaseline='bottom';
-    haloText(ctx, 'ηL = '+p[1].toFixed(2), p[0]===0?X(p[0])+7:X(p[0])-7, Y(p[1])-7, '#4c5b62');
+function renderNsuPresets(){
+  el('nsuPresets').innerHTML = NSU_PRESETS.map(function(pz,i){
+    return '<button type="button" data-nsu="'+i+'"'+(i===nsuPreset?' class="on"':'')+'>'+pz.name+'</button>';
+  }).join('');
+  el('nsuPresets').querySelectorAll('[data-nsu]').forEach(function(b){
+    b.addEventListener('click', function(){ applyNsuPreset(+b.dataset.nsu); });
   });
-  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
-  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(hir),Y(etaL),6,0,7); ctx.fill();
-  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
-  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-  [0,1,2,3,4].forEach(function(v){ ctx.fillText(String(v), clampLabelX(ctx,X(v),String(v),ml,pw), mt+ph+5); });
-  ctx.font='10.5px Arial'; ctx.fillText('H / Ir', ml+pw/2, mt+ph+20);
-  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText('instability stress ratio ηL',0,0); ctx.restore();
 }
+function applyNsuPreset(i){
+  nsuPreset=i; var pz=NSU_PRESETS[i];
+  el('nsuPsi').value=pz.psi0; el('nsuP0').value=pz.p0; el('nsuH').value=pz.H; el('nsuIr').value=pz.Ir;
+  el('nsuM').value=pz.Mtc; el('nsuL').value=pz.lam10; el('nsuChi').value=pz.chitc; el('nsuN').value=pz.N;
+  renderNsuPresets(); updateNsu();
+  el('nsuExpStatus').innerHTML = pz.note;
+}
+function updateNsu(){
+  var o=nsuInputs();
+  el('nsuPsiOut').textContent=(o.psi0>=0?'+':'')+o.psi0.toFixed(3);
+  el('nsuP0Out').textContent=o.p0.toFixed(0);
+  el('nsuHOut').textContent=o.H.toFixed(0);
+  el('nsuIrOut').textContent=o.Ir.toFixed(0);
+  el('nsuMOut').textContent=o.Mtc.toFixed(2);
+  el('nsuLOut').textContent=o.lam10.toFixed(3);
+  el('nsuChiOut').textContent=o.chitc.toFixed(1);
+  el('nsuNOut').textContent=o.N.toFixed(2);
+  var r=nsUndrained(o);
+  var contractive = o.psi0>0;
+  el('nsuStats').innerHTML =
+    '<div class="stat hi"><small>peak s<sub>u</sub>/p&prime;<sub>o</sub></small><strong>'+r.suRatio.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&eta; at the peak (&eta;<sub>L</sub>)</small><strong>'+r.etaL.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>strain at the peak</small><strong>'+r.eqPeak.toFixed(2)+'%</strong></div>'+
+    '<div class="stat"><small>p&prime; at the peak</small><strong>'+r.pPeak.toFixed(0)+' kPa</strong></div>'+
+    '<div class="stat"><small>s<sub>r</sub>/p&prime;<sub>o</sub> at critical state (Eq. 6.4)</small><strong>'+r.srRatio.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>I<sub>B</sub> implied</small><strong>'+r.IB.toFixed(2)+'</strong>'+
+      (r.IB>=0.8?'<span class="badge contract">very brittle</span>':r.IB>=0.3?'<span class="badge caution">moderate</span>':'<span class="badge dilate">ductile</span>')+'</div>';
+  var lamE10=lamE(o.lam10);
+  el('nsuEq').innerHTML =
+    '<span class="step">1&middot; K/p&prime; = 2I<sub>r</sub>(1+&nu;)/[3(1&minus;2&nu;)] = 2&middot;'+o.Ir.toFixed(0)+'&middot;1.2/(3&middot;0.6) = <b>'+(2*o.Ir*1.2/(3*0.6)).toFixed(0)+'</b> &mdash; the price of one unit of plastic contraction</span>'+
+    '<span class="step">2&middot; H/I<sub>r</sub> = '+o.H.toFixed(0)+'/'+o.Ir.toFixed(0)+' = <b>'+(o.H/o.Ir).toFixed(2)+'</b> &mdash; hardening against that price</span>'+
+    '<span class="step">3&middot; peak q = <b>'+r.qPeak.toFixed(0)+'&nbsp;kPa</b> at p&prime; = '+r.pPeak.toFixed(0)+'&nbsp;kPa, so &eta;<sub>L</sub> = <b>'+r.etaL.toFixed(3)+'</b></span>'+
+    '<span class="step">4&middot; critical state must sit at p&prime;<sub>c</sub> = p&prime;<sub>o</sub>&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) = '+(o.p0*Math.exp(-o.psi0/lamE10)).toFixed(1)+'&nbsp;kPa</span>'+
+    '<span class="step-note">'+(contractive
+      ? 'Contractive: every step of plastic shear destroys mean effective stress, and the run ends far to the left of where it started.'
+      : 'Dilatant: the plastic strain wants to expand the soil, so the pore pressure falls and p&prime; climbs. There is no strength deficit to drive a flowslide.')+'</span>';
+  drawNsuCharts(r,o);
+}
+function drawNsuCharts(r,o){
+  var S=r.S, n=S.eq.length;
+  var qMax=0, uMax=0, uMin=0, pMax=o.p0;
+  for(var i=0;i<n;i++){ qMax=Math.max(qMax,S.q[i]); uMax=Math.max(uMax,S.u[i]); uMin=Math.min(uMin,S.u[i]); pMax=Math.max(pMax,S.p[i]); }
+  var eqMax=S.eq[n-1]||1;
+  var qs=[], ps=[], us=[];
+  for(var j=0;j<n;j+=Math.max(1,Math.floor(n/400))){ qs.push([S.eq[j],S.q[j]]); ps.push([S.p[j],S.q[j]]); us.push([S.eq[j],S.u[j]]); }
+  plotXY('nsuQChart', {h:250, xmin:0, xmax:eqMax, ymin:0, ymax:qMax*1.15,
+    xlab:'axial strain (%)', ylab:'deviator stress q, kPa',
+    series:[{pts:qs, color:'#1479b8', w:2.6}],
+    points:[{x:r.eqPeak, y:r.qPeak, color:'#c64852', label:'peak '+r.qPeak.toFixed(0)}]});
+  var cslPts=[[0,0],[pMax*1.05, Math.min(qMax*1.25, o.Mtc*pMax*1.05)]];
+  plotXY('nsuPathChart', {h:250, xmin:0, xmax:pMax*1.05, ymin:0, ymax:qMax*1.15,
+    xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
+    series:[{pts:cslPts, color:'#268160', w:2},{pts:ps, color:'#1479b8', w:2.6}],
+    points:[{x:r.pPeak, y:r.qPeak, color:'#c64852', label:'\u03b7L = '+r.etaL.toFixed(2)},
+            {x:o.p0, y:(o.eta0||0)*o.p0, color:'#8a97a0', r:4}]});
+  plotXY('nsuUChart', {h:210, xmin:0, xmax:eqMax, ymin:Math.min(0,uMin*1.15), ymax:Math.max(1,uMax*1.15),
+    xlab:'axial strain (%)', ylab:'excess pore pressure \u0394u, kPa',
+    series:[{pts:us, color:'#7653a6', w:2.4},
+            {pts:[[r.eqPeak, Math.min(0,uMin*1.15)],[r.eqPeak, Math.max(1,uMax*1.15)]], color:'#8a97a0', w:1.3, dash:[4,3]}]});
+}
+['nsuPsi','nsuP0','nsuH','nsuIr','nsuM','nsuL','nsuChi','nsuN'].forEach(function(id){
+  el(id).addEventListener('input', updateNsu);
+});
+el('nsuExp').querySelectorAll('[data-nsuexp]').forEach(function(b){
+  b.addEventListener('click', function(){
+    var k=b.dataset.nsuexp, pz=NSU_PRESETS[nsuPreset];
+    var before=nsUndrained(nsuInputs());
+    if(k==='reset'){ applyNsuPreset(nsuPreset); return; }
+    if(k==='ir2') el('nsuIr').value=Math.min(600, num('nsuIr')*2);
+    if(k==='ir05') el('nsuIr').value=Math.max(40, num('nsuIr')/2);
+    if(k==='h2') el('nsuH').value=Math.min(500, num('nsuH')*2);
+    if(k==='h05') el('nsuH').value=Math.max(10, num('nsuH')/2);
+    updateNsu();
+    var after=nsUndrained(nsuInputs());
+    var dq=100*(after.qPeak/before.qPeak-1);
+    el('nsuExpStatus').innerHTML = '<b>'+(k[0]==='i'?'Elastic rigidity':'Plastic hardening')+' changed, soil untouched.</b> Peak strength moved from '+
+      before.qPeak.toFixed(0)+' to '+after.qPeak.toFixed(0)+'&nbsp;kPa ('+(dq>=0?'+':'')+dq.toFixed(0)+'%), and &eta;<sub>L</sub> from '+
+      before.etaL.toFixed(3)+' to '+after.etaL.toFixed(3)+'. '+
+      (k[0]==='i' ? 'The book\u2019s Fig. 6.20: a stiffer elastic response forces a larger pore pressure to hold the volume constant, so the peak strength falls.'
+                  : 'The book\u2019s Fig. 6.21: a stiffer plastic modulus resists the loss of mean stress, so the peak is higher &mdash; and the post-peak drop steeper.');
+  });
+});
+
+// ---------------------------------------------------------------- Section 7
+function updateHIr(){
+  var hir=num('hirSlide');
+  var etaH=etaLFromHIr(hir,'H'), etaIr=etaLFromHIr(hir,'Ir');
+  el('hirOut').textContent=hir.toFixed(2);
+  var lo=etaLFromHIr(4,'H'), hi=etaLFromHIr(0.05,'H');
+  el('hirStats').innerHTML =
+    '<div class="stat hi"><small>&eta;<sub>L</sub> with H varied (I<sub>r</sub>=150)</small><strong>'+etaH.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&eta;<sub>L</sub> with I<sub>r</sub> varied (H=80)</small><strong>'+etaIr.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>computed span across the figure</small><strong>'+lo.toFixed(2)+' &ndash; '+hi.toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>the range the book cites</small><strong>0.75 &ndash; 1.00</strong></div>';
+  drawHIrChart(hir,etaH,etaIr);
+}
+function drawHIrChart(hir, etaH, etaIr){
+  var A=[], B=[];
+  for(var i=0;i<=24;i++){
+    var x=0.05+(ETA_L_HIR_MAX-0.05)*i/24;
+    A.push([x, etaLFromHIr(x,'H')]);
+    B.push([x, etaLFromHIr(x,'Ir')]);
+  }
+  var all=A.concat(B).map(function(p){ return p[1]; }).concat([ETA_L_LO,ETA_L_HI]);
+  var ymin=Math.min.apply(null,all)-0.05, ymax=Math.max.apply(null,all)+0.05;
+  plotXY('hirChart', {h:250, xmin:0, xmax:ETA_L_HIR_MAX, ymin:ymin, ymax:ymax,
+    xlab:'H / Ir', ylab:'stress ratio at instability, \u03b7L',
+    bands:[{lo:ETA_L_LO, hi:ETA_L_HI, color:'#e9b7bb', alpha:0.45}],
+    series:[{pts:A, color:'#1479b8', w:2.6},{pts:B, color:'#7653a6', w:2.2, dash:[6,3]}],
+    points:[{x:hir, y:etaH, color:'#c64852', label:'\u03b7L = '+etaH.toFixed(2)}],
+    labels:[{x:ETA_L_HIR_MAX*0.52, y:ETA_L_HI-0.012, text:'the 0.75\u20131.0 range the book cites', color:'#a8323d'}]});
+}
+
+// The instability locus of Fig. 6.25: same soil, same state, four Ko conditions.
+var IL_KO = [0.4, 0.5, 0.6, 0.8];
+function updateIL(){
+  var psi0=num('ilPsi');
+  el('ilPsiOut').textContent=(psi0>=0?'+':'')+psi0.toFixed(3);
+  var runs = IL_KO.map(function(ko){
+    var r = nsUndrained({psi0:psi0, p0:200, H:54, Ir:150, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.0, nu:0.2, eta0:etaFromKo(ko)});
+    return {ko:ko, eta0:etaFromKo(ko), r:r};
+  });
+  // the locus through the peaks, as a stress ratio: the book draws it as a straight line
+  var sx=0, sy=0;
+  runs.forEach(function(u){ sx+=u.r.pPeak; sy+=u.r.qPeak; });
+  var etaIL = sy/sx;
+  var immediate = runs.filter(function(u){ return u.eta0 >= u.r.etaL-1e-9; });
+  var koCrit = null;
+  for(var ko=0.9; ko>=0.3; ko-=0.01){
+    var rr=nsUndrained({psi0:psi0, p0:200, H:54, Ir:150, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.0, nu:0.2, eta0:etaFromKo(ko)});
+    if(etaFromKo(ko) >= rr.etaL-1e-9){ koCrit=ko; break; }
+  }
+  el('ilStats').innerHTML =
+    '<div class="stat hi"><small>locus stress ratio &eta;<sub>IL</sub></small><strong>'+etaIL.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>as a fraction of M<sub>tc</sub></small><strong>'+(etaIL/1.26).toFixed(2)+'</strong></div>'+
+    '<div class="stat"><small>K<sub>o</sub> at which the drop is immediate</small><strong>'+(koCrit?koCrit.toFixed(2):'none in range')+'</strong></div>'+
+    '<div class="stat"><small>peak s<sub>u</sub>/p&prime;<sub>o</sub>, K<sub>o</sub>=0.8 &rarr; 0.4</small><strong>'+runs[3].r.suRatio.toFixed(2)+' \u2192 '+runs[0].r.suRatio.toFixed(2)+'</strong></div>';
+  el('ilNote').innerHTML =
+    '<b>The line is an outcome, not an input.</b> Four runs of the same soil at &psi;<sub>o</sub> = '+(psi0>=0?'+':'')+psi0.toFixed(3)+
+    ', differing only in how much shear stress was already locked in when drainage stopped. Their peaks line up on &eta; &asymp; <b>'+etaIL.toFixed(2)+
+    '</b> &mdash; a &ldquo;collapse surface&rdquo; that NorSand never contained. '+
+    (koCrit ? 'Below about K<sub>o</sub> = <b>'+koCrit.toFixed(2)+'</b> the starting stress ratio is already above that locus, so the soil sheds strength the instant drainage stops &mdash; the book reports about 0.55 for its own version of this run.'
+            : 'Across this K<sub>o</sub> range every path still climbs to a peak before softening.');
+  drawILChart(runs, etaIL);
+}
+function drawILChart(runs, etaIL){
+  var pMax=220, qMax=0;
+  runs.forEach(function(u){ u.r.S.q.forEach(function(q){ qMax=Math.max(qMax,q); }); });
+  qMax=Math.max(qMax, 1.26*60)*1.15;
+  var series=[{pts:[[0,0],[pMax, Math.min(qMax,1.26*pMax)]], color:'#268160', w:2},
+              {pts:[[0,0],[pMax, Math.min(qMax,etaIL*pMax)]], color:'#123b4a', w:2, dash:[7,4]}];
+  var pts=[];
+  runs.forEach(function(u){
+    var S=u.r.S, path=[];
+    for(var j=0;j<S.p.length;j+=Math.max(1,Math.floor(S.p.length/300))) path.push([S.p[j],S.q[j]]);
+    series.push({pts:path, color:'#1479b8', w:1.9});
+    pts.push({x:u.r.pPeak, y:u.r.qPeak, color:'#c64852', r:4.5, label:'Ko='+u.ko.toFixed(1)});
+  });
+  plotXY('ilChart', {h:280, xmin:0, xmax:pMax, ymin:0, ymax:qMax,
+    xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
+    series:series, points:pts,
+    labels:[{x:pMax*0.62, y:Math.min(qMax*0.97, etaIL*pMax*0.62+8), text:'locus through the peaks', color:'#123b4a'}]});
+}
+el('ilPsi').addEventListener('input', updateIL);
 
 // ---------------------------------------------------------------- Section 7
 function updateSection3(){
@@ -1017,6 +1503,235 @@ function drawResidChart(rows){
   ctx.fillText("predicted sr / σ′vo",0,0); ctx.restore();
 }
 
+// ---------------------------------------------------------------- Section 3 trends
+// Table 6.1 of the book, from Bishop (1971): consolidated undrained tests on cohesionless
+// soils. IB is reported in per cent, and a dash where the source gives none.
+var BISHOP_1971 = [
+ {soil:'Banding sand (Ottawa)', state:'Very loose',   test:'comp.', p:'4 kg/cm\u00b2', su:0.206, phif:17.0, phir:30, IB:0.94},
+ {soil:'Banding sand (Ottawa)', state:'Medium loose', test:'comp.', p:'4 kg/cm\u00b2', su:0.288, phif:21.8, phir:30, IB:0.65},
+ {soil:'Banding sand (Ottawa)', state:'Medium loose', test:'comp.', p:'4 kg/cm\u00b2', su:0.333, phif:24.3, phir:30, IB:0.10},
+ {soil:'Huachipato sand (Chile)', state:'Very loose', test:'comp.', p:'4 kg/cm\u00b2', su:0.288, phif:26.8, phir:35, IB:0.91},
+ {soil:'Huachipato sand (Chile)', state:'Loose',      test:'comp.', p:'4 kg/cm\u00b2', su:0.333, phif:29.4, phir:35, IB:0.65},
+ {soil:'Ham River sand', state:'Loose', test:'comp.', p:'990 psi',  su:0.249, phif:21.3, phir:33, IB:0.94},
+ {soil:'Ham River sand', state:'Dense', test:'comp.', p:'990 psi',  su:0.596, phif:33.8, phir:33, IB:null},
+ {soil:'Ham River sand', state:'Loose', test:'comp.', p:'1840 psi', su:0.251, phif:20.1, phir:33, IB:null},
+ {soil:'Ham River sand', state:'Loose', test:'ext.',  p:'99.4 psi', su:0.119, phif:12.0, phir:33, IB:0.75},
+ {soil:'Ham River sand', state:'Loose', test:'ext.',  p:'90.0 psi', su:0.052, phif:11.5, phir:33, IB:0.75},
+ {soil:'Brasted sand', state:'Loose', test:'comp.', p:'10.6 psi', su:0.825, phif:29.2, phir:33, IB:null},
+ {soil:'Brasted sand', state:'Loose', test:'comp.', p:'30.4 psi', su:0.457, phif:31.4, phir:33, IB:null},
+ {soil:'Mississippi River sand', state:'Very loose',   test:'comp.', p:'29.4 psi', su:0.230, phif:17.2, phir:31, IB:null},
+ {soil:'Mississippi River sand', state:'Medium loose', test:'comp.', p:'29.4 psi', su:0.415, phif:28.9, phir:31, IB:null}
+];
+var bishopSel = 0;
+function etaFromPhi(deg){ var sp=Math.sin(deg*Math.PI/180); return 6*sp/(3-sp); }
+function wrothNC(M){ return (M/2)*Math.pow(0.5, 0.8); }   // Eq. 6.3 with a spacing ratio of 2
+function renderBishop(){
+  el('bishopBody').innerHTML = BISHOP_1971.map(function(r,i){
+    return '<tr data-bi="'+i+'"'+(i===bishopSel?' class="sel"':'')+'><td>'+r.soil+'</td><td>'+r.state+'</td><td>'+r.test+'</td>'+
+      '<td>'+r.su.toFixed(3)+'</td><td>'+r.phif.toFixed(1)+'&deg;</td><td>'+r.phir+'&deg;</td>'+
+      '<td>'+etaFromPhi(r.phif).toFixed(2)+'</td><td>'+(r.IB==null?'&ndash;':(100*r.IB).toFixed(0)+'%')+'</td></tr>';
+  }).join('');
+  el('bishopBody').querySelectorAll('tr').forEach(function(tr){
+    tr.addEventListener('click', function(){ bishopSel=+tr.dataset.bi; renderBishop(); drawBishopChart(); });
+  });
+  drawBishopChart();
+}
+function drawBishopChart(){
+  var sel=BISHOP_1971[bishopSel];
+  var pts=BISHOP_1971.map(function(r,i){
+    return {x:r.phir, y:r.phif, color:(r.IB!=null && r.IB>=0.5)?'#c64852':'#1479b8', r:(i===bishopSel?7:4.5),
+            label:(i===bishopSel? r.phif.toFixed(1)+'\u00b0':'')};
+  });
+  plotXY('bishopChart', {h:230, xmin:25, xmax:38, ymin:8, ymax:38, xticks:4, yticks:4,
+    xlab:'critical-state friction angle \u03c6\u2032r (degrees)', ylab:'mobilized \u03c6\u2032 at peak (degrees)',
+    series:[{pts:[[25,25],[38,38]], color:'#123b4a', w:2, dash:[6,3]}],
+    points:pts,
+    labels:[{x:26.2, y:35.5, text:'peak = critical state', color:'#123b4a'}]});
+  el('bishopNote').innerHTML =
+    '<b>'+sel.soil+', '+sel.state.toLowerCase()+', '+sel.test+'</b> at '+sel.p+'. Peak strength ratio '+sel.su.toFixed(3)+
+    ', mobilized friction at peak '+sel.phif.toFixed(1)+'&deg; against a critical-state '+sel.phir+'&deg;, so the stress ratio at the peak is &eta; = <b>'+
+    etaFromPhi(sel.phif).toFixed(2)+'</b>'+
+    (sel.IB==null ? ' (the source reports no brittleness index for this test).'
+                  : ', and <b>'+(100*sel.IB).toFixed(0)+'% of the strength was lost</b> afterwards.')+
+    ' Every point below the dashed line reached its peak while mobilizing <i>less</i> friction than the same soil ends with &mdash; the pore pressure got there first.';
+}
+function drawTrendCharts(Mtc,lam10,psi,su){
+  var le=lamE(lam10), xr=psi/le;
+  var xmax=8, resid=[], ibCurve=[];
+  for(var i=0;i<=80;i++){
+    var x=xmax*i/80;
+    var sr=0.5*Mtc*Math.exp(-x);            // Eq. 6.4 written on psi/lambda_e directly
+    resid.push([x, sr]);
+    ibCurve.push([x, Math.max(0, Math.min(1, 1-sr/su))]);
+  }
+  var nc=wrothNC(Mtc);
+  plotXY('trendChart', {h:250, xmin:0, xmax:xmax, ymin:0, ymax:0.7,
+    xlab:'\u03c8o / \u03bbe', ylab:"strength ratio su/p'o and sr/p'o",
+    bands:[{lo:0.15, hi:0.30, color:'#cfe8da', alpha:0.65}],
+    series:[{pts:resid, color:'#1479b8', w:2.6},
+            {pts:[[0,su],[xmax,su]], color:'#268160', w:1.8, dash:[5,3]},
+            {pts:[[0.69,0],[0.69,0.7]], color:'#8a97a0', w:1.2, dash:[3,3]}],
+    points:[{x:0.69, y:nc, color:'#7653a6', label:'Wroth NC clay '+nc.toFixed(2)},
+            {x:Math.max(0,xr), y:0.5*Mtc*Math.exp(-Math.max(0,xr)), color:'#c64852', label:'you are here'}],
+    labels:[{x:0.8, y:0.68, text:'\u03c8o = 0.69\u03bbe: normal consolidation', color:'#6b7880'},
+            {x:xmax*0.55, y:0.31, text:'peak band, Fig. 6.10', color:'#1f7a4c'}]});
+  var ibPts=BISHOP_1971.filter(function(r){ return r.IB!=null; }).map(function(r){
+    // the table gives no state, so each measured IB is placed at the psi/lambda_e that Eq. 6.4
+    // would need to produce it at this peak strength -- an inversion, not a published coordinate
+    var srR=r.su*(1-r.IB);
+    var x=srR>0 ? Math.log(0.5*Mtc/srR) : 8;
+    return {x:Math.max(0,Math.min(8,x)), y:r.IB, color:'#687a82', r:4.5};
+  });
+  plotXY('ibChart', {h:250, xmin:0, xmax:xmax, ymin:0, ymax:1,
+    xlab:'\u03c8o / \u03bbe', ylab:'brittleness index IB',
+    series:[{pts:ibCurve, color:'#1479b8', w:2.6},
+            {pts:[[0.7,0],[0.7,1]], color:'#8a97a0', w:1.3, dash:[3,3]}],
+    points:ibPts.concat([{x:Math.max(0,xr), y:Math.max(0,Math.min(1,1-(0.5*Mtc*Math.exp(-Math.max(0,xr)))/su)), color:'#c64852', r:6}]),
+    labels:[{x:0.85, y:0.97, text:'brittleness begins at 0.7', color:'#6b7880'}]});
+}
+
+// ---------------------------------------------------------------- Section 8: constant deviator
+var GAMMA_W = 9.81;
+function csdIL(psi0, p0){
+  // Section 7's locus, computed for this soil and state: the mean stress ratio at the peaks
+  var sx=0, sy=0;
+  [0.4,0.5,0.6,0.8].forEach(function(ko){
+    var r=nsUndrained({psi0:psi0, p0:p0, H:54, Ir:150, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.0, nu:0.2, eta0:etaFromKo(ko)});
+    sx+=r.pPeak; sy+=r.qPeak;
+  });
+  return sy/sx;
+}
+function updateCSD(){
+  var psi0=num('csdPsi'), ko=num('csdKo'), p0=num('csdP0'), rise=num('csdRise');
+  el('csdPsiOut').textContent=(psi0>=0?'+':'')+psi0.toFixed(3);
+  el('csdKoOut').textContent=ko.toFixed(2);
+  el('csdP0Out').textContent=p0.toFixed(0);
+  el('csdRiseOut').textContent=rise.toFixed(1);
+  var eta0=etaFromKo(ko), q=eta0*p0;
+  var du=rise*GAMMA_W;                       // metres of water head -> kPa of pore pressure
+  var pNow=Math.max(5, p0-du);
+  var etaNow=q/pNow;
+  var etaIL=csdIL(psi0, p0);
+  var lam=lamE(0.031);
+  var psiNow=psi0 + lam*Math.log(pNow/p0);   // void ratio unchanged; the CSL moves under it
+  var unstable = etaNow >= etaIL;
+  var duCrit=Math.max(0, p0 - q/etaIL), riseCrit=duCrit/GAMMA_W;
+  var collapse = unstable ? nsUndrained({psi0:psiNow, p0:pNow, H:54, Ir:150, Mtc:1.26, lam10:0.031,
+                                         chitc:3.8, N:0.30, R:1.0, nu:0.2, eta0:Math.min(etaNow,1.24)}) : null;
+  var srCS=0.5*1.26*Math.exp(-psiNow/lam)*pNow;
+  el('csdStats').innerHTML =
+    '<div class="stat"><small>&eta; now</small><strong>'+etaNow.toFixed(3)+'</strong>'+(unstable?'<span class="badge contract">past the locus</span>':'<span class="badge dilate">stable</span>')+'</div>'+
+    '<div class="stat"><small>instability locus &eta;<sub>IL</sub></small><strong>'+etaIL.toFixed(3)+'</strong></div>'+
+    '<div class="stat hi"><small>water rise still to go</small><strong>'+(unstable?'0.0':(riseCrit-rise).toFixed(1))+' m</strong></div>'+
+    '<div class="stat"><small>p&prime; left of the original</small><strong>'+(100*pNow/p0).toFixed(0)+'%</strong></div>';
+  el('csdNote').innerHTML = unstable
+    ? '<b>The slope has run out of effective stress.</b> Nothing was added: q is still '+q.toFixed(0)+'&nbsp;kPa, exactly what it was. Raising the water by '+rise.toFixed(1)+
+      '&nbsp;m took p&prime; from '+p0.toFixed(0)+' to '+pNow.toFixed(0)+'&nbsp;kPa, and that alone carried &eta; to '+etaNow.toFixed(2)+', past the locus at '+etaIL.toFixed(2)+
+      '. From here the soil can only shed strength: the red branch is Section 6\u2019s undrained integration from this point, ending near s<sub>r</sub> &asymp; '+srCS.toFixed(0)+
+      '&nbsp;kPa. At Aberfan this took a day to set up and seconds to happen, with no warning signs the morning before.'
+    : '<b>Still stable, and still nothing has been built.</b> q is fixed at '+q.toFixed(0)+'&nbsp;kPa. The water has risen '+rise.toFixed(1)+'&nbsp;m so far, which has already taken '+
+      (p0-pNow).toFixed(0)+'&nbsp;kPa off p&prime; and lifted &eta; from '+eta0.toFixed(2)+' to '+etaNow.toFixed(2)+'. Another <b>'+(riseCrit-rise).toFixed(1)+
+      '&nbsp;m</b> of water reaches the locus at &eta; = '+etaIL.toFixed(2)+'. That remaining margin is the whole of this slope\u2019s safety against a flowslide, and none of it is visible from the surface.';
+  drawCSDChart({p0:p0,q:q,pNow:pNow,etaIL:etaIL,collapse:collapse});
+}
+function drawCSDChart(o){
+  var pMax=o.p0*1.15, qMax=Math.max(o.q*2.2, 1.26*o.p0*0.6);
+  var series=[{pts:[[0,0],[pMax, Math.min(qMax,1.26*pMax)]], color:'#268160', w:2},
+              {pts:[[0,0],[pMax, Math.min(qMax,o.etaIL*pMax)]], color:'#123b4a', w:2, dash:[7,4]},
+              {pts:[[o.p0,o.q],[o.pNow,o.q]], color:'#e38a22', w:3}];
+  var pts=[{x:o.p0, y:o.q, color:'#8a97a0', r:4.5, label:'start'},
+           {x:o.pNow, y:o.q, color:'#e38a22', r:5.5}];
+  if(o.collapse){
+    var S=o.collapse.S, path=[];
+    for(var j=0;j<S.p.length;j+=Math.max(1,Math.floor(S.p.length/250))) path.push([S.p[j],S.q[j]]);
+    series.push({pts:path, color:'#c64852', w:2.4});
+    pts.push({x:o.collapse.pEnd, y:o.collapse.qEnd, color:'#c64852', r:5, label:'strength left'});
+  }
+  plotXY('csdChart', {h:290, xmin:0, xmax:pMax, ymin:0, ymax:qMax,
+    xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
+    series:series, points:pts,
+    labels:[{x:pMax*0.45, y:Math.min(qMax*0.96, o.etaIL*pMax*0.45+6), text:'instability locus', color:'#123b4a'},
+            {x:(o.p0+o.pNow)/2, y:o.q*1.06, text:'water rising, load unchanged', color:'#b06d12', align:'center'}]});
+}
+['csdPsi','csdKo','csdP0','csdRise'].forEach(function(id){ el(id).addEventListener('input', updateCSD); });
+
+// ---------------------------------------------------------------- Section 11
+function updateSS(){
+  var de=num('ssErr'), lam10=num('ssLam'), le=lamE(lam10);
+  el('ssErrOut').textContent=de.toFixed(3);
+  el('ssLamOut').textContent=lam10.toFixed(3);
+  var factor=Math.exp(de/le);                  // sr goes as exp(-psi/lambda_e): an error in e is an error in psi
+  el('ssStats').innerHTML =
+    '<div class="stat"><small>&lambda;<sub>e</sub></small><strong>'+le.toFixed(4)+'</strong></div>'+
+    '<div class="stat hi"><small>strength factor from this error</small><strong>&times;'+factor.toFixed(2)+'</strong>'+
+      (factor>=2?'<span class="badge contract">bigger than the effect it measures</span>':factor>=1.4?'<span class="badge caution">serious</span>':'<span class="badge dilate">tolerable</span>')+'</div>'+
+    '<div class="stat"><small>&Delta;e for a factor of 2</small><strong>'+(le*Math.log(2)).toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>&Delta;e for &plusmn;10%</small><strong>'+(le*Math.log(1.1)).toFixed(4)+'</strong></div>';
+  el('ssNote').innerHTML =
+    '<b>Read this as the size of the answer, not the size of the error.</b> In a soil with &lambda;<sub>10</sub> = '+lam10.toFixed(3)+
+    ', getting the void ratio wrong by '+de.toFixed(3)+' changes the estimated residual strength by a factor of <b>'+factor.toFixed(2)+
+    '</b>. A factor of two arrives at &Delta;e = '+(le*Math.log(2)).toFixed(3)+'. Densely graded, low-&lambda; sands are the worst case, and they are also the hardest to sample without disturbance &mdash; which is why the book prefers to carry the uncertainty in &psi; rather than to pretend a single measured strength.';
+  drawSSChart(de, lam10);
+}
+function drawSSChart(de, lam10){
+  var xs=[], lams=[0.02,0.05,0.10,0.20], series=[], maxY=1;
+  function curve(l){
+    var pts=[];
+    for(var i=0;i<=60;i++){ var d=0.002+ (0.05-0.002)*i/60; pts.push([d, Math.exp(d/lamE(l))]); }
+    return pts;
+  }
+  lams.forEach(function(l){ series.push({pts:curve(l), color:'#8a97a0', w:1.4, dash:[5,3]}); });
+  series.push({pts:curve(lam10), color:'#1479b8', w:2.8});
+  var f=Math.exp(de/lamE(lam10));
+  plotXY('ssChart', {h:260, xmin:0, xmax:0.05, ymin:1, ymax:Math.max(4, Math.min(12, f*1.3)),
+    xlab:'error in void ratio, \u0394e', ylab:'factor on the estimated residual strength',
+    series:series,
+    points:[{x:de, y:Math.min(f, Math.max(4, Math.min(12, f*1.3))), color:'#c64852', label:'\u00d7'+f.toFixed(2)}],
+    labels:[{x:0.042, y:Math.min(Math.exp(0.042/lamE(0.02)), Math.max(4, Math.min(12,f*1.3)))*0.97, text:'\u03bb10 = 0.02', color:'#6b7880'},
+            {x:0.042, y:Math.exp(0.042/lamE(0.20))*1.05, text:'\u03bb10 = 0.20', color:'#6b7880'}]});
+}
+['ssErr','ssLam'].forEach(function(id){ el(id).addEventListener('input', updateSS); });
+
+// ---------------------------------------------------------------- Section 12
+var PSI_LAB_TC = -0.08, PSI_SS = -0.05, PSI_FULLY_CONTRACTIVE = 0.03;
+function updateDense(){
+  var ko=num('deKo'), Mtc=1.25;
+  el('deKoOut').textContent=ko.toFixed(2);
+  var eta0=etaFromKo(ko);
+  var undrainedShare=Math.max(0, Math.min(1, (Mtc-eta0)/Mtc));
+  el('deStats').innerHTML =
+    '<div class="stat"><small>starting stress ratio &eta;<sub>o</sub></small><strong>'+eta0.toFixed(2)+'</strong></div>'+
+    '<div class="stat hi"><small>share of the path still undrained</small><strong>'+(100*undrainedShare).toFixed(0)+'%</strong></div>'+
+    '<div class="stat"><small>laboratory threshold (isotropic)</small><strong>&psi; &lt; &minus;0.08</strong></div>'+
+    '<div class="stat"><small>threshold carried into design</small><strong>&psi; &lt; &minus;0.05</strong></div>';
+  el('deNote').innerHTML =
+    '<b>At K<sub>o</sub> = '+ko.toFixed(2)+', about '+(100*undrainedShare).toFixed(0)+'% of the path to failure is still undrained.</b> '+
+    (ko>0.95
+      ? 'That is the laboratory condition: an isotropically consolidated sample walks the whole path with no drainage, which is why the laboratory threshold is the strictest of the three.'
+      : 'The rest was walked drained, before anything went wrong, so less excess pore pressure is available at the onset of instability and looser states stay stable than the isotropic tests suggest. The book puts the usual in-situ range at 0.5 &lt; K<sub>o</sub> &lt; 0.8 &mdash; about two-thirds of the path &mdash; and concludes that a judgement criterion of &psi; &lt; &minus;0.05 from laboratory testing should be conservative in practice.');
+  drawDenseChart(ko);
+}
+function drawDenseChart(ko){
+  var Mtc=num('s3M'), k=num('s3K'), lam10=num('s3L');
+  var xmin=-0.15, xmax=0.10, pts=[];
+  for(var v=xmin; v<=xmax+1e-9; v+=0.002) pts.push([v, srOverSigV(Mtc,k,lam10,v)]);
+  var ymax=0.30;
+  plotXY('denseChart', {h:280, xmin:xmin, xmax:xmax, ymin:0, ymax:ymax,
+    xlab:'state parameter \u03c8', ylab:"sr / \u03c3'vo from the design function",
+    bands:[],
+    series:[{pts:pts, color:'#123b4a', w:2.6},
+            {pts:[[PSI_LAB_TC,0],[PSI_LAB_TC,ymax]], color:'#268160', w:1.6, dash:[4,3]},
+            {pts:[[PSI_SS,0],[PSI_SS,ymax]], color:'#c64852', w:1.6, dash:[4,3]},
+            {pts:[[PSI_FULLY_CONTRACTIVE,0],[PSI_FULLY_CONTRACTIVE,ymax]], color:'#8a97a0', w:1.4, dash:[3,3]}],
+    points:[],
+    labels:[{x:PSI_LAB_TC, y:ymax*0.96, text:'\u03c8 = \u22120.08 laboratory', color:'#1f7a4c'},
+            {x:PSI_SS, y:ymax*0.80, text:'\u03c8 = \u22120.05 design', color:'#a8323d'},
+            {x:PSI_FULLY_CONTRACTIVE, y:ymax*0.64, text:'\u03c8 = +0.03 fully contractive', color:'#6b7880'},
+            {x:-0.135, y:ymax*0.30, text:'dilatant', color:'#1f7a4c'},
+            {x:-0.045, y:ymax*0.22, text:'lightly dilatant: the awkward range', color:'#a8323d'}]});
+}
+el('deKo').addEventListener('input', updateDense);
+
 // ---------------------------------------------------------------- notation + glossary
 var NOTATION=[
  {sym:'s<sub>u</sub>', def:'peak undrained shear strength &mdash; the strength before any post-peak loss', goto:'brittleness'},
@@ -1030,7 +1745,17 @@ var NOTATION=[
  {sym:'M<sub>tc</sub>', def:'critical friction ratio in triaxial compression', goto:'residual-strength'},
  {sym:'K<sub>o</sub>', def:'at-rest earth pressure coefficient, converting p&prime;<sub>o</sub> to &sigma;&prime;<sub>vo</sub>', goto:'residual-strength'},
  {sym:'&sigma;&prime;<sub>vo</sub>', def:'in-situ vertical effective stress', goto:'residual-strength'},
- {sym:'Q<sub>tn,cs</sub>', def:'clean-sand-equivalent normalized CPT resistance (Robertson 2010)', goto:'residual-strength'}
+ {sym:'Q<sub>tn,cs</sub>', def:'clean-sand-equivalent normalized CPT resistance (Robertson 2010)', goto:'residual-strength'},
+ {sym:'A<sub>f</sub>', def:'Skempton\u2019s pore pressure parameter at peak strength, &Delta;u/&Delta;&sigma;<sub>1</sub> (Eq. 6.2)', goto:'brittleness'},
+ {sym:'&Lambda;', def:'exponent in Wroth\u2019s normally consolidated clay strength, &asymp;0.8 (Eq. 6.3)', goto:'brittleness'},
+ {sym:'&phi;&prime;<sub>f</sub>', def:'friction angle actually mobilized at peak strength &mdash; not the critical-state value', goto:'brittleness'},
+ {sym:'I<sub>r</sub>', def:'elastic shear rigidity G/p&prime; &mdash; how much mean stress one unit of volumetric strain costs', goto:'norsand-undrained'},
+ {sym:'H', def:'plastic hardening modulus: how fast the yield surface grows per unit plastic shear strain', goto:'norsand-undrained'},
+ {sym:'M<sub>i</sub>, p<sub>i</sub>', def:'image stress ratio and image mean stress &mdash; NorSand\u2019s internal size and shape variables', goto:'norsand-undrained'},
+ {sym:'&psi;<sub>i</sub>', def:'state parameter at the image condition, &psi; &minus; &lambda;&middot;ln(p&prime;/p<sub>i</sub>)', goto:'norsand-undrained'},
+ {sym:'D<sup>p</sup>', def:'plastic dilatancy, M<sub>i</sub> &minus; &eta; &mdash; positive means the soil is trying to contract', goto:'norsand-undrained'},
+ {sym:'K', def:'elastic bulk modulus, 2G(1+&nu;)/[3(1&minus;2&nu;)] &mdash; the price of undrained contraction (Eq. 6.8)', goto:'norsand-undrained'},
+ {sym:'K<sub>o</sub> path', def:'the shear stress a slope already carries before drainage stops, &eta;<sub>o</sub>=3(1&minus;K<sub>o</sub>)/(1+2K<sub>o</sub>)', goto:'csd-path'}
 ];
 function renderNotation(){
   el('notationGrid').innerHTML = NOTATION.map(function(n){
@@ -1061,8 +1786,38 @@ var figureInfo={
  'The effective stress path in q against p&prime;. <b>Green line:</b> the critical state line, q = M p&prime;, where the soil must finish. <b>Blue curve:</b> the path taken -- rising to a peak, then turning left and down onto the CSL. <b>Red dot:</b> the peak, where instability begins. <b>Navy dot:</b> the residual at critical state. <b>Orange dashed bar:</b> the deviator stress given back between the two. <b>Grey dot on the axis:</b> where the soil started.',
  'Watch the horizontal movement first. Total stress never changes in this picture -- every bit of leftward travel is mean effective stress destroyed by pore pressure the soil cannot shed. Then drag psi from positive to negative. The critical state point crosses to the right of the start, the peak stops being a peak, and the orange bar vanishes: the same equations that describe a flowslide describe a soil that simply gets stronger. Nothing switched on. The soil just started on the other side of critical.'],
 'hirChart':['The instability stress ratio is not a soil property',
- 'Horizontal axis is H/Ir, the ratio of plastic hardening modulus to elastic rigidity; vertical is the mobilized stress ratio at instability. <b>Blue curve:</b> eta_L across the range. <b>Grey dots:</b> the two values Figure 6.27 actually states. <b>Red dot:</b> the current setting.',
- 'The soil does not change anywhere on this chart -- same Mtc, same lambda_10, same psi, same Guindon silty sand throughout. Only the ratio of hardening to rigidity moves, and eta_L moves by a third with it. If instability happened at a fixed stress ratio the way the collapse-surface picture claims, this line would be flat. It is not, and that is the argument. Treat the shape between the two grey dots as illustrative; the dots themselves are the cited result.'],
+ 'Horizontal axis is H/Ir, the ratio of plastic hardening modulus to elastic rigidity; vertical is the stress ratio at instability, computed by running this page’s NorSand integration at every point. <b>Blue curve:</b> Ir held at 150, H varied. <b>Purple dashed curve:</b> H held at 80, Ir varied. <b>Pink band:</b> the 0.75 to 1.0 range the book states for this figure. <b>Red dot:</b> the current setting.',
+ 'The soil does not change anywhere on this chart -- same Mtc, same lambda_10, same psi, same Guindon silty sand throughout. Only the ratio of hardening to rigidity moves, and eta_L moves across a range about a third as wide as its own value. If instability happened at a fixed stress ratio the way the collapse-surface picture claims, both curves would be flat. Neither is, and that is the argument. The band is quoted from the book; the curves are this page’s own computation, so read their direction as what these equations do rather than as a digitised figure.'],
+'nsuQChart':['The computed stress–strain curve',
+ 'Deviator stress q against axial strain, integrated from NorSand’s own equations for undrained triaxial compression. <b>Blue curve:</b> the computed response. <b>Red dot:</b> the peak, which is the onset of liquefaction.',
+ 'Compare the height of the peak with how fast the curve falls after it. Loose samples peak early -- often below 1% strain -- and then shed most of what they had; the book’s test L609 is the extreme case. Switch to the dilatant preset C634 and the curve never peaks at all: it climbs for the whole test. Then change only H or only Ir with the buttons underneath and watch the same soil produce a different peak. That is Figs 6.20 and 6.21 in one control.'],
+'trendChart':['Peak and residual, on the axis that makes them comparable',
+ 'Horizontal axis is psi_o divided by lambda_e, which is the group that governs brittleness. <b>Blue curve:</b> the residual strength ratio from Eq. 6.4. <b>Green band:</b> the 0.15 to 0.30 range that Fig. 6.10 shows for the peak strength of loose sands. <b>Green dashed line:</b> the peak you set on the slider. <b>Purple dot:</b> Wroth\u2019s normally consolidated clay value from Eq. 6.3, which sits at psi_o = 0.69 lambda_e. <b>Red dot:</b> the current state.',
+ 'Find where the blue curve enters the green band. To the left of that point a loose sand and a normally consolidated clay are the same material as far as peak strength goes, and there is nothing to lose on the way to critical state. To the right the blue curve dives away from the band, and the vertical distance between them is the strength drop. This is the book\u2019s Fig. 6.13 argument in one picture: sands are not unusually weak, they are unusually brittle.'],
+'ibChart':['Brittleness, predicted and measured',
+ 'Horizontal axis is again psi_o/lambda_e. <b>Blue curve:</b> the brittleness index implied by Eq. 6.4 at the peak strength you set. <b>Grey dashed line:</b> the 0.7 threshold where the book says brittleness begins. <b>Grey dots:</b> the brittleness indices Bishop (1971) measured, placed at the state Eq. 6.4 would need to produce them. <b>Red dot:</b> the current state.',
+ 'The grey dots are placed by inversion, not by a published coordinate, so read their vertical spread rather than their exact horizontal position: measured brittleness runs from 10% to 94% in soils that all looked like ordinary loose sand. Then look at where the blue curve crosses 0.7 on the horizontal axis. Below it, the curve is near zero -- which is why insensitive clays and lightly loose sands fail by slumping rather than flowing.'],
+'bishopChart':['Forty-year-old data that still decides the argument',
+ 'Each point is one test from Table 6.1. Horizontal axis is the critical-state friction angle the soil ends at; vertical is the friction angle actually mobilized at peak strength. <b>Red points:</b> tests that lost half their strength or more. <b>Blue points:</b> the rest. <b>Navy dashed line:</b> equality. The selected row is drawn larger.',
+ 'Almost every point sits below the line: these soils reached their peak while mobilizing less friction than they finish with, because pore pressure got there first. Now follow one soil across its own rows -- three Banding sand tests at the same confining stress mobilize 17.0, 21.8 and 24.3 degrees at peak. Convert those to stress ratios and you get 0.65, 0.84 and 0.95. A collapse surface would need one number.'],
+'ssChart':['What a void ratio error is worth',
+ 'Horizontal axis is the error in void ratio; vertical is the factor by which the estimated residual strength changes because of it. <b>Blue curve:</b> the soil you have selected. <b>Grey dashed curves:</b> other critical state line slopes, from 0.02 to 0.20. <b>Red dot:</b> your current error.',
+ 'Start at the left and follow the blue curve up. The exponential is unforgiving: in a tight sand a single hundredth of void ratio can double or halve the answer, which is larger than most of the effects the testing programme was designed to resolve. Then compare the grey curves -- the flatter the critical state line, the steeper this penalty, so the soils that are hardest to sample undisturbed are also the ones where sampling error costs most.'],
+'denseChart':['Three thresholds that nearly agree',
+ 'Horizontal axis is the state parameter. <b>Navy curve:</b> the residual strength ratio from Section 9\u2019s design function at its current settings. <b>Green dashed line:</b> the laboratory threshold, psi = -0.08. <b>Red dashed line:</b> the threshold carried into design, psi = -0.05. <b>Grey dashed line:</b> psi = +0.03, above which soils are contractive all the way to critical state.',
+ 'Look at how flat the navy curve is to the left of the red line and how fast it falls to the right: that shape is why a threshold exists at all. Between the green and red lines lies the range the book calls lightly dilatant, where soils contract first and dilate afterwards -- no single minimum strength exists there, which is exactly what the steady-state method assumed. Move Section 9\u2019s sliders and the curve moves, but the thresholds do not: they come from laboratory behaviour, not from the design function.'],
+'csdChart':['Raising the water, and nothing else',
+ 'The effective stress path of a slope under constant load while pore pressure rises. <b>Orange line:</b> the path, moving left at constant q. <b>Grey dot:</b> where it started. <b>Navy dashed line:</b> the instability locus computed for this soil and state. <b>Red curve:</b> the undrained collapse that follows once the locus is crossed. <b>Green line:</b> the critical state line.',
+ 'Watch the vertical distance between the orange path and the navy line: that gap is the entire safety margin, and it closes without anything happening above ground. Raise Ko toward 1 and the path starts lower and survives more water; drop it to 0.4, as a real slope does, and a couple of metres is enough. Then look at the red branch -- the strength at the end of it is what any runout analysis has to use, not the strength the slope had that morning.'],
+'nsuPathChart':['The computed effective stress path',
+ 'q against mean effective stress. <b>Green line:</b> the critical state line q = Mtc p′. <b>Blue curve:</b> the computed path. <b>Grey dot:</b> the start. <b>Red dot:</b> the peak, labelled with the stress ratio there.',
+ 'Watch how far left the path travels before it peaks -- that horizontal distance is mean effective stress destroyed by pore pressure, and it is bought entirely by the elastic rigidity Ir. Raise Ir and the path dives left sooner and peaks lower. The stress ratio at the peak, eta_L, is printed on the dot: it moves as the moduli move, which is the whole argument of the section that follows.'],
+'nsuUChart':['Excess pore pressure as it builds',
+ 'Excess pore pressure against axial strain. <b>Purple curve:</b> computed Δu for a test with the cell pressure held constant. <b>Grey dashed line:</b> the strain at peak strength.',
+ 'Note that pore pressure keeps rising well past the peak -- the peak is not where pore pressure generation stops, only where it starts outrunning the hardening. On the dilatant preset the curve turns down and can go negative: the soil is trying to expand, the pore water resists, and p′ climbs instead of falling.'],
+'ilChart':['An instability line that nobody put into the model',
+ 'Computed undrained stress paths for one soil at one state, started from four different Ko conditions. <b>Blue curves:</b> the paths. <b>Red dots:</b> each path’s peak. <b>Navy dashed line:</b> a straight line through those peaks. <b>Green line:</b> the critical state line.',
+ 'The four peaks line up. Nothing in NorSand contains a collapse surface or an instability line, so the line you are looking at is a consequence of drainage conditions, not a property of the soil. Now move the state slider: the whole locus moves. A line that shifts when the soil gets looser, and shifts again when the moduli change, cannot be the material constant the collapse-surface picture needs it to be.'],
 'caseChart':['The design function against eleven real failures',
  'Horizontal axis is the characteristic state parameter; vertical is residual strength as a fraction of vertical effective stress. <b>Navy curve:</b> the book&rsquo;s published design function at your current Mtc, Ko and lambda_10. <b>Grey crosses:</b> the eleven case histories of Table 6.5, drawn as the ranges the book publishes rather than as points. <b>Green ground on the left:</b> denser than psi = -0.05. <b>Red dot:</b> your current slider state.',
  'Notice first that the case histories are crosses, not dots -- both coordinates are uncertain, and the book declines to pretend otherwise. Then find the kink in the navy curve at psi = lambda_10, where the function switches from critical-state theory to a conservative fit against exactly these crosses. Drag lambda_10 and watch the kink travel: the branch you are on depends on the soil, not on a fixed value of psi. Finally, note where the curve sits relative to the crosses in the contractive range -- it is meant to run through their lower part, because it is a design function rather than a best fit.'],
@@ -1072,11 +1827,15 @@ var figureInfo={
 };
 
 // ---------------------------------------------------------------- quiz
-var BLOCK_NAMES=['A — Brittleness and residual strength','B — Mechanism and the collapse surface','C — Design and the case-history record'];
+var BLOCK_NAMES=['A — Brittleness and residual strength','B — Mechanism and the collapse surface','C — Design and the case-history record',
+  'D — Undrained NorSand, computed','E — Instability, and failure with no new load','F — Steady state, and how dense is enough'];
 var QUIZ_BLOCK_SECTION=[
   {id:'brittleness',       label:'Section 3'},
-  {id:'collapse-surface',  label:'Section 6'},
-  {id:'residual-strength', label:'Section 7'}
+  {id:'collapse-surface',  label:'Section 7'},
+  {id:'residual-strength', label:'Section 9'},
+  {id:'norsand-undrained', label:'Section 6'},
+  {id:'csd-path',          label:'Section 8'},
+  {id:'dense-enough',      label:'Sections 11-12'}
 ];
 var QUIZ_ITEMS = [
 // Block A
@@ -1111,7 +1870,40 @@ var QUIZ_ITEMS = [
 {q:"Calaveras Dam and the Mochikoshi dams are omitted from the comparison because:",opts:["They were not liquefaction failures","The book itself flags their data as unreliable or outliers","They happened too long ago"],correct:"b",exp:"Including data the source distrusts would flatter the comparison."},
 {q:"A design function point falling BELOW the line of equality means it:",opts:["Predicted less strength than was back-figured -- the safe direction","Predicted more strength than was back-figured","Failed to compute"],correct:"a",exp:"Under-predicting residual strength is conservative for a design tool."},
 {q:"For a soil at psi = -0.10 with lambda_10 = 0.08, which branch of the design function applies?",opts:["The critical-state theory branch, since psi > lambda_10","The case-history branch, since psi <= lambda_10","Neither -- the function is undefined there"],correct:"b",exp:"-0.10 is well below 0.08, so the conservative linear branch is used. Note the branch depends on the soil's lambda_10, not on a fixed psi."},
-{q:"The single most important input carried from Module 2 into this module is:",opts:["The cone's tip resistance","The characteristic state parameter psi_k","The friction ratio F"],correct:"b",exp:"Module 2 ended by asking which psi_k to carry forward. This module turns that number into a residual strength and a brittleness."}
+{q:"The single most important input carried from Module 2 into this module is:",opts:["The cone's tip resistance","The characteristic state parameter psi_k","The friction ratio F"],correct:"b",exp:"Module 2 ended by asking which psi_k to carry forward. This module turns that number into a residual strength and a brittleness."},
+// Block D
+{q:"How does NorSand represent the undrained condition?",opts:["By choosing a Poisson's ratio close to 0.5 so volume cannot change","By setting total volumetric strain to zero, so the elastic and plastic parts must cancel","By switching off plastic strain entirely"],correct:"b",exp:"Eq. 6.6. Plastic strains are computed exactly as in the drained case; the no-volume-change condition then fixes the elastic part, and Eq. 6.7 turns that into a change in mean effective stress."},
+{q:"In undrained loading, where does the drop in mean effective stress come from?",opts:["The total stress falling","p' = -K times the plastic volumetric strain (Eq. 6.7)","The critical state line moving"],correct:"b",exp:"Total stress does not change. The soil wants to contract, cannot, and pays for it in mean effective stress at the rate set by the elastic bulk modulus."},
+{q:"Why does the elastic bulk modulus matter so much in an undrained simulation?",opts:["Because it sets the price, in mean effective stress, of every unit of plastic contraction","Because it sets the critical friction ratio","Because it determines the void ratio"],correct:"a",exp:"K = 2G(1+nu)/[3(1-2nu)] with G = Ir p'. A stiffer elastic response means a larger pore pressure is needed to hold the volume constant, so p' falls faster."},
+{q:"Doubling the elastic rigidity Ir of a loose sample, all else fixed (Fig. 6.20):",opts:["Raises the peak undrained strength","Lowers the peak undrained strength, by about 30% in the book's simulations","Has no effect until critical state"],correct:"b",exp:"Stiffer elasticity means more pore pressure for the same contraction, so the strength at the onset of liquefaction falls."},
+{q:"Raising the plastic hardening modulus H of a loose sample (Fig. 6.21):",opts:["Raises the peak strength and makes the post-peak drop sharper","Lowers the peak strength","Only affects dense soils"],correct:"a",exp:"H acts in the opposite sense to elastic rigidity: more hardening resists the loss of mean stress, so the peak is higher -- and the subsequent collapse steeper."},
+{q:"In NorSand, what actually limits hardening and so produces liquefaction?",opts:["A collapse surface added for loose soils","The hardening limit on the image stress pi (Eq. 3.38), which depends on the state parameter","A cap on the friction angle"],correct:"b",exp:"For loose soils the limit is below the current mean stress, so the yield surface must eventually soften towards critical state. It is the same limit that controls dilatancy in dense soil, not something added for liquefaction."},
+{q:"What separates a liquefying sand from a normally consolidated clay, in NorSand's terms?",opts:["Only the sand contracts","There is proportionately less shear hardening in the sand, so the fall in p' outruns the gain in stress ratio","The clay has no critical state"],correct:"b",exp:"Both contract. In normally consolidated clay the hardening just balances the loss of mean stress; in a liquefying sand it does not."},
+{q:"The NorSand fits to Erksak undrained tests in Fig. 6.19 were obtained:",opts:["By fitting each undrained test separately with its own critical state line","Using the properties calibrated from dense DRAINED tests, with no collapse surface","Only by adding an instability line"],correct:"b",exp:"That is the point of the comparison: a drained calibration predicts undrained liquefaction, which a collapse-surface picture cannot claim."},
+{q:"Why does the book recommend measuring shear modulus with bender elements when fitting undrained tests?",opts:["Because undrained response depends very strongly on the elastic modulus, which varies test to test","Because the CSL cannot be measured otherwise","Because Poisson's ratio is always 0.5"],correct:"a",exp:"Without a measured modulus, fitting NorSand to undrained data is calibration rather than prediction."},
+{q:"The stress ratio at the peak of an undrained test is:",opts:["Equal to Mtc by definition","Set by the state and the moduli, not by friction alone","Always 0.62"],correct:"b",exp:"Peak strength is not simply a frictional property. It scales with Mtc but moves with H, Ir and the state, which is exactly why an instability line is not a soil property."},
+// Block E
+{q:"In Fig. 6.25's simulations, lowering Ko before switching to undrained loading:",opts:["Raises the peak undrained strength, because less of the path is in the weaker undrained mode","Lowers the peak strength in every case","Makes no difference"],correct:"a",exp:"More of the strength has already been mobilized drained. The process has a limit, though: once the starting stress ratio is above the locus, strength falls the moment drainage stops."},
+{q:"At roughly which Ko do the book's simulations show strength falling immediately on the switch to undrained loading?",opts:["About 0.9","About 0.55","About 0.2"],correct:"b",exp:"Below about Ko = 0.55 the initial stress ratio already sits above the realized instability locus for that soil and state."},
+{q:"NorSand contains no instability line, yet the peaks of those simulations:",opts:["Scatter randomly","Line up on a straight line through the origin","Fall on the critical state line"],correct:"b",exp:"The line is an outcome of drainage conditions and of the moduli, not an input. That is the book's argument in one figure."},
+{q:"A constant-shear-drained path raises the stress ratio by:",opts:["Increasing q at constant p'","Decreasing p' at constant q","Increasing both together"],correct:"b",exp:"Water infiltration, a rising water table or a blocked drain all do this. Nothing is added to the slope, and eta rises anyway."},
+{q:"Which failure in this module was triggered that way?",opts:["Fort Peck Dam","Aberfan","Nerlerk berm"],correct:"b",exp:"Rainfall and spring water raised the pore pressure inside the colliery tip. Section 6.6.5 identifies this as the Aberfan trigger mechanism."},
+{q:"In Sasitharan's laboratory version of that path, collapse began at an axial strain of about:",opts:["0.4%","4%","15%"],correct:"a",exp:"Which is why there was no visible warning at Aberfan: the deformation before collapse is far too small to see, and the tip had been inspected the day before."},
+{q:"In the book's own constant-shear-drained test on dense Fraser River sand, the elastic limit was reached at a stress ratio of:",opts:["eta = 1.84, above M","eta = 1.08, well below M","eta = 0, at isotropic conditions"],correct:"b",exp:"Yielding started at eta = 1.08, well below the critical stress ratio; the limiting ratio the equipment could no longer hold came later, at eta = 1.84."},
+{q:"For a slope on this path, the safety margin is best described as:",opts:["The distance from the current stress ratio to the instability locus","The distance from the current stress ratio to zero","The height of the slope"],correct:"a",exp:"And that distance closes with rising pore pressure alone, with no change in loading and nothing visible at the surface."},
+{q:"Why can a slope that is stable all summer fail without warning after rain?",opts:["Because the shear stress increases","Because p' falls, so eta rises to the instability locus while the load stays the same","Because the critical state line moves"],correct:"b",exp:"The stress ratio is a ratio. Either term can move it, and pore pressure moves the denominator."},
+{q:"What does this mechanism imply for design?",opts:["Only the peak strength matters","Pore pressure control is a load case, not a detail","Loose slopes are safe if nothing is built on them"],correct:"b",exp:"A slope that carries no new load at all can still be brought to instability by water, so drainage and monitoring are part of the stability case."},
+// Block F
+{q:"The steady-state method's 30% reduction of measured strength, for the stress on the failure plane, is:",opts:["Required by limit equilibrium","Described by the book as misguided and incorrect","A conservative safety factor"],correct:"b",exp:"The limit equilibrium analysis works in (sigma1-sigma3)/2 and does not know the strength has been adjusted; the cosine factor double-counts."},
+{q:"Blending several samples to get enough material for testing is a problem because:",opts:["The critical state line is very sensitive to small changes in silt content","Blending changes the friction angle","It is expensive"],correct:"a",exp:"A composite gradation may exist nowhere in the deposit, and assuming one CSL slope for a whole stratum is generally wrong."},
+{q:"Allowing for plane strain rather than triaxial conditions changes field strengths by about:",opts:["5%","50%","No change"],correct:"a",exp:"Most case histories are near plane strain, where M differs from its triaxial compression value. Small, but it is one more effect in the same direction."},
+{q:"The most fundamental objection to the steady-state approach is:",opts:["It requires undisturbed samples","It assumes a minimum assured strength, which is an error unless the soil is totally contractive","It uses the wrong friction angle"],correct:"b",exp:"Lightly dilatant soils contract first and dilate afterwards, so no single minimum strength exists for them."},
+{q:"Which range does the book identify as the troublesome, lightly dilatant one?",opts:["-0.1 < psi < 0","psi > +0.1","psi < -0.3"],correct:"a",exp:"Looser than about psi = +0.03 the soil is contractive all the way and a minimum strength does apply -- but such soils are not that common in nature."},
+{q:"How quickly did excess pore pressure dissipate in the book's instrumented Erksak sand fill?",opts:["20% gone in two minutes, essentially complete in about eight","Nothing measurable for several hours","Instantly"],correct:"a",exp:"Which is why undrained conditions cannot simply be assumed for a liquefaction event lasting minutes -- Lower San Fernando started moving about 30 seconds after the shaking stopped."},
+{q:"Strain localization matters to residual strength because:",opts:["Shear bands develop a locally LOOSER void ratio, so laboratory strengths are not reached at field scale","Shear bands are denser than the surrounding soil","It only affects clays"],correct:"a",exp:"At field scale there is a large volume of soil to feed water into the band, so a dilatant sample's laboratory strength does not survive the scale-up."},
+{q:"An error of 0.01 in void ratio matters most in:",opts:["A soil with a small lambda_10","A soil with a large lambda_10","It is the same for every soil"],correct:"a",exp:"Residual strength goes as exp(-psi/lambda_e), so the same void ratio error is a larger exponent in a soil with a flatter critical state line."},
+{q:"In isotropic triaxial compression, phase transformation and pseudo-steady state disappear at about:",opts:["psi < -0.08","psi < -0.30","psi < +0.05"],correct:"a",exp:"Simple shear tests, which start with some shear stress locked in, give about psi < -0.05; the design criterion follows the looser of the two."},
+{q:"Why is psi < -0.05 taken into design when the laboratory number is -0.08?",opts:["It is a rounding of the same figure","In-situ Ko is usually 0.5-0.8, so only part of the loading path is undrained and looser states stay stable","Because CPTs cannot resolve -0.08"],correct:"b",exp:"Laboratory tests start isotropic, so the whole path is undrained. In the ground, part of it has been walked drained already; the book concludes psi < -0.05 from laboratory testing should be conservative in practice."}
 ];
 
 
@@ -1121,8 +1913,8 @@ var QUIZ_ITEMS = [
 el('hirSlide').addEventListener('input', updateHIr);
 ['s3M','s3K','s3L','s3Psi'].forEach(function(id){ el(id).addEventListener('input', function(){ updateSection3(); updateCaseCheck(); }); });
 el('s3bQ').addEventListener('input', updateRobertson);
-renderCasePicker(); renderCaseDetail(); renderNotation(); renderGlossary();
-updateSection1(); updateUndrainedPath(); updateHIr(); updateSection3(); updateRobertson(); updateCaseCheck();
+renderCasePicker(); renderCaseDetail(); renderNotation(); renderGlossary(); renderNsuPresets(); renderBishop();
+updateSection1(); updateUndrainedPath(); updateNsu(); updateHIr(); updateIL(); updateCSD(); updateSection3(); updateRobertson(); updateCaseCheck(); updateSS(); updateDense();
 
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
 document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
@@ -1133,7 +1925,7 @@ document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.que
 var PER_BLOCK = Math.round(QUIZ_ITEMS.length/BLOCK_NAMES.length);
 var letters=['a','b','c','d','e'];
 var fill=document.getElementById('quizProgressFill'),count=document.getElementById('quizCount');
-var SLOT_FOR_BLOCK=['quizSlotA','quizSlotB','quizSlotC'];
+var SLOT_FOR_BLOCK=['quizSlotA','quizSlotB','quizSlotC','quizSlotD','quizSlotE','quizSlotF'];
 // The quiz lives in an IIFE. Expose its data the way SANDS and IC_BANDS already are, so
 // the self-tests can check the questions themselves rather than only the rendered DOM.
 window.QUIZ_ITEMS=QUIZ_ITEMS; window.BLOCK_NAMES=BLOCK_NAMES; window.QUIZ_BLOCK_SECTION=QUIZ_BLOCK_SECTION;
@@ -1171,12 +1963,12 @@ function gradeBlock(idx){
       else{ q.style.background='#fdeee9'; }
     }
   });
-  scoreEl.textContent=score+'/PER_BLOCK';
+  scoreEl.textContent=score+'/'+PER_BLOCK;
   scoreEl.style.background=score===PER_BLOCK?'#c9ecd8':score>=Math.ceil(0.7*PER_BLOCK)?'#eef8fc':'#fdeee9';
   scoreEl.style.display='inline-block';
   resultEl.textContent = unanswered
-    ? unanswered+' question(s) in this block are still unanswered ('+score+'/PER_BLOCK correct so far) — their explanations stay hidden until answered.'
-    : (score===PER_BLOCK?'Perfect block — all 10 correct.':score>=Math.ceil(0.7*PER_BLOCK)?'Solid — '+score+'/PER_BLOCK correct. Check the red ones below.':'Worth a second pass — '+score+'/PER_BLOCK correct. Read the explanations below, then revisit the relevant section.');
+    ? unanswered+' question(s) in this block are still unanswered ('+score+' of '+PER_BLOCK+' correct so far) — their explanations stay hidden until answered.'
+    : (score===PER_BLOCK?'Perfect block — all '+PER_BLOCK+' correct.':score>=Math.ceil(0.7*PER_BLOCK)?'Solid — '+score+' of '+PER_BLOCK+' correct. Check the red ones below.':'Worth a second pass — '+score+' of '+PER_BLOCK+' correct. Read the explanations below, then revisit the relevant section.');
   resultEl.style.display='block';
 }
 Array.from(document.querySelectorAll('[data-blockcheck]')).forEach(function(btn){
@@ -1359,13 +2151,101 @@ window.runModule3SelfTests = function(){
   check(robertsonEq615(70) > robertsonEq615(40), "Eq 6.15 rises with penetration resistance");
 
   // ---- Fig. 6.27: eta_L is not a soil property ----
-  check(Math.abs(etaLFromHIr(0)-0.75)<1e-9, "eta_L at H/Ir = 0 is the cited 0.75");
-  check(Math.abs(etaLFromHIr(4)-1.00)<1e-9, "eta_L at H/Ir = 4 is the cited 1.00");
-  check(etaLFromHIr(2) > etaLFromHIr(1), "eta_L increases monotonically with H/Ir");
-  check(Math.abs((ETA_L_HI-ETA_L_LO)/ETA_L_LO - 1/3) < 0.01,
-        "the span is about a third of the low value -- the section's whole argument");
+  // The book states the range, not the direction, so the test holds the range and the fact
+  // that both of the figure's paths agree at equal H/Ir -- which is why that ratio is the axis.
+  (function(){
+    var lo=etaLFromHIr(4,'H'), hi=etaLFromHIr(0.05,'H');
+    check(isFinite(lo) && isFinite(hi), "eta_L is computed at both ends of the H/Ir range");
+    check(Math.abs(hi-lo) > 0.1, "eta_L moves substantially across the figure's range");
+    check(lo>0.6 && hi<1.2, "the computed eta_L values sit in the region the book quotes");
+    check(Math.abs(etaLFromHIr(1,'H')-etaLFromHIr(1,'Ir')) < 0.03,
+          "varying H and varying Ir agree at the same H/Ir -- the grouping the figure uses");
+    check(etaLFromHIr(0.3,'H') > etaLFromHIr(3,'H'), "eta_L falls monotonically as H/Ir rises in these equations");
+    check(Math.abs(ETA_L_HI-ETA_L_LO-0.25)<1e-9, "the quoted band is 0.75 to 1.00");
+  })();
 
-  // ---- the four case histories ----
+  // ---- undrained NorSand (Section 6) ----
+  (function(){
+    var loose = nsUndrained({psi0:0.07, p0:500, H:140, Ir:140, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.3, R:1.15, nu:0.2});
+    check(loose.qPeak>0 && isFinite(loose.qPeak), "a loose sample computes a finite peak strength");
+    check(loose.qEnd < loose.qPeak, "a loose sample softens after its peak");
+    check(loose.pPeak < 500, "a contractive sample loses mean effective stress before peaking");
+    check(loose.etaL>0 && loose.etaL<1.26, "the peak stress ratio is below the critical friction ratio");
+    check(loose.IB>0.5, "the very loose preset is brittle");
+    var dense = nsUndrained({psi0:-0.08, p0:600, H:300, Ir:250, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.3, R:1.2, nu:0.2});
+    check(dense.pEnd > 600, "a dilatant sample ends at a HIGHER mean effective stress than it started");
+    check(Math.abs(dense.qEnd-dense.qPeak) < 1e-6, "a dilatant sample never peaks: it is still rising at the end");
+    // the book's two stated directions, Figs 6.20 and 6.21
+    var base={psi0:0.05, p0:300, H:54, Ir:150, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.3, R:1.0, nu:0.2};
+    function run(over){ var o={}; for(var k in base) o[k]=base[k]; for(var k2 in over) o[k2]=over[k2]; return nsUndrained(o); }
+    check(run({Ir:300}).qPeak < run({Ir:150}).qPeak, "Fig 6.20: stiffer elasticity lowers the peak strength");
+    check(run({H:150}).qPeak > run({H:54}).qPeak, "Fig 6.21: a stiffer plastic modulus raises the peak strength");
+    var uStiff=run({Ir:300}), uSoft=run({Ir:75});
+    check(Math.max.apply(null,uStiff.S.u) > Math.max.apply(null,uSoft.S.u),
+          "Fig 6.26: stiffer elasticity generates more pore pressure");
+    // convergence: the answer must not depend on the step size
+    var coarse=run({dEqp:1e-4, steps:1000}), fine=run({dEqp:2.5e-5, steps:4000});
+    check(Math.abs(coarse.qPeak/fine.qPeak-1) < 0.02, "the integration is converged at the step size used");
+    check(Math.abs(nsUndrained({psi0:0, p0:200, H:100, Ir:150, Mtc:1.25, lam10:0.05, chitc:4, N:0.3, R:1, nu:0.2}).srRatio - 0.625) < 1e-9,
+          "at psi=0 the computed critical-state anchor is M/2, as in Eq. 6.4");
+    check(Math.abs(etaFromKo(1))<1e-12, "Ko = 1 is an isotropic start, eta = 0");
+    check(Math.abs(etaFromKo(0.5)-0.75)<1e-12, "Ko = 0.5 gives eta = 0.75");
+    check(NSU_PRESETS.length===4, "four calibrations from the book");
+    NSU_PRESETS.forEach(function(pz){ check(!!pz.name && !!pz.note && pz.p0>0, pz.key+" is a complete preset"); });
+  })();
+
+  // ---- the instability locus (Fig. 6.25) ----
+  (function(){
+    var soft=nsUndrained({psi0:0.05, p0:200, H:54, Ir:150, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.3, R:1, nu:0.2, eta0:etaFromKo(0.8)});
+    var hard=nsUndrained({psi0:0.05, p0:200, H:54, Ir:150, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.3, R:1, nu:0.2, eta0:etaFromKo(0.4)});
+    check(hard.suRatio > soft.suRatio, "Fig 6.25: a lower Ko gives a higher peak undrained strength");
+    check(isFinite(csdIL(0.05,200)) && csdIL(0.05,200)>0, "the instability locus is computed as a finite stress ratio");
+    check(csdIL(0.09,200) < csdIL(-0.01,200), "the locus moves with state, so it is not a soil property");
+  })();
+
+  // ---- Section 3's laboratory trends ----
+  (function(){
+    check(BISHOP_1971.length===14, "fourteen tests from Table 6.1");
+    BISHOP_1971.forEach(function(r,i){
+      check(!!r.soil && r.su>0 && r.phif>0 && r.phir>0, "Bishop row "+i+" is complete");
+      check(r.IB===null || (r.IB>=0 && r.IB<=1), "Bishop row "+i+" has a brittleness index in range");
+    });
+    check(Math.abs(etaFromPhi(30)-1.2)<1e-9, "30 degrees is a stress ratio of exactly 1.2");
+    check(etaFromPhi(17) < etaFromPhi(24.3), "a lower mobilized friction angle is a lower stress ratio");
+    check(Math.abs(wrothNC(1.25)-0.359)<0.002, "Wroth's NC clay strength ratio is about 0.35 at M = 1.25");
+    check(wrothNC(1.4) > wrothNC(1.1), "Eq 6.3 rises with the critical friction ratio");
+    check(el('bishopBody').querySelectorAll('tr').length===BISHOP_1971.length, "every Bishop row is rendered");
+  })();
+
+  // ---- Section 8: constant deviator ----
+  (function(){
+    check(Math.abs(GAMMA_W-9.81)<1e-9, "pore pressure rise uses the unit weight of water");
+    var p0=200, ko=0.5, q=etaFromKo(ko)*p0, rise=5;
+    var pNow=p0-rise*GAMMA_W;
+    check(Math.abs(q/pNow - q/(p0-49.05))<1e-9, "the stress ratio rises purely because p' falls");
+    check(q/pNow > q/p0, "raising the water raises eta with no change in load at all");
+  })();
+
+  // ---- Section 11: what a void ratio error is worth ----
+  (function(){
+    var le=lamE(0.031);
+    check(Math.abs(Math.exp(0.01/le) - 2.08) < 0.03, "0.01 of void ratio is about a factor of two in a tight sand");
+    check(Math.exp(0.01/lamE(0.031)) > Math.exp(0.01/lamE(0.12)), "the same error costs more in a soil with a flatter CSL");
+  })();
+
+  // ---- Section 12: the thresholds ----
+  check(Math.abs(PSI_LAB_TC+0.08)<1e-9, "the laboratory threshold is psi = -0.08");
+  check(Math.abs(PSI_SS+0.05)<1e-9, "the design threshold is psi = -0.05");
+  check(Math.abs(PSI_DENSE_ENOUGH-PSI_SS)<1e-9, "Section 9 and Section 12 use the same design threshold");
+  check(Math.abs(PSI_FULLY_CONTRACTIVE-0.03)<1e-9, "fully contractive above psi = +0.03");
+  (function(){
+    var share=function(ko){ return (1.25-etaFromKo(ko))/1.25; };
+    check(share(1)>0.999, "an isotropic sample walks the whole path undrained");
+    check(share(0.65)>0.6 && share(0.65)<0.7, "the book's 0.5-0.8 Ko range is about two-thirds undrained");
+    check(share(0.5) < share(0.8), "the lower the Ko, the less of the path is left undrained");
+  })();
+
+  // ---- the four case histories ----  // ---- the four case histories ----
   check(FLOW_FAILURES.length===4, "four flow failures");
   FLOW_FAILURES.forEach(function(f,i){
     check(!!f.name && !!f.place && !!f.what && !!f.lesson, "failure "+i+" ("+f.name+") is complete");
@@ -1418,7 +2298,9 @@ window.runModule3SelfTests = function(){
   })();
 
   // ---- figures and wiring ----
-  var CANV=['caseScaleChart','brittleChart','pathChart','hirChart','caseChart','residChart'];
+  var CANV=['caseScaleChart','brittleChart','trendChart','ibChart','bishopChart','pathChart',
+            'nsuQChart','nsuPathChart','nsuUChart','hirChart','ilChart','csdChart',
+            'caseChart','residChart','ssChart','denseChart'];
   check(document.querySelectorAll('canvas').length===CANV.length, CANV.length+" figures");
   CANV.forEach(function(id){
     var c=el(id);
@@ -1442,8 +2324,9 @@ window.runModule3SelfTests = function(){
   check(el('glossaryGrid').querySelectorAll('.term').length===NOTATION.length, "a glossary entry per symbol");
 
   // ---- quiz ----
-  check(QUIZ_ITEMS.length===30, "thirty questions");
-  check(BLOCK_NAMES.length===3 && QUIZ_BLOCK_SECTION.length===3, "three blocks, each mapped to a section");
+  check(QUIZ_ITEMS.length===60, "sixty questions");
+  check(BLOCK_NAMES.length===6 && QUIZ_BLOCK_SECTION.length===6, "six blocks, each mapped to a section");
+  check(QUIZ_ITEMS.length % BLOCK_NAMES.length === 0, "the blocks divide the questions evenly");
   QUIZ_BLOCK_SECTION.forEach(function(b,i){
     check(!!document.getElementById(b.id), "block "+i+" points at a section that exists");
   });
@@ -1453,15 +2336,23 @@ window.runModule3SelfTests = function(){
     check(it.correct.charCodeAt(0)-97 < it.opts.length, "question "+(i+1)+"'s answer is among its options");
     check(!!it.exp && it.exp.length>20, "question "+(i+1)+" carries an explanation");
   });
-  check(document.querySelectorAll('.quiz-q').length===30, "all thirty render");
+  check(document.querySelectorAll('.quiz-q').length===60, "all sixty render");
+  ['quizSlotA','quizSlotB','quizSlotC','quizSlotD','quizSlotE','quizSlotF'].forEach(function(id){
+    check(document.getElementById(id) && document.getElementById(id).querySelectorAll('.quiz-q').length===10,
+          id+" holds its ten questions");
+  });
 
   // ---- pagination ----
   check(typeof showPage==='function' && typeof gotoPageForElement==='function', "pagination is wired");
-  check(document.querySelectorAll('.sticky-nav a[href^="#"]').length===9, "nine nav pills");
+  check(document.querySelectorAll('.sticky-nav a[href^="#"]').length===13, "thirteen nav pills");
   (function(){
-    var ids=['start','case-histories','brittleness','notation','undrained-path',
-             'collapse-surface','residual-strength','case-check','knowledge-check'];
+    var ids=['start','case-histories','brittleness','notation','undrained-path','norsand-undrained',
+             'collapse-surface','csd-path','residual-strength','case-check','steady-state',
+             'dense-enough','knowledge-check'];
     ids.forEach(function(id){ check(!!document.getElementById(id), "section "+id+" exists"); });
+    document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(a){
+      check(!!document.getElementById(a.getAttribute('href').slice(1)), "nav pill "+a.textContent+" points at a real section");
+    });
   })();
 
   var failed=results.filter(function(r){ return !r.pass; });
@@ -1479,14 +2370,19 @@ window.runModule3SelfTests = function(){
     {label:'Brittleness', ids:['brittleness']},
     {label:'Notation', ids:['notation']},
     {label:'Undrained path', ids:['undrained-path']},
+    {label:'Undrained NorSand', ids:['norsand-undrained']},
     {label:'Collapse surface', ids:['collapse-surface']},
+    {label:'No new load', ids:['csd-path']},
     {label:'Residual strength', ids:['residual-strength']},
     {label:'Against the record', ids:['case-check']},
+    {label:'Steady-state critique', ids:['steady-state']},
+    {label:'How dense is enough', ids:['dense-enough']},
     {label:'Check learning', ids:['knowledge-check','about-tool']}
   ];
   var SECTION_LABELS={'start':'Start here','case-histories':'Four failures','brittleness':'Brittleness',
-    'notation':'Notation','undrained-path':'Undrained path','collapse-surface':'Collapse surface',
-    'residual-strength':'Residual strength','case-check':'Against the record','knowledge-check':'Check learning'};
+    'notation':'Notation','undrained-path':'Undrained path','norsand-undrained':'Undrained NorSand','collapse-surface':'Collapse surface','csd-path':'No new load',
+    'residual-strength':'Residual strength','case-check':'Against the record','steady-state':'Steady-state critique',
+    'dense-enough':'How dense is enough','knowledge-check':'Check learning'};
   var cur=0, prevPage=null;
   function pageIndexForElement(e){
     if(!e || !e.closest) return -1;
@@ -1501,10 +2397,15 @@ window.runModule3SelfTests = function(){
   function redrawVisibleCharts(){
     if(window.updateSection1) updateSection1();
     if(window.updateUndrainedPath) updateUndrainedPath();
+    if(window.updateNsu) updateNsu();
+    if(window.updateCSD) updateCSD();
     if(window.updateHIr) updateHIr();
+    if(window.updateIL) updateIL();
     if(window.updateSection3) updateSection3();
     if(window.updateRobertson) updateRobertson();
     if(window.updateCaseCheck) updateCaseCheck();
+    if(window.updateSS) updateSS();
+    if(window.updateDense) updateDense();
     if(window.drawCaseScaleChart) drawCaseScaleChart();
   }
   function updateStepper(){
