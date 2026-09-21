@@ -98,6 +98,8 @@
     #peopleList .pb { font-size: .85rem; white-space: nowrap; }
     #peopleList button { min-height: 30px; padding: 2px 10px; }
     .tile.offstage { display: none !important; }
+    .tile .dbg { position: absolute; left: 4px; top: 4px; right: 4px; margin: 0; padding: 4px 6px; z-index: 5; pointer-events: none;
+      background: rgba(0,0,0,.72); color: #9ff0c0; font: 10px/1.35 ui-monospace, Consolas, monospace; white-space: pre-wrap; border-radius: 6px; }
     .tile .handb { display: none; }
     .tile.hand-up .handb { display: inline; }
     .tile.hand-up { border-color: #f5b93d; }
@@ -1629,15 +1631,10 @@ function enterCall() {
   if (micTrack) micTrack.enabled = micOn;
   // Big calls start with video off. Seats fill from the lowest, so taking seat 4 or higher means at least four
   // people are already here: turn the camera off before any video is sent. A later check covers seats freed by leavers.
+  // Big-call rules follow the number of people actually connected, never the seat number: a seat
+  // left behind by a phone that backgrounded without closing the page stays taken at the call service
+  // for a while, so a newcomer to a small call can land in a high seat.
   camTouched = false; micTouched = false;
-  if (micTrack && micOn && mySeat >= LARGE_CALL - 1) {        // at least nine people already here
-    micOn = false; micTrack.enabled = false;
-    setTimeout(() => toast(`You joined muted because this is a big call \u2014 tap the microphone to speak, or raise your hand`, 6000), 1400);
-  }
-  if (camOn && camTrack && mySeat >= BIG_CALL) {
-    camOn = false;
-    setTimeout(() => toast(`Your camera is off because this call has more than ${BIG_CALL} people \u2014 tap the camera to turn it on`, 6000), 600);
-  }
   clearTimeout(bigCallCheck);
   bigCallCheck = setTimeout(() => {
     if (peer && camOn && !camTouched && peers.size + 1 > BIG_CALL) {
@@ -1649,7 +1646,7 @@ function enterCall() {
       syncBarButtons(); refreshSelf(); broadcastState();
       setTimeout(() => toast('You are muted because this is a big call \u2014 tap the microphone to speak, or raise your hand', 6000), 1500);
     }
-  }, 7000);
+  }, 6000);
   if (!camOn && camTrack) { camTrack.stop(); camTrack = null; fxSource(null); }   // camera light off when joining with video off
   syncBarButtons();
   addSelfTile();
@@ -1765,8 +1762,15 @@ async function checkCongestion(rec) {
     const st = await pc.getStats();
     st.forEach(x => { if (x.type === 'candidate-pair' && x.nominated && x.state === 'succeeded') { avail = x.availableOutgoingBitrate ?? avail; rtt = x.currentRoundTripTime ?? rtt; } });
   } catch { return; }
-  // while video is paused the bitrate estimate cannot grow, so recovery is judged on round-trip time alone
-  const bad = rec.congested ? (rtt != null && rtt > 0.8) : ((avail != null && avail < 180_000) || (rtt != null && rtt > 0.8));
+  // The bandwidth estimate only means something while there is video to send: with cameras off or
+  // video already paused it sits low on a perfectly healthy link. So a low estimate counts only while
+  // real video is going to this person; a long round trip counts on its own. Recovery is judged on
+  // round-trip time alone, since a paused stream cannot raise the estimate.
+  const sendingVideo = (camOn && !!camTrack) || !!screenTrack;
+  const wantsVideo = rec.wantVideo !== 'off';
+  const bad = rec.congested
+    ? (rtt != null && rtt > 0.8)
+    : ((rtt != null && rtt > 0.8) || (sendingVideo && wantsVideo && avail != null && avail < 150_000));
   const now = Date.now();
   if (bad) {
     rec.goodSince = 0; rec.badSince = rec.badSince || now;
@@ -1777,8 +1781,40 @@ async function checkCongestion(rec) {
   }
 }
 
+/* ?debug=1: what each connection is actually doing, printed on its tile. For testing with friends:
+ * route (direct / relay), round trip, and whether audio and video are arriving. */
+const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
+async function debugTile(rec) {
+  const pc = rec.call?.peerConnection; if (!pc) return;
+  let route = '?', rtt = null, aIn = 0, vIn = 0, aOut = 0, vOut = 0;
+  try {
+    const st = await pc.getStats(); const byId = new Map(); st.forEach(x => byId.set(x.id, x));
+    st.forEach(x => {
+      if (x.type === 'candidate-pair' && x.nominated && x.state === 'succeeded') {
+        rtt = x.currentRoundTripTime;
+        const l = byId.get(x.localCandidateId), r = byId.get(x.remoteCandidateId);
+        route = (l?.candidateType || '?') + '\u2194' + (r?.candidateType || '?') + (l?.protocol ? ' ' + l.protocol : '');
+      }
+      if (x.type === 'inbound-rtp' && x.kind === 'audio') aIn = x.bytesReceived || 0;
+      if (x.type === 'inbound-rtp' && x.kind === 'video') vIn = x.bytesReceived || 0;
+      if (x.type === 'outbound-rtp' && x.kind === 'audio') aOut = x.bytesSent || 0;
+      if (x.type === 'outbound-rtp' && x.kind === 'video') vOut = x.bytesSent || 0;
+    });
+  } catch { return; }
+  const d = rec.dbg || (rec.dbg = {});
+  const rate = (now, prev) => prev == null ? '\u2026' : Math.max(0, Math.round((now - prev) * 8 / 1000 / ((Date.now() - d.t) / 1000))) + 'k';
+  const line = `${pc.iceConnectionState} \u00b7 ${route} \u00b7 rtt ${rtt == null ? '?' : Math.round(rtt * 1000) + 'ms'}\n` +
+    `in: audio ${rate(aIn, d.aIn)} video ${rate(vIn, d.vIn)} \u00b7 out: audio ${rate(aOut, d.aOut)} video ${rate(vOut, d.vOut)}\n` +
+    `I ask: ${rec.askedVideo || '-'} \u00b7 they ask: ${rec.wantVideo || '-'}${rec.congested ? ' \u00b7 WEAK' : ''} \u00b7 audio el: ${rec.audio?.paused ? 'PAUSED' : 'playing'}`;
+  Object.assign(d, { aIn, vIn, aOut, vOut, t: Date.now() });
+  let box = rec.tile.querySelector('.dbg');
+  if (!box) { box = document.createElement('pre'); box.className = 'dbg'; rec.tile.appendChild(box); }
+  box.textContent = line;
+}
+
 function policyTick() {
   if (!peer) return;
+  if (DEBUG && policyTicks % 3 === 0) peers.forEach(debugTile);
   const now = Date.now();
   peers.forEach(r => { if (r.tile.classList.contains('speaking')) r.lastActive = now; });
   if (selfTile?.classList.contains('speaking') && micOn) {
@@ -2204,6 +2240,13 @@ function ensurePeer(seat, id) {
     rec = { seat, id, name: 'Guest', conn: null, call: null, mic: true, cam: true, screen: false, joined: false };
     rec.tile = makeTile(id, id, false);
     rec.video = rec.tile.querySelector('video');
+    // Sound gets its own element. A <video> that receives no frames never starts playing, and any
+    // audio routed through it stays silent with it -- so pausing someone's video must not be able to
+    // take their voice with it.
+    rec.video.muted = true;
+    rec.audio = document.createElement('audio');
+    rec.audio.autoplay = true;
+    rec.tile.appendChild(rec.audio);
     peers.set(seat, rec);
   }
   return rec;
@@ -2229,19 +2272,32 @@ function enlarge(tile) {
   v.webkitEnterFullscreen?.();                          // iPhone: native full-screen player
 }
 function attachRemote(rec, stream) {
-  if (rec.video.srcObject !== stream) rec.video.srcObject = stream;
+  if (rec.stream !== stream) {
+    rec.stream = stream;
+    // Built from the stream's own tracks, and rebuilt when tracks are added, so a renegotiated call
+    // or a camera switched on later still lands in the right element.
+    const route = () => {
+      const v = stream.getVideoTracks(), a = stream.getAudioTracks();
+      if (rec.video.srcObject?.getVideoTracks()[0] !== v[0]) rec.video.srcObject = v.length ? new MediaStream(v) : null;
+      if (rec.audio.srcObject?.getAudioTracks()[0] !== a[0]) rec.audio.srcObject = a.length ? new MediaStream(a) : null;
+      rec.video.play().catch(() => {});                  // muted: never blocked, and harmless if no frames yet
+      playWithSound(rec.audio);
+    };
+    stream.addEventListener?.('addtrack', route);
+    route();
+  } else playWithSound(rec.audio);
   if (callRec.dest) addToRecording(rec.seat, stream);   // someone joined mid-recording: their voice joins the mix
   rec.tile.classList.remove('connecting');
-  playWithSound(rec.video);
   if (!rec.levelWatched && stream.getAudioTracks().length) { rec.levelWatched = true; watchLevel(rec.tile, stream, () => rec.mic); }
 }
-function playWithSound(video) {
-  const p = video.play();
+function playWithSound(el) {
+  if (!el || !el.srcObject) return;
+  const p = el.play();
   if (p && p.catch) p.catch(() => $('soundBtn').classList.add('on'));
 }
 $('soundBtn').addEventListener('click', () => {
   ctx();
-  peers.forEach(r => r.video.play().catch(() => {}));
+  peers.forEach(r => { r.audio?.play().catch(() => {}); r.video.play().catch(() => {}); });
   $('soundBtn').classList.remove('on');
 });
 
@@ -2793,7 +2849,7 @@ async function startCallRecording() {
   callRec.dest = c ? c.createMediaStreamDestination() : null;
   callRec.chunks = []; callRec.sources.clear();
   addToRecording('self', micTrack ? new MediaStream([micTrack]) : null);
-  peers.forEach(r => addToRecording(r.seat, r.video.srcObject));
+  peers.forEach(r => addToRecording(r.seat, r.stream));
   const tracks = [display.getVideoTracks()[0]];
   if (callRec.dest) tracks.push(callRec.dest.stream.getAudioTracks()[0]);
   display.getVideoTracks()[0].addEventListener('ended', stopCallRecording);   // the browser's own "Stop sharing"
