@@ -1,0 +1,12 @@
+Review the attached paywandi.html: a single-file group video call (PeerJS 1.5.5, full-mesh WebRTC, public broker 0.peerjs.com, ExpressTURN relay). Each joiner claims seat pw-<room>-<n>; the higher seat dials every lower seat.
+
+Field test with ~6 people: one pair could not hear or see each other while everyone else could; some people seemed muted until they turned their camera on. Already fixed: remote audio now plays from its own <audio> element instead of the <video> (a video with no frames never played, silencing its audio); the weak-connection guard no longer treats a low bandwidth estimate as congestion when little video is being sent; join-muted/camera-off now use the connected count, not the seat number.
+
+Please look for remaining bugs that could make one PAIR fail while others work, or cut audio:
+1. Seat claiming, dialing, retries (rescan, dial, onIncomingConn, wireConn, wireCall): races, both sides dialing, stale seats, a call replaced or closed while in use.
+2. ICE/TURN config (PEER_OPTIONS): will two phones on mobile data (carrier NAT) always get a working route?
+3. The video "want" system (desiredVideo, policyTick, tuneSenders, checkCongestion): can a pair get stuck with video off, or can anything touch the audio sender?
+4. Mute/camera state sync (helloMsg/state, micOn, micTrack.enabled, replaceOutgoing): can someone appear muted or actually send silence?
+5. iPhone Safari and in-app browsers: autoplay of the new <audio> elements, earpiece vs speaker.
+
+For each problem give the function name, the exact scenario that triggers it, and a minimal fix. Do not restyle or refactor unrelated code.

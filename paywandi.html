@@ -766,7 +766,25 @@ function syncVoiceButton() {
   $('voiceBtn').setAttribute('aria-pressed', String(voiceLevel.gain > 1));
   $('voiceLbl').textContent = voiceLevel.label;
 }
-function resendAudio() { if (typeof peer !== 'undefined' && peer && !mixDest) replaceOutgoing('audio', outgoingAudio()); }
+// The screen-sound mixer has to follow the microphone: a new mic track (recovered after an
+// interruption, or a voice-level change) must be wired into it, or the mix keeps the dead one and the
+// presenter's voice goes silent while the shared sound plays on. If the audio engine is asleep, the
+// plain voice is sent instead -- losing the shared sound for a moment rather than the voice.
+function rebuildMix() {
+  mixNodes.forEach(n => { try { n.disconnect(); } catch {} }); mixNodes = [];
+  if (!screenAudio || screenAudio.readyState === 'ended') { mixDest = null; return; }
+  const c = ctx();
+  if (!c || c.state !== 'running') { mixDest = null; return; }
+  if (!mixDest) mixDest = c.createMediaStreamDestination();
+  const mic = voiceTrack() || micTrack;                   // a boosted voice stays boosted while presenting
+  if (mic && mic.readyState === 'live') { const m = c.createMediaStreamSource(new MediaStream([mic])); m.connect(mixDest); mixNodes.push(m); }
+  const a = c.createMediaStreamSource(new MediaStream([screenAudio])); a.connect(mixDest); mixNodes.push(a);
+}
+function resendAudio() {
+  if (typeof peer === 'undefined' || !peer) return;
+  if (screenAudio) rebuildMix();
+  replaceOutgoing('audio', outgoingAudio());
+}
 $('voiceBtn').addEventListener('click', () => {
   voiceLevel = VOICE_LEVELS[(VOICE_LEVELS.indexOf(voiceLevel) + 1) % VOICE_LEVELS.length];
   try { localStorage.setItem('paywandi-voice', voiceLevel.id); } catch {}
@@ -824,7 +842,7 @@ async function runConnectionCheck() {
   const r = await probeNetwork();
   let cls = 'good', verdict;
   if (r.noWebRTC) { cls = 'bad'; verdict = 'This browser cannot make calls at all. Open the link in Chrome or Safari.'; }
-  else if (r.relay) verdict = 'A relay is available, so calls should connect from this network.';
+  else if (r.relay) verdict = 'This device reached the relay server, so calls that need a relay can use it. That is a good sign, not a guarantee: two people who both need the relay cannot reach each other through a single relay server, and only a real call proves two-way sound and video.';
   else if (!r.reachable) { cls = 'bad'; verdict = 'Your network blocks the kind of traffic calls use. Calls to people outside it will not connect without a relay. Try switching between Wi-Fi and mobile data.'; }
   else if (r.symmetric) { cls = 'bad'; verdict = 'Your network gives you a different public address for each connection (symmetric or carrier-grade NAT). Direct calls to people on other networks often fail here \u2014 a relay is needed.' + (r.v6 ? ' IPv6 is available, which can still connect directly if the other person has it too.' : ' Switching between Wi-Fi and mobile data may help.'); }
   else verdict = 'Your network allows direct calls. If someone still cannot connect, the problem is probably on their network.';
@@ -1481,6 +1499,9 @@ async function acquireMedia() {
   if (!camTrack) camOn = false;
   fxSource(camTrack);
   if (msgs.length && IN_APP) return `${IN_APP} blocks the ${msgs.join(' and ')} for web pages. You can still join and listen \u2014 open the link in Chrome or Safari to talk.`;
+  // Both refused on a phone, in a browser we did not recognise as an in-app one: say what fixes it,
+  // rather than letting someone join listen-only without realising.
+  if (msgs.length === 2 && isMobile) return 'This browser could not use your camera or microphone, so others will not hear or see you. Open the invite link in Safari on iPhone or Chrome on Android. (You can still join to listen.)';
   return msgs.length ? `No ${msgs.join(' or ')} available (or permission was declined) — you can still join.` : '';
 }
 async function listDevices() {
@@ -1580,6 +1601,21 @@ async function shareInvite() {
 let peer = null, mySeat = -1, myName = '', joinedAt = 0, timerId = null, rescanId = null, leaving = false;
 const peers = new Map();    // seat -> { id, seat, name, conn, call, tile, video, mic, cam, screen, analyser, joined }
 const pending = new Map();  // seat -> time an outgoing attempt started
+// One id per page load, sent with every connection and call. A second connection carrying the same id
+// is a retry from the same browser that crossed a slow first attempt; a different id is a new person in
+// that seat. Without it the two look identical, and the retry used to tear down a pair that worked.
+const mySession = Math.random().toString(36).slice(2, 12);
+function sidOf(c) { const v = c?.metadata?.sid; return typeof v === 'string' && /^[a-z0-9]{4,16}$/.test(v) ? v : ''; }
+// Is this media call carrying, or about to carry, sound and picture? Setting up gets 40 s, a dropout
+// gets 10 s to come back; after that it counts as dead and may be replaced.
+function callHealthy(call) {
+  const pc = call?.peerConnection; if (!pc) return false;
+  const st = pc.iceConnectionState, now = Date.now();
+  if (st === 'connected' || st === 'completed') return true;
+  if (st === 'new' || st === 'checking') return now - (call.__born || now) < 40000;
+  if (st === 'disconnected') return now - (call.__downSince || now) < 10000;
+  return false;
+}
 
 const seatId = s => `pw-${room}-${s}`;
 const seatOf = id => { const m = /-(\d+)$/.exec(id || ''); return m ? +m[1] : -1; };
@@ -1784,6 +1820,42 @@ async function checkCongestion(rec) {
 /* ?debug=1: what each connection is actually doing, printed on its tile. For testing with friends:
  * route (direct / relay), round trip, and whether audio and video are arriving. */
 const DEBUG = new URLSearchParams(location.search).get('debug') === '1';
+// A short, privacy-safe record of what each connection did: event names, seats, PeerJS connection ids
+// and states only -- no addresses, SDP, credentials, names or messages.
+const dbgEvents = [];
+function dbgLog(ev, seat, detail) {
+  dbgEvents.push({ t: Date.now(), ev, seat, detail: detail == null ? '' : String(detail).slice(0, 120) });
+  if (dbgEvents.length > 400) dbgEvents.shift();
+}
+function debugReport() {
+  const lines = [`Paywandi debug report ${new Date().toISOString()}`,
+    `me: seat ${mySeat} session ${mySession} ${isIOS ? 'iOS' : /Android/.test(ua) ? 'Android' : 'desktop'}${IN_APP ? ' in-app:' + IN_APP : ''}`,
+    `mic ${micTrack ? micTrack.readyState + (micOn ? ' on' : ' muted') : 'none'} cam ${camOn ? 'on' : 'off'} screen ${screenTrack ? 'on' : 'off'} mix ${mixDest ? 'on' : 'off'} audioCtx ${audioCtx?.state || 'none'}`, ''];
+  peers.forEach(r => {
+    const pc = r.call?.peerConnection;
+    lines.push(`seat ${r.seat}: session ${r.sid || '?'} data ${r.conn ? (r.conn.open ? 'open' : 'not open') + ' ' + r.conn.connectionId : 'none'} ` +
+      `call ${r.call ? r.call.connectionId : 'none'} ice ${pc?.iceConnectionState || '-'} conn ${pc?.connectionState || '-'} sig ${pc?.signalingState || '-'} ` +
+      `healthy ${callHealthy(r.call)} audioEl ${r.audio ? (r.audio.paused ? 'paused' : 'playing') + ' ready' + r.audio.readyState : 'none'} ` +
+      `ask ${r.askedVideo || '-'} theyAsk ${r.wantVideo || '-'}${r.congested ? ' WEAK' : ''}`);
+    if (r.tile.querySelector('.dbg')) lines.push('  ' + r.tile.querySelector('.dbg').textContent.replace(/\n/g, ' | '));
+  });
+  lines.push('', 'events (ms before report, event, seat, detail):');
+  const now = Date.now();
+  dbgEvents.forEach(e => lines.push(`${now - e.t}\t${e.ev}\t${e.seat}\t${e.detail}`));
+  return lines.join('\n');
+}
+if (DEBUG) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.textContent = 'Download debug report'; b.id = 'dbgReportBtn';
+  b.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:90;font-size:12px;padding:6px 10px;opacity:.85';
+  b.addEventListener('click', () => {
+    const blob = new Blob([debugReport()], { type: 'text/plain' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `paywandi-debug-seat${mySeat}-${Date.now()}.txt`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  });
+  document.body.appendChild(b);
+}
 async function debugTile(rec) {
   const pc = rec.call?.peerConnection; if (!pc) return;
   let route = '?', rtt = null, aIn = 0, vIn = 0, aOut = 0, vOut = 0;
@@ -1805,7 +1877,8 @@ async function debugTile(rec) {
   const rate = (now, prev) => prev == null ? '\u2026' : Math.max(0, Math.round((now - prev) * 8 / 1000 / ((Date.now() - d.t) / 1000))) + 'k';
   const line = `${pc.iceConnectionState} \u00b7 ${route} \u00b7 rtt ${rtt == null ? '?' : Math.round(rtt * 1000) + 'ms'}\n` +
     `in: audio ${rate(aIn, d.aIn)} video ${rate(vIn, d.vIn)} \u00b7 out: audio ${rate(aOut, d.aOut)} video ${rate(vOut, d.vOut)}\n` +
-    `I ask: ${rec.askedVideo || '-'} \u00b7 they ask: ${rec.wantVideo || '-'}${rec.congested ? ' \u00b7 WEAK' : ''} \u00b7 audio el: ${rec.audio?.paused ? 'PAUSED' : 'playing'}`;
+    `I ask: ${rec.askedVideo || '-'} \u00b7 they ask: ${rec.wantVideo || '-'}${rec.congested ? ' \u00b7 WEAK' : ''} \u00b7 audio el: ${rec.audio?.paused ? 'PAUSED' : 'playing'}\n` +
+    `data ${rec.conn?.open ? 'open' : 'DOWN'} ${rec.conn?.connectionId || ''} \u00b7 call ${rec.call?.connectionId || '-'} \u00b7 ${pc.connectionState} \u00b7 session ${rec.sid || '?'}`;
   Object.assign(d, { aIn, vIn, aOut, vOut, t: Date.now() });
   let box = rec.tile.querySelector('.dbg');
   if (!box) { box = document.createElement('pre'); box.className = 'dbg'; rec.tile.appendChild(box); }
@@ -1826,7 +1899,13 @@ function policyTick() {
     const r = peers.get(seat);
     if (r && r.conn?.open && r.askedVideo !== v) { r.askedVideo = v; send(r, { t: 'want', v }); }
   });
-  if (++policyTicks % 7 === 0) peers.forEach(checkCongestion);
+  if (++policyTicks % 7 === 0) {
+    peers.forEach(checkCongestion);
+    tuneAllSenders();                                     // re-apply sender settings: any rejected update heals within seconds
+  }
+  // A microphone can end mid-call (a headset unplugged, a Bluetooth switch) without the page being
+  // hidden and shown again; pick up a new one without waiting for that.
+  if (micTrack && micTrack.readyState === 'ended' && !recovering && now - lastMicRecover > 10000) { lastMicRecover = now; recoverCall(); }
   if (peopleOpen) renderPeople();
 }
 
@@ -1948,14 +2027,19 @@ document.addEventListener('click', e => {
   else toast('Opened in a new tab \u2014 your call continues here', 3000);
 }, true);
 
+let recovering = false, lastMicRecover = 0;
 async function recoverCall() {
   if (!peer && !rejoining) return;
-  if (leaving) return;
+  if (leaving || recovering) return;
+  recovering = true;
+  try { await recoverCallInner(); } finally { recovering = false; }
+}
+async function recoverCallInner() {
   // iOS ends capture when the phone locks, the app is backgrounded for long, or a phone call takes the mic
   if (micTrack && micTrack.readyState === 'ended') {
     try {
       const t = await openMic(); t.enabled = micOn; micTrack = t;
-      if (!mixDest) replaceOutgoing('audio', outgoingAudio());
+      resendAudio();                                     // also rewires the screen-sound mix if presenting
       selfTile?.__stopLevel?.(); if (selfTile) watchLevel(selfTile, new MediaStream([micTrack]), () => micOn);
     } catch {}
   }
@@ -2006,7 +2090,7 @@ let reachTipShown = false;
 function watchReach(seat, conn, name) {
   const started = Date.now();
   setTimeout(() => {
-    if (!peer || conn.open || peers.get(seat)?.conn?.open) return;
+    if (!peer || conn.open || peers.get(seat)?.conn?.open || callHealthy(peers.get(seat)?.call)) return;
     if ((unavailableAt.get(seat) || 0) >= started) return;             // nobody there after all
     showGhost(seat, name, started);
   }, REACH_MS);
@@ -2039,7 +2123,13 @@ function rescan() {
   const now = Date.now();
   for (const [s, t] of pending) if (now - t > PENDING_MS) pending.delete(s);
   for (const [s, g] of ghosts) if (now - g.lastTry > 2.5 * PENDING_MS) removeGhost(s);   // no knock for ~30 s: they have gone
-  for (let s = 0; s < mySeat; s++) if (!peers.has(s) && !pending.has(s)) dial(s);
+  for (let s = 0; s < mySeat; s++) {
+    if (pending.has(s)) continue;
+    const r = peers.get(s);
+    // First contact; or a data link that closed while the media kept going; or media that has been
+    // dead for a while even though the data link looks open. The higher seat is the one that dials.
+    if (!r || !r.conn?.open || (r.call && !callHealthy(r.call)) || (!r.call && now - (r.openedAt || now) > 20000)) dial(s);
+  }
 }
 
 function dial(seat) {
@@ -2047,7 +2137,7 @@ function dial(seat) {
   pending.set(seat, Date.now());
   // As in the first version, an earlier attempt is never closed: between networks a connection can take
   // longer than the retry interval, and closing slow attempts meant none ever finished.
-  const conn = peer.connect(seatId(seat), { reliable: true, metadata: { name: myName } });
+  const conn = peer.connect(seatId(seat), { reliable: true, metadata: { name: myName, sid: mySession } });
   wireConn(conn, seat, true);
   watchReach(seat, conn, ghosts.get(seat)?.name);
 }
@@ -2056,8 +2146,11 @@ function onIncomingConn(conn) {
   if (seat < 0 || seat <= mySeat) { conn.close(); return; }   // only higher seats may call us
   // Someone new in a seat we still hold a record for: the old occupant has gone. The broker
   // delivers the data connection before the media call, so clearing here never hits the new call.
-  const old = peers.get(seat);
-  if (old && old.conn && old.conn !== conn) dropPeer(seat, true);
+  // Only a different browser session in that seat means the old occupant has gone. The same session
+  // knocking again is a retry that crossed a slow attempt: it must not tear down a pair that works --
+  // whichever connection is kept is decided when it opens (wireConn).
+  const old = peers.get(seat), sid = sidOf(conn);
+  if (old && old.conn && old.conn !== conn && !(sid && old.sid === sid)) { dbgLog('new-occupant', seat, conn.connectionId); dropPeer(seat, true); }
   wireConn(conn, seat, false);
   const knocker = cleanName(conn.metadata?.name);
   if (ghosts.has(seat)) { const g = ghosts.get(seat); g.lastTry = Date.now(); if (knocker) g.name = knocker; }
@@ -2069,39 +2162,71 @@ function wireConn(conn, seat, outgoing) {
     pending.delete(seat);
     removeGhost(seat);
     const rec = ensurePeer(seat, conn.peer);
-    rec.conn = conn;
+    if (rec.conn && rec.conn !== conn && rec.conn.open) {
+      // Two links to one person. Keep the one already in use if its media works (both ends make the
+      // same decision, so the duplicate is closed at both); otherwise the new one takes over.
+      if (callHealthy(rec.call)) { dbgLog('dup-conn-closed', seat, conn.connectionId); try { conn.close(); } catch {} return; }
+      const stale = rec.conn; rec.conn = conn;             // set first, so the stale link's close is ignored
+      dbgLog('conn-replaced', seat, conn.connectionId);
+      try { stale.close(); } catch {}
+    } else rec.conn = conn;
+    clearTimeout(rec.graceTimer);
+    rec.openedAt = Date.now();
+    if (sidOf(conn)) rec.sid = sidOf(conn);
+    rec.askedVideo = undefined;                           // tell them again what we want to see, on this new link
     rec.name = cleanName(conn.metadata?.name) || rec.name || 'Guest';
     renderTileInfo(rec);
     send(rec, helloMsg());
     send(rec, { t: 'att', log: [...att.values()] });
-    if (outgoing) {
-      const call = peer.call(conn.peer, outgoingStream(), { metadata: { name: myName }, sdpTransform: voiceSdp });
+    if (outgoing && !callHealthy(rec.call)) {             // a data link rebuilt under a working call keeps that call
+      const call = peer.call(conn.peer, outgoingStream(), { metadata: { name: myName, sid: mySession }, sdpTransform: voiceSdp });
+      dbgLog('call-start', seat, call.connectionId);
       wireCall(call, seat);
     }
     updateStatus();
   });
   conn.on('data', data => onData(seat, conn, data));
-  conn.on('close', () => { const r = peers.get(seat); if (r && r.conn === conn) leaveNotice(seat); });
+  conn.on('close', () => {
+    const r = peers.get(seat);
+    if (!r || r.conn !== conn) return;                  // an old or duplicate link: nothing depends on it
+    dbgLog('conn-closed', seat, conn.connectionId);
+    if (!callHealthy(r.call)) return leaveNotice(seat);
+    // Data and media are separate connections in PeerJS and can fail separately. While the call still
+    // carries sound and picture, keep it and let the higher seat rebuild the data link; drop them only
+    // if the media has died too by the time that should have happened.
+    r.conn = null;
+    clearTimeout(r.graceTimer);
+    r.graceTimer = setTimeout(() => {
+      if (peers.get(seat) === r && !r.conn?.open && !callHealthy(r.call)) leaveNotice(seat);
+    }, 20000);
+  });
   conn.on('error', () => { pending.delete(seat); });
 }
 function onIncomingCall(call) {
   const seat = seatOf(call.peer);
   if (seat < 0 || seat <= mySeat) { call.close(); return; }
   call.answer(outgoingStream(), { sdpTransform: voiceSdp });
+  dbgLog('call-answered', seat, call.connectionId);
   wireCall(call, seat);
 }
 function wireCall(call, seat) {
   const rec = ensurePeer(seat, call.peer);
-  if (rec.call && rec.call !== call) { try { rec.call.close(); } catch {} }
+  if (sidOf(call)) rec.sid = sidOf(call);
+  call.__born = Date.now();
+  // Only the higher seat starts calls, and only when it has no working one (wireConn), so a new call
+  // arriving here is that seat's decision: take it, and retire the old one.
+  if (rec.call && rec.call !== call) { dbgLog('call-replaced', seat, call.connectionId); try { rec.call.close(); } catch {} }
   rec.call = call;
-  call.on('stream', stream => attachRemote(rec, stream));
-  call.on('close', () => { const r = peers.get(seat); if (r && r.call === call) leaveNotice(seat); });
+  call.on('stream', stream => { if (rec.call === call) attachRemote(rec, stream); });
+  call.on('close', () => { const r = peers.get(seat); if (r && r.call === call) { dbgLog('call-closed', seat, call.connectionId); leaveNotice(seat); } });
   call.on('error', () => {});
   // watch the underlying connection so a vanished peer is noticed even without a goodbye
   const pc = call.peerConnection;
   if (pc) pc.addEventListener('iceconnectionstatechange', () => {
     const st = pc.iceConnectionState;
+    if (st === 'disconnected') call.__downSince = call.__downSince || Date.now(); else if (st !== 'failed') call.__downSince = 0;
     const r = peers.get(seat); if (!r || r.call !== call) return;
+    dbgLog('ice-' + st, seat, call.connectionId);
     r.tile.classList.toggle('connecting', st === 'checking' || st === 'new' || st === 'disconnected');
     r.tile.querySelector('.state').textContent = st === 'disconnected' ? 'Reconnecting…' : 'Connecting…';
     if (st === 'failed' || st === 'closed') leaveNotice(seat);
@@ -2272,20 +2397,18 @@ function enlarge(tile) {
   v.webkitEnterFullscreen?.();                          // iPhone: native full-screen player
 }
 function attachRemote(rec, stream) {
-  if (rec.stream !== stream) {
-    rec.stream = stream;
-    // Built from the stream's own tracks, and rebuilt when tracks are added, so a renegotiated call
-    // or a camera switched on later still lands in the right element.
-    const route = () => {
-      const v = stream.getVideoTracks(), a = stream.getAudioTracks();
-      if (rec.video.srcObject?.getVideoTracks()[0] !== v[0]) rec.video.srcObject = v.length ? new MediaStream(v) : null;
-      if (rec.audio.srcObject?.getAudioTracks()[0] !== a[0]) rec.audio.srcObject = a.length ? new MediaStream(a) : null;
-      rec.video.play().catch(() => {});                  // muted: never blocked, and harmless if no frames yet
-      playWithSound(rec.audio);
-    };
-    stream.addEventListener?.('addtrack', route);
-    route();
-  } else playWithSound(rec.audio);
+  // PeerJS fires 'stream' once per arriving track (audio, then video) with the same stream, so this
+  // runs more than once and routes every time: a video track that was not there the first time is
+  // picked up on the second call, and on 'addtrack' in browsers that add it later still.
+  const route = () => {
+    const v = stream.getVideoTracks(), a = stream.getAudioTracks();
+    if (rec.video.srcObject?.getVideoTracks()[0] !== v[0]) rec.video.srcObject = v.length ? new MediaStream(v) : null;
+    if (rec.audio.srcObject?.getAudioTracks()[0] !== a[0]) rec.audio.srcObject = a.length ? new MediaStream(a) : null;
+    rec.video.play().catch(() => {});                    // muted: never blocked, and harmless if no frames yet
+    playWithSound(rec.audio);
+  };
+  if (rec.stream !== stream) { rec.stream = stream; stream.addEventListener?.('addtrack', route); }
+  route();
   if (callRec.dest) addToRecording(rec.seat, stream);   // someone joined mid-recording: their voice joins the mix
   rec.tile.classList.remove('connecting');
   if (!rec.levelWatched && stream.getAudioTracks().length) { rec.levelWatched = true; watchLevel(rec.tile, stream, () => rec.mic); }
@@ -2293,12 +2416,17 @@ function attachRemote(rec, stream) {
 function playWithSound(el) {
   if (!el || !el.srcObject) return;
   const p = el.play();
-  if (p && p.catch) p.catch(() => $('soundBtn').classList.add('on'));
+  if (p && p.catch) p.catch(e => { dbgLog('play-blocked', -1, e?.name || 'error'); $('soundBtn').classList.add('on'); });
 }
-$('soundBtn').addEventListener('click', () => {
+$('soundBtn').addEventListener('click', async () => {
   ctx();
-  peers.forEach(r => { r.audio?.play().catch(() => {}); r.video.play().catch(() => {}); });
-  $('soundBtn').classList.remove('on');
+  // Try every voice in the call, and keep the button up if any of them is still blocked.
+  const tries = [...peers.values()].filter(r => r.audio?.srcObject).map(r => r.audio.play());
+  peers.forEach(r => r.video.play().catch(() => {}));
+  const res = await Promise.allSettled(tries);
+  const blocked = res.some(x => x.status === 'rejected');
+  $('soundBtn').classList.toggle('on', blocked);
+  if (blocked) toast('Sound is still blocked by this browser — tap the sound button again', 4000);
 });
 
 function dropPeer(seat, silent) {
@@ -2307,6 +2435,7 @@ function dropPeer(seat, silent) {
   if (rec.isManager && mgrSpot !== null && !control.mine && ![...peers.values()].some(r => r.hasControl && r !== rec)) mgrSpot = null;   // nobody left to end the spotlight
   if (rec.cid && rec.since && rec.joined) touch(rec.cid, rec.name, rec.since, Date.now());   // last moment they were here
   peers.delete(seat); pending.delete(seat);
+  clearTimeout(rec.graceTimer);
   try { rec.call?.close(); } catch {}
   try { rec.conn?.close(); } catch {}
   rec.stopLevel?.();
@@ -2617,8 +2746,14 @@ function watchLevel(tile, stream, isOn) {
 function replaceOutgoing(kind, track) {
   peers.forEach(rec => {
     const pc = rec.call?.peerConnection; if (!pc) return;
-    const sender = pc.getSenders().find(s => s.track?.kind === kind || (!s.track && s.__kind === kind));
-    if (sender) { sender.__kind = kind; sender.replaceTrack(track).catch(() => {}); }
+    // Find the sender through its transceiver: the receiving side always knows its kind, even when
+    // the sending track is null or has ended, so the lookup cannot miss.
+    const tr = pc.getTransceivers?.().find(t => t.receiver?.track?.kind === kind && t.sender);
+    const sender = tr?.sender || pc.getSenders().find(s => s.track?.kind === kind || (!s.track && s.__kind === kind));
+    if (!sender) { dbgLog('no-sender-' + kind, rec.seat, rec.call?.connectionId); return; }
+    sender.__kind = kind;
+    sender.replaceTrack(track).catch(e => dbgLog('replace-failed-' + kind, rec.seat,
+      `${e?.name || 'error'} track=${track ? track.readyState : 'none'} sig=${pc.signalingState} ice=${pc.iceConnectionState}`));
   });
 }
 function syncBarButtons() {
@@ -2692,14 +2827,10 @@ $('screenBtn').addEventListener('click', async () => {
   screenTrack.addEventListener('ended', stopScreen);   // the browser's own "Stop sharing" bar
   replaceOutgoing('video', screenTrack);
   screenAudio = s.getAudioTracks()[0] || null;
-  const c = screenAudio && ctx();
-  if (c) {
+  if (screenAudio) {
     // mix the shared sound with the microphone into one outgoing track; muting still silences the mic
-    mixDest = c.createMediaStreamDestination();
-    const mic = voiceTrack() || micTrack;                   // a boosted voice stays boosted while presenting
-    if (mic) { const m = c.createMediaStreamSource(new MediaStream([mic])); m.connect(mixDest); mixNodes.push(m); }
-    const a = c.createMediaStreamSource(new MediaStream([screenAudio])); a.connect(mixDest); mixNodes.push(a);
-    replaceOutgoing('audio', mixDest.stream.getAudioTracks()[0]);
+    screenAudio.addEventListener('ended', () => { screenAudio = null; resendAudio(); });
+    resendAudio();
   }
   syncBarButtons(); refreshSelf(); broadcastState(); tuneAllSenders();
   toast(screenAudio ? 'You are sharing your screen, with its sound' : 'You are sharing your screen');
@@ -2961,7 +3092,7 @@ function route() {
 route();
 showInAppGuide();
 
-window.__paywandi = { LARGE_CALL, peers, ensurePeer, renderTileInfo, applyCamera, handAt: () => handAt, micOn: () => micOn, desiredVideo, voiceSdp, applyTileLimit, renderPeople, startCensus, setHand, policyTick, checkCongestion, moreTile, BIG_CALL, camTouched: () => camTouched, recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
+window.__paywandi = { mySession, callHealthy, dbgEvents, debugReport, rebuildMix, mySeat: () => mySeat, LARGE_CALL, peers, ensurePeer, renderTileInfo, applyCamera, handAt: () => handAt, micOn: () => micOn, desiredVideo, voiceSdp, applyTileLimit, renderPeople, startCensus, setHand, policyTick, checkCongestion, moreTile, BIG_CALL, camTouched: () => camTouched, recoverCall, rejoinQuietly, keepAwake, wakeLock: () => wakeLock, closeness, voiceTrack, voiceLevel: () => voiceLevel, probeNetwork, runConnectionCheck, IN_APP, pageUrl, control, revokedGrants, canManage, tuneSenders, dataSaver: () => dataSaver, manager, mgrSpot: () => mgrSpot, codeFromKey, managerCommand, openMgrMenu, callRec, othersRecording, recording, ghosts, PEER_OPTIONS, TURN_SERVERS, cam, director, shotFor, diwanGeom, DIWAN, layout, fx, camView, setBackground, backgrounds: () => BACKGROUNDS, addCustomBackground, removeCustomBackground, fxTrack: () => fxTrack, att: () => att, mergeAtt, attendanceRows, csvCell, myCid, SLOT_MS, newRoomCode, formatId, parseMeeting, seatOf, seatId: s => seatId(s), initials, ROOM_RE, GATE_HASH, sha256,
   peers, state: () => ({ room, mySeat, isHost, peers: peers.size, micOn, camOn, screen: !!screenTrack }) };
 </script>
 </body>
