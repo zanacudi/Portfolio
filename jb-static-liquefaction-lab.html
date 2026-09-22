@@ -92,6 +92,43 @@ canvas{display:block;width:100%;height:260px}
 #table54 tbody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
 #table54 tbody tr.sel td{font-weight:700}
 .ns-figs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+/* pieces the page uses that had no rules of their own */
+.case-picker{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 8px}
+.case-pill{background:#fff;color:var(--navy);border:1px solid var(--line);font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px}
+.case-pill small{font-weight:400;color:var(--muted)}
+.case-pill.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.case-pill.on small{color:#d6e6ee}
+.case-detail{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.figure-tools{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 4px;flex-wrap:wrap}
+.figure-caption{font-size:12.5px;color:var(--navy)}
+.figure-tools button{font-size:11px;padding:4px 9px;background:#eef4f6;color:var(--navy);border:1px solid var(--line);font-weight:700}
+.legend .legend-note{flex-basis:100%;font-size:10.5px;color:var(--muted);padding:0 5px}
+.quiz-checkpoint{border-top:1px dashed var(--line);margin-top:14px;padding-top:4px}
+.page-stepper .page-label{font-size:12px;font-weight:700;color:var(--navy);text-align:center}
+.page-stepper button{border-radius:20px;font-size:12px}
+.page-stepper a.next-module{background:var(--green);color:#fff;border-radius:20px;padding:8px 14px;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap}
+/* Section 3: sliders, readouts, equation and all three charts in one screen */
+.s3-dash{display:grid;grid-template-columns:minmax(250px,290px) 1fr;gap:14px;align-items:start;margin-top:8px}
+.s3-dash>div{min-width:0}
+.s3-dash .snd-controls{padding:9px 10px}
+.s3-dash .slider-block{margin:4px 0;padding:6px 9px}
+.s3-dash .slider-block label{font-size:11.5px}
+.s3-dash .slider-block .hint{font-size:10px;margin-top:3px}
+.s3-dash .statgrid{gap:6px;margin-top:6px}
+.s3-dash .stat{padding:6px 5px}
+.s3-dash .stat strong{font-size:13px}
+.s3-dash .eq{font-size:11px;line-height:1.55;white-space:normal;padding:7px 9px;margin:6px 0 0}
+.s3-dash .eq .step{display:block;padding-left:12px;text-indent:-12px}
+.s3-dash .eq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10px;color:var(--muted);margin-top:3px}
+.s3-dash .legend{font-size:10.5px;gap:8px;padding:4px 6px;margin-top:2px}
+.s3-charts .ns-figs{margin-top:6px;gap:10px}
+@media(max-width:900px){.s3-dash{grid-template-columns:1fr}}
+.notation-card{color:var(--ink)}
+.notation-card small{display:block;font-size:11px;line-height:1.4;color:var(--muted);font-weight:400}
+#caseTableBody tr{cursor:pointer}
+#caseTableBody tr:hover{background:#f2f7f9}
+#caseTableBody tr.sel{background:#eaf4fa;box-shadow:inset 3px 0 0 var(--navy)}
+#caseTableBody tr.sel td{font-weight:700}
 .ns-figs>div,.ns-figs .chart-host{min-width:0}
 @media(max-width:1080px){.ns-figs{grid-template-columns:1fr}}
 .preset-row{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 8px}
@@ -302,6 +339,7 @@ body{padding-bottom:54px}
 <div class="explain">
 <p>Modules 1 and 2 were about <i>measuring</i> state. This one is about what state <i>does</i>. A contractive soil sheared undrained does not simply reach a lower strength &mdash; it reaches a peak, then sheds most of that strength on the way to critical state, and it is that <b>drop</b>, not the final value, that turns a slope into a flowslide.</p>
 <p>Everything here runs on the &psi; you learned to estimate in Module 2. Where Module 2 ended by asking which characteristic &psi;<sub>k</sub> to carry forward, this module answers what that number buys you: a residual strength, a brittleness, and a judgement about whether the ground is dense enough to leave alone.</p>
+<p style="font-size:13.5px;background:#f2f7f9;border-left:3px solid var(--blue);padding:7px 10px;border-radius:0 6px 6px 0"><b>&psi;<sub>k</sub>, the characteristic state parameter:</b> the single value of &psi; a design carries forward for a whole layer. Because &psi; measured from CPTs varies from point to point, &psi;<sub>k</sub> is not the average &mdash; it is picked on the <i>loose</i> side of the spread (Module 2 used a high percentile of the &psi; values from the soundings), so that most of the ground is denser than the value assumed.</p>
 </div>
 <div class="callout"><b>What you will be able to do by the end.</b> Read a flow failure and say which of its features were predictable. Compute residual strength from &psi; and say how brittle the soil is. Run NorSand's own equations for an undrained test and watch liquefaction happen with no collapse surface anywhere in them. Explain why the instability line is an outcome rather than a property, and why a slope can fail with no new load at all. Run the book's published design function, check it against eleven real failures, and say how dense is dense enough &mdash; and why the older steady-state method reads too high.</div>
 </div>
@@ -337,42 +375,49 @@ body{padding-bottom:54px}
 </div>
 <div class="eq">s<sub>r</sub>/p&prime;<sub>o</sub> = (M<sub>tc</sub>/2)&middot;exp(&minus;&psi;<sub>o</sub>/&lambda;<sub>e</sub>) &nbsp; (Eq. 6.4) &nbsp;&nbsp;&nbsp; I<sub>B</sub> = (s<sub>u</sub>&minus;s<sub>r</sub>)/s<sub>u</sub> &nbsp; (Bishop's brittleness index, Eq. 6.5)</div>
 
-<div class="snd-layout">
+<p class="explain" style="font-size:12.5px;margin:6px 0 0">Move any slider: the readouts, the working, and all three charts are on screen together, so you can watch one change ripple through the rest.</p>
+<div class="s3-dash">
 <div class="snd-controls">
 <div class="slider-block"><label for="s1M"><span>Critical friction ratio, M<sub>tc</sub></span> <span class="readout" id="s1MOut">1.25</span></label><input id="s1M" type="range" min="1.1" max="1.5" step="0.01" value="1.25"></div>
 <div class="slider-block"><label for="s1L"><span>&lambda;<sub>10</sub> (CSL slope, base 10)</span> <span class="readout" id="s1LOut">0.050</span></label><input id="s1L" type="range" min="0.01" max="0.20" step="0.005" value="0.05"></div>
 <div class="slider-block"><label for="s1Psi"><span>State parameter, &psi;<sub>o</sub></span> <span class="readout" id="s1PsiOut">+0.068</span></label><input id="s1Psi" type="range" min="-0.05" max="0.20" step="0.001" value="0.068"></div>
-<div class="slider-block"><label for="s1Su"><span>Peak strength ratio, s<sub>u</sub>/p&prime;<sub>o</sub></span> <span class="readout" id="s1SuOut">0.200</span></label><input id="s1Su" type="range" min="0.10" max="0.40" step="0.005" value="0.20"><div class="hint">Typical range 0.15&ndash;0.30 (Fig. 6.10). Eq. 6.4 predicts the <i>residual</i>, not the peak, so the peak is set directly here.</div></div>
+<div class="slider-block"><label for="s1Su"><span>Peak strength ratio, s<sub>u</sub>/p&prime;<sub>o</sub></span> <span class="readout" id="s1SuOut">0.200</span></label><input id="s1Su" type="range" min="0.10" max="0.40" step="0.005" value="0.20"><div class="hint">Typically 0.15&ndash;0.30 (Fig. 6.10). Eq. 6.4 gives the residual, not the peak, so the peak is set here.</div></div>
 <div class="statgrid n2" id="s1Stats"></div>
+<div class="eq" id="s1Eq"></div>
 </div>
-<div>
-<div class="chart-host"><canvas id="brittleChart" role="img" aria-label="Residual strength ratio against state parameter, with the brittleness gap to the peak strength shaded and the current state marked."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>s<sub>r</sub>/p&prime;<sub>o</sub> from Eq. 6.4</span><span><i style="background:#e9b7bb"></i>the brittleness gap</span><span><i style="background:#268160"></i>peak s<sub>u</sub>/p&prime;<sub>o</sub></span><span><i style="background:#c64852"></i>current state</span><span><i style="background:#8a97a0"></i>&psi;<sub>o</sub>=0.7&lambda;<sub>e</sub> brittleness onset</span></div>
-</div>
-</div>
-
-<div class="eq" id="s1Eq" style="margin-top:10px"></div>
-<div class="callout" id="s1Note" aria-live="polite"></div>
-<div class="warning"><b>The reference point.</b> Test G609 on Erksak 330/0.7 sand &mdash; the loosest clean-sand liquefaction test in the book's database (e<sub>o</sub>=0.800, p&prime;<sub>o</sub>=500&nbsp;kPa, &psi;<sub>o</sub>=+0.068) &mdash; is the default slider state. It showed an <b>80% peak-to-residual strength drop</b>, with stress ratio and pore pressure both mobilising smoothly through the whole test. No sudden collapse. That smoothness is the book's key evidence against the traditional picture, which is Section 6.</div>
-
-<h3>Where these numbers come from: the trends in the laboratory data</h3>
-<div class="explain">
-<p>The equation above is not fitted to anything &mdash; it falls out of the definition of the critical state line. What the laboratory data supply is the <i>other</i> half of the picture: how high the peak sits, and therefore how big the drop is. Plotting both against &psi;<sub>o</sub>/&lambda;<sub>e</sub> rather than &psi;<sub>o</sub> alone (Fig. 6.13) is what makes the two comparable, because it is that ratio, not &psi;<sub>o</sub>, that governs brittleness.</p>
-<p>Two reference points anchor the chart. Wroth's (1984) critical-state result for a <b>normally consolidated clay</b>, (s<sub>u</sub>/p&prime;<sub>o</sub>)<sub>nc</sub> = (M/2)(1/2)<sup>&Lambda;</sup> with &Lambda;&asymp;0.8 (Eq. 6.3), gives about 0.35 at M=1.25 &mdash; and a spacing ratio of two is the same thing as &psi;<sub>o</sub> = 0.69&lambda;<sub>e</sub>. That is why the book can say there is <b>no substantive difference</b> between the peak undrained strength of loose sand and of normally consolidated clay, and why brittleness only begins at &psi;<sub>o</sub>/&lambda;<sub>e</sub> &gt; 0.7 (Fig. 6.14): below it, peak and residual are the same number.</p>
-</div>
-<div class="grid2">
+<div class="s3-charts">
+<div class="chart-host"><canvas id="brittleChart" role="img" aria-label="Residual strength ratio against state parameter, with the dilative and contractive ranges, the strength lost after the peak shaded, and the current state marked."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>residual s<sub>r</sub>/p&prime;<sub>o</sub> (Eq. 6.4)</span><span><i style="background:#268160"></i>peak s<sub>u</sub>/p&prime;<sub>o</sub> (your slider)</span><span><i style="background:#e9a3aa"></i>strength lost after the peak</span><span><i style="background:#dff1e7"></i>dilative, &psi;&lt;0</span><span><i style="background:#f8e9e6"></i>contractive, &psi;&gt;0</span><span><i style="background:#8a97a0"></i>brittleness starts, 0.7&lambda;<sub>e</sub></span><span><i style="background:#c64852"></i>your state</span></div>
+<div class="ns-figs">
 <div>
 <div class="chart-host"><canvas id="trendChart" role="img" aria-label="Peak and residual undrained strength ratio against the state parameter divided by the natural-log CSL slope, with Wroth's normally consolidated clay value marked."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>residual, Eq. 6.4</span><span><i style="background:#268160"></i>peak band, Fig. 6.10 (0.15&ndash;0.30)</span><span><i style="background:#7653a6"></i>Wroth's NC clay, Eq. 6.3</span><span><i style="background:#c64852"></i>current state</span></div>
+<div class="legend"><span><i style="background:#1479b8"></i>residual, Eq. 6.4</span><span><i style="background:#cfe8da"></i>peak range, Fig. 6.10</span><span><i style="background:#7653a6"></i>NC clay, Eq. 6.3</span><span><i style="background:#c64852"></i>you</span></div>
 </div>
 <div>
 <div class="chart-host"><canvas id="ibChart" role="img" aria-label="Brittleness index against the state parameter divided by the natural-log CSL slope, with Bishop's 1971 measurements shown as points."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>I<sub>B</sub> implied by Eq. 6.4</span><span><i style="background:#687a82"></i>Bishop (1971) measurements</span><span><i style="background:#8a97a0"></i>brittleness onset, 0.7</span></div>
+<div class="legend"><span><i style="background:#1479b8"></i>I<sub>B</sub> from Eq. 6.4</span><span><i style="background:#687a82"></i>Bishop (1971) tests</span><span><i style="background:#c64852"></i>you</span></div>
+</div>
+</div>
 </div>
 </div>
 
+<div class="callout" id="s1Note" aria-live="polite" style="margin-top:10px"></div>
+<div class="warning"><b>The reference point.</b> Test G609 on Erksak 330/0.7 sand &mdash; the loosest clean-sand liquefaction test in the book's database (e<sub>o</sub>=0.800, p&prime;<sub>o</sub>=500&nbsp;kPa, &psi;<sub>o</sub>=+0.068) &mdash; is the default slider state. It showed an <b>80% peak-to-residual strength drop</b>, with stress ratio and pore pressure both mobilising smoothly through the whole test. No sudden collapse. That smoothness is the book's key evidence against the traditional picture, which is Section 7.</div>
+
+<h3>Where these numbers come from: the trends in the laboratory data</h3>
+<div class="explain">
+<p>These are the two smaller charts beside the sliders. The equation above is not fitted to anything &mdash; it falls out of the definition of the critical state line. What the laboratory data supply is the <i>other</i> half of the picture: how high the peak sits, and therefore how big the drop is. Plotting both against &psi;<sub>o</sub>/&lambda;<sub>e</sub> rather than &psi;<sub>o</sub> alone (Fig. 6.13) is what makes the two comparable, because it is that ratio, not &psi;<sub>o</sub>, that governs brittleness.</p>
+<p>Two reference points anchor them. Wroth's (1984) critical-state result for a <b>normally consolidated clay</b>, (s<sub>u</sub>/p&prime;<sub>o</sub>)<sub>nc</sub> = (M/2)(1/2)<sup>&Lambda;</sup> with &Lambda;&asymp;0.8 (Eq. 6.3), gives about 0.35 at M=1.25 &mdash; and a spacing ratio of two is the same thing as &psi;<sub>o</sub> = 0.69&lambda;<sub>e</sub>. That is why the book can say there is <b>no substantive difference</b> between the peak undrained strength of loose sand and of normally consolidated clay, and why brittleness only begins at &psi;<sub>o</sub>/&lambda;<sub>e</sub> &gt; 0.7 (Fig. 6.14): below it, peak and residual are the same number.</p>
+</div>
+
 <h3>The measurements themselves &mdash; Bishop's 1971 table, still the reference 40 years on</h3>
-<div class="explain"><p>Table 6.1 of the book reproduces Bishop's own summary of consolidated-undrained tests on cohesionless soils. It is worth reading one row at a time, because it contains the whole chapter in miniature: peak strength ratios that look ordinary, brittleness indices from 10% to 94% in the <i>same</i> sand, and mobilized friction angles at peak (&phi;&prime;<sub>f</sub>) far below the critical-state value (&phi;&prime;<sub>r</sub>) the same soil ends at. Select a row to place it on the chart.</p></div>
+<div class="explain"><p>Table 6.1 of the book reproduces Bishop's own summary of consolidated-undrained tests on cohesionless soils: peak strength ratios that look ordinary, brittleness indices from 10% to 94% in the <i>same</i> sand, and friction angles at the peak (&phi;&prime;<sub>f</sub>) well below the critical-state value (&phi;&prime;<sub>r</sub>) the same soil ends at. <b>Click a row, or a dot on the chart.</b></p>
+<p><b>What the chart is for, in terms of residual strength and failure.</b> Across the bottom is the friction angle each soil has at critical state, &phi;&prime;<sub>r</sub> &mdash; the angle its strength finally settles at, which is what sets the residual strength s<sub>r</sub>. Up the side is the friction angle it was actually using at its peak, &phi;&prime;<sub>f</sub>.</p>
+<ul style="margin:4px 0 0 18px;padding:0">
+<li><b>On the dashed line</b>, the soil peaked at its critical-state friction: peak and residual are the same strength, nothing is lost after the peak, and a slope in it deforms without running away.</li>
+<li><b>Below the line</b>, the soil peaked while using <i>less</i> friction than it will finish with. That can only happen because pore pressure had already built up and taken effective stress away. After the peak the pore pressure keeps rising, strength falls towards s<sub>r</sub>, and that fall is what turns a slip into a flowslide. The further below the line, the more pore pressure was already at work at the peak &mdash; the red dots lost half their strength or more.</li>
+<li><b>Above the line</b>, a dense soil used more friction than its critical-state value because it was dilating: it gets stronger as it strains, and cannot flow.</li>
+</ul></div>
 <div class="grid2">
 <div class="tbl-scroll"><table id="bishopTable">
 <thead><tr><th>Material</th><th>State</th><th>Test</th><th>(s<sub>u</sub>/p&prime;)<sub>n</sub></th><th>&phi;&prime;<sub>f</sub></th><th>&phi;&prime;<sub>r</sub></th><th>&eta; at peak</th><th>I<sub>B</sub></th></tr></thead>
@@ -380,7 +425,7 @@ body{padding-bottom:54px}
 </table></div>
 <div>
 <div class="chart-host"><canvas id="bishopChart" role="img" aria-label="Mobilized friction angle at peak against the critical state friction angle for Bishop's tests, with the line of equality."></canvas></div>
-<div class="legend"><span><i style="background:#c64852"></i>brittle tests (I<sub>B</sub> &ge; 0.5)</span><span><i style="background:#1479b8"></i>the rest</span><span><i style="background:#123b4a"></i>peak = critical state</span></div>
+<div class="legend"><span><i style="background:#c64852"></i>lost &ge;50% after the peak (I<sub>B</sub> &ge; 0.5)</span><span><i style="background:#1479b8"></i>the other tests</span><span><i style="background:#123b4a"></i>peak = critical state</span><span><i style="background:#f6dcdc"></i>peaked early: strength falls after</span><span><i style="background:#dff1e7"></i>dilating: strength rises</span></div>
 <div class="callout" id="bishopNote" aria-live="polite" style="margin-top:10px"></div>
 </div>
 </div>
@@ -555,7 +600,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <div class="chart-host"><canvas id="csdChart" role="img" aria-label="Stress path at constant deviator stress moving left as pore pressure rises, with the instability locus and, once it is crossed, the undrained collapse path that follows."></canvas></div>
-<div class="legend"><span><i style="background:#e38a22"></i>the constant-q path as water rises</span><span><i style="background:#123b4a"></i>instability locus, computed</span><span><i style="background:#c64852"></i>collapse once it is crossed</span><span><i style="background:#268160"></i>critical state line</span></div>
+<div class="legend"><span><i style="background:#e38a22"></i>the constant-q path as water rises</span><span><i style="background:#123b4a"></i>instability locus, computed</span><span><i style="background:#f6dcdc"></i>unstable: above the locus</span><span><i style="background:#c64852"></i>collapse once it is crossed</span><span><i style="background:#268160"></i>critical state line</span></div>
 <div class="callout" id="csdNote" aria-live="polite"></div>
 </div>
 </div>
@@ -584,7 +629,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <div class="chart-host"><canvas id="caseChart" role="img" aria-label="Residual strength ratio against characteristic state parameter, with the book's design function and eleven real case histories shown as range bars."></canvas></div>
-<div class="legend"><span><i style="background:#123b4a"></i>the book's design function</span><span><i style="background:#687a82"></i>real case histories (Table 6.5)</span><span><i style="background:#c64852"></i>current slider state</span><span><i style="background:#8a97a0"></i>&psi;=&minus;0.05 threshold</span></div>
+<div class="legend"><span><i style="background:#123b4a"></i>design function, case-history branch</span><span><i style="background:#1479b8"></i>design function, critical-state branch</span><span><i style="background:#687a82"></i>real failures (Table 6.5), as ranges</span><span><i style="background:#e3f3ea"></i>dense enough, &psi;&lt;&minus;0.05</span><span><i style="background:#c64852"></i>your slider state</span></div>
 </div>
 </div>
 <div class="eq" id="s3Eq" style="margin-top:10px"></div>
@@ -613,7 +658,7 @@ body{padding-bottom:54px}
 <div class="grid2">
 <div>
 <div class="chart-host"><canvas id="residChart" role="img" aria-label="Predicted against observed residual strength ratio for eleven case histories, with the line of equality."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>a case history</span><span><i style="background:#123b4a"></i>line of equality</span><span><i style="background:#e9b7bb"></i>within a factor of two</span></div>
+<div class="legend"><span><i style="background:#1479b8"></i>a case history (click one, or a table row)</span><span><i style="background:#c64852"></i>selected case</span><span><i style="background:#123b4a"></i>perfect agreement</span><span><i style="background:#e9b7bb"></i>within a factor of two</span><span><i style="background:#e3f3ea"></i>safe side</span></div>
 </div>
 <div>
 <div class="statgrid n2" id="fitStats"></div>
@@ -621,7 +666,7 @@ body{padding-bottom:54px}
 </div>
 </div>
 <div style="overflow-x:auto"><table id="caseTable">
-<thead><tr><th>Case history</th><th>&psi; range</th><th>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> observed</th><th>&lambda;<sub>10</sub></th><th>predicted</th><th>ratio</th></tr></thead>
+<thead><tr><th>Case history <span style="font-weight:400;text-transform:none">(click to show it)</span></th><th>&psi; range</th><th>s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> observed</th><th>&lambda;<sub>10</sub></th><th>predicted</th><th>ratio</th></tr></thead>
 <tbody id="caseTableBody"></tbody>
 </table></div>
 <div class="warning"><b>Read the scatter honestly.</b> Both axes are uncertain: the observed strengths are back-figured from failures whose geometry and pore pressures were themselves reconstructed, and the state parameters are ranges the book itself declines to sharpen. A factor of two either way, on data like this, is not a poor fit &mdash; but it is also not precision, and the function should be read as a design envelope rather than a prediction. Calaveras Dam and the Mochikoshi dams are omitted because the book flags them as unreliable.</div>
@@ -887,6 +932,70 @@ function nsUndrained(o){
 function etaFromKo(ko){ return 3*(1-ko)/(1+2*ko); }           // initial stress ratio of a Ko state
 
 // A small general plotting helper, in this page's chart style, for the computed figures.
+// Places a text label next to an anchor without covering other labels, markers or the frame edge:
+// tries positions around the anchor in order of preference and takes the first clear one (or the
+// least-crowded). Optional labels are dropped rather than forced into a crowded spot.
+function makePlacer(ctx, rect){
+  var boxes=[];
+  function area(a,b){ var w=Math.min(a.x2,b.x2)-Math.max(a.x1,b.x1), h=Math.min(a.y2,b.y2)-Math.max(a.y1,b.y1); return (w>0&&h>0)?w*h:0; }
+  return {
+    block: function(x1,y1,x2,y2){ boxes.push({x1:x1,y1:y1,x2:x2,y2:y2}); },
+    place: function(text, ax, ay, o){
+      o=o||{}; ctx.font=o.font||'700 9.5px Arial';
+      var w=ctx.measureText(text).width+5, h=13, g=o.gap==null?7:o.gap;
+      var c=o.cands || (o.center
+        ? [[-w/2,-h/2],[-w/2,-h/2-10],[-w/2,-h/2+10],[-w/2-18,-h/2],[-w/2+18,-h/2]]
+        : [[g,-g-h],[g,g-2],[-g-w,-g-h],[-g-w,g-2],[-w/2,-g-h-3],[-w/2,g+3],[g+2,-h/2],[-g-w-2,-h/2]]);
+      var best=null, bestCost=1e18;
+      for(var i=0;i<c.length;i++){
+        var b={x1:ax+c[i][0], y1:ay+c[i][1]}; b.x2=b.x1+w; b.y2=b.y1+h;
+        var cost=i*0.5;
+        if(b.x1<rect.x1+2||b.x2>rect.x2-2||b.y1<rect.y1+2||b.y2>rect.y2-2) cost+=5000;
+        for(var k=0;k<boxes.length;k++) cost+=area(b,boxes[k]);
+        if(cost<bestCost){ bestCost=cost; best=b; }
+        if(cost<1) break;
+      }
+      if(o.optional && bestCost>=30) return null;
+      var dx=Math.max(rect.x1+2-best.x1,0)-Math.max(best.x2-rect.x2+2,0), dy=Math.max(rect.y1+2-best.y1,0)-Math.max(best.y2-rect.y2+2,0);
+      best.x1+=dx; best.x2+=dx; best.y1+=dy; best.y2+=dy;
+      boxes.push(best);
+      ctx.textAlign='left'; ctx.textBaseline='middle';
+      haloText(ctx, text, best.x1+2.5, (best.y1+best.y2)/2, o.color||'#4c5b62');
+      return best;
+    }
+  };
+}
+// Axes that hold still while sliders move, so the picture changes shape instead of the scale
+// changing under it. A frame is rebuilt only when the data no longer fits, or has shrunk to under
+// 45% of it; presets reset their charts' frames.
+var FRAMES={};
+function niceUp(v){
+  if(!(v>0)) return 1;
+  var m=Math.pow(10,Math.floor(Math.log10(v))), n=v/m, steps=[1,1.2,1.5,2,2.5,3,4,5,6,8,10];
+  for(var i=0;i<steps.length;i++) if(n<=steps[i]+1e-9) return steps[i]*m;
+  return 10*m;
+}
+function stickyFrame(key, xNeed, yNeed, yLow){
+  var f=FRAMES[key], lo=Math.min(0, yLow||0);
+  var stale = !f || xNeed>f.x || yNeed>f.y || lo<f.ylo || xNeed<0.45*f.x || yNeed<0.45*f.y || (f.ylo<0 && lo>0.3*f.ylo);
+  if(stale) f=FRAMES[key]={x:niceUp(xNeed*1.08), y:niceUp(yNeed*1.08), ylo: lo<0 ? -niceUp(-lo*1.1) : 0};
+  return f;
+}
+function resetFrames(prefix){ Object.keys(FRAMES).forEach(function(k){ if(k.indexOf(prefix)===0) delete FRAMES[k]; }); }
+// click a marker on a chart: calls handler(id) for the nearest point drawn with an id
+function onChartPick(hostId, handler){
+  var host=el(hostId); if(!host || host.__pickWired) return;
+  host.__pickWired=true; host.style.cursor='pointer';
+  host.addEventListener('click', function(e){
+    var r=host.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top, best=null, bd=16*16;
+    (host.__hits||[]).forEach(function(h){ var d=(h.x-x)*(h.x-x)+(h.y-y)*(h.y-y); if(d<bd){ bd=d; best=h; } });
+    if(best) handler(best.id);
+  });
+}
+
+// A general plotting helper in this page's chart style. Draws, in order: vertical regions,
+// horizontal bands and filled areas (each can carry a label saying what it means), the grid,
+// the series, arrows, the markers, the frame; then every label, placed so none overlap.
 function plotXY(hostId, opt){
   var host=el(hostId); if(!host) return null;
   var cvp=prepCanvas(host, opt.h||260, opt.minW||260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
@@ -895,35 +1004,85 @@ function plotXY(hostId, opt){
   var xs=opt.xmin, xe=opt.xmax, ys=opt.ymin, ye=opt.ymax;
   function X(v){ return ml+pw*(Math.max(xs,Math.min(xe,v))-xs)/(xe-xs||1); }
   function Y(v){ return mt+ph*(1-(Math.max(ys,Math.min(ye,v))-ys)/(ye-ys||1)); }
+  var rect={x1:ml, y1:mt, x2:ml+pw, y2:mt+ph};
   ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  if(opt.bands) opt.bands.forEach(function(b){
+  ctx.save(); ctx.beginPath(); ctx.rect(ml,mt,pw,ph); ctx.clip();
+  (opt.regions||[]).forEach(function(g){
+    ctx.fillStyle=g.color; ctx.globalAlpha=g.alpha==null?1:g.alpha;
+    ctx.fillRect(X(g.x0), mt, X(g.x1)-X(g.x0), ph); ctx.globalAlpha=1;
+  });
+  (opt.bands||[]).forEach(function(b){
     ctx.fillStyle=b.color; ctx.globalAlpha=b.alpha==null?0.5:b.alpha;
     ctx.fillRect(ml, Y(b.hi), pw, Y(b.lo)-Y(b.hi)); ctx.globalAlpha=1;
   });
+  (opt.fills||[]).forEach(function(f){
+    if(!f.pts || f.pts.length<3) return;
+    ctx.fillStyle=f.color; ctx.globalAlpha=f.alpha==null?0.5:f.alpha; ctx.beginPath();
+    f.pts.forEach(function(pt,i){ if(i===0) ctx.moveTo(X(pt[0]),Y(pt[1])); else ctx.lineTo(X(pt[0]),Y(pt[1])); });
+    ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+  });
   var xt=niceTicks(xs,xe,opt.xticks||4), yt=niceTicks(ys,ye,opt.yticks||4);
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  ctx.strokeStyle='#e7edf0'; ctx.lineWidth=1;
   xt.values.forEach(function(v){ if(v<xs||v>xe) return; ctx.beginPath(); ctx.moveTo(X(v),mt); ctx.lineTo(X(v),mt+ph); ctx.stroke(); });
   yt.values.forEach(function(v){ if(v<ys||v>ye) return; ctx.beginPath(); ctx.moveTo(ml,Y(v)); ctx.lineTo(ml+pw,Y(v)); ctx.stroke(); });
+  // series are drawn unclamped (clipped at the frame) so a curve that leaves the frame leaves it
+  // honestly instead of running along the edge
+  function Xu(v){ return ml+pw*(v-xs)/(xe-xs||1); }
+  function Yu(v){ return mt+ph*(1-(v-ys)/(ye-ys||1)); }
   (opt.series||[]).forEach(function(sr){
-    if(!sr.pts || sr.pts.length<2) return;
+    if(!sr || !sr.pts || sr.pts.length<2) return;
     ctx.strokeStyle=sr.color; ctx.lineWidth=sr.w||2.2;
     if(sr.dash) ctx.setLineDash(sr.dash);
     ctx.beginPath();
-    sr.pts.forEach(function(pt,i){ var x=X(pt[0]), y=Y(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    sr.pts.forEach(function(pt,i){ var x=Xu(pt[0]), y=Yu(pt[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
     ctx.stroke(); ctx.setLineDash([]);
   });
-  (opt.points||[]).forEach(function(pt){
-    ctx.fillStyle=pt.color; ctx.beginPath(); ctx.arc(X(pt.x),Y(pt.y),pt.r||5.5,0,7); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1.6; ctx.stroke();
-    if(pt.label){ ctx.font='700 9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
-      var lx=X(pt.x)+7+ctx.measureText(pt.label).width>ml+pw ? X(pt.x)-7-ctx.measureText(pt.label).width : X(pt.x)+7;
-      haloText(ctx, pt.label, lx, Y(pt.y)-7, pt.labelColor||pt.color); }
+  (opt.arrows||[]).forEach(function(a){
+    var x1=X(a.x1), y1=Y(a.y1), x2=X(a.x2), y2=Y(a.y2), ang=Math.atan2(y2-y1,x2-x1);
+    ctx.strokeStyle=a.color||'#5b6b73'; ctx.fillStyle=a.color||'#5b6b73'; ctx.lineWidth=a.w||1.6;
+    if(a.dash) ctx.setLineDash(a.dash);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x2,y2); ctx.lineTo(x2-8*Math.cos(ang-0.4), y2-8*Math.sin(ang-0.4));
+    ctx.lineTo(x2-8*Math.cos(ang+0.4), y2-8*Math.sin(ang+0.4)); ctx.closePath(); ctx.fill();
   });
-  (opt.labels||[]).forEach(function(l){
-    ctx.font='700 9px Arial'; ctx.textAlign=l.align||'left'; ctx.textBaseline=l.baseline||'top';
-    haloText(ctx, l.text, X(l.x), Y(l.y), l.color||'#6b7880');
+  ctx.restore();
+  var hits=[];
+  var placer=makePlacer(ctx, rect);
+  (opt.points||[]).forEach(function(pt){
+    var x=X(pt.x), y=Y(pt.y), r=pt.r||5.5;
+    ctx.fillStyle=pt.color; ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+    ctx.strokeStyle=pt.ring||'#fff'; ctx.lineWidth=pt.ring?2.4:1.6; ctx.stroke();
+    placer.block(x-r-1,y-r-1,x+r+1,y+r+1);
+    if(pt.id!=null) hits.push({x:x,y:y,id:pt.id});
   });
   ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  // labels, most important first: markers, then curves, then what the shaded areas mean
+  (opt.points||[]).forEach(function(pt){ if(pt.label) placer.place(pt.label, X(pt.x), Y(pt.y), {color:pt.labelColor||pt.color, gap:(pt.r||5.5)+3}); });
+  (opt.series||[]).forEach(function(sr){
+    if(!sr || !sr.label || !sr.pts || sr.pts.length<2) return;
+    var dense=[];
+    for(var k=0;k<sr.pts.length-1;k++){ var a=sr.pts[k], b=sr.pts[k+1], m=sr.pts.length>20?1:40;
+      for(var t=0;t<m;t++) dense.push([a[0]+(b[0]-a[0])*t/m, a[1]+(b[1]-a[1])*t/m]); }
+    dense.push(sr.pts[sr.pts.length-1]);
+    var inside=dense.filter(function(pt){ return pt[0]>=xs&&pt[0]<=xe&&pt[1]>=ys&&pt[1]<=ye; });
+    if(!inside.length) return;
+    var pt=inside[Math.min(inside.length-1, Math.max(0, Math.round((sr.labelAt==null?0.5:sr.labelAt)*(inside.length-1))))];
+    placer.place(sr.label, X(pt[0]), Y(pt[1]), {color:sr.labelColor||sr.color, optional:sr.labelOptional});
+  });
+  (opt.labels||[]).forEach(function(l){
+    placer.place(l.text, X(l.x), Y(l.y), {color:l.color||'#5b6b73', center:l.center, optional:l.optional, cands:l.cands, font:l.font});
+  });
+  (opt.regions||[]).forEach(function(g){
+    if(!g.label) return;
+    var cx=(Math.max(X(g.x0),ml)+Math.min(X(g.x1),ml+pw))/2;
+    placer.place(g.label, cx, mt+4, {color:g.labelColor||'#5b6b73', cands:[[-ctx.measureText(g.label).width/2-2,1],[-ctx.measureText(g.label).width/2-2,15],[-ctx.measureText(g.label).width/2-2,29]], optional:g.optional});
+  });
+  (opt.bands||[]).forEach(function(b){
+    if(!b.label) return;
+    placer.place(b.label, ml+pw-4, (Y(b.hi)+Y(b.lo))/2, {color:b.labelColor||'#5b6b73', cands:[[-ctx.measureText(b.label).width-9,-7],[-ctx.measureText(b.label).width-9,-20]], optional:b.optional});
+  });
+  (opt.fills||[]).forEach(function(f){ if(f.label && f.at) placer.place(f.label, X(f.at[0]), Y(f.at[1]), {color:f.labelColor||'#8e2b35', center:true, optional:f.optional}); });
+  host.__hits=hits;
   ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
   xt.values.forEach(function(v){ if(v<xs||v>xe) return; var lab=v.toFixed(xt.dp); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
   ctx.font='10.5px Arial'; ctx.fillText(opt.xlab||'', ml+pw/2, mt+ph+20);
@@ -932,7 +1091,7 @@ function plotXY(hostId, opt){
   ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
   ctx.fillText(opt.ylab||'',0,0); ctx.restore();
-  return {X:X, Y:Y, ctx:ctx, ml:ml, mt:mt, pw:pw, ph:ph};
+  return {X:X, Y:Y, ctx:ctx, ml:ml, mt:mt, pw:pw, ph:ph, placer:placer};
 }
 
 var CASE_HISTORIES = [
@@ -974,7 +1133,7 @@ var caseSelected = 0;
 function renderCasePicker(){
   el('casePicker').innerHTML = FLOW_FAILURES.map(function(f,i){
     return '<button type="button" role="tab" class="case-pill'+(i===caseSelected?' on':'')+'" data-case="'+i+'" aria-selected="'+(i===caseSelected)+'">'+
-           f.name+'<small>'+f.place+' &middot; '+f.year+'</small></button>';
+           f.name+'<small>, '+f.place+' &middot; '+f.year+'</small></button>';
   }).join('');
   el('casePicker').querySelectorAll('.case-pill').forEach(function(b){
     b.addEventListener('click', function(){ caseSelected=+b.dataset.case; renderCasePicker(); renderCaseDetail(); drawCaseScaleChart(); });
@@ -1058,55 +1217,28 @@ function updateSection1(){
   drawTrendCharts(Mtc,lam10,psi,su);
 }
 function drawBrittleChart(Mtc,lam10,psi,su){
-  var host=el('brittleChart'); if(!host) return;
-  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=54, mr=14, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=-0.05, xmax=0.20, ymin=0, ymax=Math.max(0.8, su*1.2);
-  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
-  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
-  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  // the brittleness gap: everything between the peak line and the residual curve
-  ctx.fillStyle='#e9b7bb'; ctx.globalAlpha=0.7; ctx.beginPath();
-  ctx.moveTo(X(xmin), Y(su));
-  for(var v=xmin;v<=xmax+1e-9;v+=0.002){ var sr=srOverPoBasic(Mtc,lam10,v); if(sr<su) ctx.lineTo(X(v), Y(su)); }
-  for(var v2=xmax;v2>=xmin-1e-9;v2-=0.002){ var sr2=srOverPoBasic(Mtc,lam10,v2); ctx.lineTo(X(v2), Y(Math.min(su,sr2))); }
-  ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  for(var g=xmin;g<=xmax+1e-9;g+=0.05){ var gx=X(g); ctx.beginPath(); ctx.moveTo(gx,mt); ctx.lineTo(gx,mt+ph); ctx.stroke(); }
-  var yt=niceTicks(ymin,ymax,4);
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
-  // peak line and brittleness onset
-  ctx.strokeStyle='#268160'; ctx.lineWidth=1.8; ctx.setLineDash([5,3]);
-  ctx.beginPath(); ctx.moveTo(ml,Y(su)); ctx.lineTo(ml+pw,Y(su)); ctx.stroke(); ctx.setLineDash([]);
-  var onset=0.7*lamE(lam10);
-  if(onset>xmin && onset<xmax){
-    ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
-    ctx.beginPath(); ctx.moveTo(X(onset),mt); ctx.lineTo(X(onset),mt+ph); ctx.stroke(); ctx.setLineDash([]);
-    ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
-    haloText(ctx,'0.7λe', X(onset)+3, mt+3, '#6b7880');
+  var xmin=-0.05, xmax=0.20, ymax=0.8;
+  var le=lamE(lam10), curve=[], top=[], bot=[];
+  for(var v=xmin; v<=xmax+1e-9; v+=0.0025){
+    var sr=srOverPoBasic(Mtc,lam10,v); curve.push([v, sr]);
+    if(sr<su){ top.push([v,su]); bot.push([v,sr]); }
   }
-  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.4; ctx.beginPath();
-  for(var v3=xmin;v3<=xmax+1e-9;v3+=0.002){
-    var s3=srOverPoBasic(Mtc,lam10,v3), x3=X(v3), y3=Y(s3);
-    if(v3===xmin) ctx.moveTo(x3,y3); else ctx.lineTo(x3,y3);
-  }
-  ctx.stroke();
-  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
-  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
-  ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψo', ml+pw/2, mt+ph+20);
-  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText("sr / p'o",0,0); ctx.restore();
-  var cur=srOverPoBasic(Mtc,lam10,psi);
-  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(psi),Y(cur),6,0,7); ctx.fill();
-  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
-  ctx.font='700 9.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
-  var lab2='sr = '+cur.toFixed(3);
-  var lx = X(psi)+7+ctx.measureText(lab2).width > ml+pw ? X(psi)-7-ctx.measureText(lab2).width : X(psi)+7;
-  haloText(ctx, lab2, lx, Y(cur)-7, '#a8323d');
+  var gap = top.length>2 ? top.concat(bot.slice().reverse()) : [];
+  var cur=srOverPoBasic(Mtc,lam10,psi), onset=0.7*le;
+  // where to say what the pink area is: in its middle, where it is tallest enough to hold text
+  var xStar=Math.max(xmin, -le*Math.log(2*su/Mtc)), gx=Math.min(xmax-0.02, xStar+(xmax-xStar)*0.55);
+  var gy=(su+srOverPoBasic(Mtc,lam10,gx))/2;
+  plotXY('brittleChart', {h:215, xmin:xmin, xmax:xmax, ymin:0, ymax:ymax, xticks:5,
+    xlab:'state parameter at the start, \u03c8o', ylab:"strength / p'o",
+    regions:[{x0:xmin,x1:0,color:'#dff1e7',label:'dilative: \u03c8 < 0',labelColor:'#1f7a4c'},
+             {x0:0,x1:xmax,color:'#f8e9e6',label:'contractive: \u03c8 > 0 (looser than critical)',labelColor:'#a8323d'}],
+    fills: gap.length ? [{pts:gap, color:'#e9a3aa', alpha:0.6, label:'strength lost after the peak', at:[gx,gy], labelColor:'#8e2b35'}] : [],
+    series:[{pts:[[0,0],[0,ymax]], color:'#9fb0b8', w:1, dash:[2,3]},
+            onset>xmin && onset<xmax ? {pts:[[onset,0],[onset,ymax]], color:'#8a97a0', w:1.3, dash:[3,3]} : null,
+            {pts:[[xmin,su],[xmax,su]], color:'#268160', w:1.8, dash:[5,3], label:'peak su/p\u2032o = '+su.toFixed(2)+' (your slider)', labelAt:0.93, labelColor:'#1d6b4f'},
+            {pts:curve, color:'#1479b8', w:2.6, label:'residual sr/p\u2032o (Eq. 6.4)', labelAt:0.02, labelColor:'#0f5f93'}],
+    labels: onset>xmin && onset<xmax ? [{x:onset, y:ymax*0.62, text:'brittleness starts (0.7\u03bbe)', color:'#5b6b73', optional:true}] : [],
+    points:[{x:psi, y:Math.min(ymax,cur), color:'#c64852', r:6, label:'you: sr/p\u2032o = '+cur.toFixed(3), labelColor:'#a8323d'}]});
 }
 
 // ---------------------------------------------------------------- Section 5
@@ -1167,38 +1299,28 @@ function updateUndrainedPath(){
 }
 function drawPathChart(r, o){
   var S=r.S, n=S.p.length;
-  // The frame follows the computed path, never the critical state: a dense sample's critical
-  // state sits at a pressure no test reaches, and letting it set the axes flattens everything
-  // that actually happened into a sliver along the bottom.
-  var pathP=0, pathQ=0;
-  for(var k=0;k<n;k++){ pathP=Math.max(pathP,S.p[k]); pathQ=Math.max(pathQ,S.q[k]); }
-  var pMax=Math.max(o.po*1.25, Math.min(pathP*1.15, o.po*3));
-  var qMax=Math.max(pathQ*1.25, o.Mtc*o.po*0.5);
-  if(o.turned) qMax=Math.max(qMax, o.qc*1.3);       // the drop to critical state must stay visible
-  var path=[];
-  for(var i=0;i<n;i+=Math.max(1,Math.floor(n/400))){
-    if(S.p[i]>pMax) break;                      // drop the tail rather than smear it along the frame
-    path.push([S.p[i], S.q[i]]);
-  }
-  var series=[{pts:[[0,0],[pMax, Math.min(qMax, o.Mtc*pMax)]], color:'#268160', w:2},
-              {pts:path, color:'#1479b8', w:2.6}];
-  var pts=[{x:o.po, y:0, color:'#8a97a0', r:4.5, label:'start'}];
+  // the frame follows p'o only, so moving psi or Mtc reshapes the path instead of rescaling the axes
+  var f=stickyFrame('path', o.po*1.25, o.po*0.62), pMax=f.x, qMax=f.y;
+  var path=[], exits=false;
+  for(var i=0;i<n;i+=Math.max(1,Math.floor(n/500))){ path.push([S.p[i], S.q[i]]); if(S.p[i]>pMax||S.q[i]>qMax) exits=true; }
+  var series=[{pts:[[0,0],[pMax*1.3, o.Mtc*pMax*1.3]], color:'#268160', w:2, label:'critical state line q = M\u00b7p\u2032: every test ends on it', labelAt:0.62, labelColor:'#1d6b4f'},
+              {pts:path, color:'#1479b8', w:2.6, label:'undrained stress path', labelAt:o.contractive?0.2:0.35, labelColor:'#0f5f93'}];
+  var pts=[{x:o.po, y:0, color:'#8a97a0', r:4.5, label:'start, p\u2032o = '+o.po.toFixed(0)+' kPa', labelColor:'#4c5b62'}];
+  var lab=[];
   if(o.turned){
-    series.push({pts:[[r.pPeak, r.qPeak],[Math.max(o.pc,1), r.qPeak]], color:'#e38a22', w:1.8, dash:[4,3]});
-    series.push({pts:[[Math.max(o.pc,1), r.qPeak],[Math.max(o.pc,1), o.qc]], color:'#e38a22', w:2, dash:[4,3]});
-    pts.push({x:r.pPeak, y:r.qPeak, color:'#c64852', r:5.5, label:'peak'});
-    pts.push({x:Math.max(o.pc,1), y:o.qc, color:'#123b4a', r:5, label:'critical state'});
-  }
-  var lab=[{x:pMax*0.62, y:Math.min(qMax*0.98, o.Mtc*pMax*0.62), text:'CSL: q = M p\u2032', color:'#1d6b4f'}];
-  if(o.turned) lab.push({x:Math.max(o.pc,1), y:(r.qPeak+o.qc)/2, text:'  lost', color:'#b06d12'});
-  // Mark critical state only where it really is. Off the frame, say so in words rather than
-  // parking a dot on the border that would read as a place the soil arrives at.
-  if(!o.turned){
-    if(o.pc<=pMax && o.qc<=qMax) pts.push({x:o.pc, y:o.qc, color:'#123b4a', r:5, label:'critical state'});
-    else lab.push({x:pMax*0.5, y:qMax*0.12, text:'critical state is off this chart, at p\u2032 = '+o.pc.toFixed(0)+' kPa', color:'#123b4a'});
-  }
+    var xc=Math.max(o.pc,1);
+    series.push({pts:[[r.pPeak, r.qPeak],[xc, r.qPeak]], color:'#e38a22', w:1.6, dash:[4,3]});
+    series.push({pts:[[xc, r.qPeak],[xc, o.qc]], color:'#e38a22', w:2.2, dash:[4,3]});
+    pts.push({x:r.pPeak, y:r.qPeak, color:'#c64852', r:5.5, label:'peak: su = '+(r.qPeak/2).toFixed(0)+' kPa', labelColor:'#a8323d'});
+    pts.push({x:xc, y:o.qc, color:'#123b4a', r:5, label:'critical state: sr = '+(o.qc/2).toFixed(1)+' kPa', labelColor:'#123b4a'});
+    lab.push({x:xc, y:(r.qPeak+o.qc)/2, text:'strength lost', color:'#b06d12'});
+  } else if(o.pc<=pMax && o.qc<=qMax) pts.push({x:o.pc, y:o.qc, color:'#123b4a', r:5, label:'critical state', labelColor:'#123b4a'});
+  lab.push(o.contractive
+    ? {x:o.po*0.7, y:qMax*0.06, text:'\u2190 contractive: pore pressure rises, p\u2032 falls', color:'#a8323d', optional:true}
+    : {x:Math.min(o.po*1.1,pMax*0.8), y:qMax*0.06, text:'dilative: pore pressure falls, p\u2032 rises \u2192', color:'#1f7a4c', optional:true});
+  if(exits) lab.push({x:pMax*0.9, y:qMax*0.93, text:'path continues off the chart', color:'#5b6b73', optional:true});
   plotXY('pathChart', {h:300, xmin:0, xmax:pMax, ymin:0, ymax:qMax,
-    xlab:"mean effective stress p\u2032, kPa", ylab:'deviator stress q, kPa',
+    xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
     series:series, points:pts, labels:lab});
 }
 
@@ -1231,6 +1353,7 @@ function renderNsuPresets(){
 }
 function applyNsuPreset(i){
   nsuPreset=i; var pz=NSU_PRESETS[i];
+  resetFrames('nsu');                                  // a new soil gets new axes; the sliders then keep them
   el('nsuPsi').value=pz.psi0; el('nsuP0').value=pz.p0; el('nsuH').value=pz.H; el('nsuIr').value=pz.Ir;
   el('nsuM').value=pz.Mtc; el('nsuL').value=pz.lam10; el('nsuChi').value=pz.chitc; el('nsuN').value=pz.N;
   renderNsuPresets(); updateNsu();
@@ -1286,48 +1409,44 @@ function updateNsu(){
 }
 function drawNsuCharts(r,o){
   var S=r.S, n=S.eq.length;
-  var qMax=0, uMax=0, uMin=0, pMax=o.p0;
-  for(var i=0;i<n;i++){ qMax=Math.max(qMax,S.q[i]); uMax=Math.max(uMax,S.u[i]); uMin=Math.min(uMin,S.u[i]); pMax=Math.max(pMax,S.p[i]); }
-  // A loose sample peaks inside the first 1% of strain, so plotting the whole run squeezes the
-  // entire mechanism into the left edge. The strain axis follows the peak instead, the way the
-  // book's own Figs 6.19 do, and the run simply continues past the frame.
+  var qMax=0, uMax=0, uMin=0, pMax=o.p0, etaMax=0;
+  for(var i=0;i<n;i++){ qMax=Math.max(qMax,S.q[i]); uMax=Math.max(uMax,S.u[i]); uMin=Math.min(uMin,S.u[i]); pMax=Math.max(pMax,S.p[i]); etaMax=Math.max(etaMax,S.eta[i]); }
+  // Steady axes: each chart keeps its frame while the sliders move (so the curves visibly change
+  // shape), and only re-frames when a curve no longer fits or has shrunk to a sliver. A loose
+  // sample peaks inside the first 1% of strain, so the strain axis is sized to the peak.
   var eqRun=S.eq[n-1]||1;
-  var eqMax=r.turned ? Math.min(eqRun, Math.max(5, r.eqPeak*8)) : eqRun;
-  var qs=[], ps=[], us=[];
-  for(var j=0;j<n;j+=Math.max(1,Math.floor(n/400))){
+  var fe=stickyFrame('nsuStrain', r.turned ? Math.min(eqRun, Math.max(5, r.eqPeak*8)) : eqRun, 1);
+  var eqMax=fe.x;
+  var fq=stickyFrame('nsuQ', 1, qMax), fp=stickyFrame('nsuP', pMax, qMax);
+  var fu=stickyFrame('nsuU', 1, Math.max(1,uMax), uMin), fh=stickyFrame('nsuEta', 1, Math.max(etaMax, o.Mtc));
+  var qs=[], ps=[], us=[], es=[];
+  for(var j=0;j<n;j+=Math.max(1,Math.floor(n/500))){
     ps.push([S.p[j],S.q[j]]);
-    if(S.eq[j]<=eqMax){ qs.push([S.eq[j],S.q[j]]); us.push([S.eq[j],S.u[j]]); }
+    if(S.eq[j]<=eqMax*1.02){ qs.push([S.eq[j],S.q[j]]); us.push([S.eq[j],S.u[j]]); es.push([S.eq[j],S.eta[j]]); }
   }
-  var etaMax=0, uHi0=0, uLo0=0, qHi=0;
-  for(var m=0;m<n;m++){ if(S.eq[m]>eqMax) break;
-    etaMax=Math.max(etaMax,S.eta[m]); uHi0=Math.max(uHi0,S.u[m]); uLo0=Math.min(uLo0,S.u[m]); qHi=Math.max(qHi,S.q[m]); }
-  var es=[]; for(var j2=0;j2<n;j2+=Math.max(1,Math.floor(n/400))){ if(S.eq[j2]<=eqMax) es.push([S.eq[j2],S.eta[j2]]); }
-  var uLo=Math.min(0,uLo0*1.15), uHi=Math.max(1,uHi0*1.15);
-  qMax=Math.max(qMax*0.0001, qHi);            // the q axis follows what is actually in frame
-  plotXY('nsuQChart', {h:250, xmin:0, xmax:eqMax, ymin:0, ymax:qMax*1.15,
+  var peakLine = r.turned ? function(lo,hi){ return {pts:[[r.eqPeak,lo],[r.eqPeak,hi]], color:'#8a97a0', w:1.2, dash:[4,3]}; } : null;
+  plotXY('nsuQChart', {h:250, xmin:0, xmax:eqMax, ymin:0, ymax:fq.y,
     xlab:'axial strain (%)', ylab:'deviator stress q, kPa',
-    series:[{pts:qs, color:'#1479b8', w:2.6}],
-    points:r.turned ? [{x:r.eqPeak, y:r.qPeak, color:'#c64852', label:'peak '+r.qPeak.toFixed(0)}] : [],
-    labels:r.turned ? [] : [{x:eqMax*0.12, y:qHi*1.05, text:'still climbing \u2014 no peak', color:'#1f7a4c'}]});
-  var cslPts=[[0,0],[pMax*1.05, Math.min(qMax*1.25, o.Mtc*pMax*1.05)]];
-  plotXY('nsuPathChart', {h:250, xmin:0, xmax:pMax*1.05, ymin:0, ymax:qMax*1.15,
+    series:[{pts:qs, color:'#1479b8', w:2.6, label: r.turned ? 'softening after the peak' : 'deviator stress q', labelAt:0.7, labelColor:'#0f5f93'}],
+    points:r.turned ? [{x:r.eqPeak, y:r.qPeak, color:'#c64852', label:'peak q = '+r.qPeak.toFixed(0)+' kPa (onset of liquefaction)', labelColor:'#a8323d'}] : [],
+    labels:r.turned ? [] : [{x:eqMax*0.3, y:fq.y*0.9, text:'still climbing \u2014 no peak (dilative)', color:'#1f7a4c'}]});
+  plotXY('nsuPathChart', {h:250, xmin:0, xmax:fp.x, ymin:0, ymax:fp.y,
     xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
-    series:[{pts:cslPts, color:'#268160', w:2},{pts:ps, color:'#1479b8', w:2.6}],
-    points:(r.turned ? [{x:r.pPeak, y:r.qPeak, color:'#c64852', label:'\u03b7L = '+r.etaL.toFixed(2)}] : [])
-            .concat([{x:o.p0, y:(o.eta0||0)*o.p0, color:'#8a97a0', r:4, label:'start'}])});
-  plotXY('nsuUChart', {h:250, xmin:0, xmax:eqMax, ymin:uLo, ymax:uHi,
+    series:[{pts:[[0,0],[fp.x*1.3, o.Mtc*fp.x*1.3]], color:'#268160', w:2, label:'critical state line', labelAt:0.7, labelColor:'#1d6b4f'},
+            {pts:ps, color:'#1479b8', w:2.6, label:'effective stress path', labelAt:0.25, labelColor:'#0f5f93'}],
+    points:(r.turned ? [{x:r.pPeak, y:r.qPeak, color:'#c64852', label:'peak: \u03b7L = '+r.etaL.toFixed(2), labelColor:'#a8323d'}] : [])
+            .concat([{x:o.p0, y:(o.eta0||0)*o.p0, color:'#8a97a0', r:4, label:'start', labelColor:'#4c5b62'}])});
+  plotXY('nsuUChart', {h:250, xmin:0, xmax:eqMax, ymin:fu.ylo, ymax:fu.y,
     xlab:'axial strain (%)', ylab:'excess pore pressure \u0394u, kPa',
-    series:[{pts:us, color:'#7653a6', w:2.4}].concat(r.turned
-      ? [{pts:[[r.eqPeak, uLo],[r.eqPeak, uHi]], color:'#8a97a0', w:1.3, dash:[4,3]}] : [])});
-  // Fig. 6.16d: the stress ratio climbs smoothly through the peak. If a collapse surface were
-  // real there would be a corner in this trace at eta_L, and there is not.
-  plotXY('nsuEtaChart', {h:250, xmin:0, xmax:eqMax, ymin:0, ymax:Math.max(etaMax*1.15, o.Mtc*1.1),
-    xlab:'axial strain (%)', ylab:'stress ratio \u03b7 = q/p\u2032',
-    series:[{pts:es, color:'#268160', w:2.6},
-            {pts:[[0,o.Mtc],[eqMax,o.Mtc]], color:'#c64852', w:1.4, dash:[5,3]}].concat(r.turned
-      ? [{pts:[[r.eqPeak,0],[r.eqPeak,Math.max(etaMax*1.15,o.Mtc*1.1)]], color:'#8a97a0', w:1.3, dash:[4,3]}] : []),
-    labels:[{x:eqMax*0.72, y:o.Mtc*1.04, text:'Mtc', color:'#a8323d'}].concat(r.turned
-      ? [{x:r.eqPeak, y:Math.max(etaMax*1.15,o.Mtc*1.1)*0.35, text:'  peak of q', color:'#6b7880'}] : [])});
+    series:[{pts:us, color:'#7653a6', w:2.4, label: uMin < -1 ? 'pore pressure falls: the soil is dilating' : 'pore pressure keeps building', labelAt:0.75, labelColor:'#5b3f86'}]
+      .concat(peakLine ? [peakLine(fu.ylo, fu.y)] : []),
+    labels: r.turned ? [{x:r.eqPeak, y:fu.y*0.12, text:'peak of q', color:'#5b6b73'}] : []});
+  plotXY('nsuEtaChart', {h:250, xmin:0, xmax:eqMax, ymin:0, ymax:fh.y,
+    xlab:'axial strain (%)', ylab:"stress ratio \u03b7 = q/p'",
+    series:[{pts:[[0,o.Mtc],[eqMax,o.Mtc]], color:'#c64852', w:1.4, dash:[5,3], label:'Mtc = '+o.Mtc.toFixed(2)+' (critical state)', labelAt:0.9, labelColor:'#a8323d'},
+            {pts:es, color:'#268160', w:2.6, label:'stress ratio \u03b7', labelAt:0.55, labelColor:'#1d6b4f'}]
+      .concat(peakLine ? [peakLine(0, fh.y)] : []),
+    labels: r.turned ? [{x:r.eqPeak, y:fh.y*0.12, text:'peak of q: \u03b7 carries on smoothly', color:'#5b6b73'}] : []});
 }
 ['nsuPsi','nsuP0','nsuH','nsuIr','nsuM','nsuL','nsuChi','nsuN'].forEach(function(id){
   el(id).addEventListener('input', updateNsu);
@@ -1373,14 +1492,13 @@ function drawHIrChart(hir, etaH, etaIr){
     A.push([x, etaLFromHIr(x,'H')]);
     B.push([x, etaLFromHIr(x,'Ir')]);
   }
-  var all=A.concat(B).map(function(p){ return p[1]; }).concat([ETA_L_LO,ETA_L_HI]);
-  var ymin=Math.min.apply(null,all)-0.05, ymax=Math.max.apply(null,all)+0.05;
-  plotXY('hirChart', {h:250, xmin:0, xmax:ETA_L_HIR_MAX, ymin:ymin, ymax:ymax,
-    xlab:'H / Ir', ylab:'stress ratio at instability, \u03b7L',
-    bands:[{lo:ETA_L_LO, hi:ETA_L_HI, color:'#e9b7bb', alpha:0.45}],
-    series:[{pts:A, color:'#1479b8', w:2.6},{pts:B, color:'#7653a6', w:2.2, dash:[6,3]}],
-    points:[{x:hir, y:etaH, color:'#c64852', label:'\u03b7L = '+etaH.toFixed(2)}],
-    labels:[{x:ETA_L_HIR_MAX*0.52, y:ETA_L_HI-0.012, text:'the 0.75\u20131.0 range the book cites', color:'#a8323d'}]});
+  plotXY('hirChart', {h:250, xmin:0, xmax:ETA_L_HIR_MAX, ymin:0.6, ymax:1.15,
+    xlab:'H / Ir  (plastic hardening \u00f7 elastic rigidity)', ylab:'stress ratio at instability, \u03b7L',
+    bands:[{lo:ETA_L_LO, hi:ETA_L_HI, color:'#f2c7cb', alpha:0.55,
+            label:'shaded: the \u03b7L range the book reports for this one soil (0.75\u20131.0)', labelColor:'#a8323d'}],
+    series:[{pts:A, color:'#1479b8', w:2.6, label:'Ir = 150, H varied', labelAt:0.1, labelColor:'#0f5f93'},
+            {pts:B, color:'#7653a6', w:2, dash:[6,3], label:'H = 80, Ir varied (almost the same line)', labelAt:0.8, labelColor:'#5b3f86', labelOptional:true}],
+    points:[{x:hir, y:etaH, color:'#c64852', label:'you: \u03b7L = '+etaH.toFixed(2), labelColor:'#a8323d'}]});
 }
 
 // The instability locus of Fig. 6.25: same soil, same state, four Ko conditions.
@@ -1416,22 +1534,23 @@ function updateIL(){
   drawILChart(runs, etaIL);
 }
 function drawILChart(runs, etaIL){
-  var pMax=220, qMax=0;
-  runs.forEach(function(u){ u.r.S.q.forEach(function(q){ qMax=Math.max(qMax,q); }); });
-  qMax=Math.max(qMax, 1.26*60)*1.15;
-  var series=[{pts:[[0,0],[pMax, Math.min(qMax,1.26*pMax)]], color:'#268160', w:2},
-              {pts:[[0,0],[pMax, Math.min(qMax,etaIL*pMax)]], color:'#123b4a', w:2, dash:[7,4]}];
+  var qNeed=0;
+  runs.forEach(function(u){ u.r.S.q.forEach(function(q){ qNeed=Math.max(qNeed,q); }); });
+  var f=stickyFrame('il', 220, Math.max(qNeed, 1.26*60)), pMax=f.x, qMax=f.y;
+  var series=[{pts:[[0,0],[pMax*1.3, 1.26*pMax*1.3]], color:'#268160', w:2, label:'critical state line', labelAt:0.85, labelColor:'#1d6b4f'},
+              {pts:[[0,0],[pMax*1.3, etaIL*pMax*1.3]], color:'#123b4a', w:2, dash:[7,4], label:'the line through the peaks (\u03b7 = '+etaIL.toFixed(2)+')', labelAt:0.5, labelColor:'#123b4a'}];
   var pts=[];
   runs.forEach(function(u){
     var S=u.r.S, path=[];
     for(var j=0;j<S.p.length;j+=Math.max(1,Math.floor(S.p.length/300))) path.push([S.p[j],S.q[j]]);
     series.push({pts:path, color:'#1479b8', w:1.9});
-    pts.push({x:u.r.pPeak, y:u.r.qPeak, color:'#c64852', r:4.5, label:'Ko='+u.ko.toFixed(1)});
+    pts.push({x:u.r.pPeak, y:u.r.qPeak, color:'#c64852', r:4.5, label:'Ko = '+u.ko.toFixed(1), labelColor:'#a8323d'});
   });
   plotXY('ilChart', {h:280, xmin:0, xmax:pMax, ymin:0, ymax:qMax,
     xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
-    series:series, points:pts,
-    labels:[{x:pMax*0.62, y:Math.min(qMax*0.97, etaIL*pMax*0.62+8), text:'locus through the peaks', color:'#123b4a'}]});
+    fills:[{pts:[[0,0],[pMax, etaIL*pMax],[pMax,qMax*2],[0,qMax*2]], color:'#f6dcdc', alpha:0.5,
+            label:'above the line: past its peak, strength falls', at:[pMax*0.22, Math.min(qMax*0.9, etaIL*pMax*0.22+qMax*0.25)], labelColor:'#a8323d', optional:true}],
+    series:series, points:pts});
 }
 el('ilPsi').addEventListener('input', updateIL);
 
@@ -1460,45 +1579,28 @@ function updateSection3(){
   drawCaseChart(Mtc,ko,lam10,psi,sr);
 }
 function drawCaseChart(Mtc,ko,lam10,psi,sr){
-  var host=el('caseChart'); if(!host) return;
-  var cvp=prepCanvas(host, 320, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=56, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
   var xmin=-0.15, xmax=0.30, ymin=0, ymax=0.35;
-  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
-  function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
-  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  ctx.fillStyle='#eef7f2'; ctx.fillRect(ml,mt,X(PSI_DENSE_ENOUGH)-ml,ph);
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  for(var g=xmin;g<=xmax+1e-9;g+=0.05){ var gx=X(g); ctx.beginPath(); ctx.moveTo(gx,mt); ctx.lineTo(gx,mt+ph); ctx.stroke(); }
-  var yt=niceTicks(ymin,ymax,4);
-  yt.values.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
-  ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
-  ctx.beginPath(); ctx.moveTo(X(PSI_DENSE_ENOUGH),mt); ctx.lineTo(X(PSI_DENSE_ENOUGH),mt+ph); ctx.stroke(); ctx.setLineDash([]);
-  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
-  haloText(ctx,'ψ = −0.05', X(PSI_DENSE_ENOUGH)+3, mt+3, '#6b7880');
-  // Table 6.5, as published ranges
+  var theory=[], trend=[];
+  for(var v=xmin; v<=xmax+1e-9; v+=0.0025){ var y=srOverSigV(Mtc,ko,lam10,v); (v>lam10?theory:trend).push([v,y]); }
+  if(theory.length && trend.length) theory.unshift(trend[trend.length-1]);   // join the two branches
+  var series=[], pts=[];
   CASE_HISTORIES.forEach(function(c){
     var xm=(c.psiLo+c.psiHi)/2, ym=(c.srLo+c.srHi)/2;
-    ctx.strokeStyle='#9aa9ae'; ctx.lineWidth=1.3;
-    ctx.beginPath(); ctx.moveTo(X(c.psiLo),Y(ym)); ctx.lineTo(X(c.psiHi),Y(ym)); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(X(xm),Y(c.srLo)); ctx.lineTo(X(xm),Y(c.srHi)); ctx.stroke();
-    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(X(xm),Y(ym),3.5,0,7); ctx.fill();
+    series.push({pts:[[c.psiLo,ym],[c.psiHi,ym]], color:'#9aa9ae', w:1.3});
+    series.push({pts:[[xm,c.srLo],[xm,c.srHi]], color:'#9aa9ae', w:1.3});
+    pts.push({x:xm, y:ym, color:'#687a82', r:3.2});
   });
-  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2.6; ctx.beginPath();
-  for(var v=xmin;v<=xmax+1e-9;v+=0.002){ var s=srOverSigV(Mtc,ko,lam10,v), x=X(v), y=Y(s);
-    if(v===xmin) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
-  ctx.stroke();
-  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
-  ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,sr)),6,0,7); ctx.fill();
-  ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
-  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-  for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
-  ctx.font='10.5px Arial'; ctx.fillText('characteristic state parameter, ψk', ml+pw/2, mt+ph+20);
-  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  yt.values.forEach(function(v){ ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText("sr / σ′vo",0,0); ctx.restore();
+  series.push({pts:trend, color:'#123b4a', w:2.8, label:'case-history branch (\u03c8 \u2264 \u03bb10)', labelAt:0.25, labelColor:'#123b4a'});
+  series.push({pts:theory, color:'#1479b8', w:2.8, label:'critical-state branch (\u03c8 > \u03bb10)', labelAt:0.55, labelColor:'#0f5f93'});
+  var ySwitch=srOverSigV(Mtc,ko,lam10,lam10);
+  if(lam10<xmax) pts.push({x:lam10, y:ySwitch, color:'#fff', ring:'#123b4a', r:4.5, label:'switch at \u03c8 = \u03bb10 = '+lam10.toFixed(3), labelColor:'#123b4a'});
+  pts.push({x:psi, y:Math.min(ymax,sr), color:'#c64852', r:6, label:'you: sr/\u03c3\u2032vo = '+sr.toFixed(3), labelColor:'#a8323d'});
+  plotXY('caseChart', {h:320, xmin:xmin, xmax:xmax, ymin:ymin, ymax:ymax, xticks:5,
+    xlab:'characteristic state parameter, \u03c8k', ylab:"sr / \u03c3'vo",
+    regions:[{x0:xmin, x1:PSI_DENSE_ENOUGH, color:'#e3f3ea', label:'dense enough: \u03c8 < \u22120.05', labelColor:'#1f7a4c'},
+             {x0:PSI_DENSE_ENOUGH, x1:xmax, color:'#f9f1ef', label:'contractive range: flowslide-susceptible', labelColor:'#a8323d'}],
+    series:series, points:pts,
+    labels:[{x:0.215, y:0.05, text:'grey crosses: 11 real failures (Table 6.5), as published ranges', color:'#5b6b73', optional:true}]});
 }
 function updateRobertson(){
   var q=num('s3bQ'), sr=robertsonEq615(q);
@@ -1518,6 +1620,7 @@ function caseComparison(){
     return {c:c, psiMid:psiMid, obs:obs, pred:pred, ratio:obs>0?pred/obs:NaN};
   });
 }
+var caseCheckSel = 6;          // Nerlerk, the case the rest of the series leans on
 function updateCaseCheck(){
   var rows=caseComparison();
   var ratios=rows.map(function(r){ return r.ratio; }).filter(isFinite);
@@ -1530,58 +1633,50 @@ function updateCaseCheck(){
     '<div class="stat hi"><small>within a factor of 2</small><strong>'+within2+' of '+rows.length+'</strong></div>'+
     '<div class="stat"><small>median predicted/observed</small><strong>'+bias.toFixed(2)+'</strong></div>'+
     '<div class="stat"><small>'+(bias<1?'conservative on average':'unconservative on average')+'</small><strong style="font-size:12px">'+(bias<1?'under-predicts':'over-predicts')+'</strong></div>';
+  var sel=rows[caseCheckSel];
   el('fitNote').innerHTML =
     '<b>How the function does against the record.</b> Run at each case&rsquo;s own &lambda;<sub>10</sub> and the midpoint of its published &psi; range, the design function lands within a factor of two on <b>'+within2+' of '+rows.length+'</b> cases, with a geometric mean predicted/observed ratio of <b>'+bias.toFixed(2)+'</b>. '+
     (bias<1 ? 'On average it under-predicts the strength that was actually back-figured, which is the direction a design function should err.'
             : 'On average it over-predicts the back-figured strength, which is worth knowing before leaning on it.')+
-    ' Both M<sub>tc</sub> and K<sub>o</sub> come from the Section 7 sliders, so you can watch the whole comparison move as you change what you assume about the soil.';
+    ' Both M<sub>tc</sub> and K<sub>o</sub> come from the Section 9 sliders.'+
+    (sel ? '<br><b>Selected: '+sel.c.name+' ('+sel.c.year+').</b> Back-figured s<sub>r</sub>/&sigma;&prime;<sub>vo</sub> '+sel.c.srLo.toFixed(2)+'&ndash;'+sel.c.srHi.toFixed(2)+
+      ', predicted '+sel.pred.toFixed(3)+' &mdash; '+(sel.ratio<1 ? 'the function asks for <b>less</b> strength than the failure showed: the safe side.' : 'the function allows <b>more</b> strength than the failure showed: worth a second look.') : '');
   var tb=el('caseTableBody');
-  tb.innerHTML = rows.map(function(r){
+  tb.innerHTML = rows.map(function(r,i){
     var good = r.ratio>=0.5 && r.ratio<=2;
-    return '<tr'+(good?'':' class="off"')+'><td>'+r.c.name+' <span style="color:var(--muted);font-size:10px">'+r.c.year+'</span></td>'+
+    return '<tr data-ci="'+i+'" class="'+(i===caseCheckSel?'sel':'')+(good?'':' off')+'" title="Show this case on the chart"><td>'+r.c.name+' <span style="color:var(--muted);font-size:10px">'+r.c.year+'</span></td>'+
       '<td>'+r.c.psiLo.toFixed(2)+' to '+r.c.psiHi.toFixed(2)+'</td>'+
       '<td>'+r.c.srLo.toFixed(2)+'&ndash;'+r.c.srHi.toFixed(2)+'</td>'+
       '<td>'+r.c.lam10.toFixed(3)+'</td>'+
       '<td><b>'+r.pred.toFixed(3)+'</b></td>'+
       '<td>'+r.ratio.toFixed(2)+'</td></tr>';
   }).join('');
+  tb.querySelectorAll('tr').forEach(function(tr){
+    tr.addEventListener('click', function(){ caseCheckSel=+tr.dataset.ci; updateCaseCheck(); });
+  });
   drawResidChart(rows);
 }
 function drawResidChart(rows){
-  var host=el('residChart'); if(!host) return;
-  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
-  var lo=0, hi=0.30;
-  rows.forEach(function(r){ hi=Math.max(hi, r.obs*1.15, r.pred*1.15); });
-  function X(v){ return ml+pw*Math.max(0,Math.min(1,(v-lo)/(hi-lo))); }
-  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,(v-lo)/(hi-lo)))); }
-  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  // the factor-of-two envelope around equality
-  ctx.fillStyle='#e9b7bb'; ctx.globalAlpha=0.5; ctx.beginPath();
-  ctx.moveTo(X(lo),Y(lo)); ctx.lineTo(X(hi),Y(Math.min(hi,2*hi)));
-  ctx.lineTo(X(hi),Y(hi/2)); ctx.closePath(); ctx.fill();
-  ctx.globalAlpha=1;
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  var t=niceTicks(lo,hi,4);
-  t.values.forEach(function(v){ if(v<lo||v>hi) return;
-    ctx.beginPath(); ctx.moveTo(X(v),mt); ctx.lineTo(X(v),mt+ph); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(ml,Y(v)); ctx.lineTo(ml+pw,Y(v)); ctx.stroke(); });
-  ctx.strokeStyle='#123b4a'; ctx.lineWidth=2; ctx.beginPath();
-  ctx.moveTo(X(lo),Y(lo)); ctx.lineTo(X(hi),Y(hi)); ctx.stroke();
-  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
-  rows.forEach(function(r){
-    ctx.fillStyle='#1479b8'; ctx.beginPath(); ctx.arc(X(r.obs),Y(r.pred),5,0,7); ctx.fill();
-    ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke();
+  var need=0.1;
+  rows.forEach(function(r){ need=Math.max(need, r.c.srHi, r.pred); });
+  var f=stickyFrame('resid', need, need), hi=Math.max(f.x, f.y);
+  var series=[{pts:[[0,0],[hi,hi]], color:'#123b4a', w:2, label:'perfect agreement', labelAt:0.88, labelColor:'#123b4a'}];
+  var pts=[];
+  rows.forEach(function(r,i){
+    var on=i===caseCheckSel;
+    series.push({pts:[[r.c.srLo, r.pred],[r.c.srHi, r.pred]], color:on?'#123b4a':'#9fc3dc', w:on?2.4:1.4});
+    pts.push({x:r.obs, y:r.pred, id:i, color:on?'#c64852':'#1479b8', r:on?7:5, ring:on?'#123b4a':null,
+              label:on ? r.c.name+': observed '+r.obs.toFixed(2)+', predicted '+r.pred.toFixed(3) : null, labelColor:'#123b4a'});
   });
-  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-  t.values.forEach(function(v){ if(v<lo||v>hi) return; var lab=v.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
-  ctx.font='10.5px Arial'; ctx.fillText("observed sr / σ′vo", ml+pw/2, mt+ph+20);
-  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  t.values.forEach(function(v){ if(v<lo||v>hi) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
-  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
-  ctx.fillText("predicted sr / σ′vo",0,0); ctx.restore();
+  plotXY('residChart', {h:300, xmin:0, xmax:hi, ymin:0, ymax:hi,
+    xlab:"observed sr / \u03c3'vo (back-figured from the failure)", ylab:'predicted by the design function',
+    fills:[{pts:[[0,0],[hi,hi/2],[hi,Math.min(hi,2*hi)],[hi/2,hi],[0,0]], color:'#e9b7bb', alpha:0.35},
+           {pts:[[0,0],[hi,0],[hi,hi]], color:'#e3f3ea', alpha:0.45, label:'below the line: asks for less strength than failed \u2014 safe side', at:[hi*0.68, hi*0.1], labelColor:'#1f7a4c'},
+           {pts:[[0,0],[hi,hi],[0,hi]], color:'#fbe7e3', alpha:0.45, label:'above: allows more than failed', at:[hi*0.25, hi*0.88], labelColor:'#a8323d'}],
+    series:series, points:pts,
+    labels:[{x:hi*0.8, y:hi*0.47, text:'pink wedge: within a factor of 2', color:'#8e2b35', optional:true}]});
 }
+onChartPick('residChart', function(id){ caseCheckSel=id; updateCaseCheck(); });
 
 // ---------------------------------------------------------------- Section 3 trends
 // Table 6.1 of the book, from Bishop (1971): consolidated undrained tests on cohesionless
@@ -1612,62 +1707,73 @@ function renderBishop(){
       '<td>'+etaFromPhi(r.phif).toFixed(2)+'</td><td>'+(r.IB==null?'&ndash;':(100*r.IB).toFixed(0)+'%')+'</td></tr>';
   }).join('');
   el('bishopBody').querySelectorAll('tr').forEach(function(tr){
-    tr.addEventListener('click', function(){ bishopSel=+tr.dataset.bi; renderBishop(); drawBishopChart(); });
+    tr.addEventListener('click', function(){ bishopSel=+tr.dataset.bi; renderBishop(); });
   });
   drawBishopChart();
 }
 function drawBishopChart(){
-  var sel=BISHOP_1971[bishopSel];
+  var sel=BISHOP_1971[bishopSel], xs=25, xe=38, ys=8, ye=38;
   var pts=BISHOP_1971.map(function(r,i){
-    return {x:r.phir, y:r.phif, color:(r.IB!=null && r.IB>=0.5)?'#c64852':'#1479b8', r:(i===bishopSel?7:4.5),
-            label:(i===bishopSel? r.phif.toFixed(1)+'\u00b0':'')};
+    var on=i===bishopSel;
+    return {x:r.phir, y:r.phif, id:i, color:(r.IB!=null && r.IB>=0.5)?'#c64852':'#1479b8', r:on?7.5:4.5, ring:on?'#123b4a':null,
+            label: on ? r.soil.replace(/ \(.*\)/,'')+', '+r.state.toLowerCase()+' \u2014 '+(r.IB==null?'IB not reported':'lost '+(100*r.IB).toFixed(0)+'% after the peak') : null,
+            labelColor:'#123b4a'};
   });
-  plotXY('bishopChart', {h:230, xmin:25, xmax:38, ymin:8, ymax:38, xticks:4, yticks:4,
-    xlab:'critical-state friction angle \u03c6\u2032r (degrees)', ylab:'mobilized \u03c6\u2032 at peak (degrees)',
-    series:[{pts:[[25,25],[38,38]], color:'#123b4a', w:2, dash:[6,3]}],
-    points:pts,
-    labels:[{x:26.2, y:35.5, text:'peak = critical state', color:'#123b4a'}]});
+  var gapDeg=sel.phir-sel.phif;
+  plotXY('bishopChart', {h:250, xmin:xs, xmax:xe, ymin:ys, ymax:ye, xticks:4, yticks:4,
+    xlab:'friction the soil ends with, \u03c6\u2032r (degrees) \u2192 sets sr', ylab:'friction used at the peak, \u03c6\u2032f',
+    fills:[{pts:[[xs,ys],[xe,ys],[xe,xe],[xs,xs]], color:'#f6dcdc', alpha:0.7,
+            label:'below: peaked early \u2014 pore pressure up, strength then falls to sr', at:[xs+(xe-xs)*0.60, ys+1.3], labelColor:'#8e2b35'},
+           {pts:[[xs,xs],[xe,xe],[xe,ye],[xs,ye]], color:'#dff1e7', alpha:0.8,
+            label:'above: dilating, strength rises', at:[xs+2.6, ye-2.2], labelColor:'#1f7a4c'}],
+    series:[{pts:[[xs,xs],[xe,xe]], color:'#123b4a', w:2, dash:[6,3], label:'peak = critical state: nothing lost', labelAt:0.78, labelColor:'#123b4a'}],
+    arrows: Math.abs(gapDeg)>0.6 ? [{x1:sel.phir, y1:sel.phif, x2:sel.phir, y2:sel.phir, color:gapDeg>0?'#a8323d':'#1f7a4c', dash:[3,2]}] : [],
+    labels: Math.abs(gapDeg)>0.6 ? [{x:sel.phir, y:(sel.phif+sel.phir)/2,
+      text: gapDeg>0 ? gapDeg.toFixed(1)+'\u00b0 of friction still unused at the peak' : 'used '+(-gapDeg).toFixed(1)+'\u00b0 more than critical',
+      color:gapDeg>0?'#a8323d':'#1f7a4c'}] : [],
+    points:pts});
   el('bishopNote').innerHTML =
-    '<b>'+sel.soil+', '+sel.state.toLowerCase()+', '+sel.test+'</b> at '+sel.p+'. Peak strength ratio '+sel.su.toFixed(3)+
-    ', mobilized friction at peak '+sel.phif.toFixed(1)+'&deg; against a critical-state '+sel.phir+'&deg;, so the stress ratio at the peak is &eta; = <b>'+
-    etaFromPhi(sel.phif).toFixed(2)+'</b>'+
-    (sel.IB==null ? ' (the source reports no brittleness index for this test).'
-                  : ', and <b>'+(100*sel.IB).toFixed(0)+'% of the strength was lost</b> afterwards.')+
-    ' Every point below the dashed line reached its peak while mobilizing <i>less</i> friction than the same soil ends with &mdash; the pore pressure got there first.';
+    '<b>'+sel.soil+', '+sel.state.toLowerCase()+', '+sel.test+'</b> at '+sel.p+'. At the peak it was using '+sel.phif.toFixed(1)+'&deg; of friction against the '+sel.phir+
+    '&deg; it ends with at critical state, so the stress ratio at the peak was &eta; = <b>'+etaFromPhi(sel.phif).toFixed(2)+'</b>. '+
+    (gapDeg>0.6
+      ? 'The '+gapDeg.toFixed(1)+'&deg; still unused is the effective stress pore pressure had already taken; '
+        +(sel.IB==null ? 'the source gives no brittleness index for this test.' : 'after the peak it kept rising, and <b>'+(100*sel.IB).toFixed(0)+'% of the strength was lost</b> on the way to s<sub>r</sub>'+(sel.IB>=0.5?' &mdash; flowslide territory.':'.'))
+      : gapDeg<-0.6
+        ? 'It used more friction than critical at its peak because it was dilating: it strengthens as it strains, so there is no flowslide to have.'
+        : 'Peak and critical state coincide: there is no strength to lose after the peak.');
 }
+onChartPick('bishopChart', function(id){ bishopSel=id; renderBishop(); });
+
 function drawTrendCharts(Mtc,lam10,psi,su){
-  var le=lamE(lam10), xr=psi/le;
-  var xmax=8, resid=[], ibCurve=[];
+  var le=lamE(lam10), xr=Math.max(0,psi/le), xmax=8, resid=[], ibCurve=[];
   for(var i=0;i<=80;i++){
-    var x=xmax*i/80;
-    var sr=0.5*Mtc*Math.exp(-x);            // Eq. 6.4 written on psi/lambda_e directly
+    var x=xmax*i/80, sr=0.5*Mtc*Math.exp(-x);            // Eq. 6.4 written on psi/lambda_e directly
     resid.push([x, sr]);
     ibCurve.push([x, Math.max(0, Math.min(1, 1-sr/su))]);
   }
-  var nc=wrothNC(Mtc);
-  plotXY('trendChart', {h:250, xmin:0, xmax:xmax, ymin:0, ymax:0.7,
-    xlab:'\u03c8o / \u03bbe', ylab:"strength ratio su/p'o and sr/p'o",
-    bands:[{lo:0.15, hi:0.30, color:'#cfe8da', alpha:0.65}],
-    series:[{pts:resid, color:'#1479b8', w:2.6},
-            {pts:[[0,su],[xmax,su]], color:'#268160', w:1.8, dash:[5,3]},
-            {pts:[[0.69,0],[0.69,0.7]], color:'#8a97a0', w:1.2, dash:[3,3]}],
-    points:[{x:0.69, y:nc, color:'#7653a6', label:'Wroth NC clay '+nc.toFixed(2)},
-            {x:Math.max(0,xr), y:0.5*Mtc*Math.exp(-Math.max(0,xr)), color:'#c64852', label:'you are here'}],
-    labels:[{x:0.8, y:0.68, text:'\u03c8o = 0.69\u03bbe: normal consolidation', color:'#6b7880'},
-            {x:xmax*0.55, y:0.31, text:'peak band, Fig. 6.10', color:'#1f7a4c'}]});
+  var nc=wrothNC(Mtc), srNow=0.5*Mtc*Math.exp(-xr);
+  plotXY('trendChart', {h:190, xmin:0, xmax:xmax, ymin:0, ymax:0.7, mb:38,
+    xlab:'\u03c8o / \u03bbe', ylab:"strength / p'o",
+    regions:[{x0:0,x1:0.7,color:'#e8f4ec',label:'peak \u2248 residual',labelColor:'#1f7a4c'},
+             {x0:0.7,x1:xmax,color:'#faf0ee',label:'residual falls below the peak: brittle',labelColor:'#a8323d'}],
+    bands:[{lo:0.15, hi:0.30, color:'#cfe8da', alpha:0.7, label:'peak range of loose sands (Fig. 6.10)', labelColor:'#1f7a4c'}],
+    series:[{pts:[[0,su],[xmax,su]], color:'#268160', w:1.4, dash:[5,3]},
+            {pts:resid, color:'#1479b8', w:2.6, label:'residual (Eq. 6.4)', labelAt:0.12, labelColor:'#0f5f93'}],
+    points:[{x:0.69, y:nc, color:'#7653a6', label:'NC clay '+nc.toFixed(2)+' (Eq. 6.3)'},
+            {x:xr, y:srNow, color:'#c64852', label:'you', labelColor:'#a8323d'}]});
   var ibPts=BISHOP_1971.filter(function(r){ return r.IB!=null; }).map(function(r){
     // the table gives no state, so each measured IB is placed at the psi/lambda_e that Eq. 6.4
     // would need to produce it at this peak strength -- an inversion, not a published coordinate
-    var srR=r.su*(1-r.IB);
-    var x=srR>0 ? Math.log(0.5*Mtc/srR) : 8;
-    return {x:Math.max(0,Math.min(8,x)), y:r.IB, color:'#687a82', r:4.5};
+    var srR=r.su*(1-r.IB), x=srR>0 ? Math.log(0.5*Mtc/srR) : 8;
+    return {x:Math.max(0,Math.min(8,x)), y:r.IB, color:'#687a82', r:4};
   });
-  plotXY('ibChart', {h:250, xmin:0, xmax:xmax, ymin:0, ymax:1,
-    xlab:'\u03c8o / \u03bbe', ylab:'brittleness index IB',
-    series:[{pts:ibCurve, color:'#1479b8', w:2.6},
-            {pts:[[0.7,0],[0.7,1]], color:'#8a97a0', w:1.3, dash:[3,3]}],
-    points:ibPts.concat([{x:Math.max(0,xr), y:Math.max(0,Math.min(1,1-(0.5*Mtc*Math.exp(-Math.max(0,xr)))/su)), color:'#c64852', r:6}]),
-    labels:[{x:0.85, y:0.97, text:'brittleness begins at 0.7', color:'#6b7880'}]});
+  var ibNow=Math.max(0,Math.min(1,1-srNow/su));
+  plotXY('ibChart', {h:190, xmin:0, xmax:xmax, ymin:0, ymax:1, mb:38,
+    xlab:'\u03c8o / \u03bbe', ylab:'brittleness IB',
+    regions:[{x0:0,x1:0.7,color:'#e8f4ec',label:'ductile',labelColor:'#1f7a4c'},
+             {x0:0.7,x1:xmax,color:'#faf0ee',label:'brittle: strength is lost after the peak',labelColor:'#a8323d'}],
+    series:[{pts:ibCurve, color:'#1479b8', w:2.6, label:'IB at your peak', labelAt:0.55, labelColor:'#0f5f93', labelOptional:true}],
+    points:ibPts.concat([{x:xr, y:ibNow, color:'#c64852', r:6, label:'you: IB = '+ibNow.toFixed(2), labelColor:'#a8323d'}])});
 }
 
 // ---------------------------------------------------------------- Section 8: constant deviator
@@ -1715,23 +1821,27 @@ function updateCSD(){
   drawCSDChart({p0:p0,q:q,pNow:pNow,etaIL:etaIL,collapse:collapse});
 }
 function drawCSDChart(o){
-  var pMax=o.p0*1.15, qMax=Math.max(o.q*2.2, 1.26*o.p0*0.6);
-  var series=[{pts:[[0,0],[pMax, Math.min(qMax,1.26*pMax)]], color:'#268160', w:2},
-              {pts:[[0,0],[pMax, Math.min(qMax,o.etaIL*pMax)]], color:'#123b4a', w:2, dash:[7,4]},
-              {pts:[[o.p0,o.q],[o.pNow,o.q]], color:'#e38a22', w:3}];
-  var pts=[{x:o.p0, y:o.q, color:'#8a97a0', r:4.5, label:'start'},
-           {x:o.pNow, y:o.q, color:'#e38a22', r:5.5}];
+  // The frame depends on p'o alone, so Ko moves the path up and down, the state moves the locus,
+  // and the water moves the point -- instead of every change rescaling the axes.
+  var f=stickyFrame('csd', o.p0*1.15, o.p0*1.1), pMax=f.x, qMax=f.y;
+  var series=[{pts:[[0,0],[pMax*1.3, 1.26*pMax*1.3]], color:'#268160', w:2, label:'critical state line', labelAt:0.9, labelColor:'#1d6b4f'},
+              {pts:[[0,0],[pMax*1.3, o.etaIL*pMax*1.3]], color:'#123b4a', w:2, dash:[7,4], label:'instability locus \u03b7 = '+o.etaIL.toFixed(2), labelAt:0.55, labelColor:'#123b4a'},
+              {pts:[[o.p0,o.q],[o.pNow,o.q]], color:'#e38a22', w:3.2}];
+  var pts=[{x:o.p0, y:o.q, color:'#8a97a0', r:5, label:'the slope today', labelColor:'#4c5b62'},
+           {x:o.pNow, y:o.q, color:'#e38a22', r:6, label:'now: \u03b7 = '+(o.q/o.pNow).toFixed(2), labelColor:'#b06d12'}];
+  var arrows = o.p0-o.pNow > pMax*0.03 ? [{x1:o.p0, y1:o.q*1.12, x2:o.pNow, y2:o.q*1.12, color:'#b06d12'}] : [];
+  var labels = [{x:(o.p0+o.pNow)/2, y:o.q*1.12, text: o.p0-o.pNow > pMax*0.03 ? 'water rises: p\u2032 falls, load unchanged' : 'raise the water with the slider', color:'#b06d12'}];
   if(o.collapse){
     var S=o.collapse.S, path=[];
     for(var j=0;j<S.p.length;j+=Math.max(1,Math.floor(S.p.length/250))) path.push([S.p[j],S.q[j]]);
-    series.push({pts:path, color:'#c64852', w:2.4});
-    pts.push({x:o.collapse.pEnd, y:o.collapse.qEnd, color:'#c64852', r:5, label:'strength left'});
+    series.push({pts:path, color:'#c64852', w:2.6, label:'collapse: strength runs out', labelAt:0.5, labelColor:'#a8323d'});
+    pts.push({x:o.collapse.pEnd, y:o.collapse.qEnd, color:'#c64852', r:5, label:'strength left', labelColor:'#a8323d'});
   }
   plotXY('csdChart', {h:290, xmin:0, xmax:pMax, ymin:0, ymax:qMax,
     xlab:"mean effective stress p', kPa", ylab:'deviator stress q, kPa',
-    series:series, points:pts,
-    labels:[{x:pMax*0.45, y:Math.min(qMax*0.96, o.etaIL*pMax*0.45+6), text:'instability locus', color:'#123b4a'},
-            {x:(o.p0+o.pNow)/2, y:o.q*1.06, text:'water rising, load unchanged', color:'#b06d12', align:'center'}]});
+    fills:[{pts:[[0,0],[pMax*1.3, o.etaIL*pMax*1.3],[pMax*1.3,qMax*3],[0,qMax*3]], color:'#f6dcdc', alpha:0.55,
+            label:'unstable: above the locus the soil can only lose strength', at:[pMax*0.3, Math.min(qMax*0.93, o.etaIL*pMax*0.3+qMax*0.3)], labelColor:'#a8323d'}],
+    series:series, arrows:arrows, points:pts, labels:labels});
 }
 ['csdPsi','csdKo','csdP0','csdRise'].forEach(function(id){ el(id).addEventListener('input', updateCSD); });
 
@@ -1754,21 +1864,16 @@ function updateSS(){
   drawSSChart(de, lam10);
 }
 function drawSSChart(de, lam10){
-  var xs=[], lams=[0.02,0.05,0.10,0.20], series=[], maxY=1;
-  function curve(l){
-    var pts=[];
-    for(var i=0;i<=60;i++){ var d=0.002+ (0.05-0.002)*i/60; pts.push([d, Math.exp(d/lamE(l))]); }
-    return pts;
-  }
-  lams.forEach(function(l){ series.push({pts:curve(l), color:'#8a97a0', w:1.4, dash:[5,3]}); });
-  series.push({pts:curve(lam10), color:'#1479b8', w:2.8});
-  var f=Math.exp(de/lamE(lam10));
-  plotXY('ssChart', {h:260, xmin:0, xmax:0.05, ymin:1, ymax:Math.max(4, Math.min(12, f*1.3)),
-    xlab:'error in void ratio, \u0394e', ylab:'factor on the estimated residual strength',
+  var ymax=8, lams=[0.02,0.05,0.10,0.20], series=[];
+  function curve(l){ var pts=[]; for(var i=0;i<=80;i++){ var d=0.002+(0.05-0.002)*i/80; pts.push([d, Math.exp(d/lamE(l))]); } return pts; }
+  lams.forEach(function(l){ series.push({pts:curve(l), color:'#b3bfc5', w:1.4, dash:[5,3], label:'\u03bb10 = '+l.toFixed(2), labelAt:l<0.05?0.12:0.95, labelColor:'#6b7880', labelOptional:true}); });
+  series.push({pts:[[0,2],[0.05,2]], color:'#c64852', w:1.2, dash:[3,3], label:'a factor of 2: the answer doubles', labelAt:0.9, labelColor:'#a8323d'});
+  series.push({pts:curve(lam10), color:'#1479b8', w:2.8, label:'your soil, \u03bb10 = '+lam10.toFixed(3), labelAt:0.5, labelColor:'#0f5f93'});
+  var fct=Math.exp(de/lamE(lam10));
+  plotXY('ssChart', {h:260, xmin:0, xmax:0.05, ymin:1, ymax:ymax,
+    xlab:'error in void ratio, \u0394e', ylab:'factor on the residual strength',
     series:series,
-    points:[{x:de, y:Math.min(f, Math.max(4, Math.min(12, f*1.3))), color:'#c64852', label:'\u00d7'+f.toFixed(2)}],
-    labels:[{x:0.042, y:Math.min(Math.exp(0.042/lamE(0.02)), Math.max(4, Math.min(12,f*1.3)))*0.97, text:'\u03bb10 = 0.02', color:'#6b7880'},
-            {x:0.042, y:Math.exp(0.042/lamE(0.20))*1.05, text:'\u03bb10 = 0.20', color:'#6b7880'}]});
+    points:[{x:de, y:Math.min(fct, ymax), color:'#c64852', r:6, label: fct>ymax ? '\u00d7'+fct.toFixed(1)+' (off the chart)' : '\u00d7'+fct.toFixed(2)+' for \u0394e = '+de.toFixed(3), labelColor:'#a8323d'}]});
 }
 ['ssErr','ssLam'].forEach(function(id){ el(id).addEventListener('input', updateSS); });
 
@@ -1793,22 +1898,20 @@ function updateDense(){
 }
 function drawDenseChart(ko){
   var Mtc=num('s3M'), k=num('s3K'), lam10=num('s3L');
-  var xmin=-0.15, xmax=0.10, pts=[];
+  var xmin=-0.15, xmax=0.10, ymax=0.30, pts=[];
   for(var v=xmin; v<=xmax+1e-9; v+=0.002) pts.push([v, srOverSigV(Mtc,k,lam10,v)]);
-  var ymax=0.30;
-  plotXY('denseChart', {h:280, xmin:xmin, xmax:xmax, ymin:0, ymax:ymax,
-    xlab:'state parameter \u03c8', ylab:"sr / \u03c3'vo from the design function",
-    bands:[],
-    series:[{pts:pts, color:'#123b4a', w:2.6},
-            {pts:[[PSI_LAB_TC,0],[PSI_LAB_TC,ymax]], color:'#268160', w:1.6, dash:[4,3]},
-            {pts:[[PSI_SS,0],[PSI_SS,ymax]], color:'#c64852', w:1.6, dash:[4,3]},
-            {pts:[[PSI_FULLY_CONTRACTIVE,0],[PSI_FULLY_CONTRACTIVE,ymax]], color:'#8a97a0', w:1.4, dash:[3,3]}],
-    points:[],
-    labels:[{x:PSI_LAB_TC, y:ymax*0.96, text:'\u03c8 = \u22120.08 laboratory', color:'#1f7a4c'},
-            {x:PSI_SS, y:ymax*0.80, text:'\u03c8 = \u22120.05 design', color:'#a8323d'},
-            {x:PSI_FULLY_CONTRACTIVE, y:ymax*0.64, text:'\u03c8 = +0.03 fully contractive', color:'#6b7880'},
-            {x:-0.135, y:ymax*0.30, text:'dilatant', color:'#1f7a4c'},
-            {x:-0.045, y:ymax*0.22, text:'lightly dilatant: the awkward range', color:'#a8323d'}]});
+  plotXY('denseChart', {h:280, xmin:xmin, xmax:xmax, ymin:0, ymax:ymax, xticks:5,
+    xlab:'state parameter \u03c8', ylab:"sr / \u03c3'vo (Section 9's design function)",
+    regions:[{x0:xmin, x1:PSI_LAB_TC, color:'#dff1e7', label:'dilative: no damaging loss', labelColor:'#1f7a4c'},
+             {x0:PSI_LAB_TC, x1:PSI_FULLY_CONTRACTIVE, color:'#f7e3e5', label:'lightly dilative: the awkward range', labelColor:'#a8323d'},
+             {x0:PSI_FULLY_CONTRACTIVE, x1:xmax, color:'#f3d3d6', label:'contractive all the way', labelColor:'#8e2b35'}],
+    series:[{pts:[[PSI_LAB_TC,0],[PSI_LAB_TC,ymax]], color:'#268160', w:1.6, dash:[4,3]},
+            {pts:[[PSI_SS,0],[PSI_SS,ymax]], color:'#c64852', w:2, dash:[4,3]},
+            {pts:[[PSI_FULLY_CONTRACTIVE,0],[PSI_FULLY_CONTRACTIVE,ymax]], color:'#8a97a0', w:1.4, dash:[3,3]},
+            {pts:pts, color:'#123b4a', w:2.6, label:'residual strength from the design function', labelAt:0.62, labelColor:'#123b4a'}],
+    labels:[{x:PSI_LAB_TC, y:ymax*0.55, text:'\u22120.08: laboratory (isotropic)', color:'#1f7a4c'},
+            {x:PSI_SS, y:ymax*0.40, text:'\u22120.05: carried into design', color:'#a8323d'},
+            {x:PSI_FULLY_CONTRACTIVE, y:ymax*0.25, text:'+0.03: fully contractive', color:'#5b6b73'}]});
 }
 el('deKo').addEventListener('input', updateDense);
 
@@ -1839,7 +1942,7 @@ var NOTATION=[
 ];
 function renderNotation(){
   el('notationGrid').innerHTML = NOTATION.map(function(n){
-    return '<button type="button" class="notation-card" data-goto="'+n.goto+'"><b>'+n.sym+'</b>'+n.def+'</button>';
+    return '<button type="button" class="notation-card" data-goto="'+n.goto+'"><b>'+n.sym+'</b><small>'+n.def+'</small></button>';
   }).join('');
   el('notationGrid').querySelectorAll('.notation-card').forEach(function(b){
     b.addEventListener('click', function(){
@@ -1999,8 +2102,8 @@ el('s3bQ').addEventListener('input', updateRobertson);
 renderCasePicker(); renderCaseDetail(); renderNotation(); renderGlossary(); renderNsuPresets(); renderBishop();
 updateSection1(); updateUndrainedPath(); updateNsu(); updateHIr(); updateIL(); updateCSD(); updateSection3(); updateRobertson(); updateCaseCheck(); updateSS(); updateDense();
 
-Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
-document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
+Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');});});
+document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Labels on the chart say what each shaded area means; the figure-reading button explains how to use it.';l.appendChild(n);}});
 
 </script>
 <script>
@@ -2559,10 +2662,12 @@ window.runModule3SelfTests = function(){
     st.innerHTML =
       '<button type="button" class="alt" id="pgPrev"'+(cur===0?' disabled':'')+'>&larr; '+(cur>0?PAGES[cur-1].label:'')+'</button>'+
       '<span class="page-label">Page '+(cur+1)+' of '+PAGES.length+' &middot; '+PAGES[cur].label+'</span>'+
-      '<button type="button" id="pgNext"'+(cur===PAGES.length-1?' disabled':'')+'>'+(cur<PAGES.length-1?PAGES[cur+1].label:'')+' &rarr;</button>';
+      (cur<PAGES.length-1
+        ? '<button type="button" id="pgNext">'+PAGES[cur+1].label+' &rarr;</button>'
+        : '<a class="next-module" id="pgNext" href="jb-cyclic-liquefaction-lab.html">Module 4: cyclic liquefaction &rarr;</a>');
     var p=document.getElementById('pgPrev'), n=document.getElementById('pgNext');
     if(p) p.addEventListener('click', function(){ showPage(cur-1); });
-    if(n) n.addEventListener('click', function(){ showPage(cur+1); });
+    if(n && n.tagName==='BUTTON') n.addEventListener('click', function(){ showPage(cur+1); });
     var fill=document.getElementById('readingProgress');
     if(fill) fill.style.width=(100*(cur+1)/PAGES.length)+'%';
     document.querySelectorAll('.sticky-nav a[href^="#"]').forEach(function(a){
