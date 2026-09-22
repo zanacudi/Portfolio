@@ -540,7 +540,7 @@ body{padding-bottom:54px}
 <div id="quizSlotD"></div>
 </div>
 
-<div class="warning"><b>What this simulator is, and where it disagrees with the book.</b> It integrates NorSand's published equations &mdash; the yield surface, the hardening limit (Eq. 3.38), the dimensionless hardening law (Eq. 3.40), stress&ndash;dilatancy D<sup>p</sup> = M<sub>i</sub>&minus;&eta;, and Eqs. 6.6&ndash;6.8 for the undrained condition &mdash; with an explicit forward-Euler step and <b>without</b> the extra cap-crossing term Appendix C adds for rapidly falling p&prime;. It reproduces both of the book's stated directions (stiffer elasticity &rarr; weaker peak and more pore pressure; stiffer plastic modulus &rarr; stronger peak and a sharper drop). It does not reproduce every number: for Erksak test G609 the measured peak came at a stress ratio of &eta;<sub>L</sub>=0.62, while these equations at the book's quoted fit parameters peak nearer &eta;&asymp;1. Treat the curves as the mechanism, not as a replacement for the book's own spreadsheet.</div>
+<div class="warning"><b>What this simulator is, and where it disagrees with the book.</b> Every run starts on its yield surface. The book's fits add a little over-consolidation (R&asymp;1.15&ndash;1.2), which in these equations only adds a short elastic step at the very start &mdash; a straight vertical rise and a corner on the stress path &mdash; so it is left out here. It integrates NorSand's published equations &mdash; the yield surface, the hardening limit (Eq. 3.38), the dimensionless hardening law (Eq. 3.40), stress&ndash;dilatancy D<sup>p</sup> = M<sub>i</sub>&minus;&eta;, and Eqs. 6.6&ndash;6.8 for the undrained condition &mdash; with an explicit forward-Euler step and <b>without</b> the extra cap-crossing term Appendix C adds for rapidly falling p&prime;. It reproduces both of the book's stated directions (stiffer elasticity &rarr; weaker peak and more pore pressure; stiffer plastic modulus &rarr; stronger peak and a sharper drop). It does not reproduce every number: for Erksak test G609 the measured peak came at a stress ratio of &eta;<sub>L</sub>=0.62, while these equations at the book's quoted fit parameters peak nearer &eta;&asymp;1. Treat the curves as the mechanism, not as a replacement for the book's own spreadsheet.</div>
 </div>
 
 <div class="card" id="collapse-surface">
@@ -1328,14 +1328,14 @@ function drawPathChart(r, o){
 // The book's own calibrations. Erksak is Chapter 6's recalibration (Gamma=0.817, chi_tc=3.8);
 // N is not published for Erksak, so 0.30 is used as a literature-typical value, as in Module 1.
 var NSU_PRESETS = [
- {key:'L601',  name:'Erksak L601 &mdash; lightly contractive', psi0:0.025, p0:400, H:250, Ir:170, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.15,
-  note:'Fig. 6.19a. The book fits this test with H=250, I<sub>r</sub>=170 and a little over-consolidation (R=1.15).'},
- {key:'L609',  name:'Erksak L609 &mdash; the very loose one', psi0:0.070, p0:500, H:140, Ir:140, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.15,
+ {key:'L601',  name:'Erksak L601 &mdash; lightly contractive', psi0:0.025, p0:400, H:250, Ir:170, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.0,
+  note:'Fig. 6.19a. The book fits this test with H=250 and I<sub>r</sub>=170.'},
+ {key:'L609',  name:'Erksak L609 &mdash; the very loose one', psi0:0.070, p0:500, H:140, Ir:140, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.0,
   note:'Fig. 6.19b, the loosest clean-sand liquefaction test in the book\u2019s database &mdash; the same sample family as G609 in Section 3.'},
- {key:'C634',  name:'Erksak C634 &mdash; lightly dilatant', psi0:-0.080, p0:600, H:300, Ir:250, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.20,
+ {key:'C634',  name:'Erksak C634 &mdash; lightly dilatant', psi0:-0.080, p0:600, H:300, Ir:250, Mtc:1.26, lam10:0.031, chitc:3.8, N:0.30, R:1.0,
   note:'Fig. 6.19c. Nothing about the model changes &mdash; only the state. The path turns the other way.'},
- {key:'guindon', name:'Guindon silty sand CIU-03 (33% fines)', psi0:0.065, p0:400, H:80, Ir:150, Mtc:1.25, lam10:0.046, chitc:6.0, N:0.50, R:1.15,
-  note:'Fig. 6.26\u2019s soil: &lambda;<sub>10</sub>=0.046, M<sub>tc</sub>=1.25, N=0.5, &chi;=6, OCR=1.15, &nu;=0.2, &psi;=+0.065.'}
+ {key:'guindon', name:'Guindon silty sand CIU-03 (33% fines)', psi0:0.065, p0:400, H:80, Ir:150, Mtc:1.25, lam10:0.046, chitc:6.0, N:0.50, R:1.0,
+  note:'Fig. 6.26\u2019s soil: &lambda;<sub>10</sub>=0.046, M<sub>tc</sub>=1.25, N=0.5, &chi;=6, &nu;=0.2, &psi;=+0.065.'}
 ];
 var nsuPreset = 1;
 function nsuInputs(){
@@ -1415,7 +1415,7 @@ function drawNsuCharts(r,o){
   // shape), and only re-frames when a curve no longer fits or has shrunk to a sliver. A loose
   // sample peaks inside the first 1% of strain, so the strain axis is sized to the peak.
   var eqRun=S.eq[n-1]||1;
-  var fe=stickyFrame('nsuStrain', r.turned ? Math.min(eqRun, Math.max(5, r.eqPeak*8)) : eqRun, 1);
+  var fe=stickyFrame('nsuStrain', r.turned ? Math.min(eqRun, Math.max(1, r.eqPeak*10)) : eqRun, 1);   // the peak sits a tenth of the way in, so its shape reads
   var eqMax=fe.x;
   var fq=stickyFrame('nsuQ', 1, qMax), fp=stickyFrame('nsuP', pMax, qMax);
   var fu=stickyFrame('nsuU', 1, Math.max(1,uMax), uMin), fh=stickyFrame('nsuEta', 1, Math.max(etaMax, o.Mtc));
