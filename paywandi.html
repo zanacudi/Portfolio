@@ -2285,16 +2285,22 @@ function wireConn(conn, seat, outgoing) {
     closeOtherAttempts(seat, rec.conn);   // one link is enough: the rest would only hold connections open
     clearTimeout(rec.graceTimer);
     rec.openedAt = Date.now();
-    if (sidOf(conn)) rec.sid = sidOf(conn);
+    // Metadata on a connection we dialled is the metadata *we* sent, not theirs: PeerJS hands back
+    // the options we passed. Reading it here stamped our own name and session id onto the person we
+    // called -- their tile briefly carried our name, and rec.sid, which decides whether a second
+    // connection is a retry or a new occupant, was our own id. Only an incoming link carries theirs.
+    if (!outgoing) {
+      if (sidOf(conn)) rec.sid = sidOf(conn);
+      rec.name = cleanName(conn.metadata?.name) || rec.name || 'Guest';
+    } else if (!rec.name) rec.name = 'Guest';              // their real name arrives with their hello
     rec.askedVideo = undefined;                           // tell them again what we want to see, on this new link
-    rec.name = cleanName(conn.metadata?.name) || rec.name || 'Guest';
     renderTileInfo(rec);
     send(rec, helloMsg());
     send(rec, { t: 'att', log: [...att.values()] });
     if (outgoing && !callHealthy(rec.call)) {             // a data link rebuilt under a working call keeps that call
       const call = peer.call(conn.peer, outgoingStream(), { metadata: { name: myName, sid: mySession }, sdpTransform: voiceSdp });
       dbgLog('call-start', seat, call.connectionId);
-      wireCall(call, seat);
+      wireCall(call, seat, true);                        // our own metadata: do not read it back as theirs
     }
     updateStatus();
   });
@@ -2328,11 +2334,11 @@ function onIncomingCall(call) {
   if (seat < 0 || seat <= mySeat) { call.close(); return; }
   call.answer(outgoingStream(), { sdpTransform: voiceSdp });
   dbgLog('call-answered', seat, call.connectionId);
-  wireCall(call, seat);
+  wireCall(call, seat, false);
 }
-function wireCall(call, seat) {
+function wireCall(call, seat, mine) {
   const rec = ensurePeer(seat, call.peer);
-  if (sidOf(call)) rec.sid = sidOf(call);
+  if (!mine && sidOf(call)) rec.sid = sidOf(call);      // as wireConn: only an incoming call carries theirs
   call.__born = Date.now();
   // Only the higher seat starts calls, and only when it has no working one (wireConn), so a new call
   // arriving here is that seat's decision: take it, and retire the old one.
