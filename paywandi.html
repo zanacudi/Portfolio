@@ -1160,7 +1160,10 @@ $('otherMeetForm').addEventListener('submit', e => {
 
 /* ------------------------------------------------------------------ media --- */
 let micTrack = null, camTrack = null, screenTrack = null;
-let micOn = true, camOn = true, facing = 'user';
+// Everyone joins muted with the camera off, whatever the size of the call. Turning either on is a
+// deliberate act, in the lobby or on the bar. Nothing is sent until then.
+let micOn = false, camOn = false, facing = 'user';
+let camAvailable = false;            // a camera exists and was allowed, even while it is released
 let audioCtx = null, silentTrack = null, blankTrack = null;
 
 let ctxWatched = false;
@@ -1480,9 +1483,10 @@ async function openMic(deviceId) {
 }
 async function acquireMedia() {
   const msgs = [];
-  micOn = camOn = true;
+  micOn = camOn = false;                 // always join muted, camera off
+  camAvailable = false;
   if (!navigator.mediaDevices?.getUserMedia) {
-    micTrack = camTrack = null; micOn = camOn = false;
+    micTrack = camTrack = null;
     return 'This browser cannot use a camera or microphone here, so you will join listen-only.';
   }
   // ask for both together so the browser shows a single permission prompt
@@ -1495,9 +1499,12 @@ async function acquireMedia() {
     try { micTrack = await openMic(); } catch { micTrack = null; msgs.push('microphone'); }
     try { camTrack = await openCamera(); } catch { camTrack = null; msgs.push('camera'); }
   }
-  if (!micTrack) micOn = false;
-  if (!camTrack) camOn = false;
-  fxSource(camTrack);
+  // Permission is kept, but nothing is live: the microphone is muted at the track and the camera is
+  // released outright, so its light is off until the person turns it on.
+  if (micTrack) micTrack.enabled = false;
+  camAvailable = !!camTrack;
+  if (camTrack) { camTrack.stop(); camTrack = null; }
+  fxSource(null);
   if (msgs.length && IN_APP) return `${IN_APP} blocks the ${msgs.join(' and ')} for web pages. You can still join and listen \u2014 open the link in Chrome or Safari to talk.`;
   // Both refused on a phone, in a browser we did not recognise as an in-app one: say what fixes it,
   // rather than letting someone join listen-only without realising.
@@ -1530,12 +1537,23 @@ async function openLobby() {
   $('otherMeetForm').style.display = isHost ? '' : 'none';
   $('inviteInput').value = inviteUrl();
   $('lobbyMid').textContent = formatId(room);
-  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. There is no limit on how many people can join; in calls with more than four people your camera starts off, from ten people you join muted, and in big calls voice always comes first while video is only sent to people who are on screen.';
+  $('aboutNote').textContent = 'Video and audio go directly between the people in the call and are encrypted in transit. Nothing is recorded or stored. You always join muted and with your camera off — turn either on whenever you are ready. In big calls voice always comes first, and video is only sent to people who have you on screen.';
   updatePreviewInitials();
   $('lobbyMsg').textContent = 'Checking camera and microphone…'; $('lobbyMsg').className = 'muted';
   const warning = await acquireMedia();
-  $('lobbyMsg').textContent = warning; $('lobbyMsg').className = warning ? 'warn' : '';
+  if (!peer) { $('lobbyMsg').textContent = warning; $('lobbyMsg').className = warning ? 'warn' : ''; }
   refreshPreview(); listDevices();
+  // The camera and microphone check takes a moment, and Join is live throughout it. Whoever presses
+  // Join first had their call bar drawn with no microphone yet -- the mute button disabled and
+  // labelled "No mic" -- and nothing used to put that right, so they could not speak for the whole
+  // call even though their microphone was working. Wire the devices in now if the call already began.
+  if (peer) {
+    if (micTrack) micTrack.enabled = micOn;
+    resendAudio();
+    if (!screenTrack) replaceOutgoing('video', outgoingVideo());
+    syncBarButtons(); refreshSelf(); broadcastState();
+    if (warning) toast(warning, 6000);
+  }
 }
 function updatePreviewInitials() {
   const n = cleanName($('nameInput').value);
@@ -1548,7 +1566,7 @@ function refreshPreview() {
   if (v.srcObject?.getVideoTracks()[0] !== showCam) v.srcObject = showCam ? new MediaStream([showCam]) : null;
   $('previewAvatar').style.display = showCam ? 'none' : 'flex';
   setPressed($('lobbyMic'), micOn, 'Mic on', 'Mic off', !micTrack);
-  setPressed($('lobbyCam'), camOn, 'Camera on', 'Camera off', !camTrack);
+  setPressed($('lobbyCam'), camOn, 'Camera on', 'Camera off', !camAvailable);
 }
 function setPressed(btn, on, onText, offText, unavailable) {
   btn.setAttribute('aria-pressed', String(on));
@@ -1557,9 +1575,16 @@ function setPressed(btn, on, onText, offText, unavailable) {
 }
 $('nameInput').addEventListener('input', updatePreviewInitials);
 $('lobbyMic').addEventListener('click', () => { micOn = !micOn; if (micTrack) micTrack.enabled = micOn; refreshPreview(); });
-$('lobbyCam').addEventListener('click', () => { camOn = !camOn; refreshPreview(); });
+// The camera is not held open while it is off, so turning it on here has to reopen it.
+$('lobbyCam').addEventListener('click', async () => {
+  if (camOn) { camOn = false; camTrack?.stop(); camTrack = null; fxSource(null); return refreshPreview(); }
+  if (!camAvailable) return;
+  try { camTrack = await openCamera($('camSelect').value || undefined); camOn = true; fxSource(camTrack); }
+  catch { toast('Could not start the camera — check the browser permission.'); camAvailable = false; }
+  refreshPreview();
+});
 $('camSelect').addEventListener('change', async e => {
-  try { const t = await openCamera(e.target.value); camTrack?.stop(); camTrack = t; camOn = true; fxSource(t); refreshPreview(); }
+  try { const t = await openCamera(e.target.value); camTrack?.stop(); camTrack = t; camOn = camAvailable = true; fxSource(t); refreshPreview(); }
   catch { toast('Could not open that camera.'); }
 });
 $('micSelect').addEventListener('change', async e => {
@@ -1601,6 +1626,47 @@ async function shareInvite() {
 let peer = null, mySeat = -1, myName = '', joinedAt = 0, timerId = null, rescanId = null, leaving = false;
 const peers = new Map();    // seat -> { id, seat, name, conn, call, tile, video, mic, cam, screen, analyser, joined }
 const pending = new Map();  // seat -> time an outgoing attempt started
+/* Every data connection holds an RTCPeerConnection, and a browser allows only a few hundred of them
+ * per tab. Retries used to be left alive on purpose, so that a slow network still had a chance to
+ * finish; but nothing ever closed the ones that never opened, and rescan starts a fresh attempt every
+ * PENDING_MS. In a large call that leaks connections until the browser refuses to make any more and
+ * the tab can no longer reach anybody. Attempts are now tracked: a retry may still start while an
+ * earlier one is in flight, but an attempt that has not opened within ATTEMPT_TTL is closed, and once
+ * one link to a seat opens the rest are dropped immediately. */
+const ATTEMPT_TTL = 45000;  // longer than callHealthy's 40 s setup window: slow paths still finish
+const attempts = new Map(); // seat -> Set of data connections that have not opened yet
+function trackAttempt(seat, conn) {
+  conn.__born = Date.now();
+  let set = attempts.get(seat);
+  if (!set) attempts.set(seat, set = new Set());
+  set.add(conn);
+}
+function forgetAttempt(seat, conn) {
+  const set = attempts.get(seat);
+  if (!set) return;
+  set.delete(conn);
+  if (!set.size) attempts.delete(seat);
+}
+function closeOtherAttempts(seat, keep) {
+  const set = attempts.get(seat);
+  if (!set) return;
+  for (const c of [...set]) if (c !== keep) { set.delete(c); try { c.close(); } catch {} }
+  if (!set.size) attempts.delete(seat);
+}
+function sweepAttempts(now) {
+  for (const [seat, set] of attempts) {
+    for (const c of [...set]) {
+      if (!c.open && now - (c.__born || now) > ATTEMPT_TTL) {
+        set.delete(c); dbgLog('attempt-expired', seat, c.connectionId); try { c.close(); } catch {}
+      }
+    }
+    if (!set.size) attempts.delete(seat);
+  }
+}
+function closeAllAttempts() {
+  for (const set of attempts.values()) for (const c of set) { try { c.close(); } catch {} }
+  attempts.clear();
+}
 // One id per page load, sent with every connection and call. A second connection carrying the same id
 // is a retry from the same browser that crossed a slow first attempt; a different id is a new person in
 // that seat. Without it the two look identical, and the retry used to tear down a pair that worked.
@@ -1665,24 +1731,9 @@ function enterCall() {
   $('screenBtn').classList.toggle('unavail', !canScreen);
   $('flipBtn').style.display = isMobile && camTrack ? '' : 'none';
   if (micTrack) micTrack.enabled = micOn;
-  // Big calls start with video off. Seats fill from the lowest, so taking seat 4 or higher means at least four
-  // people are already here: turn the camera off before any video is sent. A later check covers seats freed by leavers.
-  // Big-call rules follow the number of people actually connected, never the seat number: a seat
-  // left behind by a phone that backgrounded without closing the page stays taken at the call service
-  // for a while, so a newcomer to a small call can land in a high seat.
-  camTouched = false; micTouched = false;
-  clearTimeout(bigCallCheck);
-  bigCallCheck = setTimeout(() => {
-    if (peer && camOn && !camTouched && peers.size + 1 > BIG_CALL) {
-      turnCameraOff();
-      toast(`Your camera is off because this call has more than ${BIG_CALL} people \u2014 tap the camera to turn it on`, 6000);
-    }
-    if (peer && micTrack && micOn && !micTouched && peers.size + 1 >= LARGE_CALL) {
-      micOn = false; micTrack.enabled = false;
-      syncBarButtons(); refreshSelf(); broadcastState();
-      setTimeout(() => toast('You are muted because this is a big call \u2014 tap the microphone to speak, or raise your hand', 6000), 1500);
-    }
-  }, 6000);
+  // Everyone starts muted with the camera off, in every size of call, so there is no size rule to
+  // apply here and nothing to undo if someone deliberately turned either on in the lobby.
+  $('lobbyMsg').textContent = '';
   if (!camOn && camTrack) { camTrack.stop(); camTrack = null; fxSource(null); }   // camera light off when joining with video off
   syncBarButtons();
   addSelfTile();
@@ -1691,7 +1742,7 @@ function enterCall() {
   armBackGuard();                                        // the phone's Back button must not end the call
   keepAwake();                                           // nor the screen locking by itself
   clearInterval(policyTimer); policyTimer = setInterval(policyTick, 700);   // who is watched, who is heard, who is on screen
-  for (let s = 0; s < mySeat; s++) dial(s);
+  for (let s = 0; s < mySeat; s++) queueDial(s);
   rescanId = setInterval(rescan, RESCAN_MS);
   timerId = setInterval(tick, 1000);
   $('attBtn').style.display = isHost ? '' : 'none';
@@ -1961,20 +2012,48 @@ function renderPeople() {
 
 /* joining a big call: one connection asks which seats are free, instead of trying seats one connection at a time */
 function claimSeatExact(seat, onTaken) { claimSeat(seat, onTaken); }
-function startCensus(from) {
+function startCensus(from, round) {
   $('lobbyMsg').textContent = 'Big call \u2014 finding you a seat\u2026'; $('lobbyMsg').className = 'muted';
-  const SPAN = 40;
-  const probe = new Peer(`pw-${room}-x${Math.random().toString(36).slice(2, 10)}`, PEER_OPTIONS);
+  // Probe a few seats at a time rather than forty at once: every probe holds a peer connection open,
+  // and a browser allows only a few hundred of those. Seats fill from the lowest, so the lowest free
+  // one is nearly always in the first batch; stop as soon as a batch finds one.
+  const BATCH = 8, SPAN = 40, WAIT = 3000, ROUNDS = 3;
+  // The probe only ever asks the broker whether a seat id exists; it never carries media, so it is
+  // given no STUN or TURN. Otherwise every seat probed would open a relay allocation on the shared
+  // TURN account purely to be thrown away a moment later.
+  const probe = new Peer(`pw-${room}-x${Math.random().toString(36).slice(2, 10)}`,
+    { ...PEER_OPTIONS, config: { iceServers: [], sdpSemantics: 'unified-plan' } });
   const free = new Set();
-  let finished = false;
-  const plain = s => claimSeat(s, () => plain(s + 1));
-  const finish = () => {
-    if (finished) return; finished = true;
-    try { probe.destroy(); } catch {}
-    if (!free.size) return plain(from);                   // the census learnt nothing: take seats one by one, as before
+  let live = new Map(), base = from, finished = false, timer = 0;
+  const chain = s => claimSeat(s, () => chain(s + 1));     // fall back to taking seats one at a time
+  const dropLive = () => { for (const c of live.values()) { try { c.close(); } catch {} } live = new Map(); };
+  const stop = () => { finished = true; clearTimeout(timer); dropLive(); try { probe.destroy(); } catch {} };
+  const giveUp = () => { if (!finished) { stop(); chain(from); } };
+  const take = () => {
     const seats = [...free].sort((a, b) => a - b);
-    const next = () => seats.length ? claimSeatExact(seats.shift(), next) : startCensus(from + SPAN);
+    stop();
+    // If every seat we found free has been taken by someone else in the meantime, look again in the
+    // same range before moving on: with several people joining at once that race is normal, and
+    // jumping a whole span would strand everybody in seats far above the others.
+    const next = () => seats.length ? claimSeatExact(seats.shift(), next)
+      : (round || 1) < ROUNDS ? startCensus(from, (round || 1) + 1) : startCensus(from + SPAN, 1);
     next();
+  };
+  const batch = () => {
+    if (finished) return;
+    if (base >= from + SPAN) return take();                // looked far enough for this round
+    dropLive();
+    for (let s = base; s < base + BATCH && s < from + SPAN; s++) {
+      const c = probe.connect(seatId(s));
+      c.on('error', () => {});
+      live.set(s, c);
+    }
+    timer = setTimeout(() => {
+      if (finished) return;
+      if (free.size) return take();                        // the lowest free seat is in this batch
+      base += BATCH;
+      batch();
+    }, WAIT);
   };
   probe.on('error', err => {
     if (err.type === 'peer-unavailable') {                     // nobody in that seat: the broker says so by name
@@ -1982,16 +2061,10 @@ function startCensus(from) {
       if (m) { const sn = +m[1].split('-').pop(); if (sn >= from) free.add(sn); }
       return;
     }
-    if (!finished) { finished = true; try { probe.destroy(); } catch {} plain(from); }   // no census possible: plain claims
+    giveUp();                                              // no census possible: plain claims
   });
-  probe.once('open', () => {
-    let i = 0;
-    const wave = () => {
-      for (let k = 0; k < 10 && i < SPAN; k++, i++) { const c = probe.connect(seatId(from + i)); c.on('error', () => {}); }
-      if (i < SPAN) setTimeout(wave, 200); else setTimeout(finish, 6500);
-    };
-    wave();
-  });
+  probe.once('open', batch);
+  setTimeout(giveUp, 30000);                               // the broker never answered: do not hang in the lobby
 }
 
 /* ---------------------------------------------------------- stay in the call --- *
@@ -2086,6 +2159,7 @@ addEventListener('online', () => recoverCall());
  * knocked on) but no connection forms, show their tile marked as unreachable, and say why.         */
 const ghosts = new Map();          // seat -> { name, tile, lastTry }
 const unavailableAt = new Map();   // seat -> when the broker said nobody sits there
+const EMPTY_RETRY_MS = 30000;      // how long to leave a known-empty seat alone before knocking again
 let reachTipShown = false;
 function watchReach(seat, conn, name) {
   const started = Date.now();
@@ -2122,22 +2196,52 @@ function removeGhost(seat) {
 function rescan() {
   const now = Date.now();
   for (const [s, t] of pending) if (now - t > PENDING_MS) pending.delete(s);
+  sweepAttempts(now);                      // drop connection attempts that never opened
   for (const [s, g] of ghosts) if (now - g.lastTry > 2.5 * PENDING_MS) removeGhost(s);   // no knock for ~30 s: they have gone
   for (let s = 0; s < mySeat; s++) {
     if (pending.has(s)) continue;
     const r = peers.get(s);
     // First contact; or a data link that closed while the media kept going; or media that has been
     // dead for a while even though the data link looks open. The higher seat is the one that dials.
-    if (!r || !r.conn?.open || (r.call && !callHealthy(r.call)) || (!r.call && now - (r.openedAt || now) > 20000)) dial(s);
+    if (!(!r || !r.conn?.open || (r.call && !callHealthy(r.call)) || (!r.call && now - (r.openedAt || now) > 20000))) continue;
+    // A seat the broker has just told us is empty is polled slowly. We cannot stop looking -- whoever
+    // takes it later will be below us and so will never dial us -- but knocking on every empty seat
+    // every four seconds is a connection storm, and in a call where the seats are sparse (a census that
+    // placed people high, or leavers) most of the seats below us are empty.
+    if (!r && now - (unavailableAt.get(s) || 0) < EMPTY_RETRY_MS) continue;
+    queueDial(s);
   }
 }
 
+/* Dial one seat at a time. Joining a big call used to open an attempt to every lower seat at once --
+ * nineteen of them in a twenty-person call -- and each attempt gathers its own candidates and runs its
+ * own handshake. The burst makes every attempt slower, and slow attempts are what the retry loop then
+ * piles more attempts on top of. Spacing them out costs a few seconds on joining and is the difference
+ * between a mesh that settles and one that thrashes. */
+const DIAL_GAP_MS = 250;
+let dialQueue = [], dialTimer = 0;
+function queueDial(seat) {
+  if (dialQueue.includes(seat)) return;
+  dialQueue.push(seat);
+  if (dialTimer) return;
+  const step = () => {
+    const s = dialQueue.shift();
+    if (s === undefined || !peer) { clearInterval(dialTimer); dialTimer = 0; return; }
+    dial(s);
+  };
+  step();                                    // the first one goes straight away
+  // The timer is armed even when the queue is now empty: enterCall queues every lower seat in one
+  // synchronous loop, and without it each call would find no timer, dial at once, and the burst this
+  // is meant to spread out would happen anyway. An idle timer clears itself on its first tick.
+  dialTimer = setInterval(step, DIAL_GAP_MS);
+}
 function dial(seat) {
   if (!peer || peer.destroyed || peer.disconnected) return;
   pending.set(seat, Date.now());
   // As in the first version, an earlier attempt is never closed: between networks a connection can take
   // longer than the retry interval, and closing slow attempts meant none ever finished.
   const conn = peer.connect(seatId(seat), { reliable: true, metadata: { name: myName, sid: mySession } });
+  trackAttempt(seat, conn);
   wireConn(conn, seat, true);
   watchReach(seat, conn, ghosts.get(seat)?.name);
 }
@@ -2151,6 +2255,7 @@ function onIncomingConn(conn) {
   // whichever connection is kept is decided when it opens (wireConn).
   const old = peers.get(seat), sid = sidOf(conn);
   if (old && old.conn && old.conn !== conn && !(sid && old.sid === sid)) { dbgLog('new-occupant', seat, conn.connectionId); dropPeer(seat, true); }
+  trackAttempt(seat, conn);               // an incoming link that never opens is swept like our own
   wireConn(conn, seat, false);
   const knocker = cleanName(conn.metadata?.name);
   if (ghosts.has(seat)) { const g = ghosts.get(seat); g.lastTry = Date.now(); if (knocker) g.name = knocker; }
@@ -2160,6 +2265,7 @@ function onIncomingConn(conn) {
 function wireConn(conn, seat, outgoing) {
   conn.on('open', () => {
     pending.delete(seat);
+    forgetAttempt(seat, conn);
     removeGhost(seat);
     const rec = ensurePeer(seat, conn.peer);
     if (rec.conn && rec.conn !== conn && rec.conn.open) {
@@ -2170,6 +2276,7 @@ function wireConn(conn, seat, outgoing) {
       dbgLog('conn-replaced', seat, conn.connectionId);
       try { stale.close(); } catch {}
     } else rec.conn = conn;
+    closeOtherAttempts(seat, rec.conn);   // one link is enough: the rest would only hold connections open
     clearTimeout(rec.graceTimer);
     rec.openedAt = Date.now();
     if (sidOf(conn)) rec.sid = sidOf(conn);
@@ -2187,6 +2294,7 @@ function wireConn(conn, seat, outgoing) {
   });
   conn.on('data', data => onData(seat, conn, data));
   conn.on('close', () => {
+    forgetAttempt(seat, conn);
     const r = peers.get(seat);
     if (!r || r.conn !== conn) return;                  // an old or duplicate link: nothing depends on it
     dbgLog('conn-closed', seat, conn.connectionId);
@@ -2200,7 +2308,14 @@ function wireConn(conn, seat, outgoing) {
       if (peers.get(seat) === r && !r.conn?.open && !callHealthy(r.call)) leaveNotice(seat);
     }, 20000);
   });
-  conn.on('error', () => { pending.delete(seat); });
+  conn.on('error', () => {
+    pending.delete(seat);
+    forgetAttempt(seat, conn);
+    // Discard a failed attempt, but never the link that is actually carrying this pair: an error on a
+    // live data connection can be transient, and closing it here would hand the pair to leaveNotice.
+    const r = peers.get(seat);
+    if (!r || r.conn !== conn) { try { conn.close(); } catch {} }
+  });
 }
 function onIncomingCall(call) {
   const seat = seatOf(call.peer);
@@ -2238,7 +2353,11 @@ function onPeerError(err) {
   if (err.type === 'peer-unavailable') {
     // nobody sits in that seat: the broker tells us by naming the id we tried
     const m = /peer\s+(\S+)/.exec(err.message || '');
-    if (m) { const sn = seatOf(m[1]); pending.delete(sn); unavailableAt.set(sn, Date.now()); }
+    if (m) {
+      const sn = seatOf(m[1]);
+      pending.delete(sn); unavailableAt.set(sn, Date.now());
+      closeOtherAttempts(sn, null);      // nobody is there: let go of the attempt now, not in 45 s
+    }
     return;
   }
   if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type)) {
@@ -2773,7 +2892,7 @@ $('micBtn').addEventListener('click', () => {
   micOn = !micOn; micTrack.enabled = micOn;
   syncBarButtons(); refreshSelf(); broadcastState();
 });
-const BIG_CALL = 4;                                   // more people than this: cameras start off
+const BIG_CALL = 4;                                   // above this a call is treated as big for video sharing
 let camTouched = false, bigCallCheck = 0;
 function turnCameraOff() {
   camOn = false;
@@ -3034,6 +3153,7 @@ addEventListener('beforeunload', e => { if (peer || recording()) { e.preventDefa
 function leave(final) {
   if (recording()) stopCallRecording();            // save what was recorded before the call is torn down
   releaseAwake(); backGuard = false; rejoining = false; clearTimeout(bigCallCheck); clearInterval(policyTimer); handAt = 0;
+  closeAllAttempts(); dialQueue = []; clearInterval(dialTimer); dialTimer = 0;
   mgrSpot = null; closeMgrMenu(); $('askBox').hidden = true;
   leaving = true;
   attTick(true);                                   // hand the final register to whoever stays
