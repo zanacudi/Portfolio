@@ -2174,7 +2174,7 @@ function showGhost(seat, name, triedAt) {
   if (!g) {
     const tile = makeTile('ghost' + seat, name || 'Someone', false);
     tile.classList.remove('connecting'); tile.classList.add('unreachable', 'camoff');
-    tile.querySelector('.state').textContent = "Can't connect \u2014 a network is blocking the call";
+    tile.querySelector('.state').textContent = "Can't connect \u2014 still trying";
     g = { name: name || 'Someone', tile, lastTry: triedAt };
     ghosts.set(seat, g);
   }
@@ -2185,7 +2185,13 @@ function showGhost(seat, name, triedAt) {
   layout(); updateStatus();
   if (!reachTipShown) {
     reachTipShown = true;
-    toast("Someone is in this call but your networks can't connect. Try a different Wi-Fi or mobile data.", 7000);
+    // Do not name a cause we have not established. If the rest of the call is fine, our own network
+    // plainly works, and saying "a network is blocking the call" sends people hunting for a firewall
+    // when the usual cause is the other end -- or, in a test, one computer running many windows.
+    const fine = [...peers.values()].filter(r => callHealthy(r.call)).length;
+    toast(fine
+      ? "Someone here can't be reached, though the rest of the call is fine. It is usually their network — or, if these are several windows on one computer, that computer running out of connections."
+      : "Someone is in this call but your networks can't connect. Try a different Wi-Fi or mobile data.", 7000);
   }
 }
 function removeGhost(seat) {
