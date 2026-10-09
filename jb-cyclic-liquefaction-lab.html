@@ -270,7 +270,7 @@ body{padding-bottom:54px}
 </div></header>
 
 <nav class="sticky-nav" aria-label="Module navigation"><div class="wrap">
-<a href="#start">1. Start here</a><a href="#cyclic-vs-static">2. Cyclic vs static</a><a href="#classical">3. The classical method</a><a href="#notation">4. Notation</a><a href="#psi-view">5. The &psi; view</a><a href="#ksigma">6. K&sigma; disappears</a><a href="#kalpha">7. K&alpha;</a><a href="#design-workflow">8. Design workflow</a><a href="#knowledge-check">9. Check learning</a>
+<a href="#start">1. Start here</a><a href="#cyclic-vs-static">2. Cyclic vs static</a><a href="#classical">3. The classical method</a><a href="#notation">4. Notation</a><a href="#psi-view">5. The &psi; view</a><a href="#ksigma">6. K&sigma; disappears</a><a href="#kalpha">7. K&alpha;</a><a href="#design-workflow">8. Design workflow</a><a href="#project">9. Your project</a><a href="#knowledge-check">10. Check learning</a>
 <div class="progress-shell" title="Reading progress"><div id="readingProgress" class="progress-fill"></div></div>
 </div></nav>
 <button type="button" id="backToPrevious" class="back-float">&larr; Back</button>
@@ -293,6 +293,7 @@ body{padding-bottom:54px}
 <p>Module 3 asked what happens when a contractive soil fails under its own sustained load. This module asks what happens when the load arrives as a few dozen cycles of earthquake shaking instead &mdash; and then asks the practical question every project eventually reaches: how do you turn laboratory and CPT data into a design number you can defend?</p>
 <p>The answer the profession actually uses was built entirely from case histories, and it works. The book's contribution is to show <b>why</b> it works, and that one of its two correction factors is an artefact of using penetration resistance rather than state. Once you work in &psi;, that factor simply stops being needed.</p>
 </div>
+<div class="big-idea" style="margin:12px 0"><b>If you came here to get work done,</b> go straight to <a href="#project" style="color:#9fe3ff">Section 9</a>. Upload a CPT sounding and your triaxial tests and it returns a &psi; profile, a characteristic value, a cyclic resistance and a factor of safety at every depth &mdash; then hands the assessment back as an Excel workbook in which every derived column is a live formula. The eight sections before it are the argument for why that chain is the right one.</div>
 <div class="callout"><b>What you will be able to do by the end.</b> Explain the difference between cyclic mobility and flow liquefaction, and why one is survivable. Apply the classical CRR framework with magnitude scaling. Show, from the book's own case-history database, that a &psi;-based boundary separates 19 of 20 real records. Explain why K&sigma; is redundant and why K&alpha; resists a formula. Fit a project-specific design curve from cyclic simple shear data.</div>
 </div>
 
@@ -459,8 +460,133 @@ body{padding-bottom:54px}
 </div>
 </div>
 
+<div class="card" id="project">
+<h2>9. Your project: your data in, a design number out</h2>
+<p>Everything above is the argument. This is the tool. Upload what you already have &mdash; triaxial tests and a CPT sounding &mdash; and this page carries them through the whole chain the four modules built: a critical state line, a state parameter profile, a characteristic value, a cyclic resistance, and a factor of safety at every depth. Then it hands the whole thing back as a spreadsheet you can audit, edit and attach to a report.</p>
+<p class="explain">Nothing is uploaded anywhere. Every file you choose is read in your own browser and stays there.</p>
+
+<div class="big-idea" style="margin:14px 0">
+<b>The chain, in one line.</b> Triaxial tests give &lambda;<sub>10</sub> and &Gamma; &rarr; the CPT gives &psi; at every depth &rarr; your chosen percentile gives &psi;<sub>k</sub> &rarr; Eq.&nbsp;7.5 gives CRR<sub>7.5</sub> &rarr; your magnitude gives K<sub>M</sub> &rarr; your ground motion gives CSR &rarr; and FS<sub>liq</sub> = CRR/CSR at every depth.
+</div>
+
+<!-- ============================ STEP 1 ============================ -->
+<h3 id="pjStep1">Step 1 &mdash; Your soil: the critical state line</h3>
+<p>&psi; is the distance from where the soil is to where it would end up. The critical state line is the second half of that sentence, and it is the one thing a cone cannot tell you. Give it your own triaxial tests, or borrow a sand from Table&nbsp;2.1 while you wait for the laboratory.</p>
+
+<div class="s2-lab">
+<div class="snd-controls" style="margin-bottom:10px" role="group" aria-label="Source of the critical state line">
+<button type="button" id="pjCslModeDb" class="on" aria-pressed="true">Use a Table 2.1 sand</button>
+<button type="button" id="pjCslModeUp" aria-pressed="false">Upload my triaxial tests</button>
+</div>
+
+<div id="pjCslDbWrap" class="slider-block" style="margin:0">
+<label for="pjSand" style="display:block"><span>Sand (Table 2.1)</span></label>
+<select id="pjSand" style="width:100%;margin-top:6px"></select>
+</div>
+
+<div id="pjCslUpWrap" style="display:none">
+<p class="explain" style="font-size:12.5px">A CSV or tab-delimited file, <b>one row per test</b>, with the end-of-test state of each specimen &mdash; the point each test finished at, which is what defines the line:</p>
+<div style="overflow-x:auto"><table style="margin:6px 0 10px"><thead><tr><th>Column 1</th><th>Column 2</th></tr></thead><tbody><tr><td>p&prime; at end of test (kPa)</td><td>void ratio <i>e</i> at end of test</td></tr><tr><td style="color:var(--muted)">e.g. 200</td><td style="color:var(--muted)">e.g. 0.712</td></tr></tbody></table></div>
+<p class="explain" style="font-size:11.5px;color:var(--muted)">Header rows are skipped automatically, and any extra columns after the second are ignored, so a raw laboratory export usually works unedited. Four tests is the minimum worth fitting; more is better, and they should span at least a decade of stress.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+<input type="file" id="pjCslFile" accept=".csv,.txt">
+<button type="button" id="pjCslExample" class="alt">Download example CSV</button>
+</div>
+<div id="pjCslStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
+</div>
+
+<div class="statgrid n3" id="pjCslStats" style="margin-top:10px"></div>
+<div class="chart-host" style="margin-top:6px"><canvas id="pjCslChart" role="img" aria-label="Void ratio against mean effective stress on a logarithmic axis, with the fitted critical state line."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>critical state line</span><span><i style="background:#c64852"></i>your test end-states</span></div>
+</div>
+
+<!-- ============================ STEP 2 ============================ -->
+<h3 id="pjStep2">Step 2 &mdash; Your site: the CPT sounding</h3>
+<p>The cone gives three channels. Module 2 turned them into &psi;, and that whole chain runs here, driven by the &lambda;<sub>10</sub> you just fixed in Step&nbsp;1.</p>
+
+<div class="s2-lab">
+<p class="explain" style="font-size:12.5px">One row per depth, columns in exactly this order. Choose the units your file already uses &mdash; everything converts to metric internally:</p>
+<div style="overflow-x:auto"><table style="margin:6px 0 10px" id="pjCptGuide"></table></div>
+<p class="explain" style="font-size:11.5px;color:var(--muted)">Header rows and extra columns are ignored, so a raw ConeTec or Vertek export loads as-is. This is the same format Module 2 uses, so a file that worked there works here.</p>
+<div class="snd-controls" role="group" aria-label="Units in your file" style="margin-top:6px">
+<button type="button" id="pjUnitMetric" class="on" aria-pressed="true">metric (m, MPa, kPa, kPa)</button>
+<button type="button" id="pjUnitImperial" aria-pressed="false">imperial (ft, tsf, tsf, psi)</button>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+<input type="file" id="pjCptFile" accept=".csv,.txt">
+<button type="button" id="pjCptExample" class="alt">Download example CSV</button>
+<button type="button" id="pjCptDemo" class="alt">Load a demonstration sounding</button>
+</div>
+<div id="pjCptStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
+
+<div class="snd-layout" style="margin-top:12px">
+<div class="snd-controls">
+<div class="slider-block"><label for="pjGamma"><span>Unit weight &gamma; (kN/m&sup3;)</span> <span class="readout" id="pjGammaOut">19.0</span></label><input id="pjGamma" type="range" min="14" max="23" step="0.1" value="19"></div>
+<div class="slider-block"><label for="pjWt"><span>Water table depth (m)</span> <span class="readout" id="pjWtOut">2.0</span></label><input id="pjWt" type="range" min="0" max="20" step="0.1" value="2"></div>
+<div class="slider-block"><label for="pjKo"><span>K<sub>0</sub></span> <span class="readout" id="pjKoOut">0.50</span></label><input id="pjKo" type="range" min="0.3" max="1.0" step="0.01" value="0.5"></div>
+<div class="hint">&gamma;, the water table and K<sub>0</sub> are assumptions you bring to the log, not things the cone measured. They move every &psi; on the page, so they are sliders rather than buried constants.</div>
+</div>
+<div>
+<div class="chart-host"><canvas id="pjPsiChart" role="img" aria-label="State parameter against depth from the uploaded sounding, with the dilative boundary marked."></canvas></div>
+<div class="legend"><span><i style="background:#c64852"></i>&psi; from your cone</span><span><i style="background:#268160"></i>&psi; = &minus;0.05, practical dilative boundary</span><span><i style="background:#e9f6ef;border:1px solid #d7e1e5"></i>dilative</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>contractive</span></div>
+</div>
+</div>
+</div>
+
+<!-- ============================ STEP 3 ============================ -->
+<h3 id="pjStep3">Step 3 &mdash; Your earthquake, and the layer you care about</h3>
+<p>Now the demand. The cyclic stress ratio the earthquake imposes is the classical simplified estimate; the resistance is Eq.&nbsp;7.5 on your own &psi;, scaled for magnitude. No K<sub>&sigma;</sub> appears, for the reason Section&nbsp;6 gave. No K<sub>&alpha;</sub> appears, for the reason Section&nbsp;7 gave.</p>
+
+<div class="snd-layout">
+<div class="snd-controls">
+<div class="slider-block"><label for="pjMw"><span>Moment magnitude, M</span> <span class="readout" id="pjMwOut">7.50</span></label><input id="pjMw" type="range" min="5.25" max="8.5" step="0.05" value="7.5"></div>
+<div class="slider-block"><label for="pjAmax"><span>Peak ground acceleration, a<sub>max</sub>/g</span> <span class="readout" id="pjAmaxOut">0.25</span></label><input id="pjAmax" type="range" min="0.02" max="0.80" step="0.01" value="0.25"></div>
+<div class="slider-block"><label for="pjTop"><span>Layer of interest, top (m)</span> <span class="readout" id="pjTopOut">3.0</span></label><input id="pjTop" type="range" min="0" max="40" step="0.25" value="3"></div>
+<div class="slider-block"><label for="pjBot"><span>Layer of interest, base (m)</span> <span class="readout" id="pjBotOut">8.0</span></label><input id="pjBot" type="range" min="0.25" max="50" step="0.25" value="8"></div>
+<div class="slider-block"><label for="pjPct"><span>Percentile for &psi;<sub>k</sub></span> <span class="readout" id="pjPctOut">80</span></label><input id="pjPct" type="range" min="50" max="95" step="1" value="80"></div>
+<div class="hint">The percentile is Module 2's characteristic value: the state that this fraction of the layer is denser than. Design on the loose tail, not the average.</div>
+</div>
+<div>
+<div class="chart-host"><canvas id="pjFsChart" role="img" aria-label="Cyclic demand and cyclic resistance against depth, with the factor of safety against liquefaction."></canvas></div>
+<div class="legend"><span><i style="background:#e38a22"></i>CSR, demand</span><span><i style="background:#1479b8"></i>CRR, resistance</span><span><i style="background:#c64852"></i>FS = 1</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>FS &lt; 1, triggering predicted</span></div>
+</div>
+</div>
+<div class="statgrid n4" id="pjStats" style="margin-top:10px"></div>
+
+<!-- ============================ STEP 4 ============================ -->
+<h3 id="pjStep4">Step 4 &mdash; Optional: your own cyclic tests</h3>
+<p>Eq.&nbsp;7.5 is a boundary fitted to twenty case histories of other people's soils. If you have run cyclic simple shear or cyclic triaxial tests on <i>this</i> soil, Chapter 9 says to fit them yourself. Upload them and both curves are drawn together, so you can see whether the database boundary is conservative for your material or not.</p>
+
+<div class="s2-lab">
+<p class="explain" style="font-size:12.5px">One row per cyclic test:</p>
+<div style="overflow-x:auto"><table style="margin:6px 0 10px"><thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th></tr></thead><tbody><tr><td>&psi;<sub>0</sub> at the start of the test</td><td>CSR applied</td><td>N<sub>L</sub>, cycles to liquefaction</td></tr><tr><td style="color:var(--muted)">e.g. &minus;0.08</td><td style="color:var(--muted)">e.g. 0.18</td><td style="color:var(--muted)">e.g. 15</td></tr></tbody></table></div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+<input type="file" id="pjCycFile" accept=".csv,.txt">
+<button type="button" id="pjCycExample" class="alt">Download example CSV</button>
+<button type="button" id="pjCycClear" class="alt">Clear</button>
+</div>
+<div id="pjCycStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
+<div class="slider-block" style="margin-top:10px"><label for="pjNl"><span>Fit at N<sub>L</sub> (cycles), &plusmn;2</span> <span class="readout" id="pjNlOut">15</span></label><input id="pjNl" type="range" min="4" max="30" step="1" value="15"></div>
+<div class="hint">The book's guideline mapping: N<sub>L</sub>&nbsp;=&nbsp;15 for M&nbsp;7.5, 10 for M&nbsp;7.0, 6 for M&nbsp;6.0. Only tests within &plusmn;2 cycles of your target are used, because Eq.&nbsp;9.9 is a fit at one cycle count, not a surface.</div>
+<div class="statgrid n3" id="pjCycStats" style="margin-top:10px"></div>
+<div class="chart-host" style="margin-top:6px"><canvas id="pjCycChart" role="img" aria-label="Cyclic resistance against state parameter: your fitted line against the database boundary."></canvas></div>
+<div class="legend"><span><i style="background:#7653a6"></i>your fit, Eq. 9.9</span><span><i style="background:#1479b8"></i>Eq. 7.5, the database boundary</span><span><i style="background:#c64852"></i>your tests</span></div>
+</div>
+
+<!-- ============================ STEP 5 ============================ -->
+<h3 id="pjStep5">Step 5 &mdash; Take it away</h3>
+<p>The workbook is the point of this page. Every derived column in it is a <b>live Excel formula</b> pointing at an Inputs sheet, not a pasted number &mdash; change &gamma;, the water table, K<sub>0</sub>, the magnitude or the percentile in Excel and the whole sheet and its charts recalculate. A reviewer can therefore check your arithmetic without this website, and disagree with your assumptions without re-running anything.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+<button type="button" id="pjXlsx">Download Excel workbook (.xlsx)</button>
+<button type="button" id="pjCsv" class="alt">Download results as CSV</button>
+</div>
+<div id="pjDlStatus" class="callout" style="margin-top:8px;display:none" aria-live="polite"></div>
+
+<div class="warning" style="margin-top:12px"><b>What this page assumes, and where each piece comes from.</b> &psi; from the cone is Module 2's chain: Q<sub>p</sub>&nbsp;=&nbsp;(q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> inverted through Q<sub>p</sub>&nbsp;=&nbsp;k&middot;exp(&minus;m&psi;) with k and m from &lambda;<sub>10</sub> (Eqs. 4.11a&ndash;b), which carries that method's documented scatter of about &plusmn;0.05 in &psi; from stress level alone &mdash; so treat every &psi; here as a band, not a figure. CRR<sub>7.5</sub>&nbsp;=&nbsp;0.06&middot;exp(&minus;9&psi;<sub>k</sub>) is Eq.&nbsp;7.5 as published, and K<sub>M</sub> is the Fig.&nbsp;7.32 interpolation from Section&nbsp;3. <b>The demand side is not from the book.</b> CSR&nbsp;=&nbsp;0.65&middot;(a<sub>max</sub>/g)&middot;(&sigma;<sub>vo</sub>/&sigma;&prime;<sub>vo</sub>)&middot;r<sub>d</sub> is the standard simplified procedure of Seed &amp; Idriss (1971), with r<sub>d</sub> from Liao &amp; Whitman (1986): r<sub>d</sub>&nbsp;=&nbsp;1&minus;0.00765z for z&nbsp;&le;&nbsp;9.15&nbsp;m and 1.174&minus;0.0267z below it. It is included because a factor of safety needs a demand, and it is named here so you can substitute your own site-response result instead &mdash; which is what a real project should do. Nothing on this page applies K<sub>&alpha;</sub>: if your ground carries a static shear bias, Section&nbsp;7's conclusion stands and you need project-specific NorSand simulation, not a factor. The fitted critical state line is a least-squares fit of e&nbsp;=&nbsp;&Gamma;&nbsp;&minus;&nbsp;&lambda;<sub>10</sub>&middot;log<sub>10</sub>p&prime;; with fewer than about four well-spread tests, treat &lambda;<sub>10</sub> as borrowed rather than measured.</div>
+</div>
+
 <div class="card" id="knowledge-check">
-<h2>9. Check learning</h2>
+<h2>10. Check learning</h2>
 <p class="explain">Three blocks, each placed after the section that taught it. <b>&ldquo;Check my understanding&rdquo; grades every block together</b>, so it is fine to submit even if you skipped some. You get a score per block, a button back to the section behind it, and a filter that shows only what you missed.</p>
 <div class="quiz-progress" aria-label="Quiz completion"><span id="quizProgressFill"></span></div><div class="quiz-count" id="quizCount">0 of 30 answered</div>
 <div class="quiz-actions"><button type="button" id="gradeQuiz">Check my understanding</button><button id="resetQuiz" class="alt" type="button">Reset quiz</button></div><div id="quizResult" class="quiz-result" style="display:none" aria-live="polite"></div>
@@ -471,7 +597,7 @@ body{padding-bottom:54px}
 </div>
 
 <div class="card" id="about-tool">
-<div class="warning"><b>About this tool.</b> Section 3's K<sub>M</sub> values are the five points tabulated in Fig. 7.32 (Seed &amp; Idriss 1982), linearly interpolated &mdash; the book gives no closed-form K<sub>M</sub>(M), so none is invented. Section 5 uses Eq. 7.5 exactly as published; the twenty plotted records are Class A case histories from Table 7.3. <b>Eq. 7.5 classifies 19 of those 20 correctly</b>; the one it misses is a no-liquefaction record sitting about 4% above the line, and it is marked on the figure rather than quietly dropped. Section 2's pore-pressure build-up and Section 7's K<sub>&alpha;</sub> figure are schematics of mechanism, not calibrated models &mdash; both say so on the page. Section 6 computes K<sub>&sigma;</sub> from the Table 2.1 critical state lines; the shaded band is an indicative envelope of published empirical curves, not a digitisation of any one of them. Section 8 combines Eq. 9.9 with the Section 3 K<sub>M</sub> lookup; the book presents these separately and does not state the combined formula, though both halves are as published and Eq. 7.4's structure implies the combination. K<sub>&alpha;</sub> is deliberately not offered as a calculator, because the book states it cannot give simple trends without project-specific NorSand modelling.</div>
+<div class="warning"><b>About this tool.</b> Section 3's K<sub>M</sub> values are the five points tabulated in Fig. 7.32 (Seed &amp; Idriss 1982), linearly interpolated &mdash; the book gives no closed-form K<sub>M</sub>(M), so none is invented. Section 5 uses Eq. 7.5 exactly as published; the twenty plotted records are Class A case histories from Table 7.3. <b>Eq. 7.5 classifies 19 of those 20 correctly</b>; the one it misses is a no-liquefaction record sitting about 4% above the line, and it is marked on the figure rather than quietly dropped. Section 2's pore-pressure build-up and Section 7's K<sub>&alpha;</sub> figure are schematics of mechanism, not calibrated models &mdash; both say so on the page. Section 6 computes K<sub>&sigma;</sub> from the Table 2.1 critical state lines; the shaded band is an indicative envelope of published empirical curves, not a digitisation of any one of them. Section 9 runs your own data through Module 2’s CPT inversion and Eq.&nbsp;7.5; its one imported ingredient is the <b>demand</b> side, CSR&nbsp;=&nbsp;0.65&middot;(a<sub>max</sub>/g)&middot;(&sigma;<sub>vo</sub>/&sigma;&prime;<sub>vo</sub>)&middot;r<sub>d</sub>, the standard simplified procedure of Seed &amp; Idriss (1971) with r<sub>d</sub> after Liao &amp; Whitman (1986) &mdash; <b>not from this book</b>, included because a factor of safety needs a demand, and named on the page so it can be replaced by a site-response analysis. Section 8 combines Eq. 9.9 with the Section 3 K<sub>M</sub> lookup; the book presents these separately and does not state the combined formula, though both halves are as published and Eq. 7.4's structure implies the combination. K<sub>&alpha;</sub> is deliberately not offered as a calculator, because the book states it cannot give simple trends without project-specific NorSand modelling.</div>
 <p class="sources" style="margin-top:10px"><b>Citation:</b> Jefferies, M.G. &amp; Been, K. (2015). <em>Soil Liquefaction: A Critical State Approach</em>, 2nd Edition. CRC Press / Taylor &amp; Francis, Boca Raton, FL.</p>
 </div>
 
@@ -904,6 +1030,837 @@ function drawKAlphaChart(psiNow,alphaNow){
   ctx.fillText('direction of the Kα effect',0,0); ctx.restore();
 }
 
+/* ===================================================================== *
+ * Section 9 — Your project: uploaded data in, a design number out.
+ *
+ * The chain, end to end:
+ *   triaxial end-states -> least squares on e = G - lam10*log10(p')
+ *   CPT channels        -> Module 2's stress column, Q/F/Bq/Ic, Qp, psi
+ *   psi over a layer    -> psi_k at a chosen percentile (one-sided normal)
+ *   psi                 -> CRR7.5 (Eq 7.5), scaled by KM (Fig 7.32)
+ *   ground motion       -> CSR (Seed & Idriss simplified; rd Liao & Whitman)
+ *   both                -> FS against triggering at every depth
+ * Everything is computed in metric internally whatever the file used.
+ * ===================================================================== */
+
+/* The CPT inversion, carried over from Module 2 so this page is self-contained.
+ * k and m are predictable from the critical state slope alone (Eqs. 4.11a-b), and
+ * Ic is the Been & Jefferies form (Eq. 4.13a), which uses the pore-pressure channel. */
+function kOf(lam10){ return 8 + 0.55/(lam10-0.01); }
+function mOf(lam10){ return 8.1 - 2.3*Math.log10(lam10); }
+function psiOfQp(lam10,qp){ return -Math.log(qp/kOf(lam10))/mOf(lam10); }
+function icOf(Q,F,Bq){
+  var QBq = Math.max(0.5, Q*(1-Bq)+1);
+  var Fp  = Math.max(0.05, F);
+  return Math.sqrt(Math.pow(3-Math.log10(QBq),2) + Math.pow(1.5+1.3*Math.log10(Fp),2));
+}
+
+var PJ = {
+  cslMode: 'db',          // 'db' = a Table 2.1 sand, 'up' = the user's own tests
+  cslPts: [],             // [{p, e}] from the upload
+  csl: null,              // {Gamma, lambda10, r2, n, source}
+  units: 'metric',
+  cpt: [],                // [{z, qt(MPa), fs(kPa), u2(kPa)}]
+  cptName: '',
+  rows: [],               // the computed profile
+  cyc: [],                // [{psi0, csr, nl}]
+  cycFit: null            // {a, b, r2, n}
+};
+
+/* ---------------------------------------------------------- parsing --- */
+// Tolerant: skips any line that does not start with the required count of
+// readable numbers, so headers and raw exports load without editing.
+function pjParse(text, ncols){
+  var out=[], lines=String(text).split(/\r?\n/), skipped=0;
+  for(var i=0;i<lines.length;i++){
+    var ln=lines[i].trim();
+    if(!ln){ continue; }
+    var parts=ln.split(/[,;\t]+|\s{2,}/).map(function(s){ return s.trim(); });
+    if(parts.length<ncols) parts=ln.split(/\s+/);
+    if(parts.length<ncols){ skipped++; continue; }
+    var v=[], ok=true;
+    for(var c=0;c<ncols;c++){
+      var x=parseFloat(parts[c]);
+      if(!isFinite(x)){ ok=false; break; }
+      v.push(x);
+    }
+    if(ok) out.push(v); else skipped++;
+  }
+  return {rows:out, skipped:skipped};
+}
+
+function pjSay(id, msg, bad){
+  var e=el(id); if(!e) return;
+  e.style.display='';
+  e.innerHTML=msg;
+  e.style.borderLeftColor = bad ? 'var(--red)' : 'var(--green)';
+}
+
+function pjDownload(name, text, mime){
+  var blob=new Blob([text], {type:mime||'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 30000);
+}
+
+/* ------------------------------------------------- critical state fit --- */
+// e = Gamma - lambda10 * log10(p'), ordinary least squares in log space.
+function pjFitCsl(pts){
+  var n=pts.length; if(n<2) return null;
+  var sx=0, sy=0, sxx=0, sxy=0;
+  pts.forEach(function(p){
+    var x=Math.log10(p.p), y=p.e;
+    sx+=x; sy+=y; sxx+=x*x; sxy+=x*y;
+  });
+  var den=n*sxx-sx*sx;
+  if(Math.abs(den)<1e-12) return null;
+  var slope=(n*sxy-sx*sy)/den, inter=(sy-slope*sx)/n;
+  var ybar=sy/n, ssTot=0, ssRes=0;
+  pts.forEach(function(p){
+    var x=Math.log10(p.p), fit=inter+slope*x;
+    ssTot+=(p.e-ybar)*(p.e-ybar); ssRes+=(p.e-fit)*(p.e-fit);
+  });
+  return {Gamma:inter, lambda10:-slope, n:n,
+          r2: ssTot>1e-12 ? 1-ssRes/ssTot : 1, source:'your tests'};
+}
+
+function pjActiveCsl(){
+  if(PJ.cslMode==='up' && PJ.csl) return PJ.csl;
+  var s=KS_SANDS[Math.max(0,+(el('pjSand')||{value:0}).value||0)];
+  return {Gamma:s.Gamma, lambda10:s.lambda10, n:null, r2:null, source:s.name};
+}
+
+/* --------------------------------------------- cyclic test fit (9.9) --- */
+// CRR = a - b*psi0, fitted only to tests near the target cycle count.
+function pjFitCyc(pts, nl){
+  var use=pts.filter(function(p){ return Math.abs(p.nl-nl)<=2; });
+  var n=use.length; if(n<2) return null;
+  var sx=0, sy=0, sxx=0, sxy=0;
+  use.forEach(function(p){ sx+=p.psi0; sy+=p.csr; sxx+=p.psi0*p.psi0; sxy+=p.psi0*p.csr; });
+  var den=n*sxx-sx*sx;
+  if(Math.abs(den)<1e-12) return null;
+  var slope=(n*sxy-sx*sy)/den, inter=(sy-slope*sx)/n;
+  var ybar=sy/n, ssTot=0, ssRes=0;
+  use.forEach(function(p){
+    var fit=inter+slope*p.psi0;
+    ssTot+=(p.csr-ybar)*(p.csr-ybar); ssRes+=(p.csr-fit)*(p.csr-fit);
+  });
+  return {a:inter, b:-slope, n:n, used:use,
+          r2: ssTot>1e-12 ? 1-ssRes/ssTot : 1};
+}
+
+/* ------------------------------------------------- the profile itself --- */
+function pjRd(z){ return z<=9.15 ? 1-0.00765*z : 1.174-0.0267*z; }
+
+function pjCompute(){
+  var csl=pjActiveCsl();
+  var g=num('pjGamma'), wt=num('pjWt'), ko=num('pjKo');
+  var amax=num('pjAmax'), M=num('pjMw'), km=KM(M);
+  var lam=csl.lambda10, k=kOf(lam), m=mOf(lam);
+  PJ.rows = PJ.cpt.map(function(r){
+    var sv=g*r.z;
+    var u0=r.z>wt ? 9.81*(r.z-wt) : 0;
+    var sve=Math.max(0.5, sv-u0);
+    var qtk=r.qt*1000;
+    var qnet=Math.max(1, qtk-sv);
+    var Q=qnet/sve, F=(r.fs/qnet)*100, Bq=(r.u2-u0)/qnet;
+    var po=sve*(1+2*ko)/3;
+    var Qp=(qtk-po)/po;
+    var ic=icOf(Q,F,Bq);
+    var psi=-Math.log(Math.max(1,Qp)/k)/m;
+    var rd=Math.max(0.3, pjRd(r.z));
+    var csr=0.65*amax*(sv/sve)*rd;
+    var crr75=crrEq75(psi);
+    var crr=crr75*km;
+    return {z:r.z, qt:r.qt, fs:r.fs, u2:r.u2, sv:sv, u0:u0, sve:sve,
+            Q:Q, F:F, Bq:Bq, po:po, Qp:Qp, ic:ic, psi:psi,
+            rd:rd, csr:csr, crr75:crr75, crr:crr,
+            fs_liq: csr>1e-9 ? crr/csr : 99};
+  });
+  return PJ.rows;
+}
+
+// Module 2's characteristic value: mean + z*sd of psi over the chosen layer.
+// invNorm() already exists in this module -- no second copy of Acklam's algorithm.
+function pjLayer(){
+  var t=num('pjTop'), b=num('pjBot');
+  if(b<t){ var s=t; t=b; b=s; }
+  return PJ.rows.filter(function(r){ return r.z>=t && r.z<=b; });
+}
+
+function pjPsiK(){
+  var lay=pjLayer(); if(!lay.length) return null;
+  var n=lay.length, mean=0;
+  lay.forEach(function(r){ mean+=r.psi; }); mean/=n;
+  var v=0; lay.forEach(function(r){ v+=(r.psi-mean)*(r.psi-mean); });
+  var sd=n>1 ? Math.sqrt(v/(n-1)) : 0;
+  var z=invNorm(num('pjPct')/100);
+  return {mean:mean, sd:sd, z:z, psik:mean+z*sd, n:n};
+}
+
+/* ------------------------------------------------------------- charts --- */
+function pjAxisFrame(host, h, ml, mr, mt, mb){
+  var cv=prepCanvas(host, h, 280), ctx=cv.ctx;
+  var pw=cv.W-ml-mr, ph=cv.H-mt-mb;
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  return {ctx:ctx, W:cv.W, H:cv.H, pw:pw, ph:ph, ml:ml, mt:mt};
+}
+function pjFrameEdge(ctx, ml, mt, pw, ph){
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+}
+function pjYLabel(ctx, text, x, cy){
+  ctx.save(); ctx.translate(x, cy); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.font='10.5px Arial'; ctx.fillStyle='#61737b'; ctx.fillText(text,0,0); ctx.restore();
+}
+
+function pjDrawCsl(){
+  var host=el('pjCslChart'); if(!host) return;
+  var f=pjAxisFrame(host, 240, 54, 16, 14, 42), ctx=f.ctx, ml=f.ml, mt=f.mt, pw=f.pw, ph=f.ph;
+  var csl=pjActiveCsl(), pts=(PJ.cslMode==='up') ? PJ.cslPts : [];
+  var pmin=10, pmax=1000;
+  var es=[csl.Gamma-csl.lambda10*Math.log10(pmin), csl.Gamma-csl.lambda10*Math.log10(pmax)];
+  pts.forEach(function(p){ es.push(p.e); });
+  var emin=Math.min.apply(null,es)-0.03, emax=Math.max.apply(null,es)+0.03;
+  function X(p){ return ml+pw*(Math.log10(p)-Math.log10(pmin))/(Math.log10(pmax)-Math.log10(pmin)); }
+  function Y(e){ return mt+ph*(1-(e-emin)/(emax-emin)); }
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  [10,20,50,100,200,500,1000].forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  var yt=niceTicks(emin,emax,4);
+  yt.values.forEach(function(v){ if(v<emin||v>emax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
+  ctx.moveTo(X(pmin),Y(csl.Gamma-csl.lambda10*Math.log10(pmin)));
+  ctx.lineTo(X(pmax),Y(csl.Gamma-csl.lambda10*Math.log10(pmax))); ctx.stroke();
+  pts.forEach(function(p){
+    if(p.p<pmin||p.p>pmax) return;
+    ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(p.p),Y(p.e),4.2,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
+  });
+  pjFrameEdge(ctx, ml, mt, pw, ph);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [10,100,1000].forEach(function(v){ ctx.fillText(String(v), clampLabelX(ctx,X(v),String(v),ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText("mean effective stress p' (kPa, log scale)", ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ if(v<emin||v>emax) return; ctx.fillText(v.toFixed(yt.dp+1), ml-7, Y(v)); });
+  pjYLabel(ctx, 'void ratio e', 13, mt+ph/2);
+}
+
+function pjDepthChart(host, h, maxZ){
+  var f=pjAxisFrame(host, h, 52, 16, 14, 42);
+  f.maxZ=maxZ;
+  f.Y=function(z){ return f.mt+f.ph*Math.max(0,Math.min(1,z/maxZ)); };
+  return f;
+}
+function pjDepthAxis(f, label){
+  var ctx=f.ctx;
+  var zt=niceTicks(0,f.maxZ,6);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  zt.values.forEach(function(v){ if(v<0||v>f.maxZ) return; ctx.fillText(v.toFixed(0), f.ml-7, f.Y(v)); });
+  pjYLabel(ctx, 'depth (m)', 13, f.mt+f.ph/2);
+  ctx.fillStyle='#61737b'; ctx.font='10.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  ctx.fillText(label, f.ml+f.pw/2, f.mt+f.ph+20);
+}
+
+function pjDrawPsi(){
+  var host=el('pjPsiChart'); if(!host) return;
+  if(!PJ.rows.length){ var e=prepCanvas(host,300,280);
+    e.ctx.fillStyle='#8a97a0'; e.ctx.font='12px Arial'; e.ctx.textAlign='center';
+    e.ctx.fillText('Load a sounding to see ψ with depth', e.W/2, e.H/2); return; }
+  var maxZ=Math.max.apply(null, PJ.rows.map(function(r){ return r.z; }));
+  var f=pjDepthChart(host, 330, maxZ), ctx=f.ctx, ml=f.ml, mt=f.mt, pw=f.pw, ph=f.ph;
+  var xmin=-0.30, xmax=0.15;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  var xb=X(PSI_DIL_BOUNDARY);
+  ctx.fillStyle='#e9f6ef'; ctx.fillRect(ml,mt,xb-ml,ph);
+  ctx.fillStyle='#fdeee9'; ctx.fillRect(xb,mt,ml+pw-xb,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var xt=niceTicks(xmin,xmax,5);
+  xt.values.forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  ctx.strokeStyle='#268160'; ctx.lineWidth=1.6; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xb,mt); ctx.lineTo(xb,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+  var t=num('pjTop'), b=num('pjBot'); if(b<t){ var s=t; t=b; b=s; }
+  ctx.fillStyle='rgba(20,121,184,0.08)'; ctx.fillRect(ml, f.Y(t), pw, f.Y(b)-f.Y(t));
+  ctx.strokeStyle='#c64852'; ctx.lineWidth=1.8; ctx.beginPath();
+  PJ.rows.forEach(function(r,i){ var x=X(r.psi), y=f.Y(r.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+  ctx.stroke();
+  pjFrameEdge(ctx, ml, mt, pw, ph);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  xt.values.forEach(function(v){ var lab=v.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  pjDepthAxis(f, 'state parameter ψ');
+}
+
+function pjDrawFs(){
+  var host=el('pjFsChart'); if(!host) return;
+  if(!PJ.rows.length){ var e=prepCanvas(host,300,280);
+    e.ctx.fillStyle='#8a97a0'; e.ctx.font='12px Arial'; e.ctx.textAlign='center';
+    e.ctx.fillText('Load a sounding to see demand against resistance', e.W/2, e.H/2); return; }
+  var maxZ=Math.max.apply(null, PJ.rows.map(function(r){ return r.z; }));
+  var f=pjDepthChart(host, 330, maxZ), ctx=f.ctx, ml=f.ml, mt=f.mt, pw=f.pw, ph=f.ph;
+  var hi=Math.max(0.6, Math.min(1.2, Math.max.apply(null, PJ.rows.map(function(r){ return Math.max(r.csr,Math.min(1.5,r.crr)); }))*1.15));
+  function X(v){ return ml+pw*Math.max(0,Math.min(1,v/hi)); }
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var xt=niceTicks(0,hi,5);
+  xt.values.forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  // shade the depths the analysis says will trigger
+  ctx.fillStyle='rgba(198,72,82,0.10)';
+  PJ.rows.forEach(function(r,i){
+    if(r.fs_liq>=1 || i===0) return;
+    var y0=f.Y(PJ.rows[i-1].z), y1=f.Y(r.z);
+    ctx.fillRect(ml, y0, pw, Math.max(1,y1-y0));
+  });
+  function series(key, col, wid){
+    ctx.strokeStyle=col; ctx.lineWidth=wid; ctx.beginPath();
+    PJ.rows.forEach(function(r,i){ var x=X(r[key]), y=f.Y(r.z); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+    ctx.stroke();
+  }
+  series('crr','#1479b8',2.4);
+  series('csr','#e38a22',2.4);
+  pjFrameEdge(ctx, ml, mt, pw, ph);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  xt.values.forEach(function(v){ var lab=v.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  pjDepthAxis(f, 'cyclic stress / resistance ratio');
+}
+
+function pjDrawCyc(){
+  var host=el('pjCycChart'); if(!host) return;
+  var f=pjAxisFrame(host, 250, 54, 16, 14, 42), ctx=f.ctx, ml=f.ml, mt=f.mt, pw=f.pw, ph=f.ph;
+  var xmin=-0.25, xmax=0.05, ymin=0, ymax=0.6;
+  function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
+  function Y(v){ return mt+ph*(1-Math.max(0,Math.min(1,(v-ymin)/(ymax-ymin)))); }
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
+  var xt=niceTicks(xmin,xmax,5), yt=niceTicks(ymin,ymax,5);
+  xt.values.forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
+  yt.values.forEach(function(v){ var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.4; ctx.beginPath();
+  for(var i=0;i<=120;i++){ var v=xmin+(xmax-xmin)*i/120, x=X(v), y=Y(crrEq75(v));
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+  ctx.stroke();
+  if(PJ.cycFit){
+    ctx.strokeStyle='#7653a6'; ctx.lineWidth=2.6; ctx.beginPath();
+    ctx.moveTo(X(xmin),Y(PJ.cycFit.a-PJ.cycFit.b*xmin));
+    ctx.lineTo(X(xmax),Y(PJ.cycFit.a-PJ.cycFit.b*xmax)); ctx.stroke();
+    PJ.cycFit.used.forEach(function(p){
+      ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(p.psi0),Y(p.csr),4.2,0,7); ctx.fill();
+      ctx.strokeStyle='#fff'; ctx.lineWidth=1.3; ctx.stroke();
+    });
+  }
+  pjFrameEdge(ctx, ml, mt, pw, ph);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  xt.values.forEach(function(v){ var lab=v.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('state parameter ψ', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  yt.values.forEach(function(v){ ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  pjYLabel(ctx, 'cyclic resistance ratio', 13, mt+ph/2);
+}
+
+/* ------------------------------------------------------------- update --- */
+function pjUpdate(){
+  var csl=pjActiveCsl();
+  el('pjGammaOut').textContent=num('pjGamma').toFixed(1);
+  el('pjWtOut').textContent=num('pjWt').toFixed(1);
+  el('pjKoOut').textContent=num('pjKo').toFixed(2);
+  el('pjMwOut').textContent=num('pjMw').toFixed(2);
+  el('pjAmaxOut').textContent=num('pjAmax').toFixed(2);
+  el('pjTopOut').textContent=num('pjTop').toFixed(2);
+  el('pjBotOut').textContent=num('pjBot').toFixed(2);
+  el('pjPctOut').textContent=num('pjPct').toFixed(0);
+  el('pjNlOut').textContent=num('pjNl').toFixed(0);
+
+  el('pjCslStats').innerHTML =
+    '<div class="stat hi"><small>&lambda;<sub>10</sub></small><strong>'+csl.lambda10.toFixed(4)+'</strong></div>'+
+    '<div class="stat"><small>&Gamma; (e at p&prime;=1 kPa)</small><strong>'+csl.Gamma.toFixed(3)+'</strong></div>'+
+    '<div class="stat"><small>source</small><strong style="font-size:15px">'+csl.source+'</strong>'+
+      (csl.r2!==null&&csl.r2!==undefined ? '<span class="badge">R&sup2; '+csl.r2.toFixed(3)+' on '+csl.n+' tests</span>' : '<span class="badge">Table 2.1</span>')+'</div>';
+
+  pjCompute();
+  PJ.cycFit = PJ.cyc.length ? pjFitCyc(PJ.cyc, num('pjNl')) : null;
+
+  var k=pjPsiK(), M=num('pjMw'), km=KM(M);
+  if(k){
+    var crr75=crrEq75(k.psik), crr=crr75*km;
+    var lay=pjLayer();
+    var minFs=Math.min.apply(null, lay.map(function(r){ return r.fs_liq; }));
+    var trig=lay.filter(function(r){ return r.fs_liq<1; });
+    var dz = lay.length>1 ? (lay[lay.length-1].z-lay[0].z)/(lay.length-1) : 0;
+    var thick=trig.length*dz;
+    var proj = PJ.cycFit ? (PJ.cycFit.a - PJ.cycFit.b*k.psik)*km : null;
+    el('pjStats').innerHTML =
+      '<div class="stat hi"><small>&psi;<sub>k</sub> over the layer ('+num('pjPct').toFixed(0)+'th pct)</small><strong>'+(k.psik>=0?'+':'')+k.psik.toFixed(3)+'</strong>'+
+        '<span class="badge">mean '+(k.mean>=0?'+':'')+k.mean.toFixed(3)+', sd '+k.sd.toFixed(3)+'</span></div>'+
+      '<div class="stat"><small>CRR at M = '+M.toFixed(2)+' (Eq. 7.5 &times; K<sub>M</sub>)</small><strong>'+crr.toFixed(3)+'</strong>'+
+        '<span class="badge">K<sub>M</sub> = '+km.toFixed(3)+'</span></div>'+
+      '<div class="stat"><small>lowest FS in the layer</small><strong>'+(isFinite(minFs)?minFs.toFixed(2):'—')+'</strong>'+
+        (minFs<1?'<span class="badge contract">triggering predicted</span>':'<span class="badge dilate">no triggering</span>')+'</div>'+
+      '<div class="stat"><small>thickness with FS &lt; 1</small><strong>'+thick.toFixed(2)+' m</strong>'+
+        '<span class="badge">'+trig.length+' of '+lay.length+' readings</span></div>'+
+      (proj!==null ? '<div class="stat"><small>your own cyclic fit, at &psi;<sub>k</sub></small><strong>'+proj.toFixed(3)+'</strong>'+
+        '<span class="badge">'+(proj>crr?'less':'more')+' conservative than Eq. 7.5</span></div>' : '');
+  } else {
+    el('pjStats').innerHTML='<div class="stat"><small>design summary</small><strong style="font-size:14px">Load a sounding, then choose a layer</strong></div>';
+  }
+
+  el('pjCycStats').innerHTML = PJ.cycFit
+    ? '<div class="stat hi"><small>a &mdash; CRR at &psi; = 0</small><strong>'+PJ.cycFit.a.toFixed(3)+'</strong></div>'+
+      '<div class="stat"><small>b &mdash; slope</small><strong>'+PJ.cycFit.b.toFixed(3)+'</strong></div>'+
+      '<div class="stat"><small>fit</small><strong>R&sup2; '+PJ.cycFit.r2.toFixed(3)+'</strong><span class="badge">'+PJ.cycFit.n+' tests near N<sub>L</sub>='+num('pjNl').toFixed(0)+'</span></div>'
+    : '<div class="stat"><small>your cyclic tests</small><strong style="font-size:14px">'+(PJ.cyc.length?'No tests within ±2 cycles of N_L':'None loaded — optional')+'</strong></div>';
+
+  pjDrawCsl(); pjDrawPsi(); pjDrawFs(); pjDrawCyc();
+}
+
+/* ----------------------------------------------------------- examples --- */
+function pjExampleCsl(){
+  var rows=["p_kPa,void_ratio"];
+  var G=0.845, lam=0.045, seed=7;
+  [30,50,80,120,200,320,500,800].forEach(function(p){
+    seed=(seed*1103515245+12345)%2147483648;
+    var jitter=((seed/2147483648)-0.5)*0.012;
+    rows.push(p+","+(G-lam*Math.log10(p)+jitter).toFixed(4));
+  });
+  return rows.join("\n");
+}
+function pjExampleCyc(){
+  var rows=["psi0,CSR,NL"];
+  [[-0.14,0.26,14],[-0.12,0.23,15],[-0.10,0.20,16],[-0.08,0.18,15],
+   [-0.06,0.15,14],[-0.04,0.13,16],[-0.02,0.11,15],[-0.10,0.28,6],[-0.06,0.21,6]]
+   .forEach(function(r){ rows.push(r.join(",")); });
+  return rows.join("\n");
+}
+// A demonstration sounding: a loose layer between two denser ones, so the
+// factor-of-safety plot actually has something to show.
+function pjDemoSounding(){
+  var out=[], seed=11;
+  for(var z=0.5; z<=24.0001; z+=0.25){
+    seed=(seed*1103515245+12345)%2147483648;
+    var n=((seed/2147483648)-0.5);
+    // tuned so the middle layer really is loose: psi there lands near zero, which is
+    // the whole point of the figure. Dense sand above and below for contrast.
+    var base = z<4 ? 4.5+0.30*z : (z<11 ? 1.20+0.08*z : 6.0+0.60*(z-11));
+    var qt = Math.max(0.6, base*(1+0.10*n));
+    var fs = Math.max(5, qt*1000*(z<11&&z>4 ? 0.016 : 0.008)*(1+0.18*n));
+    var u2 = Math.max(0, (z>2 ? 9.81*(z-2) : 0)*(z<11&&z>4 ? 1.25 : 0.98)+14*n);
+    out.push({z:+z.toFixed(2), qt:+qt.toFixed(3), fs:+fs.toFixed(1), u2:+u2.toFixed(1)});
+  }
+  return out;
+}
+function pjCptCsvText(rows){
+  var head = PJ.units==='metric'
+    ? "depth_m,qt_MPa,fs_kPa,u2_kPa" : "depth_ft,qt_tsf,fs_tsf,u2_psi";
+  var out=[head];
+  rows.forEach(function(r){
+    out.push(PJ.units==='metric'
+      ? [r.z, r.qt, r.fs, r.u2].join(",")
+      : [(r.z*3.28084).toFixed(2), (r.qt*1000/95.76).toFixed(3),
+         (r.fs/95.76).toFixed(4), (r.u2*0.145038).toFixed(2)].join(","));
+  });
+  return out.join("\n");
+}
+
+/* ---------------------------------------------------------- downloads --- */
+function pjResultsCsv(){
+  var csl=pjActiveCsl(), k=pjPsiK(), M=num('pjMw');
+  var L=[];
+  L.push("# Paywandi/J&B Module 4 - cyclic liquefaction triggering assessment");
+  L.push("# generated "+new Date().toISOString());
+  L.push("# critical state line: lambda10="+csl.lambda10.toFixed(4)+"  Gamma="+csl.Gamma.toFixed(3)+"  source="+csl.source);
+  L.push("# gamma="+num('pjGamma')+" kN/m3, water table="+num('pjWt')+" m, K0="+num('pjKo'));
+  L.push("# earthquake: M="+M+", amax/g="+num('pjAmax')+", KM="+KM(M).toFixed(3));
+  if(k) L.push("# layer "+num('pjTop')+"-"+num('pjBot')+" m: psi_k("+num('pjPct')+"th)="+k.psik.toFixed(4)+
+               "  mean="+k.mean.toFixed(4)+"  sd="+k.sd.toFixed(4));
+  L.push("# CSR: Seed & Idriss (1971) simplified, rd after Liao & Whitman (1986). CRR7.5: Eq 7.5. No Ksigma, no Kalpha.");
+  L.push("depth_m,qt_MPa,fs_kPa,u2_kPa,sigma_v_kPa,u0_kPa,sigma_v_eff_kPa,Q,F_pct,Bq,p0_kPa,Qp,Ic,psi,rd,CSR,CRR7.5,CRR,FS_liq");
+  PJ.rows.forEach(function(r){
+    L.push([r.z,r.qt,r.fs,r.u2,r.sv.toFixed(2),r.u0.toFixed(2),r.sve.toFixed(2),
+            r.Q.toFixed(2),r.F.toFixed(3),r.Bq.toFixed(4),r.po.toFixed(2),r.Qp.toFixed(2),
+            r.ic.toFixed(3),r.psi.toFixed(4),r.rd.toFixed(4),r.csr.toFixed(4),
+            r.crr75.toFixed(4),r.crr.toFixed(4),r.fs_liq.toFixed(3)].join(","));
+  });
+  return L.join("\n");
+}
+
+/* ------------------------------------------------- .xlsx, by hand ------ *
+ * A real workbook written as a stored-entry ZIP of OOXML parts: no library,
+ * no CDN, nothing to install. Every derived column is a LIVE FORMULA against
+ * the Inputs sheet, so a reviewer can change gamma, the water table, K0, the
+ * magnitude or the percentile in Excel and the whole assessment and its four
+ * charts recalculate. The same writer is used in Module 2.
+ * ----------------------------------------------------------------------- */
+var XLSX_CRC = (function(){
+  var t=new Uint32Array(256);
+  for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c = (c&1) ? (0xEDB88320^(c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t;
+})();
+function xlsxCrc32(bytes){
+  var c=0xFFFFFFFF;
+  for(var i=0;i<bytes.length;i++) c = XLSX_CRC[(c^bytes[i])&0xFF] ^ (c>>>8);
+  return (c^0xFFFFFFFF)>>>0;
+}
+function xlsxZip(files){
+  var enc=new TextEncoder(), parts=[], central=[], offset=0;
+  function u16(v){ return [v&255,(v>>8)&255]; }
+  function u32(v){ return [v&255,(v>>8)&255,(v>>16)&255,(v>>>24)&255]; }
+  Object.keys(files).forEach(function(name){
+    var data=enc.encode(files[name]), nb=enc.encode(name), crc=xlsxCrc32(data);
+    var h=[].concat(u32(0x04034B50),u16(20),u16(0),u16(0),u16(0),u16(0),
+                    u32(crc),u32(data.length),u32(data.length),u16(nb.length),u16(0));
+    parts.push(new Uint8Array(h), nb, data);
+    central.push({nb:nb, crc:crc, len:data.length, off:offset});
+    offset += h.length + nb.length + data.length;
+  });
+  var cstart=offset, cparts=[];
+  central.forEach(function(e){
+    var h=[].concat(u32(0x02014B50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),
+                    u32(e.crc),u32(e.len),u32(e.len),u16(e.nb.length),u16(0),u16(0),
+                    u16(0),u16(0),u32(0),u32(e.off));
+    cparts.push(new Uint8Array(h), e.nb);
+    offset += h.length + e.nb.length;
+  });
+  var end=new Uint8Array([].concat(u32(0x06054B50),u16(0),u16(0),
+            u16(central.length),u16(central.length),u32(offset-cstart),u32(cstart),u16(0)));
+  var all=parts.concat(cparts,[end]), total=0;
+  all.forEach(function(p){ total+=p.length; });
+  var out=new Uint8Array(total), pos=0;
+  all.forEach(function(p){ out.set(p,pos); pos+=p.length; });
+  return out;
+}
+function xesc(t){
+  return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function xlsxSheet(rows, cols){
+  var o=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'];
+  if(cols){ o.push('<cols>');
+    cols.forEach(function(c){ o.push('<col min="'+c[0]+'" max="'+c[1]+'" width="'+c[2]+'" customWidth="1"/>'); });
+    o.push('</cols>'); }
+  o.push('<sheetData>');
+  rows.forEach(function(r){
+    o.push('<row r="'+r[0]+'">');
+    r[1].forEach(function(c){
+      var ref=c[0]+r[0];
+      if(c[1]==='s') o.push('<c r="'+ref+'" t="inlineStr" s="'+(r[0]===1?1:0)+'"><is><t xml:space="preserve">'+xesc(c[2])+'</t></is></c>');
+      else if(c[1]==='n') o.push('<c r="'+ref+'"><v>'+c[2]+'</v></c>');
+      else o.push('<c r="'+ref+'"><f>'+xesc(c[2])+'</f></c>');
+    });
+    o.push('</row>');
+  });
+  o.push('</sheetData></worksheet>');
+  return o.join('');
+}
+function xlsxChart(title,xcol,serName,n,sheet){
+  var last=n+1;
+  var xref="'"+sheet+"'!$"+xcol+"$2:$"+xcol+"$"+last, yref="'"+sheet+"'!$A$2:$A$"+last;
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<c:chartSpace xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><c:chart>'+
+    '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>'+xesc(title)+'</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>'+
+    '<c:autoTitleDeleted val="0"/><c:plotArea><c:layout/>'+
+    '<c:scatterChart><c:scatterStyle val="lineMarker"/><c:varyColors val="0"/><c:ser>'+
+    '<c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>'+xesc(serName)+'</c:f></c:strRef></c:tx>'+
+    '<c:spPr><a:ln w="12700"><a:solidFill><a:srgbClr val="1479B8"/></a:solidFill></a:ln></c:spPr>'+
+    '<c:marker><c:symbol val="none"/></c:marker>'+
+    '<c:xVal><c:numRef><c:f>'+xesc(xref)+'</c:f></c:numRef></c:xVal>'+
+    '<c:yVal><c:numRef><c:f>'+xesc(yref)+'</c:f></c:numRef></c:yVal>'+
+    '<c:smooth val="0"/></c:ser><c:axId val="111111111"/><c:axId val="222222222"/></c:scatterChart>'+
+    '<c:valAx><c:axId val="111111111"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="t"/>'+
+    '<c:title><c:tx><c:rich><a:bodyPr/><a:lstStyle/><a:p><a:r><a:t>'+xesc(title)+'</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>'+
+    '<c:crossAx val="222222222"/></c:valAx>'+
+    '<c:valAx><c:axId val="222222222"/><c:scaling><c:orientation val="maxMin"/></c:scaling><c:delete val="0"/><c:axPos val="l"/>'+
+    '<c:title><c:tx><c:rich><a:bodyPr rot="-5400000" vert="horz"/><a:lstStyle/><a:p><a:r><a:t>Depth (m)</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title>'+
+    '<c:crossAx val="111111111"/></c:valAx></c:plotArea>'+
+    '<c:legend><c:legendPos val="b"/><c:overlay val="0"/></c:legend><c:plotVisOnly val="1"/></c:chart></c:chartSpace>';
+}
+
+function buildModule4Workbook(){
+  var rows=PJ.rows, n=rows.length;
+  if(!n) return null;
+  var csl=pjActiveCsl(), last=n+1, SH='Assessment';
+
+  // ---- Inputs sheet: every assumption in one place, and k, m, KM, psi_k live ----
+  var I=[];
+  function irow(r, label, val, kind, note){
+    I.push([r,[["A","s",label],["B",kind||"n",val]].concat(note?[["C","s",note]]:[])]);
+  }
+  I.push([1,[["A","s","Input"],["B","s","Value"],["C","s","Note"],["E","s","M"],["F","s","KM (Fig. 7.32)"]]]);
+  irow(2,"Unit weight gamma (kN/m3)", num('pjGamma'), "n", "assumed, not measured by the cone");
+  irow(3,"Water table depth (m)", num('pjWt'), "n", "hydrostatic below this depth");
+  irow(4,"K0", num('pjKo'), "n", "converts sigma'v to mean stress p'o");
+  irow(5,"lambda10 (critical state slope)", csl.lambda10, "n", csl.source);
+  irow(6,"Gamma (e at p'=1 kPa)", csl.Gamma, "n", csl.source);
+  irow(7,"k  = 8+0.55/(lambda10-0.01)", "8+0.55/(B5-0.01)", "f", "Eq. 4.11a");
+  irow(8,"m  = 8.1-2.3*LOG10(lambda10)", "8.1-2.3*LOG10(B5)", "f", "Eq. 4.11b");
+  irow(9,"Moment magnitude M", num('pjMw'), "n", "drives KM");
+  irow(10,"amax/g", num('pjAmax'), "n", "peak ground acceleration");
+  irow(11,"KM", "IF(B9<=E2,F2,IF(B9>=E6,F6,INDEX(F2:F6,MATCH(B9,E2:E6,1))+(B9-INDEX(E2:E6,MATCH(B9,E2:E6,1)))*(INDEX(F2:F6,MATCH(B9,E2:E6,1)+1)-INDEX(F2:F6,MATCH(B9,E2:E6,1)))/(INDEX(E2:E6,MATCH(B9,E2:E6,1)+1)-INDEX(E2:E6,MATCH(B9,E2:E6,1)))))", "f", "linear between the five tabulated points");
+  irow(12,"Layer top (m)", num('pjTop'), "n", "the layer the design number is for");
+  irow(13,"Layer base (m)", num('pjBot'), "n", "");
+  irow(14,"Percentile for psi_k (%)", num('pjPct'), "n", "80 = the value 80% of the layer is denser than");
+  irow(15,"n readings in layer", "COUNTIFS("+SH+"!$A$2:$A$"+last+',">="&B12,'+SH+"!$A$2:$A$"+last+',"<="&B13)', "f", "");
+  irow(16,"mean psi in layer", "AVERAGEIFS("+SH+"!$O$2:$O$"+last+","+SH+"!$A$2:$A$"+last+',">="&B12,'+SH+"!$A$2:$A$"+last+',"<="&B13)', "f", "");
+  irow(17,"sd of psi in layer", "SQRT(SUMPRODUCT(("+SH+"!$A$2:$A$"+last+">=B12)*("+SH+"!$A$2:$A$"+last+"<=B13)*("+SH+"!$O$2:$O$"+last+"-B16)^2)/MAX(1,B15-1))", "f", "");
+  irow(18,"psi_k", "B16+NORM.S.INV(B14/100)*B17", "f", "mean + z*sd, Module 2's characteristic value");
+  irow(19,"CRR design = 0.06*EXP(-9*psi_k)*KM", "0.06*EXP(-9*B18)*B11", "f", "Eq. 7.5 scaled for magnitude");
+  // the five tabulated KM points, so the KM formula above has something to read
+  KM_PTS.forEach(function(p,i){
+    var r=2+i, row=I.filter(function(x){ return x[0]===r; })[0];
+    if(row) row[1]=row[1].concat([["E","n",p[0]],["F","n",p[1]]]);
+  });
+
+  // ---- Assessment sheet: four uploaded columns, everything else a formula ----
+  var HDR=["Depth z (m)","qt (MPa)","fs (kPa)","u2 (kPa)","sigma_vo (kPa)","u0 (kPa)",
+    "sigma'vo (kPa)","qnet (kPa)","Q","F (%)","Bq","p'o (kPa)","Qp","Ic","psi","rd",
+    "CSR (demand)","CRR (resistance)","FS against triggering"];
+  var C="ABCDEFGHIJKLMNOPQRS".split("");
+  var D=[[1, HDR.map(function(h,i){ return [C[i],"s",h]; })]];
+  rows.forEach(function(r,i){
+    var R=i+2;
+    D.push([R,[
+      [C[0],"n",r.z],[C[1],"n",r.qt],[C[2],"n",r.fs],[C[3],"n",r.u2],
+      [C[4],"f","Inputs!$B$2*A"+R],
+      [C[5],"f","IF(A"+R+">Inputs!$B$3,9.81*(A"+R+"-Inputs!$B$3),0)"],
+      [C[6],"f","MAX(0.5,E"+R+"-F"+R+")"],
+      [C[7],"f","MAX(1,B"+R+"*1000-E"+R+")"],
+      [C[8],"f","H"+R+"/G"+R],
+      [C[9],"f","C"+R+"/H"+R+"*100"],
+      [C[10],"f","(D"+R+"-F"+R+")/H"+R],
+      [C[11],"f","G"+R+"*(1+2*Inputs!$B$4)/3"],
+      [C[12],"f","(B"+R+"*1000-L"+R+")/L"+R],
+      [C[13],"f","SQRT((3-LOG10(MAX(0.5,I"+R+"*(1-K"+R+")+1)))^2+(1.5+1.3*LOG10(MAX(0.05,J"+R+")))^2)"],
+      [C[14],"f","-LN(MAX(1,M"+R+")/Inputs!$B$7)/Inputs!$B$8"],
+      [C[15],"f","IF(A"+R+"<=9.15,1-0.00765*A"+R+",1.174-0.0267*A"+R+")"],
+      [C[16],"f","0.65*Inputs!$B$10*(E"+R+"/G"+R+")*MAX(0.3,P"+R+")"],
+      [C[17],"f","0.06*EXP(-9*O"+R+")*Inputs!$B$11"],
+      [C[18],"f","IF(Q"+R+">0,R"+R+"/Q"+R+",99)"]
+    ]]);
+  });
+
+  var notes=[
+    "Module 4 - cyclic liquefaction triggering assessment",
+    "Generated "+new Date().toISOString()+" from the interactive companion to Jefferies & Been, Soil Liquefaction: A Critical State Approach (2nd ed.).",
+    "",
+    "Only columns A-D are data. Everything else is a formula, and everything points at the Inputs sheet.",
+    "Change gamma, the water table, K0, lambda10, the magnitude, the percentile or the layer there and the whole sheet and the charts recalculate.",
+    "",
+    "Column E  sigma_vo = gamma * z",
+    "Column F  u0, hydrostatic below the water table",
+    "Column G  sigma'vo = sigma_vo - u0",
+    "Column L  p'o = sigma'vo*(1+2*K0)/3",
+    "Column M  Qp = (qt - p'o)/p'o",
+    "Column N  Ic, Eq. 4.13a (Been & Jefferies form, using Bq)",
+    "Column O  psi = -LN(Qp/k)/m, with k and m from lambda10 (Eqs. 4.11a-b)",
+    "Column P  rd, depth reduction after Liao & Whitman (1986)",
+    "Column Q  CSR = 0.65*(amax/g)*(sigma_vo/sigma'vo)*rd  -- Seed & Idriss (1971) simplified procedure",
+    "Column R  CRR = 0.06*EXP(-9*psi)*KM  -- Eq. 7.5, scaled by the Fig. 7.32 magnitude factor",
+    "Column S  FS = CRR/CSR",
+    "",
+    "WHAT IS FROM THE BOOK, AND WHAT IS NOT",
+    "Eq. 7.5, Eqs. 4.11a-b, Eq. 4.13a and the Fig. 7.32 KM points are the book's, used as published.",
+    "The CSR demand side is NOT from the book: it is the standard simplified procedure, included because a factor",
+    "of safety needs a demand. Substitute your own site-response analysis if you have one.",
+    "",
+    "LIMITS WORTH WRITING INTO THE REPORT",
+    "psi from a cone carries about +/-0.05 of scatter from stress level alone (Module 2). Treat column O as a band.",
+    "No Ksigma is applied: working in psi removes the need for it (Module 4, Section 6).",
+    "No Kalpha is applied. If the ground carries a static shear bias, the book is explicit that this needs",
+    "project-specific NorSand simulation rather than a correction factor (Module 4, Section 7).",
+    "The critical state line used here: lambda10 = "+csl.lambda10.toFixed(4)+", Gamma = "+csl.Gamma.toFixed(3)+" ("+csl.source+")."
+  ];
+  var noteRows=notes.map(function(t,i){ return [i+1,[["A","s",t]]]; });
+
+  var charts=[["psi (state parameter)","O","State parameter psi"],
+              ["CSR (demand)","Q","Cyclic stress ratio"],
+              ["CRR (resistance)","R","Cyclic resistance ratio"],
+              ["FS against triggering","S","Factor of safety"]];
+  var names=["Inputs",SH,"Charts","Notes"];
+  var f={};
+  var ct=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">',
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>',
+    '<Default Extension="xml" ContentType="application/xml"/>',
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>',
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'];
+  for(var i=1;i<=4;i++) ct.push('<Override PartName="/xl/worksheets/sheet'+i+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>');
+  ct.push('<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>');
+  charts.forEach(function(c,i){ ct.push('<Override PartName="/xl/charts/chart'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.drawingml.chart+xml"/>'); });
+  ct.push('</Types>');
+  f['[Content_Types].xml']=ct.join('');
+  f['_rels/.rels']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  f['xl/workbook.xml']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+    names.map(function(nm,i){ return '<sheet name="'+xesc(nm)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'; }).join('')+'</sheets></workbook>';
+  var wr=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'];
+  for(var j=0;j<4;j++) wr.push('<Relationship Id="rId'+(j+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(j+1)+'.xml"/>');
+  wr.push('<Relationship Id="rId5" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>');
+  f['xl/_rels/workbook.xml.rels']=wr.join('');
+  f['xl/styles.xml']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf/></cellStyleXfs><cellXfs count="2"><xf xfId="0"/><xf fontId="1" applyFont="1" xfId="0"/></cellXfs></styleSheet>';
+  f['xl/worksheets/sheet1.xml']=xlsxSheet(I,[[1,1,34],[2,2,16],[3,3,46],[5,6,16]]);
+  f['xl/worksheets/sheet2.xml']=xlsxSheet(D,[[1,4,13],[5,19,15]]);
+  f['xl/worksheets/sheet3.xml']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetData/><drawing r:id="rId1"/></worksheet>';
+  f['xl/worksheets/sheet4.xml']=xlsxSheet(noteRows,[[1,1,110]]);
+  f['xl/worksheets/_rels/sheet3.xml.rels']='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing1.xml"/></Relationships>';
+  var dr=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'];
+  charts.forEach(function(c,i){
+    var c0=(i%2)*9, r0=Math.floor(i/2)*20;
+    dr.push('<xdr:twoCellAnchor><xdr:from><xdr:col>'+c0+'</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>'+r0+'</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:from>'+
+      '<xdr:to><xdr:col>'+(c0+8)+'</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>'+(r0+19)+'</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to>'+
+      '<xdr:graphicFrame macro=""><xdr:nvGraphicFramePr><xdr:cNvPr id="'+(i+2)+'" name="Chart '+(i+1)+'"/><xdr:cNvGraphicFramePr/></xdr:nvGraphicFramePr>'+
+      '<xdr:xfrm><a:off x="0" y="0"/><a:ext cx="0" cy="0"/></xdr:xfrm>'+
+      '<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/chart">'+
+      '<c:chart xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:id="rId'+(i+1)+'"/>'+
+      '</a:graphicData></a:graphic></xdr:graphicFrame><xdr:clientData/></xdr:twoCellAnchor>');
+  });
+  dr.push('</xdr:wsDr>');
+  f['xl/drawings/drawing1.xml']=dr.join('');
+  var drr=['<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'];
+  charts.forEach(function(c,i){ drr.push('<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/chart" Target="../charts/chart'+(i+1)+'.xml"/>'); });
+  drr.push('</Relationships>');
+  f['xl/drawings/_rels/drawing1.xml.rels']=drr.join('');
+  charts.forEach(function(c,i){ f['xl/charts/chart'+(i+1)+'.xml']=xlsxChart(c[0],c[1],c[2],n,SH); });
+  return xlsxZip(f);
+}
+
+/* ------------------------------------------------------------- wiring --- */
+function pjSetCslMode(mode){
+  PJ.cslMode=mode;
+  el('pjCslModeDb').classList.toggle('on', mode==='db');
+  el('pjCslModeDb').setAttribute('aria-pressed', String(mode==='db'));
+  el('pjCslModeUp').classList.toggle('on', mode==='up');
+  el('pjCslModeUp').setAttribute('aria-pressed', String(mode==='up'));
+  el('pjCslDbWrap').style.display = mode==='db' ? '' : 'none';
+  el('pjCslUpWrap').style.display = mode==='up' ? '' : 'none';
+  pjUpdate();
+}
+function pjSetUnits(u){
+  PJ.units=u;
+  el('pjUnitMetric').classList.toggle('on', u==='metric');
+  el('pjUnitMetric').setAttribute('aria-pressed', String(u==='metric'));
+  el('pjUnitImperial').classList.toggle('on', u==='imperial');
+  el('pjUnitImperial').setAttribute('aria-pressed', String(u==='imperial'));
+  pjRenderCptGuide();
+}
+function pjRenderCptGuide(){
+  var m = PJ.units==='metric';
+  el('pjCptGuide').innerHTML =
+    '<thead><tr><th>Column 1</th><th>Column 2</th><th>Column 3</th><th>Column 4</th></tr></thead><tbody><tr>'+
+    '<td>depth ('+(m?'m':'ft')+')</td><td>q<sub>t</sub> ('+(m?'MPa':'tsf')+')</td>'+
+    '<td>f<sub>s</sub> ('+(m?'kPa':'tsf')+')</td><td>u<sub>2</sub> ('+(m?'kPa':'psi')+')</td></tr>'+
+    '<tr><td style="color:var(--muted)">e.g. 5.25</td><td style="color:var(--muted)">e.g. '+(m?'4.80':'50.1')+'</td>'+
+    '<td style="color:var(--muted)">e.g. '+(m?'42.0':'0.44')+'</td><td style="color:var(--muted)">e.g. '+(m?'31.9':'4.63')+'</td></tr></tbody>';
+}
+function pjReadFile(input, onText){
+  var f=input.files && input.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(){ onText(String(r.result||''), f.name); };
+  r.onerror=function(){ pjSay('pjCptStatus','Could not read that file — try re-saving it as plain CSV or TXT.',true); };
+  r.readAsText(f);
+}
+
+function pjInit(){
+  var sel=el('pjSand');
+  KS_SANDS.forEach(function(s,i){
+    var o=document.createElement('option'); o.value=i;
+    o.textContent=s.name+'  (λ₁₀='+s.lambda10.toFixed(3)+')';
+    sel.appendChild(o);
+  });
+  sel.value=4;                                  // Erksak, the book's workhorse sand
+  pjRenderCptGuide();
+
+  el('pjCslModeDb').addEventListener('click', function(){ pjSetCslMode('db'); });
+  el('pjCslModeUp').addEventListener('click', function(){ pjSetCslMode('up'); });
+  el('pjUnitMetric').addEventListener('click', function(){ pjSetUnits('metric'); });
+  el('pjUnitImperial').addEventListener('click', function(){ pjSetUnits('imperial'); });
+  sel.addEventListener('change', pjUpdate);
+
+  ['pjGamma','pjWt','pjKo','pjMw','pjAmax','pjTop','pjBot','pjPct','pjNl'].forEach(function(id){
+    el(id).addEventListener('input', pjUpdate);
+  });
+
+  el('pjCslFile').addEventListener('change', function(){
+    pjReadFile(this, function(text){
+      var p=pjParse(text,2);
+      var pts=p.rows.filter(function(r){ return r[0]>0 && r[1]>0 && r[1]<2.5; })
+                    .map(function(r){ return {p:r[0], e:r[1]}; });
+      if(pts.length<2){ pjSay('pjCslStatus','Found '+pts.length+' usable rows. Each row needs p′ in kPa then void ratio, e.g. <code>200,0.712</code>.',true); return; }
+      PJ.cslPts=pts; PJ.csl=pjFitCsl(pts);
+      var span=Math.log10(Math.max.apply(null,pts.map(function(x){return x.p;}))/Math.min.apply(null,pts.map(function(x){return x.p;})));
+      pjSay('pjCslStatus','Fitted <b>'+pts.length+'</b> tests: &lambda;<sub>10</sub> = <b>'+PJ.csl.lambda10.toFixed(4)+
+        '</b>, &Gamma; = <b>'+PJ.csl.Gamma.toFixed(3)+'</b>, R&sup2; = '+PJ.csl.r2.toFixed(3)+'.'+
+        (span<0.8 ? ' <b>They span less than one decade of stress</b> — &lambda;<sub>10</sub> from such a narrow range is poorly constrained.' : '')+
+        (pts.length<4 ? ' Fewer than four tests: treat &lambda;<sub>10</sub> as indicative.' : ''), false);
+      pjUpdate();
+    });
+  });
+  el('pjCslExample').addEventListener('click', function(){
+    pjDownload('example-critical-state-tests.csv', pjExampleCsl());
+  });
+
+  el('pjCptFile').addEventListener('change', function(){
+    pjReadFile(this, function(text,name){
+      var p=pjParse(text,4);
+      var rows=p.rows.map(function(r){
+        return PJ.units==='metric'
+          ? {z:r[0], qt:r[1], fs:r[2], u2:r[3]}
+          : {z:r[0]/3.28084, qt:r[1]*95.76/1000, fs:r[2]*95.76, u2:r[3]/0.145038};
+      }).filter(function(r){ return r.z>=0 && isFinite(r.qt); })
+        .sort(function(a,b){ return a.z-b.z; });
+      if(rows.length<3){ pjSay('pjCptStatus','Found '+rows.length+' usable rows. Each row needs four numbers: depth, q<sub>t</sub>, f<sub>s</sub>, u<sub>2</sub>.',true); return; }
+      PJ.cpt=rows; PJ.cptName=name;
+      var maxZ=rows[rows.length-1].z;
+      el('pjBot').max=Math.ceil(maxZ); el('pjTop').max=Math.ceil(maxZ);
+      if(num('pjBot')>maxZ) el('pjBot').value=maxZ.toFixed(2);
+      pjSay('pjCptStatus','Loaded <b>'+rows.length+'</b> readings from <b>'+name+'</b>, '+
+        rows[0].z.toFixed(2)+'–'+maxZ.toFixed(2)+' m'+(p.skipped?' ('+p.skipped+' non-numeric rows skipped)':'')+'.', false);
+      pjUpdate();
+    });
+  });
+  el('pjCptExample').addEventListener('click', function(){
+    pjDownload('example-cpt-sounding.csv', pjCptCsvText(pjDemoSounding()));
+  });
+  el('pjCptDemo').addEventListener('click', function(){
+    PJ.cpt=pjDemoSounding(); PJ.cptName='demonstration sounding';
+    el('pjBot').max=24; el('pjTop').max=24;
+    pjSay('pjCptStatus','Loaded a <b>demonstration sounding</b>: 24 m with a loose layer between about 4 and 11 m. Not anyone’s project data — it is generated here to give the charts something to show.', false);
+    pjUpdate();
+  });
+
+  el('pjCycFile').addEventListener('change', function(){
+    pjReadFile(this, function(text){
+      var p=pjParse(text,3);
+      var pts=p.rows.filter(function(r){ return r[1]>0 && r[2]>0; })
+                    .map(function(r){ return {psi0:r[0], csr:r[1], nl:r[2]}; });
+      if(pts.length<2){ pjSay('pjCycStatus','Found '+pts.length+' usable rows. Each row needs &psi;<sub>0</sub>, CSR, then N<sub>L</sub>.',true); return; }
+      PJ.cyc=pts;
+      pjSay('pjCycStatus','Loaded <b>'+pts.length+'</b> cyclic tests. Only those within &plusmn;2 cycles of the N<sub>L</sub> below are fitted.', false);
+      pjUpdate();
+    });
+  });
+  el('pjCycExample').addEventListener('click', function(){
+    pjDownload('example-cyclic-tests.csv', pjExampleCyc());
+  });
+  el('pjCycClear').addEventListener('click', function(){
+    PJ.cyc=[]; PJ.cycFit=null; el('pjCycStatus').style.display='none'; pjUpdate();
+  });
+
+  el('pjCsv').addEventListener('click', function(){
+    if(!PJ.rows.length){ pjSay('pjDlStatus','Load a CPT sounding first — there is nothing to export yet.',true); return; }
+    pjDownload('module4-liquefaction-assessment.csv', pjResultsCsv());
+    pjSay('pjDlStatus','CSV saved: '+PJ.rows.length+' depths with every intermediate column, and the assumptions in the header.', false);
+  });
+  el('pjXlsx').addEventListener('click', function(){
+    if(!PJ.rows.length){ pjSay('pjDlStatus','Load a CPT sounding first — there is nothing to export yet.',true); return; }
+    try{
+      var bytes=buildModule4Workbook();
+      var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+      var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+      a.download='module4-liquefaction-assessment.xlsx';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(a.href); },30000);
+      pjSay('pjDlStatus','Workbook saved. Four sheets: <b>Inputs</b> (every assumption, with k, m, K<sub>M</sub> and &psi;<sub>k</sub> as live formulas), <b>Assessment</b> ('+PJ.rows.length+' depths, columns E&ndash;S all formulas), <b>Charts</b>, and <b>Notes</b>. Change anything on Inputs and the whole thing recalculates.', false);
+    }catch(e){
+      pjSay('pjDlStatus','Could not build the workbook: '+(e&&e.message?e.message:e),true);
+    }
+  });
+
+  pjUpdate();
+}
+
+
 // ---------------------------------------------------------------- Section 8
 function updateSection3(){
   var a=num('s3a'), b=num('s3b'), psi=num('s3Psi'), m=num('s3Mw');
@@ -1077,6 +2034,7 @@ el('ksSand').innerHTML = KS_SANDS.map(function(s,i){ return '<option value="'+i+
 ['s3a','s3b','s3Psi','s3Mw'].forEach(function(id){ el(id).addEventListener('input', updateSection3); });
 renderNotation(); renderGlossary();
 updateCyclic(); updateSection1(); updateSection2(); updateKs(); updateKAlpha(); updateSection3();
+pjInit();
 
 Object.keys(figureInfo).forEach(function(id){var c=document.getElementById(id);if(!c||c.dataset.enhanced)return;c.dataset.enhanced='1';var parent=c.parentElement;parent.classList.add('figure-shell');var info=figureInfo[id];var tools=document.createElement('div');tools.className='figure-tools';tools.innerHTML='<span class="figure-caption"><b>'+info[0]+'</b></span><button type="button" aria-expanded="false">How to read this figure</button>';var help=document.createElement('div');help.className='figure-help';help.innerHTML='<b>Legend:</b> '+info[1]+'<br><b>Reading strategy:</b> '+info[2];parent.insertBefore(tools,c);c.insertAdjacentElement('afterend',help);var legendEl=parent.querySelector('.legend')||(parent.nextElementSibling&&parent.nextElementSibling.classList.contains('legend')?parent.nextElementSibling:null);if(legendEl)legendEl.style.display='none';tools.querySelector('button').addEventListener('click',function(){var isOpen=help.classList.toggle('open');this.setAttribute('aria-expanded',isOpen);parent.classList.toggle('chart-reading-mode');if(legendEl)legendEl.style.display=isOpen?'':'none';});});
 document.querySelectorAll('.figure-shell .legend').forEach(function(l){if(!l.querySelector('.legend-note')){var n=document.createElement('div');n.className='legend-note';n.textContent='Colors identify plotted series; use the figure-reading button for interpretation.';l.appendChild(n);}});
@@ -1435,11 +2393,12 @@ window.runModule4SelfTests = function(){
     {label:'Ksigma disappears', ids:['ksigma']},
     {label:'Kalpha', ids:['kalpha']},
     {label:'Design workflow', ids:['design-workflow']},
+    {label:'Your project', ids:['project']},
     {label:'Check learning', ids:['knowledge-check','about-tool']}
   ];
   var SECTION_LABELS={'start':'Start here','cyclic-vs-static':'Cyclic vs static','classical':'The classical method',
     'notation':'Notation','psi-view':'The psi view','ksigma':'Ksigma disappears',
-    'kalpha':'Kalpha','design-workflow':'Design workflow','knowledge-check':'Check learning'};
+    'kalpha':'Kalpha','design-workflow':'Design workflow','project':'Your project','knowledge-check':'Check learning'};
   var cur=0, prevPage=null;
   function pageIndexForElement(e){
     if(!e || !e.closest) return -1;
@@ -1458,6 +2417,7 @@ window.runModule4SelfTests = function(){
     if(window.updateKs) updateKs();
     if(window.updateKAlpha) updateKAlpha();
     if(window.updateSection3) updateSection3();
+    if(window.pjUpdate) pjUpdate();
   }
   function updateStepper(){
     var st=document.getElementById('pageStepper'); if(!st) return;
