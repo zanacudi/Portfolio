@@ -111,9 +111,9 @@ th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
 .notation-group-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 1px}
 .notation-group-label:first-child{margin-top:0}
 .notation-swatch{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
-.notation-card{text-align:left;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:8px;padding:9px 10px;transition:.15s}
+.notation-card{color:var(--ink);text-align:left;cursor:pointer;font-family:inherit;background:#fff;border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:8px;padding:9px 10px;transition:.15s}
 .notation-card:hover{box-shadow:0 5px 14px rgba(12,44,58,.12)}
-.notation-card b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
+.notation-card>b{display:block;color:var(--navy);font-size:14px;margin-bottom:3px}
 .notation-card small{display:block;line-height:1.4;color:var(--muted);font-size:11px}
 @media(max-width:820px){.notation-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.notation-grid{grid-template-columns:1fr}}
@@ -353,7 +353,7 @@ body{padding-bottom:54px}
 
 <div class="card" id="notation">
 <h2>4. Notation used in this module</h2>
-<p class="explain">Symbols in roughly the order they first appear. &psi; and &psi;<sub>k</sub> carry over from Modules 1&ndash;3. Choose any card to jump to where it is used.</p>
+<p class="explain">Every symbol this module uses, in roughly the order it first appears, each with its definition and &mdash; where there is one &mdash; the equation it belongs to. &psi;, &Gamma; and &lambda;<sub>10</sub> carry over unchanged from Modules 1&ndash;3, and the last eleven are the ones Section 9 needs to turn your own cone and laboratory data into a design number. Choose any card to jump to where that symbol is used.</p>
 <div class="notation-grid" id="notationGrid"></div>
 </div>
 
@@ -1927,23 +1927,40 @@ function drawDesignChart(a,b,psi,m,km){
 
 // ---------------------------------------------------------------- notation + glossary
 var NOTATION=[
- {sym:'CSR', def:'cyclic stress ratio, &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub> &mdash; the earthquake&rsquo;s demand on the soil', goto:'classical'},
- {sym:'CRR', def:'cyclic resistance ratio &mdash; the CSR at which liquefaction is triggered', goto:'classical'},
- {sym:'r<sub>u</sub>', def:'excess pore pressure ratio; r<sub>u</sub>=1 is initial liquefaction', goto:'cyclic-vs-static'},
- {sym:'N<sub>L</sub>', def:'number of uniform cycles to cause liquefaction in a laboratory test', goto:'cyclic-vs-static'},
- {sym:'M', def:'earthquake moment magnitude', goto:'classical'},
- {sym:'K<sub>M</sub>', def:'magnitude scaling factor, adjusting CRR<sub>7.5</sub> to other magnitudes', goto:'classical'},
- {sym:'&psi;<sub>k</sub>', def:'characteristic state parameter, carried from Module 2', goto:'psi-view'},
- {sym:'K<sub>&sigma;</sub>', def:'stress-level correction &mdash; redundant once you work in &psi;', goto:'ksigma'},
- {sym:'&Gamma;, &lambda;<sub>10</sub>', def:'critical state line intercept and slope, from Table 2.1', goto:'ksigma'},
- {sym:'D<sub>R</sub>', def:'relative density &mdash; note it is NOT state, which is the point of Section 6', goto:'ksigma'},
- {sym:'K<sub>&alpha;</sub>', def:'static shear bias correction &mdash; the book declines to tabulate it', goto:'kalpha'},
- {sym:'&alpha;', def:'static stress bias, &tau;<sub>static</sub>/&sigma;&prime;<sub>vo</sub>', goto:'kalpha'},
- {sym:'a, b', def:'intercept and slope of a project-specific CRR&ndash;&psi; fit (Eq. 9.9)', goto:'design-workflow'}
+ {sym:'&psi;', def:'state parameter, e &minus; e<sub>c</sub> at the same p&prime; &mdash; how far the soil sits from where it would end up. Negative is denser than critical', goto:'cyclic-vs-static'},
+ {sym:'r<sub>u</sub>', def:'excess pore pressure ratio, &Delta;u/&sigma;&prime;<sub>vo</sub> &mdash; r<sub>u</sub>=1 is initial liquefaction, and whether that matters depends on &psi;', goto:'cyclic-vs-static'},
+ {sym:'N<sub>L</sub>', def:'number of uniform cycles to liquefy a specimen in the laboratory &mdash; the book maps 15 cycles to M&nbsp;7.5, 10 to M&nbsp;7.0, 6 to M&nbsp;6.0', goto:'cyclic-vs-static'},
+ {sym:'CSR', def:'cyclic stress ratio, &tau;<sub>cyc</sub>/&sigma;&prime;<sub>vo</sub> &mdash; the demand the earthquake places on the soil', goto:'classical'},
+ {sym:'CRR', def:'cyclic resistance ratio &mdash; the CSR at which liquefaction is triggered, so the soil&rsquo;s side of the comparison', goto:'classical'},
+ {sym:'CRR<sub>7.5</sub>', def:'the resistance for a magnitude 7.5 earthquake on level ground &mdash; the reference condition every classical chart is drawn for (Eq. 7.4)', goto:'classical'},
+ {sym:'M', def:'earthquake moment magnitude &mdash; it enters only through the number of equivalent cycles, not through the stress amplitude', goto:'classical'},
+ {sym:'K<sub>M</sub>', def:'magnitude scaling factor &mdash; above 1 below M&nbsp;7.5, below 1 above it. Interpolated between the five points tabulated in Fig. 7.32', goto:'classical'},
+ {sym:'K<sub>&sigma;</sub>', def:'stress-level correction in Eq. 7.4 &mdash; necessary only because penetration resistance is not state, and redundant once you work in &psi;', goto:'ksigma'},
+ {sym:'K<sub>&alpha;</sub>', def:'static shear bias correction &mdash; its sign flips with state and its size depends on principal stress rotation, so the book declines to tabulate it', goto:'kalpha'},
+ {sym:'&psi;<sub>k</sub>', def:'characteristic state parameter, &psi;<sub>mean</sub>&nbsp;+&nbsp;z&middot;&psi;<sub>sd</sub> over a layer &mdash; a percentile on the loose tail, not the average. Module 2&rsquo;s number, carried here', goto:'psi-view'},
+ {sym:'&Gamma;, &lambda;<sub>10</sub>', def:'critical state line intercept and slope: e<sub>c</sub>&nbsp;=&nbsp;&Gamma;&nbsp;&minus;&nbsp;&lambda;<sub>10</sub>&middot;log<sub>10</sub>p&prime;. &Gamma; is the void ratio at p&prime;&nbsp;=&nbsp;1&nbsp;kPa', goto:'ksigma'},
+ {sym:'p&prime;', def:'mean effective stress &mdash; the stress the critical state line is read against, so the reason the same soil has two different &psi; at two depths', goto:'ksigma'},
+ {sym:'D<sub>R</sub>', def:'relative density, (e<sub>max</sub>&minus;e)/(e<sub>max</sub>&minus;e<sub>min</sub>) &mdash; <b>not</b> state: two elements at one D<sub>R</sub> and different depths have different &psi;, which is the whole of Section 6', goto:'ksigma'},
+ {sym:'&alpha;', def:'static stress bias, &tau;<sub>static</sub>/&sigma;&prime;<sub>vo</sub> &mdash; the shear a slope already carries before the earthquake arrives', goto:'kalpha'},
+ {sym:'a, b', def:'intercept and slope of a project-specific fit, CRR&nbsp;=&nbsp;a&nbsp;&minus;&nbsp;b&middot;&psi;<sub>o</sub> (Eq. 9.9) &mdash; fitted to your own cyclic tests at one cycle count', goto:'design-workflow'},
+ {sym:'&psi;<sub>o</sub>', def:'state parameter at the start of a cyclic test &mdash; the x-axis of that fit', goto:'design-workflow'},
+ {sym:'&gamma;', def:'bulk unit weight &mdash; an assumption you bring to the log, not something the cone measured, and it moves every &sigma;&prime;<sub>vo</sub> below it', goto:'project'},
+ {sym:'&sigma;<sub>vo</sub>, &sigma;&prime;<sub>vo</sub>', def:'total and effective vertical stress, &sigma;&prime;<sub>vo</sub>&nbsp;=&nbsp;&sigma;<sub>vo</sub>&nbsp;&minus;&nbsp;u<sub>0</sub> &mdash; their ratio is what makes CSR grow with depth', goto:'project'},
+ {sym:'K<sub>0</sub>', def:'at-rest earth pressure coefficient, converting vertical to mean stress: p&prime;<sub>o</sub>&nbsp;=&nbsp;&sigma;&prime;<sub>vo</sub>(1+2K<sub>0</sub>)/3', goto:'project'},
+ {sym:'q<sub>t</sub>, f<sub>s</sub>, u<sub>2</sub>', def:'the cone&rsquo;s three channels &mdash; corrected tip resistance, sleeve friction, and pore pressure measured just behind the tip', goto:'project'},
+ {sym:'Q, F, B<sub>q</sub>', def:'the dimensionless CPT groups: net resistance over &sigma;&prime;<sub>vo</sub>, friction ratio as a percentage, and excess pore pressure over net resistance (Table 4.1)', goto:'project'},
+ {sym:'I<sub>c</sub>', def:'soil behaviour type index (Eq. 4.13a) &mdash; the gate that says whether a sand-calibrated inversion means anything at this depth', goto:'project'},
+ {sym:'Q<sub>p</sub>', def:'normalized tip resistance, (q<sub>t</sub>&nbsp;&minus;&nbsp;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> &mdash; the group the &psi; inversion actually uses, because it normalizes by mean stress', goto:'project'},
+ {sym:'k, m', def:'the two inversion constants in Q<sub>p</sub>&nbsp;=&nbsp;k&middot;exp(&minus;m&psi;), both predictable from &lambda;<sub>10</sub> alone (Eqs. 4.11a&ndash;b) &mdash; which is why the laboratory line matters so much', goto:'project'},
+ {sym:'r<sub>d</sub>', def:'depth reduction factor in the simplified CSR, allowing for the soil column not moving as a rigid body. Liao &amp; Whitman (1986), <b>not</b> from this book', goto:'project'},
+ {sym:'a<sub>max</sub>/g', def:'peak ground acceleration as a fraction of gravity &mdash; the ground motion your design earthquake delivers at the surface', goto:'project'},
+ {sym:'FS<sub>liq</sub>', def:'factor of safety against triggering, CRR/CSR at a given depth &mdash; below 1 the analysis says that depth liquefies', goto:'project'}
 ];
 function renderNotation(){
   el('notationGrid').innerHTML = NOTATION.map(function(n){
-    return '<button type="button" class="notation-card" data-goto="'+n.goto+'"><b>'+n.sym+'</b>'+n.def+'</button>';
+    // the definition has to be wrapped: .notation-card small is what styles it, and without
+    // the wrapper the text inherits raw <button> styling and reads as part of the symbol
+    return '<button type="button" class="notation-card" data-goto="'+n.goto+'"><b>'+n.sym+'</b><small>'+n.def+'</small></button>';
   }).join('');
   el('notationGrid').querySelectorAll('.notation-card').forEach(function(b){
     b.addEventListener('click', function(){
