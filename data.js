@@ -139,7 +139,7 @@ const LITREVIEW = [
   {
     title: "Jefferies & Been — Soil Liquefaction: A Critical State Approach (2015)",
     meta: "Module 2: In-Situ State from the CPT, and How Variable It Really Is — Chapters 4–5",
-    description: "Continues Module 1 into the field: converting raw CPT channels (qt, fs, u2) into dimensionless resistance and the soil behaviour-type index Ic, inverting for ψ via the book's Qp = k·exp(−mψ) relationship calibrated against 17 real sands, and Chapter 5's real Nerlerk berm case data on how much a single 'characteristic' ψ can hide once you account for how variable state really is in the ground. More modules (static & cyclic liquefaction triggering, practical design workflow) planned.",
+    description: "Continues Module 1 into the field: converting raw CPT channels (qt, fs, u2) into dimensionless resistance and the soil behaviour-type index Ic, inverting for ψ via the book's Qp = k·exp(−mψ) relationship calibrated against 17 real sands, and Chapter 5's real Nerlerk berm case data on how much a single 'characteristic' ψ can hide once you account for how variable state really is in the ground. The ψ profile and characteristic value computed here are what Modules 3 and 4 go on to use.",
     link: "jb-insitu-state-lab.html"
   },
   {
@@ -151,7 +151,7 @@ const LITREVIEW = [
   {
     title: "Jefferies & Been — Soil Liquefaction: A Critical State Approach (2015)",
     meta: "Module 4: Cyclic Liquefaction, and From Theory to Design Practice — Chapters 7 & 9",
-    description: "Completes the Jefferies & Been series: the classical Seed/Berkeley School CRR-magnitude-scaling framework, the book's own state-parameter reinterpretation that shows why the widely-used Kσ stress correction is redundant once you work in ψ directly (checked against 20 real Class A case-history records), and a project-design tool combining the book's CRR–ψ trend-fitting approach with earthquake magnitude scaling.",
+    description: "Completes the Jefferies & Been series. Chapter 7's classical Seed/Berkeley School framework — CRR drawn through case histories, scaled by magnitude through Fig. 7.32’s five points — then the book's state-parameter reinterpretation, which shows the Kσ stress correction is not merely approximate but algebraically redundant: work in ψ and the void ratio cancels, leaving Kσ = exp(−9·λ₁₀·log₁₀(p′/p′ref)) — a function of the critical state line and the stress ratio alone, not of density at all. Eq. 7.5's CRR–ψ boundary is checked against 20 real Class A records, and Kα gets a section on why the book declines to tabulate it. Closes with a working project tool: load your own triaxial tests and CPT and the page fits a critical state line, inverts for ψ at every depth, takes a characteristic ψk at your percentile, and returns CSR, CRR and a factor of safety with depth, then exports a four-sheet Excel workbook whose every derived column is a live formula, so a reviewer can audit it without this site. Files are read in your browser and never uploaded.",
     link: "jb-cyclic-liquefaction-lab.html"
   },
   {
