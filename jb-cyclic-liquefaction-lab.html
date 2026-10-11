@@ -150,6 +150,25 @@ th{color:var(--muted);font-weight:700;font-size:10.5px;text-transform:uppercase}
 .guided-panel{border:1px solid var(--line);border-radius:10px;padding:12px;background:linear-gradient(145deg,#fff,#f4f9fb);margin:12px 0}.guided-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.guided-step{display:block;width:100%;text-align:left;font-family:inherit;padding:9px;border:1px solid var(--line);border-radius:8px;background:#fff;font-size:11px;line-height:1.4;cursor:pointer;color:var(--ink)}.guided-step.active{border-color:var(--blue);box-shadow:0 0 0 2px rgba(20,121,184,.15);background:#eef8fc}.guided-step b{display:block;color:var(--navy);margin-bottom:3px}.experiment-status{font-size:11.5px;background:#eef8fc;border-radius:7px;padding:8px;margin-top:8px}
 /* The toggle button has always set .open and aria-expanded, but no rule ever acted
    on it, so every figure rendered with its help text permanently expanded. */
+.figure-tools{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 7px}
+.figure-caption{flex:1 1 200px;min-width:0;font-size:13.5px;line-height:1.35;color:var(--navy)}
+.figure-tools>button{flex:0 0 auto;white-space:nowrap;font-size:11px;padding:5px 11px}
+.pj-dock{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:2px solid var(--blue);box-shadow:0 -6px 22px rgba(12,42,56,.18);padding:10px 14px 12px;transform:translateY(102%);transition:transform .22s ease;max-height:62vh;overflow-y:auto}
+.pj-dock.open{transform:translateY(0)}
+.pj-dock-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 8px}
+.pj-dock-head b{font-size:12.5px;color:var(--navy)}
+.pj-dock-head small{color:var(--muted);font-size:11px;flex:1 1 180px;min-width:0}
+.pj-dock-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;min-width:0}
+.pj-dock-grid>div{min-width:0}
+.pj-dock-grid h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+@media(max-width:900px){.pj-dock-grid{grid-template-columns:1fr}.pj-dock{max-height:70vh}}
+.pj-dock-toggle{font-size:11px;padding:5px 11px}
+.fs-verdict{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:10px 0 0;padding:9px 12px;border-radius:8px;border-left:4px solid;font-size:12px;line-height:1.45}
+.fs-verdict>b{font-size:19px;line-height:1;font-variant-numeric:tabular-nums}
+.fs-verdict>span{flex:1 1 150px;min-width:0}
+.fs-safe{background:#edf7f2;border-color:#268160;color:#1d5f47}
+.fs-marginal{background:#fff4df;border-color:#e9a52b;color:#8a6414}
+.fs-fail{background:#fdeeec;border-color:#c64852;color:#97343d}
 .figure-help{display:none}
 .figure-help.open{display:block;font-size:11.5px;line-height:1.6;color:var(--ink);background:#f7fafb;border-left:3px solid var(--blue);padding:9px 11px;margin:8px 0 0;border-radius:0 8px 8px 0}
 .chart-reading-mode canvas{outline:3px solid rgba(20,121,184,.16);outline-offset:3px}.pulse-target{animation:targetPulse 1.25s ease 2}@keyframes targetPulse{50%{box-shadow:0 0 0 7px rgba(20,121,184,.18)}}
@@ -253,10 +272,15 @@ body{padding-bottom:54px}
    log. It wraps rather than scrolls, and each numbered step hangs-indents so a
    wrapped line stays visually attached to its own step. */
 .snd-eq-title{margin:14px 0 5px;font-size:12.5px}
-.snd-controls .eq{font-size:11.5px;line-height:1.65;padding:9px 11px;white-space:normal;overflow-x:visible}
-.snd-controls .eq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
-.snd-controls .eq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:2px 0 3px}
-.snd-controls .eq b{white-space:nowrap}
+.snd-controls .eq,#ksEq,#s3Eq{font-size:11.5px;line-height:1.65;padding:9px 11px;white-space:normal;overflow-x:visible}
+.snd-controls .eq .step,#ksEq .step,#s3Eq .step{display:block;padding-left:14px;text-indent:-14px;margin:1px 0}
+.snd-controls .eq .step-note,#ksEq .step-note,#s3Eq .step-note{display:block;font-family:Arial,Helvetica,sans-serif;font-size:10.5px;line-height:1.45;color:var(--muted);margin:3px 0 0;border-top:1px solid var(--line);padding-top:6px}
+.snd-controls .eq b,#ksEq b,#s3Eq b{white-space:nowrap}
+.ks-pair{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-width:0}
+.ks-pair>div{min-width:0}
+.ks-pair .legend{font-size:10px}
+@media(max-width:1180px){.ks-pair{grid-template-columns:1fr}}
+.snd-layout>*{min-width:0}
 @media(max-width:1000px){.snd-layout{grid-template-columns:1fr}.snd-controls .statgrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.snd-controls .statgrid{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -338,7 +362,7 @@ body{padding-bottom:54px}
 </div>
 <div>
 <div class="chart-host"><canvas id="kmChart" role="img" aria-label="Magnitude scaling factor against earthquake magnitude, through the five tabulated points."></canvas></div>
-<div class="legend"><span><i style="background:#1479b8"></i>K<sub>M</sub> interpolated</span><span><i style="background:#687a82"></i>the five tabulated points</span><span><i style="background:#c64852"></i>your design magnitude</span></div>
+<div class="legend"><span><i style="background:#1479b8"></i>linear interpolation between them</span><span><i style="background:#687a82"></i>the five points tabulated in Fig. 7.32</span><span><i style="background:#c64852"></i>your design magnitude</span></div>
 </div>
 </div>
 <div class="warning"><b>Where the classical method gets murky.</b> K<sub>&sigma;</sub>, the stress-level correction, has had wildly different recommendations from different workers (Figs. 7.36&ndash;7.37), because it is treated as a curve fit to geology rather than as mechanics. K<sub>&alpha;</sub>, the sloping-ground correction, is worse: the book shows it depends on principal stress rotation in a way that &ldquo;cannot give simple trends&rdquo;. Sections 6 and 7 take these two in turn &mdash; the first turns out to be unnecessary, the second turns out to be genuinely hard.</div>
@@ -391,11 +415,20 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="ksP2"><span>Deeper element, p&prime; (kPa)</span> <span class="readout" id="ksP2Out">400</span></label><input id="ksP2" type="range" min="120" max="1000" step="10" value="400"><div class="hint">The shallow element is held at p&prime; = 100&nbsp;kPa, the reference stress the classical charts are normalised to.</div></div>
 <div class="statgrid n2" id="ksStats"></div>
 </div>
+<div class="ks-pair">
 <div>
 <div class="chart-host"><canvas id="ksChart" role="img" aria-label="The stress-level correction factor computed from the state parameter, against the published empirical range."></canvas></div>
 <div class="legend"><span><i style="background:#1479b8"></i>K&sigma; computed from &psi;</span><span><i style="background:#c9d8e2"></i>range of published empirical K&sigma; curves</span><span><i style="background:#c64852"></i>your deeper element</span></div>
 </div>
+<div>
+<div class="chart-host"><canvas id="ksCrrChart" role="img" aria-label="Cyclic resistance against mean effective stress on logarithmic axes, for the chosen relative density and for two others, showing that density moves the whole curve while the gap between the two elements stays the same."></canvas></div>
+<div class="legend"><span><i style="background:#1479b8"></i>CRR at your D<sub>R</sub></span><span><i style="background:#b9c7cf"></i>D<sub>R</sub> = 30% and 70%</span><span><i style="background:#c64852"></i>the two elements</span></div>
 </div>
+</div>
+</div>
+<div class="callout" style="margin-top:10px"><b>Why the density slider moves the right-hand chart but not the left one.</b> Put the critical state line into Eq.&nbsp;7.5 and the void ratio cancels outright:
+K<sub>&sigma;</sub> = exp(&minus;9&psi;<sub>deep</sub>)/exp(&minus;9&psi;<sub>ref</sub>) = exp[&minus;9(&psi;<sub>deep</sub>&minus;&psi;<sub>ref</sub>)] = <b>exp[&minus;9&middot;&lambda;<sub>10</sub>&middot;log<sub>10</sub>(p&prime;/p&prime;<sub>ref</sub>)]</b>.
+Density has gone. K<sub>&sigma;</sub> depends only on &lambda;<sub>10</sub> and the stress ratio, which is why the left-hand chart does not move when you drag D<sub>R</sub> &mdash; and why a correction factor tabulated against density was always going to disagree with the next person&rsquo;s. Drag D<sub>R</sub> and watch: on the right the whole resistance curve slides, but because that axis is logarithmic, the <i>gap</i> between the two marked elements stays exactly the same height. That constant gap <i>is</i> K<sub>&sigma;</sub>.</div>
 <div class="eq" id="ksEq"></div>
 <div class="callout" id="ksNote" aria-live="polite"></div>
 <div class="warning"><b>Why this matters beyond tidiness.</b> K&sigma; was never a property of the soil &mdash; it is the shadow that using penetration resistance instead of state casts on the analysis. The published empirical curves disagree with each other (Figs. 7.36&ndash;7.37) precisely because each was fitted to a different set of soils at different depths, all trying to correct for something that a state-based analysis never introduces. The shaded band shows roughly where those published curves sit; the computed line is what the mechanics gives.</div>
@@ -426,7 +459,7 @@ body{padding-bottom:54px}
 </div>
 </div>
 <div class="callout" id="kaNote" aria-live="polite"></div>
-<div class="warning"><b>This figure is a direction, not a design value.</b> It shows the <i>sign</i> of the K<sub>&alpha;</sub> effect and how it flips across the dilative/contractive boundary, which is the book's actual point. It is not a calibrated K<sub>&alpha;</sub> curve, and it should not be used as one. The book's own recommendation for a real project is explicit: run project-specific NorSand simulations rather than reach for a factor, because principal stress rotation makes the trend genuinely soil- and path-dependent. That recommendation is the reason no K<sub>&alpha;</sub> calculator is offered here.</div>
+<div class="warning"><b>So why will the book not simply give you the formula?</b> Look at what this chart fixes and what it does not. The <i>crossing</i> at &psi;&nbsp;=&nbsp;&minus;0.05 is mechanics: either side of it a bias helps or hurts, and that much is robust. The <i>steepness</i> of each line &mdash; how many percent per unit of bias &mdash; is a number this page picked so the fan would be visible. In real ground it is set by how the principal stress directions rotate through the cycle, which depends on the soil, its fabric, the slope geometry and the loading path. Two sites at identical &psi; and identical &alpha; can sit on different slopes here. That is the book&rsquo;s actual objection, and it is sharper than &ldquo;we do not know K<sub>&alpha;</sub>&rdquo;: <b>K<sub>&alpha;</sub> is not a function of &psi; and &alpha; alone</b>, so no table indexed on &psi; and &alpha; can be right for every site, and a formula would have to pretend that spread away.<br><br><b>This figure is a direction, not a design value.</b> It shows the <i>sign</i> of the K<sub>&alpha;</sub> effect and how it flips across the dilative/contractive boundary, which is the book's actual point. It is not a calibrated K<sub>&alpha;</sub> curve, and it should not be used as one. The book's own recommendation for a real project is explicit: run project-specific NorSand simulations rather than reach for a factor, because principal stress rotation makes the trend genuinely soil- and path-dependent. That recommendation is the reason no K<sub>&alpha;</sub> calculator is offered here.</div>
 </div>
 
 <div class="card" id="design-workflow">
@@ -441,6 +474,8 @@ body{padding-bottom:54px}
 <div class="slider-block"><label for="s3b"><span>b &mdash; slope</span> <span class="readout" id="s3bOut">0.80</span></label><input id="s3b" type="range" min="0.1" max="2.0" step="0.02" value="0.8"></div>
 <div class="slider-block"><label for="s3Psi"><span>&psi;<sub>o</sub></span> <span class="readout" id="s3PsiOut">-0.120</span></label><input id="s3Psi" type="range" min="-0.25" max="0.08" step="0.001" value="-0.12"></div>
 <div class="slider-block"><label for="s3Mw"><span>Design magnitude, M</span> <span class="readout" id="s3MwOut">7.5</span></label><input id="s3Mw" type="range" min="5.25" max="8.5" step="0.05" value="7.5"></div>
+<div class="slider-block"><label for="s3Csr"><span>Design demand, CSR</span> <span class="readout" id="s3CsrOut">0.120</span></label><input id="s3Csr" type="range" min="0.02" max="0.40" step="0.005" value="0.12"><div class="hint">What the earthquake asks of this element. On a real project it comes from Section&nbsp;9&rsquo;s simplified CSR, or from a site response analysis.</div></div>
+<div id="s3Verdict" class="fs-verdict" aria-live="polite"></div>
 <div class="statgrid n2" id="s3Stats"></div>
 </div>
 <div>
@@ -552,6 +587,7 @@ body{padding-bottom:54px}
 <div class="legend"><span><i style="background:#e38a22"></i>CSR, demand</span><span><i style="background:#1479b8"></i>CRR, resistance</span><span><i style="background:#c64852"></i>FS = 1</span><span><i style="background:#fdeee9;border:1px solid #d7e1e5"></i>FS &lt; 1, triggering predicted</span></div>
 </div>
 </div>
+<div style="margin-top:10px"><button type="button" class="alt pj-dock-toggle" id="pjDockOpen">Show Steps 1–3 together</button><span class="hint" style="display:inline;margin-left:8px">Opens a strip at the foot of the window with all three charts, so you can see what a slider moves without scrolling.</span></div>
 <div class="statgrid n4" id="pjStats" style="margin-top:10px"></div>
 
 <!-- ============================ STEP 4 ============================ -->
@@ -585,6 +621,14 @@ body{padding-bottom:54px}
 
 <div class="warning" style="margin-top:12px"><b>What this page assumes, and where each piece comes from.</b> &psi; from the cone is Module 2's chain: Q<sub>p</sub>&nbsp;=&nbsp;(q<sub>t</sub>&minus;p&prime;<sub>o</sub>)/p&prime;<sub>o</sub> inverted through Q<sub>p</sub>&nbsp;=&nbsp;k&middot;exp(&minus;m&psi;) with k and m from &lambda;<sub>10</sub> (Eqs. 4.11a&ndash;b), which carries that method's documented scatter of about &plusmn;0.05 in &psi; from stress level alone &mdash; so treat every &psi; here as a band, not a figure. CRR<sub>7.5</sub>&nbsp;=&nbsp;0.06&middot;exp(&minus;9&psi;<sub>k</sub>) is Eq.&nbsp;7.5 as published, and K<sub>M</sub> is the Fig.&nbsp;7.32 interpolation from Section&nbsp;3. <b>The demand side is not from the book.</b> CSR&nbsp;=&nbsp;0.65&middot;(a<sub>max</sub>/g)&middot;(&sigma;<sub>vo</sub>/&sigma;&prime;<sub>vo</sub>)&middot;r<sub>d</sub> is the standard simplified procedure of Seed &amp; Idriss (1971), with r<sub>d</sub> from Liao &amp; Whitman (1986) in the four-branch form tabulated by Youd et al. (2001): 1&minus;0.00765z to 9.15&nbsp;m, 1.174&minus;0.0267z to 23&nbsp;m, 0.744&minus;0.008z to 30&nbsp;m, and 0.5 below that. It is included because a factor of safety needs a demand, and it is named here so you can substitute your own site-response result instead &mdash; which is what a real project should do. Nothing on this page applies K<sub>&alpha;</sub>: if your ground carries a static shear bias, Section&nbsp;7's conclusion stands and you need project-specific NorSand simulation, not a factor. The fitted critical state line is a least-squares fit of e&nbsp;=&nbsp;&Gamma;&nbsp;&minus;&nbsp;&lambda;<sub>10</sub>&middot;log<sub>10</sub>p&prime;; with fewer than about four well-spread tests, treat &lambda;<sub>10</sub> as borrowed rather than measured.</div>
 </div>
+
+<div class="pj-dock" id="pjDock" aria-live="polite" aria-label="Linked charts">
+<div class="pj-dock-head"><b>Everything that slider moves</b><small>These are the same charts as Steps&nbsp;1&ndash;3, redrawn here so you can watch all of them while you adjust. They update live; the page behind is unchanged.</small><button type="button" class="alt pj-dock-toggle" id="pjDockClose">Close</button></div>
+<div class="pj-dock-grid">
+<div><h4>Step 1 &mdash; critical state line</h4><div class="chart-host"><canvas id="pjCslChartLink" role="img" aria-label="Linked copy of the critical state line chart."></canvas></div></div>
+<div><h4>Step 2 &mdash; state parameter with depth</h4><div class="chart-host"><canvas id="pjPsiChartLink" role="img" aria-label="Linked copy of the state parameter profile."></canvas></div></div>
+<div><h4>Step 3 &mdash; demand, resistance, FS</h4><div class="chart-host"><canvas id="pjFsChartLink" role="img" aria-label="Linked copy of the factor of safety profile."></canvas></div></div>
+</div></div>
 
 <div class="card" id="knowledge-check">
 <h2>10. Check learning</h2>
@@ -799,34 +843,59 @@ function updateSection1(){
 }
 function drawKmChart(m,km){
   var host=el('kmChart'); if(!host) return;
-  var cvp=prepCanvas(host, 250, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=50, mr=16, mt=16, mb=42, pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=5.25, xmax=8.5, ymin=0.8, ymax=1.6;
+  var cvp=prepCanvas(host, 310, 260), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=52, mr=18, mt=18, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=5.25, xmax=8.5, ymin=0.85, ymax=1.55;
   function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
   function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
   ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
-  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  [5.5,6,6.5,7,7.5,8,8.5].forEach(function(v){ var x=X(v); ctx.beginPath(); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); ctx.stroke(); });
-  var yt=niceTicks(ymin,ymax,4);
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
+
+  // a finer mesh than before: minor lines every 0.25 in M and 0.025 in KM, so the
+  // curve can be read off the grid instead of estimated between widely spaced lines
+  function grid(step, horiz, color){
+    ctx.strokeStyle=color; ctx.lineWidth=1; ctx.beginPath();
+    if(horiz){ for(var v=Math.ceil(ymin/step)*step; v<=ymax+1e-9; v+=step){
+        var y=Y(v); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); } }
+    else { for(var u=Math.ceil(xmin/step)*step; u<=xmax+1e-9; u+=step){
+        var x=X(u); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); } }
+    ctx.stroke();
+  }
+  grid(0.025, true, '#f1f5f7'); grid(0.25, false, '#f1f5f7');
+  grid(0.10,  true, '#e4ebef'); grid(0.50, false, '#e4ebef');
+
   ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
   ctx.beginPath(); ctx.moveTo(ml,Y(1)); ctx.lineTo(ml+pw,Y(1)); ctx.stroke(); ctx.setLineDash([]);
-  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.beginPath();
-  for(var i=0;i<=160;i++){ var v=xmin+(xmax-xmin)*i/160, x=X(v), y=Y(KM(v));
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); }
+
+  // The book tabulates five points and gives no closed form, so the line between
+  // them is linear interpolation and nothing more. Drawing the segments explicitly,
+  // with the vertices marked, says that rather than implying a fitted curve.
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.6; ctx.lineJoin='round'; ctx.beginPath();
+  KM_PTS.forEach(function(p,i){ var x=X(p[0]), y=Y(p[1]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
   ctx.stroke();
-  KM_PTS.forEach(function(p){
-    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(X(p[0]),Y(p[1]),4.5,0,7); ctx.fill();
+
+  ctx.font='700 9px Arial'; ctx.textBaseline='bottom';
+  KM_PTS.forEach(function(p,i){
+    var x=X(p[0]), y=Y(p[1]);
+    ctx.fillStyle='#687a82'; ctx.beginPath(); ctx.arc(x,y,4.2,0,7); ctx.fill();
     ctx.strokeStyle='#fff'; ctx.lineWidth=1.4; ctx.stroke();
+    // the end points sit on the axes, so push their labels inward rather than
+    // letting them land on top of the tick they are next to
+    var first=(i===0), last=(i===KM_PTS.length-1);
+    ctx.textAlign = first ? 'left' : (last ? 'right' : 'center');
+    ctx.fillStyle='#51636b';
+    ctx.fillText(p[1].toFixed(2), x+(first?7:(last?-7:0)), y-(first||last?2:7));
   });
+
   ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
   ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(m),Y(km),6,0,7); ctx.fill();
   ctx.strokeStyle='#fff'; ctx.lineWidth=1.8; ctx.stroke();
+
   ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
-  [5.5,6,6.5,7,7.5,8,8.5].forEach(function(v){ var lab=v.toFixed(1); ctx.fillText(lab, clampLabelX(ctx,X(v),lab,ml,pw), mt+ph+5); });
+  for(var u=5.5; u<=xmax+1e-9; u+=0.5){ var lab=u.toFixed(1);
+    ctx.fillText(lab, clampLabelX(ctx,X(u),lab,ml,pw), mt+ph+5); }
   ctx.font='10.5px Arial'; ctx.fillText('earthquake moment magnitude, M', ml+pw/2, mt+ph+20);
   ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
+  for(var v=0.9; v<=ymax+1e-9; v+=0.1){ ctx.fillText(v.toFixed(2), ml-7, Y(v)); }
   ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
   ctx.fillText('magnitude scaling factor, KM',0,0); ctx.restore();
@@ -924,7 +993,74 @@ function updateKs(){
     'The classical method has to measure that ratio and tabulate it as a correction; a state-based analysis never creates the discrepancy in the first place. '+
     'Change the sand and watch K<sub>&sigma;</sub> move &mdash; it depends on &lambda;<sub>10</sub>, which is exactly why the published empirical curves disagree with each other.';
   drawKsChart(sand,dr,p2,ks);
+  drawKsCrrChart(sand,dr,p2);
 }
+// The companion to drawKsChart. Ksigma is density-independent by construction, so the
+// Dr slider leaves that chart alone and a reader reasonably concludes the slider is
+// broken. This one shows what Dr DOES move: the resistance itself. The vertical axis
+// is logarithmic, so the constant ratio between the two elements shows up as a gap of
+// constant height no matter how far up or down the curve the density puts it.
+function drawKsCrrChart(sand,dr,p2){
+  var host=el('ksCrrChart'); if(!host) return;
+  var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var pMin=100, pMax=1000, cMin=0.03, cMax=0.9;
+  var lcMin=Math.log10(cMin), lcMax=Math.log10(cMax);
+  function X(p){ return ml+pw*(Math.log10(Math.max(pMin,Math.min(pMax,p)))-2)/(Math.log10(pMax)-2); }
+  function Y(c){ return mt+ph*(1-(Math.log10(Math.max(cMin,Math.min(cMax,c)))-lcMin)/(lcMax-lcMin)); }
+  function crrAt(d,p){ return crrEq75(psiAt(sand,d,p)); }
+
+  ctx.fillStyle='#f7fafb'; ctx.fillRect(ml,mt,pw,ph);
+  ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1; ctx.beginPath();
+  [100,200,300,400,500,600,700,800,900,1000].forEach(function(p){ var x=X(p); ctx.moveTo(x,mt); ctx.lineTo(x,mt+ph); });
+  [0.03,0.05,0.1,0.2,0.3,0.5,0.9].forEach(function(c){ var y=Y(c); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); });
+  ctx.stroke();
+
+  function curve(d,color,width,dash){
+    ctx.strokeStyle=color; ctx.lineWidth=width; ctx.setLineDash(dash||[]);
+    ctx.beginPath();
+    for(var i=0;i<=120;i++){
+      var p=Math.pow(10, 2+(Math.log10(pMax)-2)*i/120);
+      var x=X(p), y=Y(crrAt(d,p));
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.setLineDash([]);
+  }
+  curve(30,'#b9c7cf',1.6,[4,3]);
+  curve(70,'#b9c7cf',1.6,[4,3]);
+  curve(dr,'#1479b8',2.8);
+
+  ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillStyle='#8a97a0';
+  ctx.fillText('DR 30%', X(pMax)-44, Y(crrAt(30,pMax))-9);
+  ctx.fillText('DR 70%', X(pMax)-44, Y(crrAt(70,pMax))-9);
+
+  // the gap between the two elements: this is Ksigma, drawn as a height
+  var c1=crrAt(dr,KS_REF_P), c2=crrAt(dr,p2);
+  var x1=X(KS_REF_P), x2=X(p2), y1=Y(c1), y2=Y(c2);
+  ctx.strokeStyle='#c64852'; ctx.lineWidth=1.2; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y1); ctx.lineTo(x2,y2); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#c64852'; ctx.lineWidth=2.2;
+  ctx.beginPath(); ctx.moveTo(x2,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  [[x1,y1],[x2,y2]].forEach(function(q){
+    ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(q[0],q[1],5,0,7); ctx.fill();
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1.7; ctx.stroke();
+  });
+  var lab='Ksigma = '+(c2/c1).toFixed(3);
+  ctx.font='700 10px Arial'; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillStyle='#a8333d';
+  ctx.fillText(lab, Math.max(ml+54, x2-8), (y1+y2)/2);
+
+  ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
+  ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+  [100,200,400,700,1000].forEach(function(p){ var lb=String(p);
+    ctx.fillText(lb, clampLabelX(ctx,X(p),lb,ml,pw), mt+ph+5); });
+  ctx.font='10.5px Arial'; ctx.fillText('mean effective stress p\u2032, kPa (log)', ml+pw/2, mt+ph+20);
+  ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
+  [0.03,0.05,0.1,0.2,0.3,0.5,0.9].forEach(function(c){ ctx.fillText(c.toFixed(2), ml-7, Y(c)); });
+  ctx.save(); ctx.translate(14, mt+ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
+  ctx.fillText('CRR7.5 from Eq. 7.5 (log)',0,0); ctx.restore();
+}
+
 function drawKsChart(sand,dr,p2,ksNow){
   var host=el('ksChart'); if(!host) return;
   var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
@@ -976,57 +1112,85 @@ function updateKAlpha(){
   el('kaPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
   el('kaAlphaOut').textContent=alpha.toFixed(2);
   var k=kAlphaDirection(psi,alpha), dil=psi<PSI_DIL_BOUNDARY;
+  var pct=(k-1)*100;
+  // what one more step of bias buys or costs -- the thing the slider actually changes
+  var kStep=kAlphaDirection(psi, Math.min(0.35, alpha+0.10));
+  var dPct=(kStep-k)*100;
+  var neutral=Math.abs(psi-PSI_DIL_BOUNDARY)<1e-9;
   el('kaStats').innerHTML =
-    '<div class="stat"><small>state</small><strong style="font-size:12.5px">'+(dil?'dilative':'contractive')+'</strong></div>'+
-    '<div class="stat hi"><small>direction of the K<sub>&alpha;</sub> effect</small><strong>'+(k>1?'increases':'decreases')+' resistance</strong></div>';
+    '<div class="stat"><small>state</small><strong style="font-size:12.5px">'+(neutral?'on the boundary':(dil?'dilative':'contractive'))+'</strong></div>'+
+    '<div class="stat hi"><small>K<sub>&alpha;</sub> at this &psi; and &alpha;</small><strong>'+k.toFixed(3)+'</strong>'+
+      '<small style="margin-top:3px;display:block">'+(neutral?'no effect at all':(pct>0?'+':'')+pct.toFixed(1)+'% to resistance')+'</small></div>'+
+    '<div class="stat"><small>per +0.10 of bias</small><strong>'+(dPct>0?'+':'')+dPct.toFixed(1)+'%</strong>'+
+      '<small style="margin-top:3px;display:block">'+(neutral?'still nothing':(dil?'bias keeps helping':'bias keeps hurting'))+'</small></div>'+
+    '<div class="stat"><small>where the sign flips</small><strong>&psi; = &minus;0.050</strong>'+
+      '<small style="margin-top:3px;display:block">'+(neutral?'you are on it':Math.abs(psi-PSI_DIL_BOUNDARY).toFixed(3)+' away')+'</small></div>';
   el('kaNote').innerHTML =
-    '<b>Which way does a static bias push?</b> At &psi; = '+psi.toFixed(3)+' the soil is '+(dil?'dilative':'contractive')+
-    ', so adding a static shear bias of &alpha; = '+alpha.toFixed(2)+' <b>'+(k>1?'raises':'lowers')+'</b> its cyclic resistance. '+
+    '<b>What the bias slider actually does.</b> At &psi; = '+psi.toFixed(3)+' the soil is '+(neutral?'exactly on the boundary':(dil?'dilative':'contractive'))+
+    ', so raising &alpha; from 0 to '+alpha.toFixed(2)+' '+
+    (neutral ? 'does nothing at all &mdash; every curve in the fan passes through 1.0 here, whatever the bias. '
+             : 'moves cyclic resistance '+(k>1?'<b>up</b>':'<b>down</b>')+' by '+Math.abs(pct).toFixed(1)+'%, and each further step of bias moves it further the same way. ')+
     (dil
-      ? 'A dilative soil is already partway along the stress path in the direction the earthquake will push it, and it strengthens as it dilates, so the bias helps.'
-      : 'A contractive soil has somewhere to fall to, and the bias means every cycle drives it further in that direction, so the bias hurts.')+
-    ' Drag &psi; across &minus;0.05 and the sign reverses. That is why no single K<sub>&alpha;</sub> curve can serve, and why the book sends you to project-specific NorSand modelling instead of a table.';
+      ? 'A dilative soil is already partway along the stress path in the direction the earthquake will push it, and it strengthens as it dilates, so more bias helps more.'
+      : (neutral ? 'Either side of this point the same bias does opposite things.'
+                 : 'A contractive soil has somewhere to fall to, and the bias means every cycle drives it further in that direction, so more bias hurts more.'))+
+    ' Watch the fan: at &psi; = &minus;0.05 every curve meets at K<sub>&alpha;</sub> = 1 &mdash; the bias is powerless exactly there &mdash; and it opens out in opposite directions on either side. '+
+    'Drag &psi; across that point and the slider you just moved reverses its meaning.';
   drawKAlphaChart(psi,alpha);
 }
 function drawKAlphaChart(psiNow,alphaNow){
   var host=el('kalphaChart'); if(!host) return;
-  var cvp=prepCanvas(host, 280, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
-  var ml=52, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
-  var xmin=-0.20, xmax=0.08, ymin=0.6, ymax=1.5;
+  var cvp=prepCanvas(host, 300, 280), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
+  var ml=54, mr=48, mt=18, mb=44, pw=W-ml-mr, ph=H-mt-mb;
+  var xmin=-0.20, xmax=0.08;
+  var FAM=[0.05,0.15,0.25,0.35];
+  // Scale to what the family actually spans. The old fixed 0.6-1.5 window left the
+  // whole fan inside a tenth of the plot, so moving the bias slider looked like it
+  // did nothing whatever.
+  var lo=1, hi=1;
+  FAM.concat([alphaNow]).forEach(function(a){
+    [xmin,xmax].forEach(function(v){ var y=kAlphaDirection(v,a); lo=Math.min(lo,y); hi=Math.max(hi,y); });
+  });
+  var pad=(hi-lo)*0.12 || 0.02;
+  var ymin=lo-pad, ymax=hi+pad;
   function X(v){ return ml+pw*(Math.max(xmin,Math.min(xmax,v))-xmin)/(xmax-xmin); }
   function Y(v){ return mt+ph*(1-(Math.max(ymin,Math.min(ymax,v))-ymin)/(ymax-ymin)); }
   ctx.fillStyle='#eef7f2'; ctx.fillRect(ml,mt,X(PSI_DIL_BOUNDARY)-ml,ph);
   ctx.fillStyle='#fdf1ef'; ctx.fillRect(X(PSI_DIL_BOUNDARY),mt,ml+pw-X(PSI_DIL_BOUNDARY),ph);
   ctx.strokeStyle='#eef2f4'; ctx.lineWidth=1;
-  var yt=niceTicks(ymin,ymax,4);
+  var yt=niceTicks(ymin,ymax,5);
   yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; var y=Y(v); ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(ml+pw,y); ctx.stroke(); });
   ctx.strokeStyle='#8a97a0'; ctx.lineWidth=1.6; ctx.setLineDash([4,3]);
   ctx.beginPath(); ctx.moveTo(ml,Y(1)); ctx.lineTo(ml+pw,Y(1)); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(X(PSI_DIL_BOUNDARY),mt); ctx.lineTo(X(PSI_DIL_BOUNDARY),mt+ph); ctx.stroke(); ctx.setLineDash([]);
   ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='top';
-  haloText(ctx,'ψ = −0.05', X(PSI_DIL_BOUNDARY)+3, mt+3, '#6b7880');
-  // a family of curves, one per bias level
-  [0.05,0.15,0.25,0.35].forEach(function(a,i){
-    ctx.strokeStyle = i===3 ? '#123b4a' : '#9aa9ae';
-    ctx.lineWidth = 1.4; ctx.beginPath();
-    for(var j=0;j<=120;j++){ var v=xmin+(xmax-xmin)*j/120, y=Y(kAlphaDirection(v,a));
-      if(j===0) ctx.moveTo(X(v),y); else ctx.lineTo(X(v),y); }
+  haloText(ctx,'ψ = −0.05 — every curve meets at 1.0 here', X(PSI_DIL_BOUNDARY)+4, mt+3, '#6b7880');
+
+  // the family, each line labelled with the bias it belongs to
+  FAM.forEach(function(a){
+    ctx.strokeStyle='#9aa9ae'; ctx.lineWidth=1.4; ctx.beginPath();
+    ctx.moveTo(X(xmin),Y(kAlphaDirection(xmin,a))); ctx.lineTo(X(xmax),Y(kAlphaDirection(xmax,a)));
     ctx.stroke();
+    ctx.font='700 8.5px Arial'; ctx.textAlign='left'; ctx.textBaseline='middle';
+    haloText(ctx,'α='+a.toFixed(2), ml+pw+4, Y(kAlphaDirection(xmax,a)), '#8a97a0');
   });
-  ctx.strokeStyle='#1479b8'; ctx.lineWidth=2.8; ctx.beginPath();
-  for(var j2=0;j2<=120;j2++){ var v2=xmin+(xmax-xmin)*j2/120, y2=Y(kAlphaDirection(v2,alphaNow));
-    if(j2===0) ctx.moveTo(X(v2),y2); else ctx.lineTo(X(v2),y2); }
+  ctx.strokeStyle='#1479b8'; ctx.lineWidth=3; ctx.beginPath();
+  ctx.moveTo(X(xmin),Y(kAlphaDirection(xmin,alphaNow))); ctx.lineTo(X(xmax),Y(kAlphaDirection(xmax,alphaNow)));
   ctx.stroke();
+
   ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
   var kn=kAlphaDirection(psiNow,alphaNow);
   ctx.fillStyle='#123b4a'; ctx.beginPath(); ctx.arc(X(psiNow),Y(kn),6.5,0,7); ctx.fill();
   ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  ctx.font='700 9.5px Arial'; ctx.textAlign=(psiNow>-0.06?'right':'left'); ctx.textBaseline='bottom';
+  haloText(ctx, kn.toFixed(3), X(psiNow)+(psiNow>-0.06?-9:9), Y(kn)-6, '#123b4a');
+
   ctx.fillStyle='#61737b'; ctx.font='9.5px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
   for(var t=xmin;t<=xmax+1e-9;t+=0.05){ var lab=t.toFixed(2); ctx.fillText(lab, clampLabelX(ctx,X(t),lab,ml,pw), mt+ph+5); }
   ctx.font='10.5px Arial'; ctx.fillText('state parameter, ψ', ml+pw/2, mt+ph+20);
   ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.font='700 10px Arial'; ctx.fillStyle='#3a4b52';
-  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(2), ml-7, Y(v)); });
-  ctx.save(); ctx.translate(13, mt+ph/2); ctx.rotate(-Math.PI/2);
+  yt.values.forEach(function(v){ if(v<ymin||v>ymax) return; ctx.fillText(v.toFixed(3), ml-7, Y(v)); });
+  ctx.save(); ctx.translate(14, mt+ph/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign='center'; ctx.textBaseline='alphabetic'; ctx.font='10.5px Arial'; ctx.fillStyle='#61737b';
   ctx.fillText('direction of the Kα effect',0,0); ctx.restore();
 }
@@ -1224,8 +1388,8 @@ function pjYLabel(ctx, text, x, cy){
   ctx.font='10.5px Arial'; ctx.fillStyle='#61737b'; ctx.fillText(text,0,0); ctx.restore();
 }
 
-function pjDrawCsl(){
-  var host=el('pjCslChart'); if(!host) return;
+function pjDrawCsl(id){
+  var host=el(id||'pjCslChart'); if(!host) return;
   var f=pjAxisFrame(host, 240, 54, 16, 14, 42), ctx=f.ctx, ml=f.ml, mt=f.mt, pw=f.pw, ph=f.ph;
   var csl=pjActiveCsl(), pts=(PJ.cslMode==='up') ? PJ.cslPts : [];
   var pmin=10, pmax=1000;
@@ -1271,8 +1435,8 @@ function pjDepthAxis(f, label){
   ctx.fillText(label, f.ml+f.pw/2, f.mt+f.ph+20);
 }
 
-function pjDrawPsi(){
-  var host=el('pjPsiChart'); if(!host) return;
+function pjDrawPsi(id){
+  var host=el(id||'pjPsiChart'); if(!host) return;
   if(!PJ.rows.length){ var e=prepCanvas(host,300,280);
     e.ctx.fillStyle='#8a97a0'; e.ctx.font='12px Arial'; e.ctx.textAlign='center';
     e.ctx.fillText('Load a sounding to see ψ with depth', e.W/2, e.H/2); return; }
@@ -1299,8 +1463,8 @@ function pjDrawPsi(){
   pjDepthAxis(f, 'state parameter ψ');
 }
 
-function pjDrawFs(){
-  var host=el('pjFsChart'); if(!host) return;
+function pjDrawFs(id){
+  var host=el(id||'pjFsChart'); if(!host) return;
   if(!PJ.rows.length){ var e=prepCanvas(host,300,280);
     e.ctx.fillStyle='#8a97a0'; e.ctx.font='12px Arial'; e.ctx.textAlign='center';
     e.ctx.fillText('Load a sounding to see demand against resistance', e.W/2, e.H/2); return; }
@@ -1416,6 +1580,7 @@ function pjUpdate(){
     : '<div class="stat"><small>your cyclic tests</small><strong style="font-size:14px">'+(PJ.cyc.length?'No tests within ±2 cycles of N_L':'None loaded — optional')+'</strong></div>';
 
   pjDrawCsl(); pjDrawPsi(); pjDrawFs(); pjDrawCyc();
+  if(PJ.dockOpen){ pjDrawCsl('pjCslChartLink'); pjDrawPsi('pjPsiChartLink'); pjDrawFs('pjFsChartLink'); }
 }
 
 /* ----------------------------------------------------------- examples --- */
@@ -1859,6 +2024,25 @@ function pjInit(){
     }
   });
 
+  // The linked-charts dock. Moving gamma at Step 2 changes the FS profile at
+  // Step 3, a screen further down, so the first drag of any slider brings every
+  // affected chart into view at once.
+  function pjSetDock(open){
+    PJ.dockOpen = !!open;
+    var d=el('pjDock'); if(!d) return;
+    d.classList.toggle('open', PJ.dockOpen);
+    var b=el('pjDockOpen');
+    if(b) b.textContent = PJ.dockOpen ? 'Hide the linked charts' : 'Show Steps 1\u20133 together';
+    if(PJ.dockOpen) pjUpdate();
+  }
+  PJ.setDock = pjSetDock;
+  el('pjDockClose').addEventListener('click', function(){ pjSetDock(false); });
+  el('pjDockOpen').addEventListener('click', function(){ pjSetDock(!PJ.dockOpen); });
+  ['pjGamma','pjWt','pjKo','pjMw','pjAmax','pjTop','pjBot','pjPct','pjNl'].forEach(function(id){
+    el(id).addEventListener('input', function(){ if(!PJ.dockOpen && !PJ.dockDismissed) pjSetDock(true); });
+  });
+  el('pjDockClose').addEventListener('click', function(){ PJ.dockDismissed = true; });
+
   pjLoadDefaultCpt();            // never show an empty page: the Module 2 site is already here
 }
 
@@ -1883,7 +2067,30 @@ function updateSection3(){
   el('s3bOut').textContent=b.toFixed(2);
   el('s3PsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
   el('s3MwOut').textContent=m.toFixed(2);
+  var csr=num('s3Csr');
+  el('s3CsrOut').textContent=csr.toFixed(3);
   var base=crrEq99(a,b,psi), km=KM(m), crr=base*km, db=crrEq75(psi);
+
+  // How close to triggering this design sits, recomputed on every slider move.
+  // Without a demand there was nothing on this page to be close TO, so the four
+  // sliders moved a curve around without ever saying whether it was good enough.
+  var fs = csr>0 ? crr/csr : 99;
+  var cls = fs<1 ? 'fs-fail' : (fs<1.25 ? 'fs-marginal' : 'fs-safe');
+  var verdict = fs<1 ? 'triggering predicted'
+              : (fs<1.25 ? 'marginal \u2014 within the scatter of the method'
+                         : 'margin against triggering');
+  var psiFail = b>0 ? (a - csr/Math.max(0.01,km))/b : null;
+  el('s3Verdict').className = 'fs-verdict '+cls;
+  el('s3Verdict').innerHTML =
+    '<b>FS = '+(fs>9.9?'&gt;9.9':fs.toFixed(2))+'</b>'+
+    '<span><b style="font-size:12px">'+verdict+'</b> &mdash; CRR '+crr.toFixed(3)+' against CSR '+csr.toFixed(3)+'. '+
+      (fs>=1
+        ? 'Shaking could rise '+((fs-1)*100).toFixed(0)+'% before this element triggers'
+        : 'Demand exceeds resistance by '+((csr/crr-1)*100).toFixed(0)+'%')+
+      (psiFail!==null && psiFail>-0.45 && psiFail<0.45
+        ? ', and at this demand the curve crosses FS = 1 at &psi;<sub>o</sub> = '+psiFail.toFixed(3)
+        : '')+'.</span>';
+
   el('s3Stats').innerHTML =
     '<div class="stat"><small>CRR at M = 7.5</small><strong>'+base.toFixed(3)+'</strong></div>'+
     '<div class="stat"><small>K<sub>M</sub></small><strong>'+km.toFixed(3)+'</strong></div>'+
@@ -1902,9 +2109,9 @@ function updateSection3(){
       ? 'Your fit sits below the database line, which is the safe side &mdash; a project-specific curve should generally be more conservative than a boundary drawn through case histories that mostly liquefied.'
       : 'Your fit sits <i>above</i> the database line. That is worth defending explicitly: it says this soil resists more cyclic loading than the case-history record suggests for its state, which needs testing to back it up.')+
     ' Drag the magnitude and watch both curves separate &mdash; the database line is fixed at M=7.5 by construction, so only yours moves.';
-  drawDesignChart(a,b,psi,m,km);
+  drawDesignChart(a,b,psi,m,km,csr);
 }
-function drawDesignChart(a,b,psi,m,km){
+function drawDesignChart(a,b,psi,m,km,csr){
   var host=el('designChart'); if(!host) return;
   var cvp=prepCanvas(host, 300, 300), ctx=cvp.ctx, W=cvp.W, H=cvp.H;
   var ml=54, mr=16, mt=16, mb=44, pw=W-ml-mr, ph=H-mt-mb;
@@ -1926,6 +2133,26 @@ function drawDesignChart(a,b,psi,m,km){
   curve(function(v){ return crrEq75(v); }, '#687a82', 1.8, [5,3]);
   curve(function(v){ return crrEq99(a,b,v); }, '#1479b8', 2.6, null);
   if(Math.abs(km-1)>1e-9) curve(function(v){ return crrEq99(a,b,v)*km; }, '#e38a22', 2.4, null);
+  // the demand, and where the design curve crosses it
+  if(csr>0){
+    var yc=Y(csr);
+    if(yc>mt && yc<mt+ph){
+      ctx.strokeStyle='#c64852'; ctx.lineWidth=1.8; ctx.setLineDash([6,4]);
+      ctx.beginPath(); ctx.moveTo(ml,yc); ctx.lineTo(ml+pw,yc); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font='700 9px Arial'; ctx.textAlign='left'; ctx.textBaseline='bottom';
+      haloText(ctx,'design demand, CSR = '+csr.toFixed(3), ml+5, yc-3, '#a8333d');
+    }
+    var pf = b>0 ? (a - csr/Math.max(0.01,km))/b : null;
+    if(pf!==null && isFinite(pf)){
+      var xf=X(pf);
+      if(xf>ml && xf<ml+pw && yc>mt && yc<mt+ph){
+        ctx.strokeStyle='#a8333d'; ctx.lineWidth=1.4; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.moveTo(xf,yc); ctx.lineTo(xf,mt+ph); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font='700 9px Arial'; ctx.textAlign='center'; ctx.textBaseline='top';
+        haloText(ctx,'FS = 1', xf, yc+4, '#a8333d');
+      }
+    }
+  }
   ctx.strokeStyle='#d7e1e5'; ctx.lineWidth=1; ctx.strokeRect(ml+0.5,mt+0.5,pw-1,ph-1);
   var cur=crrEq99(a,b,psi)*km;
   ctx.fillStyle='#c64852'; ctx.beginPath(); ctx.arc(X(psi),Y(Math.min(ymax,cur)),6.5,0,7); ctx.fill();
@@ -2063,7 +2290,7 @@ el('s1Mw').addEventListener('input', updateSection1);
 el('ksSand').innerHTML = KS_SANDS.map(function(s,i){ return '<option value="'+i+'"'+(i===4?' selected':'')+'>'+s.name+'</option>'; }).join('');
 ['ksSand','ksDr','ksP2'].forEach(function(id){ el(id).addEventListener('input', updateKs); el(id).addEventListener('change', updateKs); });
 ['kaPsi','kaAlpha'].forEach(function(id){ el(id).addEventListener('input', updateKAlpha); });
-['s3a','s3b','s3Psi','s3Mw'].forEach(function(id){ el(id).addEventListener('input', updateSection3); });
+['s3a','s3b','s3Psi','s3Mw','s3Csr'].forEach(function(id){ el(id).addEventListener('input', updateSection3); });
 renderNotation(); renderGlossary();
 updateCyclic(); updateSection1(); updateSection2(); updateKs(); updateKAlpha(); updateSection3();
 pjInit();
@@ -2486,6 +2713,8 @@ window.runModule4SelfTests = function(){
       });
     });
     updateStepper(); redrawVisibleCharts();
+    // the linked-charts dock belongs to the project page only
+    if(typeof PJ!=='undefined' && PJ.dockOpen && PJ.setDock) PJ.setDock(false);
     if(!opts || !opts.noScroll) window.scrollTo({top:0,behavior:'instant'});
     focusPageHeading();
     var back=document.getElementById('backToPrevious');
