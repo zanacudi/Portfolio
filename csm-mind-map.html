@@ -58,7 +58,18 @@ svg#map.drag{cursor:grabbing}
 .panel .crumb b{color:var(--blue);cursor:pointer}
 .panel .eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:9px 12px;
   font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:10px 0;overflow-x:auto}
+.panel .plain{font-size:14.5px;line-height:1.58;color:var(--navy);font-weight:600;margin:0 0 11px}
 .panel .def{font-size:13.5px;line-height:1.62;margin:10px 0}
+.figbox{margin:11px 0}
+.figbox canvas{width:100%;height:196px;display:block;border:1px solid var(--line);border-radius:8px;background:#fff}
+.vt{width:100%;border-collapse:collapse;margin:9px 0 12px;font-size:12px}
+.vt th{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);
+  border-bottom:1px solid var(--line);padding:3px 6px 5px;font-weight:700}
+.vt th:last-child,.vt td:last-child{text-align:right}
+.vt td{padding:5px 6px;border-bottom:1px solid #eef2f4;vertical-align:top;line-height:1.45}
+.vt td:first-child{font-family:"Cambria Math",Georgia,serif;font-size:14.5px;color:var(--navy);
+  font-weight:700;white-space:nowrap;width:1%}
+.vt td:last-child{color:var(--muted);font-size:10.5px;white-space:nowrap;width:1%}
 .panel .why{background:#fff8ec;border-left:4px solid var(--orange);border-radius:0 6px 6px 0;
   padding:9px 11px;font-size:12.5px;line-height:1.55;margin:10px 0}
 .kids{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
@@ -108,9 +119,9 @@ svg#map.drag{cursor:grabbing}
 <header>
   <p style="margin:0 0 5px"><a href="index.html">&larr; Back to portfolio</a></p>
   <h1>Critical State Soil Mechanics &mdash; Interactive Mind Map</h1>
-  <p>One framework, drawn the way Buzan intended: a central idea, curved branches, one keyword each.
+  <p>The whole framework on one map, drawn the way Buzan intended: a central idea, curved branches, one keyword each. <b>Every equation comes with a table of its symbols</b> — what each one means and the units it carries — and most ideas come with a sketch.
   Drag the <b>detail</b> slider to go from bare keywords to formulas to full explanations &mdash; and click any
-  branch with a <b>&bull;</b> to open a live calculator for it. Built after M. Rama Rao &amp; P. Samatha Chowdary,
+  branch to open it, and the ones marked <b>&bull;</b> carry a live calculator. Nothing here assumes you already know the subject. Built after M. Rama Rao &amp; P. Samatha Chowdary,
   <i>Geotechnical Engineering Through Mind Maps</i> (2019), using the conventions in their Section&nbsp;1.4.
   Prepared by Zana Taher.</p>
 </header>
@@ -150,105 +161,493 @@ svg#map.drag{cursor:grabbing}
 'use strict';
 const $ = id => document.getElementById(id);
 
-/* =====================================================================
- * The map. One keyword per node, as Buzan's rule 6 asks. Everything
- * longer lives in `eq` and `def`, which the detail slider reveals.
- *   lab:  id of a live calculator to show in the panel
- *   mod:  the companion module that treats this properly
- * ===================================================================== */
+/* The map. Every node may carry:
+ *   plain  one sentence a beginner can hold on to, before any symbols
+ *   eq     the equation
+ *   vars   [[symbol, what it means, units]] -- every symbol in eq, explained
+ *   def    the fuller account
+ *   why    why an engineer should care
+ *   fig    a sketch drawn in the panel
+ *   lab    a live calculator
+ *   mod    the companion module that treats it properly
+ */
 const MAP = {
   id:'root', label:'CRITICAL\nSTATE', color:'#123b4a',
-  def:'A soil sheared far enough reaches a unique condition where it goes on distorting at constant volume and constant stress. Where that condition sits depends only on the stress, not on how dense the soil started. Everything on this map hangs off that one fact.',
+  plain:'Shear any soil far enough and it forgets how it started. It ends up at one condition that depends only on the stress it is under.',
   eq:'eₑ = Γ − λ₁₀ · log₁₀ p′',
-  why:'Before critical state, strength and volume change were separate stories told about the same soil. After it, they are one story: how far the soil sits from its own destination.',
+  vars:[['eₑ','void ratio the soil ends at, for this stress','—'],
+        ['Γ','where the line sits: the value of eₑ at p′ = 1 kPa','—'],
+        ['λ₁₀','how steeply the line falls, per ten-fold rise in stress','—'],
+        ['p′','mean effective stress the element is under','kPa']],
+  def:'Keep shearing a soil and it stops changing volume and stops changing stress — it just goes on distorting. That end condition is the <b>critical state</b>, and for a given soil it depends on the stress and nothing else. Loose or dense, the same soil arrives at the same place.',
+  why:'Before this idea, strength and volume change were two separate stories told about the same soil. After it, they are one story: how far the soil sits from its own destination.',
+  fig:'fRoot',
   children:[
 
+  /* ============================ STATE ============================ */
   { id:'state', label:'STATE', color:'#1479b8',
-    def:'Not how dense the soil is, but how dense it is <b>relative to where it is going</b>. That comparison is the whole contribution of critical state soil mechanics.',
-    eq:'ψ = e − eₑ', lab:'csl', mod:1,
+    plain:'Not how dense the soil is, but how dense it is compared with where it is heading.',
+    eq:'ψ = e − eₑ',
+    vars:[['ψ','state parameter: the whole point of this branch','—'],
+          ['e','void ratio the soil has right now','—'],
+          ['eₑ','void ratio it would end at, at this same p′','—']],
+    def:'Density on its own tells you nothing, because the same void ratio is dense at shallow depth and loose at depth. Comparing it with the critical state line at the <i>same stress</i> is what makes the number mean something.',
+    fig:'fPsi', lab:'csl', mod:1,
     children:[
-      { id:'e', label:'void\nratio', color:'#1479b8', eq:'e = Vᵥ / Vₛ',
-        def:'Volume of voids over volume of solids. On its own it says nothing about behaviour — e = 0.8 can be dense or loose depending on the soil and the stress.' },
-      { id:'p', label:'mean\nstress', color:'#1479b8', eq:'p′ = (σ′₁ + 2σ′₃)/3',
-        def:'The stress the critical state line is read against. The same void ratio at two depths gives two different states, which is why depth matters and density alone does not.' },
-      { id:'csl', label:'critical\nstate line', color:'#1479b8', eq:'eₑ = Γ − λ₁₀ log₁₀ p′', lab:'csl', mod:1,
-        def:'The destination, drawn in void ratio against log stress. <b>Γ</b> is where it sits at p′ = 1 kPa; <b>λ₁₀</b> is how fast it falls per decade of stress. Two numbers per soil, measured in a laboratory.' },
-      { id:'psi', label:'ψ', color:'#1479b8', eq:'ψ = e − eₑ(p′)', lab:'csl', mod:1,
-        def:'The <b>state parameter</b>. Negative means denser than critical — the soil must expand to fail, so it strengthens as it shears. Positive means looser than critical — it wants to collapse. One number, and it is the one the rest of the map keeps asking for.' },
-      { id:'dr', label:'relative\ndensity', color:'#1479b8', eq:'Dᵣ = (eₘₐₓ − e)/(eₘₐₓ − eₘᵢₙ)', lab:'csl',
-        def:'The older index. <b>It is not state.</b> Two elements at the same Dᵣ and different depths have different ψ and behave differently, which is exactly why corrections for stress level had to be invented.' }
+      { id:'e', label:'void\nratio', color:'#1479b8',
+        plain:'How much empty space is in the soil, as a fraction of the solid.',
+        eq:'e = Vᵥ / Vₛ',
+        vars:[['e','void ratio','—'],['Vᵥ','volume of voids — water and air','m³'],['Vₛ','volume of the grains themselves','m³']],
+        def:'A soil is grains plus the gaps between them. e counts the gaps against the solid. A loose sand might be 0.9, a dense one 0.5. It is the thing that changes when soil compresses, so it is the natural measure of how packed a soil is.',
+        fig:'fPhase',
+        children:[
+          { id:'poros', label:'porosity', color:'#1479b8',
+            plain:'The same idea measured against the whole sample rather than against the solid.',
+            eq:'n = e / (1 + e)',
+            vars:[['n','porosity: voids as a fraction of total volume','—'],['e','void ratio','—']],
+            def:'Porosity never exceeds 1 and void ratio can, which is the only real difference. Critical state work uses e because compression curves are straight in e against log p′ and are not straight in n.' },
+          { id:'emaxmin', label:'eₘₐₓ , eₘᵢₙ', color:'#1479b8',
+            plain:'The loosest and densest packings you can get in a laboratory.',
+            eq:'standard pouring and vibration tests',
+            vars:[['eₘₐₓ','loosest packing achievable','—'],['eₘᵢₙ','densest packing achievable','—']],
+            def:'They are useful for describing a sand but they are <b>laboratory artefacts</b>, not limits the ground respects. They are the basis of relative density, which is why relative density inherits their arbitrariness.' }
+        ]},
+
+      { id:'p', label:'mean\nstress', color:'#1479b8',
+        plain:'The average squeeze on the element, after the water pressure is taken off.',
+        eq:'p′ = (σ′₁ + 2σ′₃)/3',
+        vars:[['p′','mean effective stress','kPa'],
+              ['σ′₁','effective stress in the major direction','kPa'],
+              ['σ′₃','effective stress in the two minor directions','kPa']],
+        def:'The critical state line is read against p′, so p′ is what decides where the soil is heading. This is exactly why the same void ratio means different things at 2 m and at 40 m.',
+        fig:'fStress',
+        children:[
+          { id:'effstress', label:'effective\nstress', color:'#1479b8',
+            plain:'Soil strength comes from grains pressing on grains, not from the water in between.',
+            eq:'σ′ = σ − u',
+            vars:[['σ′','effective stress — what the grain skeleton carries','kPa'],
+                  ['σ','total stress from everything above','kPa'],
+                  ['u','pore water pressure','kPa']],
+            def:'Terzaghi’s principle, and the reason liquefaction is possible at all: raise u without touching σ and σ′ falls, so the soil loses strength with no change in load whatever.',
+            why:'This is the Aberfan mechanism. A rising water table alone brought that slope down — nothing was added on top of it.', mod:3 },
+          { id:'q', label:'deviator\nstress', color:'#1479b8',
+            plain:'The part of the stress that actually distorts the soil rather than just squeezing it.',
+            eq:'q = σ′₁ − σ′₃',
+            vars:[['q','deviator stress — the shearing part','kPa'],
+                  ['σ′₁ , σ′₃','major and minor effective stresses','kPa']],
+            def:'p′ squeezes, q distorts. Soil behaviour is drawn on axes of q against p′ because the two do completely different things, and the ratio between them, η = q/p′, is what reaches a limit.' }
+        ]},
+
+      { id:'csl', label:'critical\nstate line', color:'#1479b8',
+        plain:'A straight line on a chart that tells you where the soil is going, for any stress.',
+        eq:'eₑ = Γ − λ₁₀ log₁₀ p′',
+        vars:[['eₑ','the destination void ratio at this stress','—'],
+              ['Γ','intercept: eₑ at p′ = 1 kPa, typically 0.7 – 1.0','—'],
+              ['λ₁₀','slope per decade of stress, typically 0.02 – 0.13','—'],
+              ['p′','mean effective stress','kPa']],
+        def:'Two numbers describe a soil’s destination for every stress it will ever see. They are measured, not assumed, and they are the one thing a cone cannot tell you.',
+        why:'λ₁₀ does far more work than its size suggests: it sets the CPT inversion constants and it alone decides Kσ. Get it wrong and every ψ in the profile is wrong.',
+        fig:'fCSL', lab:'csl', mod:1,
+        children:[
+          { id:'gamma', label:'Γ', color:'#1479b8',
+            plain:'How loose the soil’s destination is when the stress is very small.',
+            eq:'Γ = eₑ at p′ = 1 kPa',
+            vars:[['Γ','the intercept of the critical state line','—']],
+            def:'An extrapolation, not a measurement — nobody tests at 1 kPa. It is simply where the fitted line crosses, and it moves if λ₁₀ moves, so the two are always quoted together.' },
+          { id:'lam', label:'λ₁₀', color:'#1479b8',
+            plain:'How much looser the destination gets each time you multiply the stress by ten.',
+            eq:'λ₁₀ = − d eₑ / d(log₁₀ p′)',
+            vars:[['λ₁₀','slope of the critical state line','—']],
+            def:'A clean quartz sand sits near 0.03; a crushable or silty soil can reach 0.13. Steep soils change their destination quickly with depth, which is what makes deep deposits of them awkward.',
+            why:'Both CPT inversion constants come from λ₁₀ alone, and so does Kσ. It is the single most load-bearing number in the framework.' },
+          { id:'fitting', label:'fitting\nthe line', color:'#1479b8',
+            plain:'Shear several samples to the end and draw a line through where they stopped.',
+            eq:'least squares on e against log₁₀ p′',
+            vars:[['n','number of tests; four well-spread ones is a minimum','—'],
+                  ['R²','how well the line fits those points','—']],
+            def:'Each test contributes <b>one point</b>: its end-of-test state. They should span at least a decade of stress, because a slope fitted over half a decade is barely constrained at all.' },
+          { id:'curve', label:'curvature', color:'#1479b8',
+            plain:'The line is only straight over the range you tested.',
+            eq:'valid over the tested decade(s)',
+            vars:[['p′','stress; beyond a few MPa grains crush','kPa']],
+            def:'At high stress the grains themselves begin to break, the line steepens, and a straight fit extrapolated past your data will read the destination wrong. Honest practice is to state the range the line was fitted over.' }
+        ]},
+
+      { id:'psi', label:'ψ', color:'#1479b8',
+        plain:'One number that says whether a soil will strengthen or collapse when you shear it.',
+        eq:'ψ = e − eₑ(p′)',
+        vars:[['ψ','state parameter','—'],
+              ['e','current void ratio','—'],
+              ['eₑ','critical void ratio at this p′','—']],
+        def:'<b>Negative</b> means denser than its destination: to fail it must expand, which takes work, so it gets stronger as it shears. <b>Positive</b> means looser than its destination: there is somewhere to fall to, and under undrained loading it can lose strength it will never get back.',
+        why:'Almost everything downstream — peak strength, liquefaction resistance, residual strength — is a function of ψ. It is the number the whole framework is built to deliver.',
+        fig:'fPsi', lab:'csl', mod:1,
+        children:[
+          { id:'sign', label:'the sign', color:'#1479b8',
+            plain:'Minus is safe-ish, plus is dangerous.',
+            eq:'ψ < 0 dilative  ·  ψ > 0 contractive',
+            vars:[['ψ < 0','denser than critical — dilative, strengthens','—'],
+                  ['ψ > 0','looser than critical — contractive, can collapse','—']],
+            def:'This single sign separates a soil that deforms badly but survives from one that can run out as a flow slide. It is the most consequential minus sign in geotechnical engineering.',
+            fig:'fGrains' },
+          { id:'bound', label:'the −0.05\nboundary', color:'#1479b8',
+            plain:'In practice, engineers want a bit of margin rather than just the sign.',
+            eq:'ψ ≤ −0.05 taken as reliably dilative',
+            vars:[['−0.05','a practical cutoff, not a law of nature','—']],
+            def:'Because a cone-derived ψ carries roughly ±0.05, a soil measured at ψ = −0.02 might truly be contractive. The −0.05 line buys back the measurement uncertainty.' },
+          { id:'uncert2', label:'±0.05', color:'#1479b8',
+            plain:'How wrong your ψ could honestly be.',
+            eq:'ψ ± 0.05 from the cone',
+            vars:[['±0.05','documented scatter in ψ from stress level alone','—']],
+            def:'Treat every ψ from a cone as a band, not a figure. A design that changes its mind inside that band has not been decided by the data.' }
+        ]},
+
+      { id:'dr', label:'relative\ndensity', color:'#1479b8',
+        plain:'The old way of saying how dense a sand is — and it does not work.',
+        eq:'Dᵣ = (eₘₐₓ − e)/(eₘₐₓ − eₘᵢₙ)',
+        vars:[['Dᵣ','relative density, usually quoted as a percentage','%'],
+              ['e','current void ratio','—'],
+              ['eₘₐₓ , eₘᵢₙ','loosest and densest laboratory packings','—']],
+        def:'It compares the soil with two laboratory extremes instead of with where it is actually heading. <b>Two elements at the same Dᵣ and different depths have different ψ and behave differently</b> — which is precisely why corrections for stress level had to be invented.',
+        why:'Every stress-level correction in classical practice exists to patch a hole that using Dᵣ instead of ψ dug in the first place.',
+        fig:'fDrVsPsi', lab:'csl' }
     ]},
 
+  /* ============================ STRENGTH ============================ */
   { id:'strength', label:'STRENGTH', color:'#268160',
-    def:'Peak strength is not a property. It is what you get when a soil denser than critical has to push neighbouring grains out of the way to fail — and the amount of pushing is set by ψ.',
-    eq:'ηₘₐₓ = Mₜᶜ − Dₘᵢₙ', lab:'dil', mod:1,
+    plain:'A dense soil is strong because it has to shove its neighbours aside to move — and that borrowed strength is repaid.',
+    eq:'ηₘₐₓ = Mₜᶜ − Dₘᵢₙ',
+    vars:[['ηₘₐₓ','peak stress ratio, q/p′ at its highest','—'],
+          ['Mₜᶜ','stress ratio at critical state','—'],
+          ['Dₘᵢₙ','the most negative dilatancy reached (expansion)','—']],
+    def:'Peak strength is not a property of a soil. It is what you measure when a soil denser than critical has to expand to fail, and the amount of expansion is set by ψ.',
+    fig:'fPeak', lab:'dil', mod:1,
     children:[
-      { id:'mtc', label:'M', color:'#268160', eq:'Mₜᶜ = 6 sinφₑ / (3 − sinφₑ)',
-        def:'The stress ratio at critical state, the friction that is genuinely a property of the grains. Everything above it is borrowed from dilation and has to be given back.' },
-      { id:'dil', label:'dilatancy', color:'#268160', eq:'Dₘᵢₙ = χₜᶜ · ψ', lab:'dil', mod:1,
-        def:'The rate the soil changes volume while it shears. A dense soil must ride up over its neighbours to move, so it expands, and that work shows up as extra strength.' },
-      { id:'peak', label:'peak\nstrength', color:'#268160', eq:'ηₘₐₓ = Mₜᶜ − χₜᶜψ', lab:'dil', mod:1,
-        def:'Only exists when ψ &lt; 0, and it is temporary — keep shearing and it falls back to M. Designing on a peak that strain will erase is how brittle failures happen.' },
-      { id:'chi', label:'χ', color:'#268160', eq:'χₜᶜ ≈ 2.8 – 5.3',
-        def:'How strongly a given state parameter turns into dilation, measured per soil. A high χ soil converts a small ψ into a lot of extra peak strength — and loses it just as sharply.' }
+      { id:'mtc', label:'M', color:'#268160',
+        plain:'The friction that is really there — what is left after all the dilation is used up.',
+        eq:'Mₜᶜ = 6 sinφₑ / (3 − sinφₑ)',
+        vars:[['Mₜᶜ','critical stress ratio in triaxial compression','—'],
+              ['φₑ','critical state friction angle, typically 30° – 35°','degrees']],
+        def:'The honest, permanent friction of the grains. Everything measured above it was borrowed from dilation and will be given back as strain continues.',
+        why:'Design on M unless you can show the strains stay small enough to keep the peak alive. Most slope failures are the peak being repaid.',
+        children:[
+          { id:'phic', label:'φₑ', color:'#268160',
+            plain:'The angle a pile of that soil settles at once it stops rearranging.',
+            eq:'sinφₑ = 3Mₜᶜ / (6 + Mₜᶜ)',
+            vars:[['φₑ','critical state friction angle','degrees'],['Mₜᶜ','critical stress ratio','—']],
+            def:'It depends on grain shape and mineralogy, barely on density, and not at all on how the sample was prepared. That stability is what makes it a genuine property.' },
+          { id:'modes', label:'test\nmode', color:'#268160',
+            plain:'The same soil gives a slightly different M depending on how you squeeze it.',
+            eq:'Mₜₑ < Mₜᶜ',
+            vars:[['Mₜᶜ','triaxial compression','—'],['Mₜₑ','triaxial extension','—']],
+            def:'Compression and extension load the grain fabric differently, so M is not a single number for a soil. Real ground sees a mixture, which is one reason Kα cannot be tabulated.' }
+        ]},
+
+      { id:'dil', label:'dilatancy', color:'#268160',
+        plain:'Dense soil has to swell to shear, because the grains must climb over each other.',
+        eq:'Dₘᵢₙ = χₜᶜ · ψ',
+        vars:[['Dₘᵢₙ','peak rate of volume change during shear','—'],
+              ['χₜᶜ','how strongly this soil converts state into dilation, 2.8 – 5.3','—'],
+              ['ψ','state parameter','—']],
+        def:'Picture marbles packed tight in a box: to slide one layer past another, the whole upper layer must lift. That lifting is dilation, and the work it costs appears as extra strength.',
+        why:'Dilation is the entire explanation for peak strength, and it is why peak strength vanishes at large strain.',
+        fig:'fGrains', lab:'dil', mod:1,
+        children:[
+          { id:'chi', label:'χ', color:'#268160',
+            plain:'How much extra strength this particular soil squeezes out of being dense.',
+            eq:'χₜᶜ ≈ 2.8 – 5.3',
+            vars:[['χₜᶜ','dilatancy coefficient, measured per soil','—']],
+            def:'A high-χ soil turns a small negative ψ into a large peak — and loses it just as sharply when strain catches up. Angular, well-graded soils sit high.' },
+          { id:'drate', label:'D = dεᵥ/dεᵩ', color:'#268160',
+            plain:'Dilatancy is a rate: volume change per unit of distortion.',
+            eq:'D = dεᵥ / dεᵩ',
+            vars:[['D','dilatancy, negative when expanding','—'],
+                  ['dεᵥ','increment of volumetric strain','—'],
+                  ['dεᵩ','increment of shear strain','—']],
+            def:'At critical state D = 0 by definition: the soil goes on distorting with no further volume change. That is what “critical” means, written as an equation.',
+            fig:'fDrained' }
+        ]},
+
+      { id:'peak', label:'peak\nstrength', color:'#268160',
+        plain:'The highest strength you measure — and the one you should usually not design on.',
+        eq:'ηₘₐₓ = Mₜᶜ − χₜᶜψ',
+        vars:[['ηₘₐₓ','peak stress ratio','—'],
+              ['Mₜᶜ','critical stress ratio','—'],
+              ['χₜᶜ','dilatancy coefficient','—'],
+              ['ψ','state parameter, negative for a dense soil','—']],
+        def:'Only exists when ψ &lt; 0, and only until strain erases it. On the way down from peak the soil sheds strength, and whether that matters depends entirely on how much it sheds.',
+        why:'Designing on a peak that strain will erase is the single commonest route to a brittle failure.',
+        fig:'fPeak', lab:'dil', mod:1 },
+
+      { id:'sd', label:'stress–\ndilatancy', color:'#268160',
+        plain:'Strength and volume change are not two behaviours. They are one.',
+        eq:'η = Mₜᶜ − D',
+        vars:[['η','current stress ratio q/p′','—'],
+              ['Mₜᶜ','critical stress ratio','—'],
+              ['D','current dilatancy','—']],
+        def:'This one line ties the whole branch together: at any instant, how much stress ratio the soil carries above M is exactly how fast it is expanding. When expansion stops, the extra strength stops with it.' }
     ]},
 
+  /* ============================ MEASURING ============================ */
   { id:'measure', label:'MEASURING', color:'#e38a22',
-    def:'ψ is the number you need and the one you cannot see. Two routes to it: the laboratory, which gives the line, and the cone, which gives the state at every depth.',
-    eq:'Qₚ = k · exp(−mψ)', lab:'cpt', mod:2,
+    plain:'ψ is the number you need and the one you cannot see. Two ways to get at it.',
+    eq:'Qₚ = k · exp(−mψ)',
+    vars:[['Qₚ','normalised cone tip resistance','—'],
+          ['k , m','inversion constants, both predicted from λ₁₀','—'],
+          ['ψ','state parameter being solved for','—']],
+    def:'The laboratory gives the line, which is the part a cone cannot know. The cone gives the state at every depth, which is the part a laboratory cannot afford. You need both.',
+    fig:'fCPT', lab:'cpt', mod:2,
     children:[
-      { id:'triax', label:'triaxial', color:'#e38a22', eq:'eₑ , p′  at end of test', mod:1,
-        def:'Shear specimens to large strain at several stresses and record where each one finished. Those end points define the critical state line — and nothing else can define it for you.' },
-      { id:'cpt', label:'CPT', color:'#e38a22', eq:'qₜ , fₛ , u₂', lab:'cpt', mod:2,
-        def:'Three channels, every two centimetres, through the whole profile. The cone is the only practical way to see how variable state really is between boreholes.' },
-      { id:'ic', label:'Iᴄ', color:'#e38a22', eq:'Iᴄ from Q and F',
-        def:'The soil behaviour type index — the gate that says whether a sand-calibrated inversion means anything at this depth, or whether you are looking at clay.' },
-      { id:'inv', label:'inversion', color:'#e38a22', eq:'ψ = −ln(Qₚ/k)/m', lab:'cpt', mod:2,
-        def:'Turning tip resistance into state. Both constants k and m are predictable from <b>λ₁₀ alone</b>, which is why the laboratory line matters so much: it calibrates the whole sounding.' },
-      { id:'psik', label:'ψₖ', color:'#e38a22', eq:'ψₖ = ψₘₑₐₙ + z·σ', lab:'trig', mod:2,
-        def:'The <b>characteristic</b> state parameter: a percentile on the loose tail of a layer, not its average. Liquefaction starts in the loosest pocket, so the mean is the wrong statistic.' }
+      { id:'triax', label:'triaxial', color:'#e38a22',
+        plain:'Squeeze a cylinder of soil in a pressure cell and shear it until it stops changing.',
+        eq:'one test → one point (eₑ , p′)',
+        vars:[['eₑ','void ratio at the end of the test','—'],
+              ['p′','mean effective stress at the end of the test','kPa']],
+        def:'The only way to find the critical state line. Several specimens, each sheared to large strain at a different stress, each contributing the single point where it finished.',
+        fig:'fTriax', mod:1,
+        children:[
+          { id:'drained', label:'drained', color:'#e38a22',
+            plain:'Water is free to leave, so the sample changes volume instead of pressure.',
+            eq:'Δu = 0 ,  εᵥ ≠ 0',
+            vars:[['Δu','change in pore pressure — kept at zero','kPa'],
+                  ['εᵥ','volumetric strain — free to develop','—']],
+            def:'Dense samples visibly expand, loose ones contract, and both finish on the critical state line. This is the test that shows dilation directly.',
+            fig:'fDrained' },
+          { id:'undrained', label:'undrained', color:'#e38a22',
+            plain:'Water cannot leave, so the sample changes pressure instead of volume.',
+            eq:'εᵥ = 0 ,  Δu ≠ 0',
+            vars:[['εᵥ','volumetric strain — forced to zero','—'],
+                  ['Δu','pore pressure change — free to develop','kPa']],
+            def:'A contractive soil wants to shrink, cannot, and so drives the pore pressure up instead — which drops p′ and takes its strength with it. <b>This is liquefaction, and it needs no extra theory.</b>',
+            why:'Earthquakes and rapid loading are undrained events. This is the test that matters for liquefaction.',
+            fig:'fUndrained', mod:3 },
+          { id:'endtest', label:'end of\ntest', color:'#e38a22',
+            plain:'Only the very end of each test counts.',
+            eq:'large strain, D → 0',
+            vars:[['D → 0','volume change has stopped','—']],
+            def:'A test stopped at 5% strain has not reached critical state and its end point is not on the line. Insufficient strain is the commonest reason a fitted λ₁₀ comes out wrong.' }
+        ]},
+
+      { id:'cpt', label:'CPT', color:'#e38a22',
+        plain:'Push an instrumented cone into the ground and read three things every two centimetres.',
+        eq:'qₜ , fₛ , u₂',
+        vars:[['qₜ','corrected tip resistance — how hard it is to push','MPa'],
+              ['fₛ','sleeve friction on the shaft behind the tip','kPa'],
+              ['u₂','pore pressure measured just behind the tip','kPa']],
+        def:'Continuous, repeatable, and cheap enough to do many of. The cone is the only practical way to see how variable the state really is between boreholes.',
+        fig:'fCPT', lab:'cpt', mod:2,
+        children:[
+          { id:'norm', label:'Q , F , Bᑫ', color:'#e38a22',
+            plain:'Raw readings mean nothing until you divide out the depth.',
+            eq:'Q = (qₜ − σᵥₒ)/σ′ᵥₒ ,  F = fₛ/(qₜ − σᵥₒ)',
+            vars:[['Q','normalised net tip resistance','—'],
+                  ['F','friction ratio, as a percentage','%'],
+                  ['Bᑫ','pore pressure ratio, Δu/(qₜ − σᵥₒ)','—'],
+                  ['σᵥₒ , σ′ᵥₒ','total and effective vertical stress','kPa']],
+            def:'A tip resistance of 5 MPa is dense at 2 m and loose at 40 m. Normalising removes the depth so that readings from different depths can be compared at all.' },
+          { id:'ic', label:'Iᴄ', color:'#e38a22',
+            plain:'A quick check on whether you are in sand or in clay.',
+            eq:'Iᴄ from Q and F',
+            vars:[['Iᴄ','soil behaviour type index','—'],
+                  ['Iᴄ < 2.6','sand-like, the inversion applies','—'],
+                  ['Iᴄ > 2.6','clay-like, it does not','—']],
+            def:'The gate. A sand-calibrated ψ inversion applied to a clay layer produces a number that looks fine and means nothing, so this is checked at every depth before ψ is believed.' },
+          { id:'inv', label:'inversion', color:'#e38a22',
+            plain:'Turning the cone reading into a state parameter.',
+            eq:'ψ = − ln(Qₚ / k) / m',
+            vars:[['ψ','state parameter at this depth','—'],
+                  ['Qₚ','(qₜ − p′ₒ)/p′ₒ, normalised by <i>mean</i> stress','—'],
+                  ['k','= 8 + 0.55/(λ₁₀ − 0.01)','—'],
+                  ['m','= 8.1 − 2.3·log₁₀(λ₁₀)','—']],
+            def:'Both constants come from <b>λ₁₀ alone</b>. That is the whole reason the laboratory line matters so much: two numbers from a handful of triaxial tests calibrate an entire sounding.',
+            lab:'cpt', mod:2 }
+        ]},
+
+      { id:'psik', label:'ψₖ', color:'#e38a22',
+        plain:'One number for a whole layer — chosen from its loose end, not its middle.',
+        eq:'ψₖ = ψₘₑₐₙ + z · σ',
+        vars:[['ψₖ','characteristic state parameter for the layer','—'],
+              ['ψₘₑₐₙ','mean ψ over the layer','—'],
+              ['σ','standard deviation of ψ over the layer','—'],
+              ['z','how far into the loose tail you choose to go','—']],
+        def:'Liquefaction starts in the loosest pocket, not the average one, so the mean is the wrong statistic. How far into the tail depends on how much the failure mechanism can average over.',
+        fig:'fPsiK', lab:'trig', mod:2 }
     ]},
 
+  /* ============================ MODELS ============================ */
   { id:'models', label:'MODELS', color:'#7653a6',
-    def:'A constitutive model is critical state written so a computer can follow it — and the good ones need no extra rule to produce liquefaction.',
+    plain:'Critical state written so a computer can follow it step by step.',
+    def:'A constitutive model turns the framework into equations a finite element program can integrate. The good ones produce liquefaction without being told to.',
     children:[
-      { id:'camclay', label:'Cam\nClay', color:'#7653a6', eq:'the original (1968)',
-        def:'The first model built on critical state. It works for clays but ties dilation to state too rigidly for sands, which is what NorSand was written to fix.' },
-      { id:'norsand', label:'NorSand', color:'#7653a6', eq:'ψ as the hardening variable', mod:1,
-        def:'A critical state model for sands with an <b>infinity of normal consolidation lines</b> rather than one. Its yield surface hardens toward a stress image set by ψ — so the same soil loose and dense is one model with one parameter changed.' },
-      { id:'image', label:'image\nstress', color:'#7653a6', eq:'ηᵢ = Mₜᶜ − χψ',
-        def:'The stress ratio the soil is currently heading for. It moves as ψ moves, which is how one set of parameters reproduces dilative and contractive behaviour without switching rules.' },
-      { id:'nocollapse', label:'no collapse\nsurface', color:'#7653a6', mod:3,
-        def:'Static liquefaction falls out of NorSand with <b>no instability surface written into it anywhere</b>. The “collapse line” people draw through test data is a consequence of undrained loading, not a property of the soil.' }
+      { id:'camclay', label:'Cam\nClay', color:'#7653a6',
+        plain:'The first model built on critical state, and still the one everyone learns.',
+        eq:'one normal consolidation line',
+        vars:[['λ','slope of the consolidation line','—'],
+              ['κ','slope of the unload–reload line','—'],
+              ['M','critical stress ratio','—']],
+        def:'It works well for clays, where a single normal consolidation line is a reasonable idea. Sands have no such line — a sand can be placed at almost any density at any stress — which is what NorSand was written to fix.' },
+      { id:'norsand', label:'NorSand', color:'#7653a6',
+        plain:'A critical state model that works for sand, with ψ doing the steering.',
+        eq:'ψ as the hardening variable',
+        vars:[['ψ','state parameter, the model’s internal state','—'],
+              ['χ','dilatancy coefficient','—'],
+              ['Mₜᶜ','critical stress ratio','—'],
+              ['H','hardening modulus','—']],
+        def:'It allows an <b>infinity of normal consolidation lines</b> rather than one, and makes the yield surface harden toward a stress image set by ψ. One parameter set reproduces the same sand loose and dense.',
+        why:'This is what lets one calibration cover a whole deposit instead of one density at a time.', mod:1,
+        children:[
+          { id:'image', label:'image\nstress', color:'#7653a6',
+            plain:'The stress ratio the soil is currently heading for, which moves as it shears.',
+            eq:'ηᵢ = Mₜᶜ − χψ',
+            vars:[['ηᵢ','image stress ratio — the current target','—'],
+                  ['Mₜᶜ','critical stress ratio','—'],
+                  ['χ','dilatancy coefficient','—'],
+                  ['ψ','current state parameter','—']],
+            def:'As the soil shears, ψ changes, so the target moves, so the model smoothly turns dilative behaviour into contractive behaviour with no rules switched by hand.' },
+          { id:'nocollapse', label:'no collapse\nsurface', color:'#7653a6',
+            plain:'Nobody had to put liquefaction into the model. It comes out on its own.',
+            eq:'liquefaction is an outcome, not an input',
+            vars:[['—','there is no instability surface in the equations','—']],
+            def:'Static liquefaction falls out of NorSand with <b>no collapse surface written into it anywhere</b>. The “instability line” people draw through test data is a by-product of undrained loading, not a property of the soil.',
+            why:'If you have to add a special rule to make a model liquefy, the model is telling you it does not understand why liquefaction happens.', mod:3 }
+        ]}
     ]},
 
+  /* ============================ LIQUEFACTION ============================ */
   { id:'liq', label:'LIQUEFACTION', color:'#c64852',
-    def:'Two different things share the name. Which one you have depends on the sign of ψ, and confusing them is how good engineers reach wrong conclusions.',
+    plain:'Two different things share the name, and confusing them is how good engineers reach wrong conclusions.',
+    def:'Which one you have depends on the sign of ψ. One deforms the ground badly. The other can move a tailings dam a kilometre.',
+    fig:'fFlow',
     children:[
-      { id:'static', label:'static', color:'#c64852', eq:'ψ > 0 required', mod:3,
-        def:'<b>Flow liquefaction.</b> A contractive soil loses strength under monotonic loading and cannot get it back; once moving, the driving stress exceeds what is left and it runs. Fort Peck, Nerlerk, Merriespruit.' },
-      { id:'brittle', label:'brittleness', color:'#c64852', eq:'Iᵦ = (sₚ − sᵣ)/sₚ', lab:'brit', mod:3,
-        def:'The real hazard is not low peak strength, it is <b>how much is lost</b>. Soils with ordinary-looking peak strengths can have brittleness indices from 10% to 94%.' },
-      { id:'cyclic', label:'cyclic', color:'#c64852', eq:'CRR₇.₅ = 0.06 exp(−9ψₖ)', lab:'trig', mod:4,
-        def:'<b>Cyclic mobility.</b> Pore pressure ratchets up cycle by cycle and strains accumulate, but a dilative soil recovers stiffness each cycle. It deforms, sometimes badly. It does not run.' },
-      { id:'ksig', label:'Kσ', color:'#c64852', eq:'Kσ = exp(−9λ₁₀ log₁₀(p′/p′ᵣₑᶠ))', mod:4,
-        def:'The stress-level correction — <b>which cancels</b>. Work in ψ and the void ratio drops out of both sides, leaving a function of λ₁₀ and stress ratio alone. It was never a function of density, which is why published curves disagree.' },
-      { id:'kalpha', label:'Kα', color:'#c64852', eq:'sign flips at ψ ≈ −0.05', mod:4,
-        def:'The sloping-ground correction. On dilative ground a static bias helps, on contractive ground it hurts, and its size depends on principal stress rotation — so it is <b>not a function of ψ and α alone</b> and no table indexed on those two can be right.' }
+      { id:'static', label:'static', color:'#c64852',
+        plain:'Loose soil loses its strength all at once and flows like a liquid.',
+        eq:'ψ > 0 required',
+        vars:[['ψ > 0','the soil must be looser than critical','—'],
+              ['sᵣ','what strength is left afterwards','kPa']],
+        def:'<b>Flow liquefaction.</b> A contractive soil loses strength under monotonic loading and cannot get it back; once moving, the driving stress exceeds what remains and it keeps going. Fort Peck 1938, Nerlerk 1983, Aberfan 1966, Merriespruit 1994.',
+        why:'This is the failure mode that kills people. It needs no earthquake — a rising water table is enough.',
+        fig:'fUndrained', mod:3,
+        children:[
+          { id:'brittle', label:'brittleness', color:'#c64852',
+            plain:'It is not how strong the soil is, it is how much strength it loses.',
+            eq:'Iʙ = (sₚ − sᵣ) / sₚ',
+            vars:[['Iʙ','brittleness index, 0 to 1','—'],
+                  ['sₚ','peak undrained strength','kPa'],
+                  ['sᵣ','residual strength after collapse','kPa']],
+            def:'Bishop’s 1971 table shows soils with perfectly ordinary peak strengths and brittleness indices from 10% to 94%. The peak tells you nothing about the hazard; the drop does.',
+            fig:'fBrittle', lab:'brit', mod:3 },
+          { id:'resid', label:'residual\nstrength', color:'#c64852',
+            plain:'What is left after the collapse — and what decides how far it travels.',
+            eq:'sᵣ / σ′ᵥₒ from ψ',
+            vars:[['sᵣ','residual (post-liquefaction) strength','kPa'],
+                  ['σ′ᵥₒ','vertical effective stress before failure','kPa'],
+                  ['ψ','state parameter','—']],
+            def:'The book’s design function is checked against eleven real failures. The older steady-state method reads this too high, which is the unsafe direction.', mod:3 }
+        ]},
+
+      { id:'cyclic', label:'cyclic', color:'#c64852',
+        plain:'Shaking ratchets the water pressure up cycle by cycle until the soil softens.',
+        eq:'CRR₇.₅ = 0.06 · exp(−9ψₖ)',
+        vars:[['CRR₇.₅','cyclic resistance ratio at magnitude 7.5','—'],
+              ['ψₖ','characteristic state parameter of the layer','—'],
+              ['0.06 , 9','fitted to twenty real Class A case histories','—']],
+        def:'<b>Cyclic mobility.</b> Pore pressure ratchets up each cycle and strains accumulate, but a dilative soil recovers stiffness every cycle as it tries to expand. It deforms, sometimes badly. It does not run.',
+        fig:'fCycles', lab:'trig', mod:4,
+        children:[
+          { id:'ru', label:'rᵤ', color:'#c64852',
+            plain:'How much of the soil’s squeeze has been replaced by water pressure.',
+            eq:'rᵤ = Δu / σ′ᵥₒ',
+            vars:[['rᵤ','excess pore pressure ratio, 0 to 1','—'],
+                  ['Δu','excess pore pressure built by shaking','kPa'],
+                  ['σ′ᵥₒ','initial vertical effective stress','kPa']],
+            def:'rᵤ = 1 means the grain contacts carry nothing at that instant — “initial liquefaction”. Whether that is a catastrophe or an inconvenience depends entirely on ψ.',
+            fig:'fCycles' },
+          { id:'nl', label:'Nʟ', color:'#c64852',
+            plain:'How many shakes it takes to get there.',
+            eq:'Nʟ cycles to rᵤ = 1',
+            vars:[['Nʟ','number of uniform cycles to liquefy a specimen','—'],
+                  ['M 7.5','≈ 15 cycles','—'],
+                  ['M 6.0','≈ 6 cycles','—']],
+            def:'A bigger earthquake is not a harder push, it is <b>more pushes</b>. That is the entire physical content of magnitude scaling.' },
+          { id:'km', label:'Kₘ', color:'#c64852',
+            plain:'A correction for earthquakes that are not magnitude 7.5.',
+            eq:'CRR = CRR₇.₅ · Kₘ',
+            vars:[['Kₘ','magnitude scaling factor','—'],
+                  ['M < 7.5','Kₘ > 1 — fewer cycles, soil survives more','—'],
+                  ['M > 7.5','Kₘ < 1','—']],
+            def:'Interpolated between five tabulated points. The book gives no closed form, so none should be invented.', mod:4 },
+          { id:'ksig', label:'Kσ', color:'#c64852',
+            plain:'A correction for depth that turns out not to be needed at all.',
+            eq:'Kσ = exp(−9 λ₁₀ log₁₀(p′/p′ᵣₑᶠ))',
+            vars:[['Kσ','stress-level correction','—'],
+                  ['λ₁₀','slope of the critical state line','—'],
+                  ['p′ / p′ᵣₑᶠ','stress relative to the reference, usually 100 kPa','—']],
+            def:'Work in ψ and the void ratio cancels from both sides of the ratio, leaving a function of λ₁₀ and stress alone. <b>Density has gone.</b> A factor tabulated against relative density for thirty years was never a function of density.',
+            why:'This is why the published Kσ curves disagree with each other: each was fitted to different soils at different depths, all patching something a state-based analysis never creates.',
+            fig:'fKsigma', mod:4 },
+          { id:'kalpha', label:'Kα', color:'#c64852',
+            plain:'A correction for sloping ground that the book deliberately refuses to give you.',
+            eq:'sign flips at ψ ≈ −0.05',
+            vars:[['Kα','static shear bias correction','—'],
+                  ['α','τₛₜₐₜᵢᶜ/σ′ᵥₒ, the shear a slope already carries','—'],
+                  ['ψ','state parameter — and the sign of Kα follows it','—']],
+            def:'On dilative ground a static bias <i>helps</i>; on contractive ground the same bias <i>hurts</i>. The size depends on principal stress rotation, so <b>Kα is not a function of ψ and α alone</b> and no table indexed on those two can be right for every site.',
+            why:'The objection is sharper than “we do not know Kα”. It is that Kα is not the kind of thing a table can hold.',
+            fig:'fKalpha', mod:4 }
+        ]}
     ]},
 
+  /* ============================ DESIGN ============================ */
   { id:'design', label:'DESIGN', color:'#40a8d3',
-    def:'The point of all of it: a number you can defend, with its assumptions visible and its weak link named.',
-    eq:'FS = CRR / CSR', lab:'trig', mod:4,
+    plain:'The point of all of it: a number you can defend, with its weak link named.',
+    eq:'FS = CRR / CSR',
+    vars:[['FS','factor of safety against triggering','—'],
+          ['CRR','cyclic resistance ratio — what the soil can take','—'],
+          ['CSR','cyclic stress ratio — what the earthquake asks','—']],
+    def:'Resistance over demand, at every depth, with the assumptions written down beside it.',
+    lab:'trig', mod:4,
     children:[
-      { id:'char', label:'characteristic\nvalue', color:'#40a8d3', eq:'a percentile, not a mean', mod:2,
-        def:'Pick the value from the loose tail that the failure mechanism would actually find. How far into the tail depends on how much the mechanism can average over.' },
-      { id:'fs', label:'factor of\nsafety', color:'#40a8d3', eq:'FS = CRR / CSR', lab:'trig', mod:4,
-        def:'Resistance over demand at every depth. Below 1 the analysis says that depth triggers — but read it against the ±0.05 band on ψ, because a factor of 1.05 is not a result.' },
-      { id:'resid', label:'residual\nstrength', color:'#40a8d3', eq:'sᵣ / σ′ᵥₒ from ψ', mod:3,
-        def:'What is left after flow liquefaction, and what decides whether a slope travels ten metres or a kilometre. The book’s design function is checked against eleven real failures.' },
-      { id:'uncert', label:'uncertainty', color:'#40a8d3', eq:'ψ ± 0.05 from the cone',
-        def:'The honest width of a cone-derived ψ from stress level alone. Any design that changes its mind inside that band has not actually been decided by the data.' }
+      { id:'char', label:'characteristic\nvalue', color:'#40a8d3',
+        plain:'Pick the value from the loose end that the failure would actually find.',
+        eq:'a percentile, not a mean',
+        vars:[['percentile','typically 70th to 85th on the loose tail','%'],
+              ['ψₖ','the value that comes out','—']],
+        def:'How far into the tail depends on how much the mechanism can average over. A wide failure surface crossing many metres averages; a thin loose seam does not.', mod:2 },
+      { id:'csr', label:'CSR', color:'#40a8d3',
+        plain:'How hard the earthquake shakes this particular element.',
+        eq:'CSR = 0.65 (aₘₐₓ/g)(σᵥₒ/σ′ᵥₒ) rᵈ',
+        vars:[['CSR','cyclic stress ratio imposed by the shaking','—'],
+              ['aₘₐₓ/g','peak ground acceleration as a fraction of gravity','—'],
+              ['σᵥₒ/σ′ᵥₒ','total over effective vertical stress','—'],
+              ['rᵈ','depth reduction — the column is not rigid','—'],
+              ['0.65','converts an irregular record to uniform cycles','—']],
+        def:'<b>This is not from the critical state framework.</b> It is Seed &amp; Idriss’s 1971 simplified procedure, included because a factor of safety needs a demand, and named explicitly so you can replace it with your own site response analysis.',
+        why:'Knowing which half of your answer comes from where is the difference between a calculation and a defence.', mod:4 },
+      { id:'fs', label:'factor of\nsafety', color:'#40a8d3',
+        plain:'Below one, the analysis says this depth triggers.',
+        eq:'FS = CRR / CSR',
+        vars:[['FS','factor of safety at this depth','—'],
+              ['FS < 1','triggering predicted','—'],
+              ['FS ≈ 1.0 – 1.2','inside the scatter of the method','—']],
+        def:'Read it against the ±0.05 band on ψ. A factor of 1.05 is not a result — it is a statement that the data has not decided.',
+        lab:'trig', mod:4 },
+      { id:'uncert', label:'uncertainty', color:'#40a8d3',
+        plain:'Say how wrong you might be, in the same breath as the answer.',
+        eq:'ψ ± 0.05 from the cone',
+        vars:[['±0.05','scatter in cone-derived ψ from stress level alone','—'],
+              ['λ₁₀','if borrowed rather than measured, add more','—']],
+        def:'The honest width of a cone-derived ψ. Carry it through to the factor of safety and present the band, not the midpoint.' },
+      { id:'workflow', label:'the\nworkflow', color:'#40a8d3',
+        plain:'The whole thing, in the order you actually do it.',
+        eq:'lab → λ₁₀ → ψ(z) → ψₖ → CRR → FS',
+        vars:[['1','triaxial tests give Γ and λ₁₀','—'],
+              ['2','cone gives ψ at every depth','—'],
+              ['3','a percentile over the layer gives ψₖ','—'],
+              ['4','Eq. 7.5 and Kₘ give CRR','—'],
+              ['5','site response or the simplified CSR gives the demand','—'],
+              ['6','FS = CRR/CSR, with its band','—']],
+        def:'Six steps, and the weakest is whichever one you borrowed instead of measured. Usually that is λ₁₀.',
+        lab:'trig', mod:4 }
     ]}
   ]
 };
@@ -295,16 +694,20 @@ function rootBranch(n){ let c=n; while(c._p && c._p.id!=='root') c=c._p; return 
 
 /* radial layout: each branch gets an angular slice proportional to its leaf count */
 function leaves(n){ const k=visibleChildren(n); return k.length? k.reduce((s,c)=>s+leaves(c),0) : 1; }
+// Angular share is allocated on span rather than raw leaf count. A branch with one
+// leaf still needs an arc wide enough for its own label, and pure leaf counting gives
+// it a sliver that its text then overflows into its neighbours.
+function span(n){ return leaves(n)+0.8; }
 function layout(){
   const pts={};
-  const kids=visibleChildren(MAP), total=leaves(MAP)||1;
+  const kids=visibleChildren(MAP), total=kids.reduce((a,c)=>a+span(c),0)||1;
   pts[MAP.id]={x:0,y:0,a:0,n:MAP};
   let acc=0;
   // at 'keywords' and 'formulas' a tight ring reads best; once definitions appear
   // each leaf needs roughly 170 px of arc, which is what sets this number
   const R1=250, STEP=(detail>=3 ? 495 : (detail>=2 ? 275 : 185));
   kids.forEach(c=>{
-    const w=leaves(c)/total;
+    const w=span(c)/total;
     const a=(acc+w/2)*Math.PI*2 - Math.PI/2;   // start at the top
     acc+=w;
     place(c,a,w,R1,1);
@@ -312,14 +715,14 @@ function layout(){
   function place(n,a,w,r,depth){
     pts[n.id]={x:Math.cos(a)*r, y:Math.sin(a)*r, a, n};
     const kk=visibleChildren(n); if(!kk.length) return;
-    const tot=kk.reduce((s,c)=>s+leaves(c),0)||1;
+    const tot=kk.reduce((s,c)=>s+span(c),0)||1;
     let k=0;
-    const spread=w*Math.PI*2*0.82;
+    const spread=w*Math.PI*2*0.88;
     kk.forEach(c=>{
-      const cw=leaves(c)/tot;
+      const cw=span(c)/tot;
       const ca=a - spread/2 + (k+cw/2)*spread;
       k+=cw;
-      place(c, ca, w*cw, r+STEP*(depth===1?1:0.40), depth+1);
+      place(c, ca, w*cw, r+STEP*(depth===1?1:0.72), depth+1);
     });
   }
   return pts;
@@ -495,7 +898,12 @@ function renderPanel(){
         ? t.label.replace(/\n/g,' ')
         : '<b data-go="'+t.id+'">'+t.label.replace(/\n/g,' ')+'</b>').join(' &rsaquo; ')+'</p>'+
     '<h2>'+n.label.replace(/\n/g,' ')+'</h2>'+
+    (n.plain ? '<p class="plain">'+n.plain+'</p>' : '')+
+    (n.fig && FIGS[n.fig] ? '<div class="figbox"><canvas id="figC" role="img" aria-label="Sketch illustrating '+n.label.replace(/\n/g,' ')+'"></canvas></div>' : '')+
     (n.eq ? '<div class="eq">'+n.eq+'</div>' : '')+
+    (n.vars ? '<table class="vt"><thead><tr><th>symbol</th><th>what it means</th><th>units</th></tr></thead><tbody>'+
+       n.vars.map(v=>'<tr><td>'+v[0]+'</td><td>'+v[1]+'</td><td>'+(v[2]||'')+'</td></tr>').join('')+
+       '</tbody></table>' : '')+
     (n.def ? '<p class="def">'+n.def+'</p>' : '')+
     (n.why ? '<div class="why">'+n.why+'</div>' : '')+
     ((n.children||[]).length
@@ -504,6 +912,7 @@ function renderPanel(){
     (n.lab ? '<div id="labHost"></div>' : '')+
     (n.mod ? '<p class="goto">Treated properly in <a href="'+MODULES[n.mod][1]+'">'+MODULES[n.mod][0]+'</a>.</p>' : '');
   p.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.go)));
+  if(n.fig && FIGS[n.fig]){ try{ FIGS[n.fig]($('figC')); }catch(err){ console.warn('figure',n.fig,err); } }
   if(n.lab) LABS[n.lab]($('labHost'));
   p.scrollTop=0;
 }
@@ -521,6 +930,408 @@ function cv(host,id){ const c=document.createElement('canvas'); c.id=id; host.ap
 function ctxOf(c){ const d=window.devicePixelRatio||1, w=c.clientWidth||330, h=170;
   c.width=w*d; c.height=h*d; const x=c.getContext('2d'); x.setTransform(d,0,0,d,0,0);
   x.clearRect(0,0,w,h); return {x,w,h}; }
+
+/* ---------------------------------------------------------------- sketches ---
+ * Small drawn figures, one per idea. They are deliberately plain: a beginner
+ * should be able to read each one in a few seconds without a caption.        */
+const FIGH = 196;
+function figCtx(c){
+  const d=window.devicePixelRatio||1, w=c.clientWidth||340, h=FIGH;
+  c.width=w*d; c.height=h*d; const x=c.getContext('2d');
+  x.setTransform(d,0,0,d,0,0); x.clearRect(0,0,w,h);
+  x.lineJoin='round'; x.lineCap='round';
+  return {x,w,h};
+}
+function axes(x,ml,mt,pw,ph,xl,yl){
+  x.fillStyle='#f7fafb'; x.fillRect(ml,mt,pw,ph);
+  x.strokeStyle='#d7e1e5'; x.lineWidth=1; x.strokeRect(ml+.5,mt+.5,pw-1,ph-1);
+  x.fillStyle='#61737b'; x.font='9.5px Arial'; x.textAlign='center'; x.textBaseline='top';
+  if(xl) x.fillText(xl, ml+pw/2, mt+ph+5);
+  if(yl){ x.save(); x.translate(ml-26, mt+ph/2); x.rotate(-Math.PI/2);
+    x.textBaseline='alphabetic'; x.fillText(yl,0,0); x.restore(); }
+}
+function tag(x,t,px,py,col,align){
+  x.font='700 9.5px Arial'; x.textAlign=align||'left'; x.textBaseline='middle';
+  x.lineWidth=3; x.strokeStyle='#fff'; x.strokeText(t,px,py);
+  x.fillStyle=col; x.fillText(t,px,py);
+}
+function arrow(x,x1,y1,x2,y2,col,w){
+  x.strokeStyle=col; x.fillStyle=col; x.lineWidth=w||1.8;
+  x.beginPath(); x.moveTo(x1,y1); x.lineTo(x2,y2); x.stroke();
+  const a=Math.atan2(y2-y1,x2-x1), s=6;
+  x.beginPath(); x.moveTo(x2,y2);
+  x.lineTo(x2-s*Math.cos(a-0.4), y2-s*Math.sin(a-0.4));
+  x.lineTo(x2-s*Math.cos(a+0.4), y2-s*Math.sin(a+0.4));
+  x.closePath(); x.fill();
+}
+function grainBlock(x,cx,cy,cols,rows,r,gap,col,offset){
+  x.fillStyle=col;
+  for(let j=0;j<rows;j++) for(let i=0;i<cols;i++){
+    const ox=(offset&&j%2)? (r+gap)/2 : 0;
+    x.beginPath();
+    x.arc(cx+(i-(cols-1)/2)*(2*r+gap)+ox, cy+(j-(rows-1)/2)*(2*r+gap)*0.86, r, 0, 7);
+    x.fill();
+  }
+}
+
+const FIGS={};
+
+/* the whole idea in one picture: two samples, one destination */
+FIGS.fRoot=c=>{ const {x,w}=figCtx(c), ml=36,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'shear strain →','void ratio e');
+  const Y=v=>mt+ph*(1-(v-0.4)/0.5), X=t=>ml+pw*t;
+  x.setLineDash([5,4]); x.strokeStyle='#123b4a'; x.lineWidth=2;
+  x.beginPath(); x.moveTo(ml,Y(0.65)); x.lineTo(ml+pw,Y(0.65)); x.stroke(); x.setLineDash([]);
+  tag(x,'critical state',ml+pw-6,Y(0.65)-11,'#123b4a','right');
+  x.strokeStyle='#268160'; x.lineWidth=2.4; x.beginPath();
+  for(let i=0;i<=60;i++){const t=i/60; x.lineTo(X(t), Y(0.52+0.13*(1-Math.exp(-4*t))));} x.stroke();
+  tag(x,'dense — expands',ml+8,Y(0.53),'#268160');
+  x.strokeStyle='#c64852'; x.lineWidth=2.4; x.beginPath();
+  for(let i=0;i<=60;i++){const t=i/60; x.lineTo(X(t), Y(0.80-0.15*(1-Math.exp(-4*t))));} x.stroke();
+  tag(x,'loose — contracts',ml+8,Y(0.81),'#c64852');
+};
+
+/* psi is a vertical gap */
+FIGS.fPsi=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'p′ (log scale) →','void ratio e');
+  const Y=v=>mt+ph*(1-(v-0.45)/0.45);
+  x.strokeStyle='#1479b8'; x.lineWidth=2.6;
+  x.beginPath(); x.moveTo(ml+6,Y(0.82)); x.lineTo(ml+pw-6,Y(0.58)); x.stroke();
+  tag(x,'critical state line',ml+pw-8,Y(0.60)-12,'#1479b8','right');
+  const px=ml+pw*0.42, yc=Y(0.715);
+  x.fillStyle='#c64852'; x.beginPath(); x.arc(px,Y(0.80),5.5,0,7); x.fill();
+  x.strokeStyle='#fff'; x.lineWidth=2; x.stroke();
+  arrow(x,px,Y(0.80),px,yc,'#c64852',1.6);
+  tag(x,'ψ > 0  looser',px+9,Y(0.80),'#c64852');
+  x.fillStyle='#268160'; x.beginPath(); x.arc(px,Y(0.60),5.5,0,7); x.fill();
+  x.strokeStyle='#fff'; x.lineWidth=2; x.stroke();
+  arrow(x,px,Y(0.60),px,yc,'#268160',1.6);
+  tag(x,'ψ < 0  denser',px+9,Y(0.60),'#268160');
+  tag(x,'ψ is this gap',px-9,yc+13,'#61737b','right');
+};
+
+/* phase diagram */
+FIGS.fPhase=c=>{ const {x,w}=figCtx(c);
+  const bx=w/2-100, by=22, bw=96, bh=140;
+  x.fillStyle='#dceaf2'; x.fillRect(bx,by,bw,bh*0.38);
+  x.fillStyle='#b9d3c7'; x.fillRect(bx,by+bh*0.38,bw,bh*0.62);
+  x.strokeStyle='#123b4a'; x.lineWidth=1.6; x.strokeRect(bx,by,bw,bh);
+  x.strokeStyle='#8a97a0'; x.setLineDash([3,3]);
+  x.beginPath(); x.moveTo(bx,by+bh*0.38); x.lineTo(bx+bw,by+bh*0.38); x.stroke(); x.setLineDash([]);
+  x.fillStyle='#123b4a'; x.font='700 10.5px Arial'; x.textAlign='center'; x.textBaseline='middle';
+  x.fillText('voids', bx+bw/2, by+bh*0.19);
+  x.fillText('Vᵥ', bx+bw/2, by+bh*0.19+14);
+  x.fillText('solids', bx+bw/2, by+bh*0.68);
+  x.fillText('Vₛ', bx+bw/2, by+bh*0.68+14);
+  arrow(x,bx+bw+14,by,bx+bw+14,by+bh*0.38,'#1479b8',1.4);
+  arrow(x,bx+bw+14,by+bh*0.38,bx+bw+14,by+bh,'#268160',1.4);
+  x.font='700 11px Arial'; x.textAlign='left'; x.textBaseline='middle';
+  x.fillStyle='#20343d';
+  x.fillText('e = Vᵥ / Vₛ', bx+bw+30, by+bh*0.30);
+  x.font='10px Arial'; x.fillStyle='#61737b';
+  x.fillText('more voids', bx+bw+30, by+bh*0.30+18);
+  x.fillText('→ larger e → looser', bx+bw+30, by+bh*0.30+32);
+};
+
+/* p' and q */
+FIGS.fStress=c=>{ const {x,w}=figCtx(c);
+  const cx=w/2-90, cy=FIGH/2, s=40;
+  x.fillStyle='#eef4f7'; x.strokeStyle='#123b4a'; x.lineWidth=1.6;
+  x.fillRect(cx-s/2,cy-s/2,s,s); x.strokeRect(cx-s/2,cy-s/2,s,s);
+  arrow(x,cx,cy-s/2-26,cx,cy-s/2-4,'#c64852',2);
+  arrow(x,cx,cy+s/2+26,cx,cy+s/2+4,'#c64852',2);
+  arrow(x,cx-s/2-26,cy,cx-s/2-4,cy,'#1479b8',2);
+  arrow(x,cx+s/2+26,cy,cx+s/2+4,cy,'#1479b8',2);
+  tag(x,'σ′₁',cx+6,cy-s/2-18,'#c64852');
+  tag(x,'σ′₃',cx+s/2+18,cy-11,'#1479b8');
+  x.font='700 11px Arial'; x.textAlign='left'; x.textBaseline='middle'; x.fillStyle='#20343d';
+  x.fillText('p′ = (σ′₁ + 2σ′₃)/3', cx+80, cy-22);
+  x.fillText('q = σ′₁ − σ′₃', cx+80, cy+2);
+  x.font='10px Arial'; x.fillStyle='#61737b';
+  x.fillText('p′ squeezes, q distorts', cx+80, cy+26);
+};
+
+/* the CSL with both regions shaded */
+FIGS.fCSL=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  const Y=v=>mt+ph*(1-(v-0.45)/0.45);
+  const y1=Y(0.84), y2=Y(0.57);
+  x.fillStyle='#fdeeec'; x.beginPath();
+  x.moveTo(ml,mt); x.lineTo(ml+pw,mt); x.lineTo(ml+pw,y2); x.lineTo(ml,y1); x.closePath(); x.fill();
+  x.fillStyle='#edf7f2'; x.beginPath();
+  x.moveTo(ml,y1); x.lineTo(ml+pw,y2); x.lineTo(ml+pw,mt+ph); x.lineTo(ml,mt+ph); x.closePath(); x.fill();
+  axes(x,ml,mt,pw,ph,'mean effective stress p′ (log)','void ratio e');
+  x.strokeStyle='#1479b8'; x.lineWidth=2.8;
+  x.beginPath(); x.moveTo(ml,y1); x.lineTo(ml+pw,y2); x.stroke();
+  tag(x,'CONTRACTIVE  ψ > 0',ml+10,mt+16,'#b03a44');
+  tag(x,'DILATIVE  ψ < 0',ml+10,mt+ph-16,'#1f7a4c');
+  tag(x,'eₑ = Γ − λ₁₀ log₁₀ p′',ml+pw-8,y2-13,'#1479b8','right');
+  arrow(x,ml+18,y1-4,ml+18,y1-30,'#b03a44',1.3);
+  arrow(x,ml+18,y1+4,ml+18,y1+30,'#1f7a4c',1.3);
+};
+
+/* grains: dense must climb, loose can collapse */
+FIGS.fGrains=c=>{ const {x,w}=figCtx(c);
+  const lx=w*0.27, rx=w*0.73, cy=FIGH/2-6, r=8.5;
+  grainBlock(x,lx,cy,4,3,r,1.5,'#268160',true);
+  grainBlock(x,rx,cy,3,3,r,9,'#c64852',false);
+  arrow(x,lx-34,cy+30,lx-34,cy-30,'#268160',1.6);
+  tag(x,'must lift',lx-30,cy-38,'#268160','center');
+  tag(x,'DENSE · dilates',lx,cy+46,'#1f7a4c','center');
+  arrow(x,rx+38,cy-30,rx+38,cy+30,'#c64852',1.6);
+  tag(x,'falls in',rx+38,cy-40,'#b03a44','center');
+  tag(x,'LOOSE · contracts',rx,cy+46,'#b03a44','center');
+  x.strokeStyle='#8a97a0'; x.lineWidth=1; x.setLineDash([4,4]);
+  x.beginPath(); x.moveTo(w/2,14); x.lineTo(w/2,FIGH-14); x.stroke(); x.setLineDash([]);
+};
+
+/* same Dr, two depths, two states */
+FIGS.fDrVsPsi=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'p′ (log) →','void ratio e');
+  const Y=v=>mt+ph*(1-(v-0.5)/0.35);
+  x.strokeStyle='#1479b8'; x.lineWidth=2.6;
+  x.beginPath(); x.moveTo(ml,Y(0.80)); x.lineTo(ml+pw,Y(0.58)); x.stroke();
+  tag(x,'critical state line',ml+pw-8,Y(0.59)-12,'#1479b8','right');
+  const e=0.68, ya=Y(e);
+  x.strokeStyle='#e38a22'; x.lineWidth=2; x.setLineDash([5,3]);
+  x.beginPath(); x.moveTo(ml,ya); x.lineTo(ml+pw,ya); x.stroke(); x.setLineDash([]);
+  tag(x,'one void ratio · one Dᵣ',ml+8,ya-12,'#c47a18');
+  const xa=ml+pw*0.22, xb=ml+pw*0.78;
+  [[xa,'#268160','ψ < 0'],[xb,'#c64852','ψ > 0']].forEach(([px,col,lb])=>{
+    const yc=Y(0.80-(0.22)*((px-ml)/pw));
+    x.fillStyle=col; x.beginPath(); x.arc(px,ya,5.5,0,7); x.fill();
+    x.strokeStyle='#fff'; x.lineWidth=2; x.stroke();
+    arrow(x,px,ya,px,yc,col,1.4);
+    tag(x,lb,px,ya+(col==='#268160'?22:-18),col,'center');
+  });
+  tag(x,'shallow',xa,mt+ph-8,'#61737b','center');
+  tag(x,'deep',xb,mt+ph-8,'#61737b','center');
+};
+
+/* peak above M, falling back */
+FIGS.fPeak=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'shear strain →','stress ratio η = q/p′');
+  const Y=v=>mt+ph*(1-(v-0.6)/1.1), X=t=>ml+pw*t;
+  x.setLineDash([5,4]); x.strokeStyle='#123b4a'; x.lineWidth=2;
+  x.beginPath(); x.moveTo(ml,Y(1.25)); x.lineTo(ml+pw,Y(1.25)); x.stroke(); x.setLineDash([]);
+  tag(x,'M — critical, permanent',ml+pw-8,Y(1.25)+13,'#123b4a','right');
+  x.strokeStyle='#268160'; x.lineWidth=2.6; x.beginPath();
+  for(let i=0;i<=80;i++){const t=i/80;
+    const v=1.25+0.42*Math.sin(Math.min(Math.PI,t*5.2))*Math.exp(-1.5*t);
+    x.lineTo(X(t),Y(v));} x.stroke();
+  tag(x,'dense: peak, then back to M',ml+10,Y(1.70),'#268160');
+  x.strokeStyle='#c64852'; x.lineWidth=2.6; x.beginPath();
+  for(let i=0;i<=80;i++){const t=i/80; x.lineTo(X(t),Y(1.25*(1-Math.exp(-3.4*t))));} x.stroke();
+  tag(x,'loose: no peak at all',ml+10,Y(0.78),'#c64852');
+  arrow(x,X(0.30),Y(1.67)-4,X(0.30),Y(1.30),'#8a97a0',1.3);
+  tag(x,'borrowed',X(0.33),Y(1.50),'#61737b');
+};
+
+/* drained volume change */
+FIGS.fDrained=c=>{ const {x,w}=figCtx(c), ml=42,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'shear strain →','volumetric strain εᵥ');
+  const Y=v=>mt+ph*(0.5-v/0.14), X=t=>ml+pw*t;
+  x.strokeStyle='#8a97a0'; x.lineWidth=1; x.setLineDash([3,3]);
+  x.beginPath(); x.moveTo(ml,Y(0)); x.lineTo(ml+pw,Y(0)); x.stroke(); x.setLineDash([]);
+  x.strokeStyle='#268160'; x.lineWidth=2.6; x.beginPath();
+  for(let i=0;i<=80;i++){const t=i/80;
+    x.lineTo(X(t),Y(0.012*(1-Math.exp(-6*t))-0.055*(1-Math.exp(-2.4*t))));} x.stroke();
+  tag(x,'dense: expands',ml+10,Y(-0.042),'#268160');
+  x.strokeStyle='#c64852'; x.lineWidth=2.6; x.beginPath();
+  for(let i=0;i<=80;i++){const t=i/80; x.lineTo(X(t),Y(0.052*(1-Math.exp(-2.6*t))));} x.stroke();
+  tag(x,'loose: contracts',ml+10,Y(0.050),'#c64852');
+  tag(x,'both flatten → D = 0',ml+pw-8,Y(0.004),'#61737b','right');
+};
+
+/* undrained stress paths */
+FIGS.fUndrained=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'mean effective stress p′ →','deviator stress q');
+  const X=v=>ml+pw*v, Y=v=>mt+ph*(1-v);
+  x.strokeStyle='#123b4a'; x.lineWidth=1.8; x.setLineDash([5,4]);
+  x.beginPath(); x.moveTo(ml,mt+ph); x.lineTo(ml+pw*0.72,mt); x.stroke(); x.setLineDash([]);
+  tag(x,'M',ml+pw*0.70,mt+12,'#123b4a','right');
+  x.strokeStyle='#268160'; x.lineWidth=2.6; x.beginPath();
+  x.moveTo(X(0.55),Y(0));
+  x.bezierCurveTo(X(0.40),Y(0.30),X(0.42),Y(0.52),X(0.62),Y(0.84)); x.stroke();
+  tag(x,'dilative: turns back up',X(0.63),Y(0.84),'#268160');
+  x.strokeStyle='#c64852'; x.lineWidth=2.6; x.beginPath();
+  x.moveTo(X(0.55),Y(0));
+  x.bezierCurveTo(X(0.46),Y(0.26),X(0.26),Y(0.33),X(0.09),Y(0.11)); x.stroke();
+  tag(x,'contractive: collapses',X(0.11),Y(0.40),'#c64852');
+  x.fillStyle='#c64852'; x.beginPath(); x.arc(X(0.34),Y(0.325),4.5,0,7); x.fill();
+  tag(x,'peak, then gone',X(0.36),Y(0.22),'#b03a44');
+  x.fillStyle='#8a97a0'; x.beginPath(); x.arc(X(0.55),Y(0),4,0,7); x.fill();
+  tag(x,'start',X(0.55),Y(0)-13,'#61737b','center');
+};
+
+/* triaxial cell cartoon */
+FIGS.fTriax=c=>{ const {x,w}=figCtx(c);
+  const cx=w*0.30, cy=FIGH/2, sw=46, sh=78;
+  x.strokeStyle='#8aa6b4'; x.lineWidth=1.6;
+  x.strokeRect(cx-44,cy-58,88,116);
+  x.fillStyle='#eaf3f8'; x.fillRect(cx-43,cy-57,86,114);
+  x.fillStyle='#c9b79a';
+  x.fillRect(cx-sw/2,cy-sh/2,sw,sh);
+  x.strokeStyle='#6f6350'; x.lineWidth=1.4; x.strokeRect(cx-sw/2,cy-sh/2,sw,sh);
+  arrow(x,cx,cy-sh/2-28,cx,cy-sh/2-6,'#c64852',2);
+  arrow(x,cx,cy+sh/2+28,cx,cy+sh/2+6,'#c64852',2);
+  tag(x,'axial load',cx,cy-sh/2-36,'#b03a44','center');
+  [[-1,0],[1,0]].forEach(([s])=>{ arrow(x,cx+s*(sw/2+24),cy,cx+s*(sw/2+6),cy,'#1479b8',1.6); });
+  tag(x,'cell pressure',cx,cy+sh/2+40,'#1479b8','center');
+  x.font='700 10.5px Arial'; x.textAlign='left'; x.textBaseline='middle'; x.fillStyle='#20343d';
+  x.fillText('shear to large strain,', cx+66, cy-24);
+  x.fillText('record where it stops', cx+66, cy-8);
+  x.font='10px Arial'; x.fillStyle='#61737b';
+  x.fillText('one test → one point', cx+66, cy+14);
+  x.fillText('on the critical state line', cx+66, cy+28);
+};
+
+/* the cone and its three channels */
+FIGS.fCPT=c=>{ const {x,w}=figCtx(c);
+  const cx=w*0.26, top=20;
+  x.strokeStyle='#8a97a0'; x.lineWidth=1.2;
+  x.fillStyle='#efe6d6'; x.fillRect(cx-58,top,116,FIGH-top-14);
+  for(let i=0;i<6;i++){ x.beginPath(); x.moveTo(cx-58,top+16+i*22); x.lineTo(cx+58,top+16+i*22);
+    x.strokeStyle='#e0d3bd'; x.stroke(); }
+  x.fillStyle='#5b6b73'; x.fillRect(cx-7,top+10,14,86);
+  x.beginPath(); x.moveTo(cx-11,top+96); x.lineTo(cx+11,top+96); x.lineTo(cx,top+124); x.closePath();
+  x.fillStyle='#38474e'; x.fill();
+  arrow(x,cx,top-2,cx,top+8,'#123b4a',2);
+  arrow(x,cx+44,top+118,cx+14,top+112,'#e38a22',1.5);
+  tag(x,'qₜ tip',cx+46,top+118,'#c47a18');
+  arrow(x,cx+44,top+74,cx+10,top+64,'#1479b8',1.5);
+  tag(x,'fₛ sleeve',cx+46,top+74,'#1479b8');
+  arrow(x,cx-44,top+96,cx-12,top+92,'#268160',1.5);
+  tag(x,'u₂',cx-46,top+96,'#268160','right');
+  x.font='700 10.5px Arial'; x.textAlign='left'; x.textBaseline='middle'; x.fillStyle='#20343d';
+  x.fillText('three numbers,', cx+86, FIGH/2-20);
+  x.fillText('every 2 cm,', cx+86, FIGH/2-4);
+  x.fillText('all the way down', cx+86, FIGH/2+12);
+};
+
+/* psi_k on a histogram tail */
+FIGS.fPsiK=c=>{ const {x,w}=figCtx(c), ml=30,mt=16,pw=w-ml-18,ph=FIGH-mt-32;
+  axes(x,ml,mt,pw,ph,'ψ over the layer →','how many readings');
+  const X=v=>ml+pw*(v+0.22)/0.30, mu=-0.10, sd=0.035;
+  x.fillStyle='#dceaf2'; x.beginPath(); x.moveTo(ml,mt+ph);
+  for(let i=0;i<=80;i++){ const v=-0.22+0.30*i/80;
+    x.lineTo(X(v), mt+ph-ph*0.86*Math.exp(-0.5*Math.pow((v-mu)/sd,2))); }
+  x.lineTo(ml+pw,mt+ph); x.closePath(); x.fill();
+  const pk=mu+0.84*sd;
+  x.fillStyle='#f6d9d4'; x.beginPath(); x.moveTo(X(pk),mt+ph);
+  for(let i=0;i<=40;i++){ const v=pk+(0.08-(pk+0.22-0.22))*i/40;
+    const vv=pk+( -0.22+0.30 - pk)*i/40;
+    x.lineTo(X(vv), mt+ph-ph*0.86*Math.exp(-0.5*Math.pow((vv-mu)/sd,2))); }
+  x.lineTo(ml+pw,mt+ph); x.closePath(); x.fill();
+  x.strokeStyle='#1479b8'; x.lineWidth=2.2; x.beginPath();
+  for(let i=0;i<=80;i++){ const v=-0.22+0.30*i/80;
+    x.lineTo(X(v), mt+ph-ph*0.86*Math.exp(-0.5*Math.pow((v-mu)/sd,2))); } x.stroke();
+  x.strokeStyle='#8a97a0'; x.lineWidth=1.4; x.setLineDash([4,3]);
+  x.beginPath(); x.moveTo(X(mu),mt+6); x.lineTo(X(mu),mt+ph); x.stroke(); x.setLineDash([]);
+  tag(x,'mean',X(mu)-5,mt+12,'#61737b','right');
+  x.strokeStyle='#c64852'; x.lineWidth=2.4;
+  x.beginPath(); x.moveTo(X(pk),mt+4); x.lineTo(X(pk),mt+ph); x.stroke();
+  tag(x,'ψₖ',X(pk)+6,mt+12,'#b03a44');
+  tag(x,'the loose tail is what fails',X(pk)+6,mt+28,'#b03a44');
+};
+
+/* flow slide vs cyclic mobility */
+FIGS.fFlow=c=>{ const {x,w}=figCtx(c);
+  const mid=w/2;
+  x.strokeStyle='#8a97a0'; x.lineWidth=1; x.setLineDash([4,4]);
+  x.beginPath(); x.moveTo(mid,10); x.lineTo(mid,FIGH-10); x.stroke(); x.setLineDash([]);
+  // left: flow slide
+  x.fillStyle='#f0ddda'; x.beginPath();
+  x.moveTo(14,FIGH-34); x.lineTo(14,70); x.lineTo(70,70); x.lineTo(118,FIGH-34); x.closePath(); x.fill();
+  x.strokeStyle='#c64852'; x.lineWidth=2; x.stroke();
+  arrow(x,74,FIGH-50,mid-26,FIGH-50,'#c64852',2.2);
+  tag(x,'FLOW · ψ > 0',14,52,'#b03a44');
+  tag(x,'runs out',14,FIGH-20,'#b03a44');
+  // right: cyclic mobility
+  x.fillStyle='#dceaf2'; x.beginPath();
+  x.moveTo(mid+18,FIGH-34); x.lineTo(mid+18,70); x.lineTo(mid+74,70); x.lineTo(mid+92,FIGH-34);
+  x.closePath(); x.fill();
+  x.strokeStyle='#1479b8'; x.lineWidth=2; x.stroke();
+  for(let i=0;i<3;i++){ arrow(x,mid+96+i*0,86+i*22,mid+112,86+i*22,'#1479b8',1.3); }
+  tag(x,'CYCLIC · ψ < 0',mid+18,52,'#1479b8');
+  tag(x,'deforms, stays',mid+18,FIGH-20,'#1479b8');
+};
+
+/* brittleness */
+FIGS.fBrittle=c=>{ const {x,w}=figCtx(c), ml=42,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'strain →','undrained strength');
+  const Y=v=>mt+ph*(1-v), X=t=>ml+pw*t;
+  x.strokeStyle='#c64852'; x.lineWidth=2.8; x.beginPath();
+  for(let i=0;i<=80;i++){ const t=i/80;
+    const v=t<0.18 ? 0.86*(t/0.18) : 0.16+0.70*Math.exp(-5.5*(t-0.18));
+    x.lineTo(X(t),Y(v)); } x.stroke();
+  const yp=Y(0.86), yr=Y(0.17);
+  x.strokeStyle='#8a97a0'; x.lineWidth=1.2; x.setLineDash([4,3]);
+  x.beginPath(); x.moveTo(ml,yp); x.lineTo(ml+pw,yp); x.stroke();
+  x.beginPath(); x.moveTo(ml,yr); x.lineTo(ml+pw,yr); x.stroke(); x.setLineDash([]);
+  tag(x,'sₚ peak',ml+pw-8,yp-11,'#61737b','right');
+  tag(x,'sᵣ residual',ml+pw-8,yr+12,'#61737b','right');
+  const ax=X(0.55);
+  arrow(x,ax,yp,ax,yr,'#b03a44',2);
+  tag(x,'this drop',ax+8,(yp+yr)/2-9,'#b03a44');
+  tag(x,'is the hazard',ax+8,(yp+yr)/2+6,'#b03a44');
+};
+
+/* pore pressure ratcheting */
+FIGS.fCycles=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'number of cycles →','pore pressure ratio rᵤ');
+  const Y=v=>mt+ph*(1-v*0.92), X=t=>ml+pw*t;
+  x.strokeStyle='#c64852'; x.lineWidth=1.6; x.setLineDash([5,4]);
+  x.beginPath(); x.moveTo(ml,Y(1)); x.lineTo(ml+pw,Y(1)); x.stroke(); x.setLineDash([]);
+  tag(x,'rᵤ = 1  initial liquefaction',ml+8,Y(1)-12,'#b03a44');
+  x.strokeStyle='#7653a6'; x.lineWidth=2.6; x.beginPath();
+  for(let i=0;i<=200;i++){ const t=i/200;
+    const base=Math.min(1,1.06*(1-Math.exp(-3.1*t)));
+    x.lineTo(X(t),Y(base-0.045*Math.abs(Math.sin(t*22))*(1-base*0.6))); }
+  x.stroke();
+  tag(x,'each cycle adds a little',ml+10,Y(0.33),'#7653a6');
+  arrow(x,X(0.14),Y(0.30),X(0.14),Y(0.56),'#7653a6',1.3);
+};
+
+/* Ksigma: two depths, one soil */
+FIGS.fKsigma=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  axes(x,ml,mt,pw,ph,'p′ (log) →','void ratio e');
+  const Y=v=>mt+ph*(1-(v-0.5)/0.34);
+  x.strokeStyle='#1479b8'; x.lineWidth=2.6;
+  x.beginPath(); x.moveTo(ml,Y(0.78)); x.lineTo(ml+pw,Y(0.60)); x.stroke();
+  const e=0.69, ya=Y(e), xa=ml+pw*0.20, xb=ml+pw*0.76;
+  x.strokeStyle='#e38a22'; x.lineWidth=1.8; x.setLineDash([5,3]);
+  x.beginPath(); x.moveTo(ml,ya); x.lineTo(ml+pw,ya); x.stroke(); x.setLineDash([]);
+  const ycA=Y(0.78-0.18*0.20), ycB=Y(0.78-0.18*0.76);
+  [[xa,ycA],[xb,ycB]].forEach(([px,yc])=>{
+    x.fillStyle='#c64852'; x.beginPath(); x.arc(px,ya,5,0,7); x.fill();
+    x.strokeStyle='#fff'; x.lineWidth=1.8; x.stroke();
+    arrow(x,px,ya,px,yc,'#c64852',1.3);
+  });
+  tag(x,'ψ₁',xa+8,(ya+ycA)/2,'#b03a44');
+  tag(x,'ψ₂',xb+8,(ya+ycB)/2,'#b03a44');
+  tag(x,'the gap between them',ml+10,mt+14,'#61737b');
+  tag(x,'is λ₁₀ log(p₂/p₁) — no e in it',ml+10,mt+29,'#61737b');
+};
+
+/* Kalpha: the sign flip */
+FIGS.fKalpha=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
+  const xb=ml+pw*0.52;
+  x.fillStyle='#edf7f2'; x.fillRect(ml,mt,xb-ml,ph);
+  x.fillStyle='#fdeeec'; x.fillRect(xb,mt,ml+pw-xb,ph);
+  axes(x,ml,mt,pw,ph,'state parameter ψ →','effect of a static bias');
+  const Y=v=>mt+ph*(1-(v-0.86)/0.28);
+  x.strokeStyle='#8a97a0'; x.lineWidth=1.4; x.setLineDash([4,3]);
+  x.beginPath(); x.moveTo(ml,Y(1)); x.lineTo(ml+pw,Y(1)); x.stroke();
+  x.beginPath(); x.moveTo(xb,mt); x.lineTo(xb,mt+ph); x.stroke(); x.setLineDash([]);
+  [[0.05,'#b9c7cf',1.4],[0.15,'#9aa9ae',1.6],[0.3,'#123b4a',2.4]].forEach(([a,col,lw])=>{
+    x.strokeStyle=col; x.lineWidth=lw; x.beginPath();
+    x.moveTo(ml, Y(1+2.2*a*0.07)); x.lineTo(ml+pw, Y(1-2.2*a*0.06)); x.stroke();
+  });
+  tag(x,'bias HELPS',ml+10,mt+16,'#1f7a4c');
+  tag(x,'bias HURTS',ml+pw-8,mt+16,'#b03a44','right');
+  tag(x,'ψ ≈ −0.05',xb+5,mt+ph-12,'#61737b');
+  tag(x,'bigger α',ml+pw-8,Y(1.055),'#123b4a','right');
+};
 
 const LABS={};
 
@@ -724,6 +1535,9 @@ function fit(){
 }
 window.addEventListener('resize',()=>{ draw(); });
 
+// 58 nodes is too many to meet at once, so the third level starts folded.
+// Click a keyword's dot, double-click it, or press Expand all to open it.
+MAP.children.forEach(b=>(b.children||[]).forEach(c=>{ if((c.children||[]).length) collapsed.add(c.id); }));
 buildLegend(); fit(); draw(); renderPanel();
 
 /* a tiny self-check, so a broken map is loud rather than quiet */
@@ -732,7 +1546,10 @@ buildLegend(); fit(); draw(); renderPanel();
   const seen=new Set(); let n=0;
   (function walk(x){ n++; if(seen.has(x.id)) out.push('duplicate id '+x.id); seen.add(x.id);
     (x.children||[]).forEach(walk); })(MAP);
-  if(n<30) out.push('map looks too small: '+n+' nodes');
+  if(n<50) out.push('map looks too small: '+n+' nodes');
+  Object.values(byId).forEach(x=>{ if(x.fig && !FIGS[x.fig]) out.push('missing figure '+x.fig+' on '+x.id); });
+  Object.values(byId).forEach(x=>{ if(x.eq && !x.vars && x.id!=='root' && (x.children||[]).length===0)
+    out.push('equation with no symbol table: '+x.id); });
   Object.keys(LABS).forEach(k=>{ if(!Object.values(byId).some(x=>x.lab===k)) out.push('unused lab '+k); });
   Object.values(byId).forEach(x=>{ if(x.lab && !LABS[x.lab]) out.push('missing lab '+x.lab);
     if(x.mod && !MODULES[x.mod]) out.push('bad module ref on '+x.id); });
