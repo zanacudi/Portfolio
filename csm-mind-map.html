@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Critical State Soil Mechanics — Interactive Mind Map</title>
+<style>
+:root{--navy:#123b4a;--blue:#1479b8;--cyan:#40a8d3;--green:#268160;--orange:#e38a22;--red:#c64852;--purple:#7653a6;--ink:#20343d;--muted:#61737b;--line:#d7e1e5;--bg:#edf3f5}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);font-family:Arial,Helvetica,sans-serif;color:var(--ink);font-size:16px;display:flex;flex-direction:column}
+header{background:linear-gradient(120deg,#0d3342,#17607a);color:#fff;padding:14px 20px;flex:0 0 auto}
+header h1{margin:0;font-size:19px}
+header p{margin:5px 0 0;color:#d9eaf0;font-size:12.5px;max-width:980px;line-height:1.5}
+header a{color:#bfe6f5}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ---- the control strip ---- */
+.bar{flex:0 0 auto;background:#fff;border-bottom:1px solid var(--line);padding:9px 14px;
+     display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.bar .grp{display:flex;align-items:center;gap:8px;min-width:0}
+.bar label{font-size:11.5px;font-weight:700;color:var(--navy);white-space:nowrap}
+.bar input[type=range]{width:150px;accent-color:var(--blue)}
+.bar input[type=search]{font:inherit;font-size:13px;padding:6px 10px;border:1px solid var(--line);
+     border-radius:6px;width:180px;max-width:42vw}
+button{font:inherit;font-size:12px;font-weight:700;border:0;border-radius:6px;padding:6px 11px;
+       background:var(--blue);color:#fff;cursor:pointer}
+button.alt{background:#647680}
+button.ghost{background:#eef4f7;color:var(--navy);border:1px solid var(--line)}
+button[aria-pressed=true]{background:var(--navy)}
+.lvl{font-size:11.5px;color:var(--blue);font-weight:700;min-width:118px}
+.hintbar{font-size:11px;color:var(--muted)}
+
+/* ---- the map and the panel ---- */
+.stage{flex:1 1 auto;display:flex;min-height:0}
+.mapwrap{flex:1 1 auto;position:relative;min-width:0;overflow:hidden;background:
+   radial-gradient(circle at 50% 42%, #fbfdfe 0%, #e7eff3 70%, #dde8ed 100%)}
+svg#map{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+svg#map.drag{cursor:grabbing}
+.node-label{font-weight:700;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3.4px;
+  stroke-linejoin:round}
+.node-sub{pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;
+  fill:var(--muted)}
+.hit{cursor:pointer}
+.hit:hover .node-label{text-decoration:underline}
+.dim{opacity:.16}
+.zoombtns{position:absolute;right:12px;bottom:12px;display:flex;flex-direction:column;gap:6px}
+.zoombtns button{width:34px;height:34px;padding:0;font-size:16px;background:#fff;color:var(--navy);
+  border:1px solid var(--line);box-shadow:0 1px 4px rgba(12,44,58,.12)}
+.legend{position:absolute;left:12px;bottom:12px;background:rgba(255,255,255,.92);border:1px solid var(--line);
+  border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.7;max-width:46vw}
+.legend b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:3px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend span{display:inline-block;margin-right:11px;white-space:nowrap;cursor:pointer}
+.legend span.off{opacity:.35}
+
+/* ---- the detail panel ---- */
+.panel{flex:0 0 392px;background:#fff;border-left:1px solid var(--line);overflow-y:auto;padding:16px}
+.panel h2{margin:0 0 3px;font-size:18px;color:var(--navy)}
+.panel .crumb{font-size:11px;color:var(--muted);margin:0 0 10px}
+.panel .crumb b{color:var(--blue);cursor:pointer}
+.panel .eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:9px 12px;
+  font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:10px 0;overflow-x:auto}
+.panel .def{font-size:13.5px;line-height:1.62;margin:10px 0}
+.panel .why{background:#fff8ec;border-left:4px solid var(--orange);border-radius:0 6px 6px 0;
+  padding:9px 11px;font-size:12.5px;line-height:1.55;margin:10px 0}
+.kids{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.kids button{background:#eef4f7;color:var(--navy);border:1px solid var(--line);font-size:11.5px;font-weight:700}
+.goto{margin-top:12px;font-size:12px}
+.goto a{color:var(--blue)}
+.empty{color:var(--muted);font-size:13px;line-height:1.6}
+
+/* ---- the little labs ---- */
+.lab{border:1px solid var(--line);border-radius:9px;padding:11px;margin-top:12px;background:#fbfdfe}
+.lab h3{margin:0 0 7px;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.sl{margin:8px 0}
+.sl label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;gap:8px}
+.sl .ro{color:var(--blue);font-variant-numeric:tabular-nums}
+.sl input[type=range]{width:100%;accent-color:var(--blue);margin-top:3px}
+.sl select{width:100%;font:inherit;font-size:12.5px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;margin-top:4px}
+.out{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.out div{background:#f2f7f9;border-radius:7px;padding:8px;text-align:center}
+.out small{display:block;font-size:10.5px;color:var(--muted);line-height:1.3}
+.out strong{display:block;font-size:17px;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:2px}
+.out div.hi{background:#e8f3fa}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px;margin-top:4px}
+.b-dil{background:#e3f3ec;color:#1f7a4c}
+.b-con{background:#fae9ea;color:#b03a44}
+.lab canvas{width:100%;height:170px;display:block;margin-top:9px;border:1px solid var(--line);
+  border-radius:7px;background:#fff}
+.verdict{margin-top:9px;padding:8px 10px;border-radius:7px;border-left:4px solid;font-size:12px;line-height:1.5}
+.v-ok{background:#edf7f2;border-color:#268160;color:#1d5f47}
+.v-mid{background:#fff4df;border-color:#e9a52b;color:#8a6414}
+.v-bad{background:#fdeeec;border-color:#c64852;color:#97343d}
+
+@media(max-width:900px){
+  .stage{flex-direction:column}
+  .panel{flex:0 0 auto;max-height:46vh;border-left:0;border-top:2px solid var(--blue)}
+  .mapwrap{flex:1 1 auto;min-height:300px}
+  .legend{max-width:62vw;font-size:10px}
+}
+@media print{
+  header,.bar,.panel,.zoombtns{display:none}
+  .stage,.mapwrap{height:auto}
+  svg#map{height:92vh}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <p style="margin:0 0 5px"><a href="index.html">&larr; Back to portfolio</a></p>
+  <h1>Critical State Soil Mechanics &mdash; Interactive Mind Map</h1>
+  <p>One framework, drawn the way Buzan intended: a central idea, curved branches, one keyword each.
+  Drag the <b>detail</b> slider to go from bare keywords to formulas to full explanations &mdash; and click any
+  branch with a <b>&bull;</b> to open a live calculator for it. Built after M. Rama Rao &amp; P. Samatha Chowdary,
+  <i>Geotechnical Engineering Through Mind Maps</i> (2019), using the conventions in their Section&nbsp;1.4.
+  Prepared by Zana Taher.</p>
+</header>
+
+<div class="bar">
+  <div class="grp">
+    <label for="lvl">Detail</label>
+    <input id="lvl" type="range" min="1" max="4" step="1" value="2" aria-describedby="lvlName">
+    <span class="lvl" id="lvlName">formulas</span>
+  </div>
+  <div class="grp">
+    <label for="q" class="sr-only">Search the map</label>
+    <input id="q" type="search" placeholder="Search&hellip; e.g. dilatancy">
+  </div>
+  <div class="grp">
+    <button type="button" class="ghost" id="expandAll">Expand all</button>
+    <button type="button" class="ghost" id="collapseAll">Branches only</button>
+    <button type="button" class="ghost" id="reset">Reset view</button>
+    <button type="button" class="ghost" id="printBtn">Print</button>
+  </div>
+  <span class="hintbar">Drag to pan &middot; scroll to zoom &middot; click a keyword to open it</span>
+</div>
+
+<div class="stage">
+  <div class="mapwrap">
+    <svg id="map" role="img" aria-label="Radial mind map of critical state soil mechanics. Use the list in the side panel to navigate."></svg>
+    <div class="zoombtns">
+      <button type="button" id="zin" title="Zoom in" aria-label="Zoom in">+</button>
+      <button type="button" id="zout" title="Zoom out" aria-label="Zoom out">&minus;</button>
+    </div>
+    <div class="legend" id="legend"><b>Branches &mdash; click to mute</b></div>
+  </div>
+  <aside class="panel" id="panel"></aside>
+</div>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+
+/* =====================================================================
+ * The map. One keyword per node, as Buzan's rule 6 asks. Everything
+ * longer lives in `eq` and `def`, which the detail slider reveals.
+ *   lab:  id of a live calculator to show in the panel
+ *   mod:  the companion module that treats this properly
+ * ===================================================================== */
+const MAP = {
+  id:'root', label:'CRITICAL\nSTATE', color:'#123b4a',
+  def:'A soil sheared far enough reaches a unique condition where it goes on distorting at constant volume and constant stress. Where that condition sits depends only on the stress, not on how dense the soil started. Everything on this map hangs off that one fact.',
+  eq:'eₑ = Γ − λ₁₀ · log₁₀ p′',
+  why:'Before critical state, strength and volume change were separate stories told about the same soil. After it, they are one story: how far the soil sits from its own destination.',
+  children:[
+
+  { id:'state', label:'STATE', color:'#1479b8',
+    def:'Not how dense the soil is, but how dense it is <b>relative to where it is going</b>. That comparison is the whole contribution of critical state soil mechanics.',
+    eq:'ψ = e − eₑ', lab:'csl', mod:1,
+    children:[
+      { id:'e', label:'void\nratio', color:'#1479b8', eq:'e = Vᵥ / Vₛ',
+        def:'Volume of voids over volume of solids. On its own it says nothing about behaviour — e = 0.8 can be dense or loose depending on the soil and the stress.' },
+      { id:'p', label:'mean\nstress', color:'#1479b8', eq:'p′ = (σ′₁ + 2σ′₃)/3',
+        def:'The stress the critical state line is read against. The same void ratio at two depths gives two different states, which is why depth matters and density alone does not.' },
+      { id:'csl', label:'critical\nstate line', color:'#1479b8', eq:'eₑ = Γ − λ₁₀ log₁₀ p′', lab:'csl', mod:1,
+        def:'The destination, drawn in void ratio against log stress. <b>Γ</b> is where it sits at p′ = 1 kPa; <b>λ₁₀</b> is how fast it falls per decade of stress. Two numbers per soil, measured in a laboratory.' },
+      { id:'psi', label:'ψ', color:'#1479b8', eq:'ψ = e − eₑ(p′)', lab:'csl', mod:1,
+        def:'The <b>state parameter</b>. Negative means denser than critical — the soil must expand to fail, so it strengthens as it shears. Positive means looser than critical — it wants to collapse. One number, and it is the one the rest of the map keeps asking for.' },
+      { id:'dr', label:'relative\ndensity', color:'#1479b8', eq:'Dᵣ = (eₘₐₓ − e)/(eₘₐₓ − eₘᵢₙ)', lab:'csl',
+        def:'The older index. <b>It is not state.</b> Two elements at the same Dᵣ and different depths have different ψ and behave differently, which is exactly why corrections for stress level had to be invented.' }
+    ]},
+
+  { id:'strength', label:'STRENGTH', color:'#268160',
+    def:'Peak strength is not a property. It is what you get when a soil denser than critical has to push neighbouring grains out of the way to fail — and the amount of pushing is set by ψ.',
+    eq:'ηₘₐₓ = Mₜᶜ − Dₘᵢₙ', lab:'dil', mod:1,
+    children:[
+      { id:'mtc', label:'M', color:'#268160', eq:'Mₜᶜ = 6 sinφₑ / (3 − sinφₑ)',
+        def:'The stress ratio at critical state, the friction that is genuinely a property of the grains. Everything above it is borrowed from dilation and has to be given back.' },
+      { id:'dil', label:'dilatancy', color:'#268160', eq:'Dₘᵢₙ = χₜᶜ · ψ', lab:'dil', mod:1,
+        def:'The rate the soil changes volume while it shears. A dense soil must ride up over its neighbours to move, so it expands, and that work shows up as extra strength.' },
+      { id:'peak', label:'peak\nstrength', color:'#268160', eq:'ηₘₐₓ = Mₜᶜ − χₜᶜψ', lab:'dil', mod:1,
+        def:'Only exists when ψ &lt; 0, and it is temporary — keep shearing and it falls back to M. Designing on a peak that strain will erase is how brittle failures happen.' },
+      { id:'chi', label:'χ', color:'#268160', eq:'χₜᶜ ≈ 2.8 – 5.3',
+        def:'How strongly a given state parameter turns into dilation, measured per soil. A high χ soil converts a small ψ into a lot of extra peak strength — and loses it just as sharply.' }
+    ]},
+
+  { id:'measure', label:'MEASURING', color:'#e38a22',
+    def:'ψ is the number you need and the one you cannot see. Two routes to it: the laboratory, which gives the line, and the cone, which gives the state at every depth.',
+    eq:'Qₚ = k · exp(−mψ)', lab:'cpt', mod:2,
+    children:[
+      { id:'triax', label:'triaxial', color:'#e38a22', eq:'eₑ , p′  at end of test', mod:1,
+        def:'Shear specimens to large strain at several stresses and record where each one finished. Those end points define the critical state line — and nothing else can define it for you.' },
+      { id:'cpt', label:'CPT', color:'#e38a22', eq:'qₜ , fₛ , u₂', lab:'cpt', mod:2,
+        def:'Three channels, every two centimetres, through the whole profile. The cone is the only practical way to see how variable state really is between boreholes.' },
+      { id:'ic', label:'Iᴄ', color:'#e38a22', eq:'Iᴄ from Q and F',
+        def:'The soil behaviour type index — the gate that says whether a sand-calibrated inversion means anything at this depth, or whether you are looking at clay.' },
+      { id:'inv', label:'inversion', color:'#e38a22', eq:'ψ = −ln(Qₚ/k)/m', lab:'cpt', mod:2,
+        def:'Turning tip resistance into state. Both constants k and m are predictable from <b>λ₁₀ alone</b>, which is why the laboratory line matters so much: it calibrates the whole sounding.' },
+      { id:'psik', label:'ψₖ', color:'#e38a22', eq:'ψₖ = ψₘₑₐₙ + z·σ', lab:'trig', mod:2,
+        def:'The <b>characteristic</b> state parameter: a percentile on the loose tail of a layer, not its average. Liquefaction starts in the loosest pocket, so the mean is the wrong statistic.' }
+    ]},
+
+  { id:'models', label:'MODELS', color:'#7653a6',
+    def:'A constitutive model is critical state written so a computer can follow it — and the good ones need no extra rule to produce liquefaction.',
+    children:[
+      { id:'camclay', label:'Cam\nClay', color:'#7653a6', eq:'the original (1968)',
+        def:'The first model built on critical state. It works for clays but ties dilation to state too rigidly for sands, which is what NorSand was written to fix.' },
+      { id:'norsand', label:'NorSand', color:'#7653a6', eq:'ψ as the hardening variable', mod:1,
+        def:'A critical state model for sands with an <b>infinity of normal consolidation lines</b> rather than one. Its yield surface hardens toward a stress image set by ψ — so the same soil loose and dense is one model with one parameter changed.' },
+      { id:'image', label:'image\nstress', color:'#7653a6', eq:'ηᵢ = Mₜᶜ − χψ',
+        def:'The stress ratio the soil is currently heading for. It moves as ψ moves, which is how one set of parameters reproduces dilative and contractive behaviour without switching rules.' },
+      { id:'nocollapse', label:'no collapse\nsurface', color:'#7653a6', mod:3,
+        def:'Static liquefaction falls out of NorSand with <b>no instability surface written into it anywhere</b>. The “collapse line” people draw through test data is a consequence of undrained loading, not a property of the soil.' }
+    ]},
+
+  { id:'liq', label:'LIQUEFACTION', color:'#c64852',
+    def:'Two different things share the name. Which one you have depends on the sign of ψ, and confusing them is how good engineers reach wrong conclusions.',
+    children:[
+      { id:'static', label:'static', color:'#c64852', eq:'ψ > 0 required', mod:3,
+        def:'<b>Flow liquefaction.</b> A contractive soil loses strength under monotonic loading and cannot get it back; once moving, the driving stress exceeds what is left and it runs. Fort Peck, Nerlerk, Merriespruit.' },
+      { id:'brittle', label:'brittleness', color:'#c64852', eq:'Iᵦ = (sₚ − sᵣ)/sₚ', lab:'brit', mod:3,
+        def:'The real hazard is not low peak strength, it is <b>how much is lost</b>. Soils with ordinary-looking peak strengths can have brittleness indices from 10% to 94%.' },
+      { id:'cyclic', label:'cyclic', color:'#c64852', eq:'CRR₇.₅ = 0.06 exp(−9ψₖ)', lab:'trig', mod:4,
+        def:'<b>Cyclic mobility.</b> Pore pressure ratchets up cycle by cycle and strains accumulate, but a dilative soil recovers stiffness each cycle. It deforms, sometimes badly. It does not run.' },
+      { id:'ksig', label:'Kσ', color:'#c64852', eq:'Kσ = exp(−9λ₁₀ log₁₀(p′/p′ᵣₑᶠ))', mod:4,
+        def:'The stress-level correction — <b>which cancels</b>. Work in ψ and the void ratio drops out of both sides, leaving a function of λ₁₀ and stress ratio alone. It was never a function of density, which is why published curves disagree.' },
+      { id:'kalpha', label:'Kα', color:'#c64852', eq:'sign flips at ψ ≈ −0.05', mod:4,
+        def:'The sloping-ground correction. On dilative ground a static bias helps, on contractive ground it hurts, and its size depends on principal stress rotation — so it is <b>not a function of ψ and α alone</b> and no table indexed on those two can be right.' }
+    ]},
+
+  { id:'design', label:'DESIGN', color:'#40a8d3',
+    def:'The point of all of it: a number you can defend, with its assumptions visible and its weak link named.',
+    eq:'FS = CRR / CSR', lab:'trig', mod:4,
+    children:[
+      { id:'char', label:'characteristic\nvalue', color:'#40a8d3', eq:'a percentile, not a mean', mod:2,
+        def:'Pick the value from the loose tail that the failure mechanism would actually find. How far into the tail depends on how much the mechanism can average over.' },
+      { id:'fs', label:'factor of\nsafety', color:'#40a8d3', eq:'FS = CRR / CSR', lab:'trig', mod:4,
+        def:'Resistance over demand at every depth. Below 1 the analysis says that depth triggers — but read it against the ±0.05 band on ψ, because a factor of 1.05 is not a result.' },
+      { id:'resid', label:'residual\nstrength', color:'#40a8d3', eq:'sᵣ / σ′ᵥₒ from ψ', mod:3,
+        def:'What is left after flow liquefaction, and what decides whether a slope travels ten metres or a kilometre. The book’s design function is checked against eleven real failures.' },
+      { id:'uncert', label:'uncertainty', color:'#40a8d3', eq:'ψ ± 0.05 from the cone',
+        def:'The honest width of a cone-derived ψ from stress level alone. Any design that changes its mind inside that band has not actually been decided by the data.' }
+    ]}
+  ]
+};
+
+const MODULES = {
+  1:['Module 1 — the critical state framework','jb-critical-state-lab.html'],
+  2:['Module 2 — in-situ state from the CPT','jb-insitu-state-lab.html'],
+  3:['Module 3 — static liquefaction','jb-static-liquefaction-lab.html'],
+  4:['Module 4 — cyclic liquefaction','jb-cyclic-liquefaction-lab.html']
+};
+
+/* soils, same values Module 1 uses (Jefferies & Been Table 2.1) */
+const SANDS=[
+ {name:'Erksak 330/0.7',emax:.747,emin:.521,G:.816,lam:.031,M:1.26,chi:3.5},
+ {name:'Ticino',emax:.89,emin:.60,G:.986,lam:.056,M:1.24,chi:2.9},
+ {name:'Toyoura',emax:.873,emin:.656,G:1.000,lam:.039,M:1.24,chi:2.9},
+ {name:'Brasted',emax:.792,emin:.475,G:.912,lam:.050,M:1.30,chi:2.8},
+ {name:'Ottawa',emax:.79,emin:.49,G:.754,lam:.028,M:1.13,chi:4.8},
+ {name:'Nerlerk 270/1.9',emax:.812,emin:.536,G:.849,lam:.049,M:1.29,chi:5.2},
+ {name:'Syncrude tailings',emax:.898,emin:.544,G:.860,lam:.065,M:1.33,chi:5.3}
+];
+const ecAt=(s,p)=>s.G - s.lam*Math.log10(Math.max(1e-6,p));
+const kOf=l=>8+0.55/Math.max(1e-6,l-0.01);
+const mOf=l=>8.1-2.3*Math.log10(Math.max(1e-6,l));
+const crr75=psi=>0.06*Math.exp(-9*psi);
+const KM_PTS=[[5.25,1.5],[6,1.32],[6.75,1.13],[7.5,1.0],[8.5,0.89]];
+function KM(m){ if(m<=KM_PTS[0][0])return KM_PTS[0][1];
+  if(m>=KM_PTS[4][0])return KM_PTS[4][1];
+  for(let i=0;i<4;i++){const a=KM_PTS[i],b=KM_PTS[i+1];
+    if(m>=a[0]&&m<=b[0]) return a[1]+(b[1]-a[1])*(m-a[0])/(b[0]-a[0]);} return 1; }
+const phiOfM=M=>Math.asin(3*M/(6+M))*180/Math.PI;
+
+/* ------------------------------------------------------- layout --------- */
+const LEVELS=['keywords','formulas','+ meaning','everything'];
+let detail=2, selected='root', collapsed=new Set(), query='', muted=new Set();
+const byId={}; (function index(n,parent,depth){ n._p=parent; n._d=depth; byId[n.id]=n;
+  (n.children||[]).forEach(c=>index(c,n,depth+1)); })(MAP,null,0);
+
+function visibleChildren(n){
+  if(collapsed.has(n.id)) return [];
+  return (n.children||[]).filter(c=>!muted.has(rootBranch(c).id));
+}
+function rootBranch(n){ let c=n; while(c._p && c._p.id!=='root') c=c._p; return c; }
+
+/* radial layout: each branch gets an angular slice proportional to its leaf count */
+function leaves(n){ const k=visibleChildren(n); return k.length? k.reduce((s,c)=>s+leaves(c),0) : 1; }
+function layout(){
+  const pts={};
+  const kids=visibleChildren(MAP), total=leaves(MAP)||1;
+  pts[MAP.id]={x:0,y:0,a:0,n:MAP};
+  let acc=0;
+  // at 'keywords' and 'formulas' a tight ring reads best; once definitions appear
+  // each leaf needs roughly 170 px of arc, which is what sets this number
+  const R1=250, STEP=(detail>=3 ? 495 : (detail>=2 ? 275 : 185));
+  kids.forEach(c=>{
+    const w=leaves(c)/total;
+    const a=(acc+w/2)*Math.PI*2 - Math.PI/2;   // start at the top
+    acc+=w;
+    place(c,a,w,R1,1);
+  });
+  function place(n,a,w,r,depth){
+    pts[n.id]={x:Math.cos(a)*r, y:Math.sin(a)*r, a, n};
+    const kk=visibleChildren(n); if(!kk.length) return;
+    const tot=kk.reduce((s,c)=>s+leaves(c),0)||1;
+    let k=0;
+    const spread=w*Math.PI*2*0.82;
+    kk.forEach(c=>{
+      const cw=leaves(c)/tot;
+      const ca=a - spread/2 + (k+cw/2)*spread;
+      k+=cw;
+      place(c, ca, w*cw, r+STEP*(depth===1?1:0.40), depth+1);
+    });
+  }
+  return pts;
+}
+
+/* a Buzan branch: curved, and thick at the parent tapering to thin at the child */
+function ribbon(x1,y1,x2,y2,t1,t2){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy)||1;
+  const nx=-dy/L, ny=dx/L;
+  const bow=Math.min(46,L*0.22);
+  const cx=mx+nx*bow, cy=my+ny*bow;          // one control point: a gentle arc
+  const N=18, left=[], right=[];
+  for(let i=0;i<=N;i++){
+    const t=i/N, it=1-t;
+    const px=it*it*x1+2*it*t*cx+t*t*x2;
+    const py=it*it*y1+2*it*t*cy+t*t*y2;
+    let tx=2*it*(cx-x1)+2*t*(x2-cx), ty=2*it*(cy-y1)+2*t*(y2-cy);
+    const m=Math.hypot(tx,ty)||1; tx/=m; ty/=m;
+    const w=(t1+(t2-t1)*t)/2;
+    left.push([px-ty*w, py+tx*w]);
+    right.push([px+ty*w, py-tx*w]);
+  }
+  const pt=p=>p[0].toFixed(1)+','+p[1].toFixed(1);
+  return 'M'+left.map(pt).join('L')+'L'+right.reverse().map(pt).join('L')+'Z';
+}
+
+const NS='http://www.w3.org/2000/svg';
+const svg=$('map');
+let view={x:0,y:0,k:1};
+
+function matches(n){
+  if(!query) return true;
+  const hay=(n.label+' '+(n.def||'')+' '+(n.eq||'')).toLowerCase().replace(/\n/g,' ');
+  return hay.indexOf(query)>=0;
+}
+function anyMatch(n){ return matches(n) || (n.children||[]).some(anyMatch); }
+
+function draw(){
+  const pts=layout();
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const g=document.createElementNS(NS,'g'); svg.appendChild(g);
+  g.setAttribute('transform','translate('+view.x+','+view.y+') scale('+view.k+')');
+
+  // branches first, so the keywords sit on top
+  Object.values(pts).forEach(p=>{
+    const n=p.n; if(!n._p) return;
+    const q=pts[n._p.id]; if(!q) return;
+    const path=document.createElementNS(NS,'path');
+    const t1=n._d===1?17:(n._d===2?8:5), t2=n._d===1?8:(n._d===2?4:3);
+    path.setAttribute('d', ribbon(q.x,q.y,p.x,p.y,t1,t2));
+    path.setAttribute('fill', n.color||'#8aa');
+    path.setAttribute('opacity', query && !anyMatch(n) ? .1 : .85);
+    g.appendChild(path);
+  });
+
+  Object.values(pts).forEach(p=>{
+    const n=p.n;
+    const hit=document.createElementNS(NS,'g');
+    hit.setAttribute('class','hit'+(query && !anyMatch(n) ? ' dim':''));
+    hit.setAttribute('transform','translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+')');
+    hit.setAttribute('tabindex','0');
+    hit.setAttribute('role','button');
+    hit.setAttribute('aria-label', n.label.replace(/\n/g,' '));
+    g.appendChild(hit);
+
+    const isRoot=!n._p, isBranch=n._d===1; let pill=null;
+    const fs=isRoot?21:(isBranch?16:13);
+    const lines=n.label.split('\n');
+
+    if(isRoot){
+      const c=document.createElementNS(NS,'circle');
+      c.setAttribute('r',64); c.setAttribute('fill','#123b4a');
+      hit.appendChild(c);
+    } else if(isBranch){
+      pill=document.createElementNS(NS,'rect');       // sized once the text exists
+      pill.setAttribute('fill',n.color); hit.appendChild(pill);
+    }
+
+    lines.forEach((ln,i)=>{
+      const t=document.createElementNS(NS,'text');
+      t.setAttribute('class','node-label');
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-size',fs);
+      t.setAttribute('y', (i - (lines.length-1)/2)*fs*1.15 + fs*0.35);
+      t.setAttribute('fill', (isRoot||isBranch) ? '#fff' : n.color);
+      if(isRoot||isBranch) t.style.stroke='none';   // beats the .node-label rule
+      t.textContent=ln;
+      hit.appendChild(t);
+    });
+
+    if(pill){                                          // now the glyphs are real
+      let tw=0;
+      hit.querySelectorAll('text').forEach(function(t){
+        try{ tw=Math.max(tw, t.getComputedTextLength()); }catch(_){ tw=Math.max(tw,lines[0].length*fs*0.7); }
+      });
+      const pw2=tw+30, ph2=lines.length*fs*1.25+14;
+      pill.setAttribute('x',-pw2/2); pill.setAttribute('y',-ph2/2);
+      pill.setAttribute('width',pw2); pill.setAttribute('height',ph2);
+      pill.setAttribute('rx',ph2/2);
+    }
+
+    // what the detail slider reveals
+    let dy=(lines.length/2)*fs*1.2+11;
+    if(isBranch) dy=(lines.length*fs*1.25+14)/2+13;    // clear of the pill
+    if(isRoot) dy=78;                                  // clear of the central circle
+    const extra=[];
+    if(detail>=2 && n.eq) extra.push([n.eq,11.5,n.color]);
+    if(detail>=3 && n.def && !isRoot)
+      wrap(stripTags(n.def), 30, 3).forEach(l=>extra.push([l,10,'#61737b']));
+    if(detail>=4 && n.lab) extra.push(['● live calculator',10,'#1479b8']);
+    extra.forEach(([txt,size,col])=>{
+      const t=document.createElementNS(NS,'text');
+      t.setAttribute('class','node-sub'); t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-size',size); t.setAttribute('y',dy); t.setAttribute('fill',col);
+      t.textContent=txt; hit.appendChild(t); dy+=size*1.25;
+    });
+
+    // a dot when there is more underneath
+    if((n.children||[]).length){
+      const d=document.createElementNS(NS,'circle');
+      d.setAttribute('r',5.5); d.setAttribute('cy',-(lines.length/2)*fs*1.2-9);
+      d.setAttribute('fill', collapsed.has(n.id)?n.color:'#fff');
+      d.setAttribute('stroke',n.color); d.setAttribute('stroke-width',2);
+      hit.appendChild(d);
+    }
+    if(n.id===selected){
+      const ring=document.createElementNS(NS,'circle');
+      const rr=isRoot?72:(isBranch?34:26);
+      ring.setAttribute('r',rr); ring.setAttribute('fill','none');
+      ring.setAttribute('stroke',n.color); ring.setAttribute('stroke-width',2.5);
+      ring.setAttribute('stroke-dasharray','5 4'); ring.setAttribute('opacity','.85');
+      hit.insertBefore(ring, hit.firstChild);
+    }
+
+    hit.addEventListener('click',e=>{ e.stopPropagation(); select(n.id); });
+    hit.addEventListener('dblclick',e=>{ e.stopPropagation(); toggle(n.id); });
+    hit.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key===' '){ e.preventDefault(); select(n.id); }
+      if(e.key==='ArrowRight') { e.preventDefault(); collapsed.delete(n.id); draw(); }
+      if(e.key==='ArrowLeft')  { e.preventDefault(); collapsed.add(n.id); draw(); }
+    });
+  });
+}
+function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
+// break a definition onto at most `max` lines of roughly `n` characters, on word
+// boundaries, so the map stays readable instead of ending every branch in an ellipsis
+function wrap(text,n,max){
+  const words=text.split(/\s+/), out=[]; let line='';
+  for(const w of words){
+    if(!line) { line=w; continue; }
+    if((line+' '+w).length<=n) line+=' '+w;
+    else { out.push(line); line=w; if(out.length===max) break; }
+  }
+  if(out.length<max && line) out.push(line);
+  if(out.length===max){
+    const joined=out.join(' ');
+    if(joined.length < stripTags(text).length) out[max-1]=out[max-1].replace(/[,;:.]?$/,'')+'…';
+  }
+  return out;
+}
+function toggle(id){ const n=byId[id]; if(!(n.children||[]).length) return;
+  collapsed.has(id)?collapsed.delete(id):collapsed.add(id); draw(); }
+
+/* ------------------------------------------------------- panel ---------- */
+function select(id){ selected=id; draw(); renderPanel(); }
+
+function renderPanel(){
+  const n=byId[selected], p=$('panel');
+  const trail=[]; let c=n; while(c){ trail.unshift(c); c=c._p; }
+  p.innerHTML =
+    '<p class="crumb">'+trail.map((t,i)=> i===trail.length-1
+        ? t.label.replace(/\n/g,' ')
+        : '<b data-go="'+t.id+'">'+t.label.replace(/\n/g,' ')+'</b>').join(' &rsaquo; ')+'</p>'+
+    '<h2>'+n.label.replace(/\n/g,' ')+'</h2>'+
+    (n.eq ? '<div class="eq">'+n.eq+'</div>' : '')+
+    (n.def ? '<p class="def">'+n.def+'</p>' : '')+
+    (n.why ? '<div class="why">'+n.why+'</div>' : '')+
+    ((n.children||[]).length
+      ? '<div class="kids">'+n.children.map(k=>'<button type="button" data-go="'+k.id+'">'+k.label.replace(/\n/g,' ')+'</button>').join('')+'</div>'
+      : '')+
+    (n.lab ? '<div id="labHost"></div>' : '')+
+    (n.mod ? '<p class="goto">Treated properly in <a href="'+MODULES[n.mod][1]+'">'+MODULES[n.mod][0]+'</a>.</p>' : '');
+  p.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>select(b.dataset.go)));
+  if(n.lab) LABS[n.lab]($('labHost'));
+  p.scrollTop=0;
+}
+
+/* ------------------------------------------------------- the labs ------- */
+function sandSelect(id){
+  return '<div class="sl"><label for="'+id+'">Soil (Table 2.1)</label>'+
+    '<select id="'+id+'">'+SANDS.map((s,i)=>'<option value="'+i+'"'+(i===0?' selected':'')+'>'+s.name+'</option>').join('')+'</select></div>';
+}
+function slider(id,label,min,max,step,val,fmt){
+  return '<div class="sl"><label for="'+id+'">'+label+'<span class="ro" id="'+id+'Out">'+fmt(val)+'</span></label>'+
+    '<input id="'+id+'" type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'"></div>';
+}
+function cv(host,id){ const c=document.createElement('canvas'); c.id=id; host.appendChild(c); return c; }
+function ctxOf(c){ const d=window.devicePixelRatio||1, w=c.clientWidth||330, h=170;
+  c.width=w*d; c.height=h*d; const x=c.getContext('2d'); x.setTransform(d,0,0,d,0,0);
+  x.clearRect(0,0,w,h); return {x,w,h}; }
+
+const LABS={};
+
+LABS.csl = host=>{
+  host.innerHTML='<div class="lab"><h3>Where is this soil going?</h3>'+
+    sandSelect('cS')+
+    slider('cE','Void ratio e',0.35,1.05,0.005,0.70,v=>(+v).toFixed(3))+
+    slider('cP','Mean stress p′ (kPa)',10,2000,10,100,v=>(+v).toFixed(0))+
+    '<div class="out"><div><small>e at critical, eₑ</small><strong id="cEc"></strong></div>'+
+    '<div class="hi"><small>state parameter ψ</small><strong id="cPsi"></strong><span id="cBadge"></span></div></div>'+
+    '<div id="cV"></div></div>';
+  const cvs=cv(host.querySelector('.lab'),'cslC');
+  const upd=()=>{
+    const s=SANDS[+$('cS').value], e=+$('cE').value, p=+$('cP').value;
+    $('cEOut').textContent=e.toFixed(3); $('cPOut').textContent=p.toFixed(0);
+    const ec=ecAt(s,p), psi=e-ec;
+    $('cEc').textContent=ec.toFixed(3);
+    $('cPsi').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+    $('cBadge').className='badge '+(psi<0?'b-dil':'b-con');
+    $('cBadge').textContent=psi<0?'denser than critical':'looser than critical';
+    $('cV').innerHTML='<div class="verdict '+(psi<-0.05?'v-ok':(psi<0?'v-mid':'v-bad'))+'">'+
+      (psi<-0.05 ? 'Comfortably dilative. It must expand to fail, so it gains strength as it shears and cannot flow.'
+       : psi<0 ? 'Dilative, but only just. The ±0.05 band on a cone-derived ψ reaches across zero from here, so do not lean on the sign.'
+       : 'Contractive. There is somewhere to fall to, and under undrained loading it can lose strength it will not get back.')+'</div>';
+    // plot
+    const {x,w,h}=ctxOf(cvs), ml=38,mr=10,mt=10,mb=26, pw=w-ml-mr, ph=h-mt-mb;
+    const X=v=>ml+pw*(Math.log10(v)-1)/(Math.log10(2000)-1);
+    const emin=0.33,emax=1.08, Y=v=>mt+ph*(1-(v-emin)/(emax-emin));
+    x.fillStyle='#f7fafb'; x.fillRect(ml,mt,pw,ph);
+    x.strokeStyle='#eef2f4'; x.lineWidth=1;
+    [10,100,1000].forEach(v=>{x.beginPath();x.moveTo(X(v),mt);x.lineTo(X(v),mt+ph);x.stroke();});
+    [0.4,0.6,0.8,1.0].forEach(v=>{x.beginPath();x.moveTo(ml,Y(v));x.lineTo(ml+pw,Y(v));x.stroke();});
+    x.strokeStyle='#1479b8'; x.lineWidth=2.4; x.beginPath();
+    for(let i=0;i<=60;i++){const pv=Math.pow(10,1+(Math.log10(2000)-1)*i/60);
+      const yy=Y(ecAt(s,pv)); i?x.lineTo(X(pv),yy):x.moveTo(X(pv),yy);} x.stroke();
+    x.setLineDash([3,3]); x.strokeStyle='#8a97a0'; x.beginPath();
+    x.moveTo(X(p),Y(e)); x.lineTo(X(p),Y(ec)); x.stroke(); x.setLineDash([]);
+    x.fillStyle=psi<0?'#268160':'#c64852';
+    x.beginPath(); x.arc(X(p),Y(e),6,0,7); x.fill();
+    x.strokeStyle='#fff'; x.lineWidth=2; x.stroke();
+    x.fillStyle='#61737b'; x.font='9px Arial'; x.textAlign='center'; x.textBaseline='top';
+    [10,100,1000].forEach(v=>x.fillText(v,X(v),mt+ph+4));
+    x.fillText('p′ (kPa, log)',ml+pw/2,mt+ph+13);
+    x.textAlign='right'; x.textBaseline='middle';
+    [0.4,0.6,0.8,1.0].forEach(v=>x.fillText(v.toFixed(1),ml-5,Y(v)));
+    x.save(); x.translate(10,mt+ph/2); x.rotate(-Math.PI/2); x.textAlign='center';
+    x.textBaseline='alphabetic'; x.fillText('void ratio e',0,0); x.restore();
+    x.fillStyle='#1479b8'; x.font='700 9px Arial'; x.textAlign='left'; x.textBaseline='bottom';
+    x.fillText('critical state line', ml+6, Y(ecAt(s,12))-4);
+  };
+  ['cS','cE','cP'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+};
+
+LABS.dil = host=>{
+  host.innerHTML='<div class="lab"><h3>What dilation lends, strain takes back</h3>'+
+    sandSelect('dS')+
+    slider('dPsi','State parameter ψ',-0.25,0.10,0.005,-0.10,v=>((+v)>=0?'+':'')+(+v).toFixed(3))+
+    '<div class="out"><div><small>Dₘᵢₙ = χψ</small><strong id="dD"></strong></div>'+
+    '<div><small>ηₘₐₓ = M − Dₘᵢₙ</small><strong id="dEta"></strong></div>'+
+    '<div><small>φ at critical state</small><strong id="dPhiC"></strong></div>'+
+    '<div class="hi"><small>φ at peak</small><strong id="dPhiP"></strong></div></div>'+
+    '<div id="dV"></div></div>';
+  const upd=()=>{
+    const s=SANDS[+$('dS').value], psi=+$('dPsi').value;
+    $('dPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+    const D=s.chi*psi, eta=s.M-D;
+    const phiC=phiOfM(s.M), phiP=phiOfM(Math.max(0.05,eta));
+    $('dD').textContent=D.toFixed(3); $('dEta').textContent=eta.toFixed(3);
+    $('dPhiC').textContent=phiC.toFixed(1)+'°'; $('dPhiP').textContent=phiP.toFixed(1)+'°';
+    const gain=phiP-phiC;
+    $('dV').innerHTML='<div class="verdict '+(psi<0?'v-ok':'v-bad')+'">'+
+      (psi<0
+        ? 'Dilation is lending this soil <b>'+gain.toFixed(1)+'°</b> of friction above its critical state value of '+phiC.toFixed(1)+'°. That loan is repaid as strain erases it — design on '+phiC.toFixed(1)+'° unless you can show the strains stay small.'
+        : 'No loan available. At ψ ≥ 0 the soil contracts when sheared, so there is no peak above critical state at all and ηₘₐₓ falls <i>below</i> M.')+'</div>';
+  };
+  ['dS','dPsi'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+};
+
+LABS.cpt = host=>{
+  host.innerHTML='<div class="lab"><h3>From a cone reading to a state</h3>'+
+    slider('pL','λ₁₀ of the soil',0.015,0.130,0.001,0.031,v=>(+v).toFixed(3))+
+    slider('pQ','Tip resistance qₜ (MPa)',0.5,40,0.1,8,v=>(+v).toFixed(1))+
+    slider('pZ','Depth (m)',1,40,0.5,10,v=>(+v).toFixed(1))+
+    '<div class="out"><div><small>k from λ₁₀</small><strong id="pK"></strong></div>'+
+    '<div><small>m from λ₁₀</small><strong id="pM"></strong></div>'+
+    '<div><small>Qₚ</small><strong id="pQp"></strong></div>'+
+    '<div class="hi"><small>ψ</small><strong id="pPsi"></strong></div></div>'+
+    '<div id="pV"></div></div>';
+  const upd=()=>{
+    const lam=+$('pL').value, qt=+$('pQ').value, z=+$('pZ').value;
+    $('pLOut').textContent=lam.toFixed(3); $('pQOut').textContent=qt.toFixed(1); $('pZOut').textContent=z.toFixed(1);
+    const sv=19*z, u0=z>2?9.81*(z-2):0, sve=Math.max(1,sv-u0);
+    const po=sve*(1+2*0.5)/3;
+    const Qp=Math.max(0.5,(qt*1000-po)/po);
+    const k=kOf(lam), m=mOf(lam);
+    const psi=-Math.log(Qp/k)/m;
+    $('pK').textContent=k.toFixed(1); $('pM').textContent=m.toFixed(2);
+    $('pQp').textContent=Qp.toFixed(0);
+    $('pPsi').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+    $('pV').innerHTML='<div class="verdict '+(psi<-0.05?'v-ok':(psi<0?'v-mid':'v-bad'))+'">'+
+      'At '+z.toFixed(1)+' m, σ′ᵥₒ ≈ '+sve.toFixed(0)+' kPa and p′ₒ ≈ '+po.toFixed(0)+' kPa, so this reading inverts to ψ = <b>'+psi.toFixed(3)+'</b>. '+
+      'Both k and m came from λ₁₀ alone — move that slider and watch the same cone reading change its mind. '+
+      'Carry ±0.05 on this number.</div>';
+  };
+  ['pL','pQ','pZ'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+};
+
+LABS.trig = host=>{
+  host.innerHTML='<div class="lab"><h3>Does it trigger?</h3>'+
+    slider('tPsi','Characteristic ψₖ',-0.25,0.05,0.005,-0.08,v=>((+v)>=0?'+':'')+(+v).toFixed(3))+
+    slider('tM','Earthquake magnitude M',5.25,8.5,0.05,7.5,v=>(+v).toFixed(2))+
+    slider('tCsr','Demand, CSR',0.02,0.45,0.005,0.15,v=>(+v).toFixed(3))+
+    '<div class="out"><div><small>CRR₇.₅ (Eq. 7.5)</small><strong id="tC75"></strong></div>'+
+    '<div><small>Kₘ</small><strong id="tKm"></strong></div>'+
+    '<div><small>CRR at your M</small><strong id="tCrr"></strong></div>'+
+    '<div class="hi"><small>factor of safety</small><strong id="tFs"></strong></div></div>'+
+    '<div id="tV"></div></div>';
+  const upd=()=>{
+    const psi=+$('tPsi').value, M=+$('tM').value, csr=+$('tCsr').value;
+    $('tPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
+    $('tMOut').textContent=M.toFixed(2); $('tCsrOut').textContent=csr.toFixed(3);
+    const base=crr75(psi), km=KM(M), crr=base*km, fs=crr/csr;
+    $('tC75').textContent=base.toFixed(3); $('tKm').textContent=km.toFixed(3);
+    $('tCrr').textContent=crr.toFixed(3); $('tFs').textContent=fs>9.9?'>9.9':fs.toFixed(2);
+    $('tV').innerHTML='<div class="verdict '+(fs<1?'v-bad':(fs<1.25?'v-mid':'v-ok'))+'">'+
+      (fs<1 ? '<b>Triggering predicted.</b> Demand exceeds resistance by '+((csr/crr-1)*100).toFixed(0)+'%.'
+       : fs<1.25 ? '<b>Marginal.</b> '+((fs-1)*100).toFixed(0)+'% of headroom is inside the scatter of the method — this is not a decision the data has made for you.'
+       : '<b>Margin against triggering.</b> Shaking could rise '+((fs-1)*100).toFixed(0)+'% before this element triggers.')+
+      ' No Kσ appears here: in ψ it has already cancelled.</div>';
+  };
+  ['tPsi','tM','tCsr'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+};
+
+LABS.brit = host=>{
+  host.innerHTML='<div class="lab"><h3>How much strength is there to lose?</h3>'+
+    slider('bP','Peak strength sₚ (kPa)',10,300,5,120,v=>(+v).toFixed(0))+
+    slider('bR','Residual strength sᵣ (kPa)',1,300,1,25,v=>(+v).toFixed(0))+
+    '<div class="out"><div><small>strength lost</small><strong id="bLost"></strong></div>'+
+    '<div class="hi"><small>brittleness Iᵦ</small><strong id="bIb"></strong></div></div>'+
+    '<div id="bV"></div></div>';
+  const upd=()=>{
+    const sp=+$('bP').value; let sr=+$('bR').value;
+    if(sr>sp){ sr=sp; $('bR').value=sp; }
+    $('bPOut').textContent=sp.toFixed(0); $('bROut').textContent=sr.toFixed(0);
+    const Ib=(sp-sr)/sp;
+    $('bLost').textContent=(sp-sr).toFixed(0)+' kPa';
+    $('bIb').textContent=(Ib*100).toFixed(0)+'%';
+    $('bV').innerHTML='<div class="verdict '+(Ib<0.3?'v-ok':(Ib<0.6?'v-mid':'v-bad'))+'">'+
+      (Ib<0.3 ? 'Ductile. It sheds little strength, so a local overstress redistributes instead of propagating.'
+       : Ib<0.6 ? 'Appreciably brittle. Once a zone reaches peak, what it sheds has to be carried by its neighbours — which may then shed too.'
+       : '<b>Severely brittle.</b> This is the Merriespruit pattern: a perfectly ordinary peak strength hiding a collapse. Peak strength alone would never have warned you.')+
+      '</div>';
+  };
+  ['bP','bR'].forEach(i=>$(i).addEventListener('input',upd)); upd();
+};
+
+/* ------------------------------------------------------- controls ------- */
+$('lvl').addEventListener('input',function(){ detail=+this.value;
+  $('lvlName').textContent=LEVELS[detail-1]; fit(); draw(); });
+$('q').addEventListener('input',function(){ query=this.value.trim().toLowerCase(); draw(); });
+$('expandAll').addEventListener('click',()=>{ collapsed.clear(); draw(); });
+$('collapseAll').addEventListener('click',()=>{
+  collapsed.clear(); MAP.children.forEach(c=>collapsed.add(c.id)); draw(); });
+$('reset').addEventListener('click',()=>{ collapsed.clear(); muted.clear(); query=''; $('q').value='';
+  fit(); buildLegend(); draw(); });
+$('printBtn').addEventListener('click',()=>window.print());
+$('zin').addEventListener('click',()=>{ view.k=Math.min(2.4,view.k*1.2); draw(); });
+$('zout').addEventListener('click',()=>{ view.k=Math.max(0.22,view.k/1.2); draw(); });
+
+function buildLegend(){
+  const l=$('legend');
+  l.innerHTML='<b>Branches &mdash; click to mute</b>'+MAP.children.map(c=>
+    '<span data-b="'+c.id+'" class="'+(muted.has(c.id)?'off':'')+'"><i style="background:'+c.color+'"></i>'+
+    c.label.replace(/\n/g,' ').toLowerCase()+'</span>').join('');
+  l.querySelectorAll('[data-b]').forEach(s=>s.addEventListener('click',()=>{
+    const id=s.dataset.b; muted.has(id)?muted.delete(id):muted.add(id); buildLegend(); draw(); }));
+}
+
+/* pan and zoom */
+let drag=null;
+svg.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};
+  svg.classList.add('drag'); svg.setPointerCapture(e.pointerId); });
+svg.addEventListener('pointermove',e=>{ if(!drag) return;
+  view.x=drag.vx+(e.clientX-drag.x); view.y=drag.vy+(e.clientY-drag.y); draw(); });
+svg.addEventListener('pointerup',e=>{ drag=null; svg.classList.remove('drag');
+  try{svg.releasePointerCapture(e.pointerId);}catch(_){} });
+svg.addEventListener('wheel',e=>{ e.preventDefault();
+  const r=svg.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
+  const f=e.deltaY<0?1.12:1/1.12, k2=Math.max(0.22,Math.min(2.4,view.k*f));
+  view.x=mx-(mx-view.x)*(k2/view.k); view.y=my-(my-view.y)*(k2/view.k);
+  view.k=k2; draw(); },{passive:false});
+
+function fit(){
+  const r=svg.getBoundingClientRect();
+  const pts=layout();
+  let ext=260;                                   // the central node's own reach
+  Object.values(pts).forEach(p=>{ ext=Math.max(ext, Math.hypot(p.x,p.y)); });
+  ext+=detail>=3 ? 190 : 110;                    // room for the text hanging off each node
+  const k=Math.min(1.05, Math.min(r.width, r.height)/(ext*2.15));
+  view={x:r.width/2, y:r.height/2, k:Math.max(0.16,k)};
+}
+window.addEventListener('resize',()=>{ draw(); });
+
+buildLegend(); fit(); draw(); renderPanel();
+
+/* a tiny self-check, so a broken map is loud rather than quiet */
+(function selftest(){
+  const out=[];
+  const seen=new Set(); let n=0;
+  (function walk(x){ n++; if(seen.has(x.id)) out.push('duplicate id '+x.id); seen.add(x.id);
+    (x.children||[]).forEach(walk); })(MAP);
+  if(n<30) out.push('map looks too small: '+n+' nodes');
+  Object.keys(LABS).forEach(k=>{ if(!Object.values(byId).some(x=>x.lab===k)) out.push('unused lab '+k); });
+  Object.values(byId).forEach(x=>{ if(x.lab && !LABS[x.lab]) out.push('missing lab '+x.lab);
+    if(x.mod && !MODULES[x.mod]) out.push('bad module ref on '+x.id); });
+  window.__mapcheck={nodes:n,problems:out};
+  if(out.length) console.warn('mind map self-check:',out);
+})();
+</script>
+</body></html>

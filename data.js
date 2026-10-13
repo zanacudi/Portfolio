@@ -86,6 +86,12 @@ const PROJECTS = [
 
 const TUTORIALS = [
   {
+    title: "Critical State Soil Mechanics — Interactive Mind Map",
+    description: "The whole framework on one radiant map, drawn to Buzan’s conventions after Rama Rao &amp; Samatha Chowdary, <i>Geotechnical Engineering Through Mind Maps</i> (2019): a central idea, curved branches, one keyword each. A detail slider takes the same map from bare keywords to formulas to full explanations, so it works as a lecture overview and as revision notes. Six branches — state, strength, measuring, models, liquefaction, design — and five of the keywords open a live calculator: fit a state parameter against the critical state line, watch dilatancy lend and then take back peak friction, invert a cone reading for ψ, test a triggering factor of safety, and see what brittleness really measures. Every branch links through to the module that treats it properly.",
+    date: "2026",
+    link: "csm-mind-map.html"
+  },
+  {
     title: "Expansive Soil Stabilization — Interactive Companion",
     description: "Interactive companion to Taher, Scalia & Bareither (2020, Transportation Geotechnics). Explore real Table 1/2 data comparing lime, fly ash, and polymer treatment of expansive soil, then build your own priority weighting across swell mitigation, strength, and permeability to see why there's no single \"best\" treatment.",
     date: "2026",
