@@ -252,12 +252,12 @@ const MAP = {
           { id:'gamma', label:'Γ', color:'#1479b8',
             plain:'How loose the soil’s destination is when the stress is very small.',
             eq:'Γ = eₑ at p′ = 1 kPa',
-            vars:[['Γ','the intercept of the critical state line','—']],
+            vars:[['Γ','intercept of the critical state line','—'],['eₑ','critical void ratio — the destination at a given stress','—'],['p′','mean effective stress','kPa']],
             def:'An extrapolation, not a measurement — nobody tests at 1 kPa. It is simply where the fitted line crosses, and it moves if λ₁₀ moves, so the two are always quoted together.' },
           { id:'lam', label:'λ₁₀', color:'#1479b8',
             plain:'How much looser the destination gets each time you multiply the stress by ten.',
             eq:'λ₁₀ = − d eₑ / d(log₁₀ p′)',
-            vars:[['λ₁₀','slope of the critical state line','—']],
+            vars:[['λ₁₀','slope of the critical state line','—'],['eₑ','critical void ratio','—'],['p′','mean effective stress','kPa'],['d','a small change in — so this is the gradient','—']],
             def:'A clean quartz sand sits near 0.03; a crushable or silty soil can reach 0.13. Steep soils change their destination quickly with depth, which is what makes deep deposits of them awkward.',
             why:'Both CPT inversion constants come from λ₁₀ alone, and so does Kσ. It is the single most load-bearing number in the framework.' },
           { id:'fitting', label:'fitting\nthe line', color:'#1479b8',
@@ -269,7 +269,7 @@ const MAP = {
           { id:'curve', label:'curvature', color:'#1479b8',
             plain:'The line is only straight over the range you tested.',
             eq:'valid over the tested decade(s)',
-            vars:[['p′','stress; beyond a few MPa grains crush','kPa']],
+            vars:[['p′','mean effective stress','kPa'],['eₑ','critical void ratio','—'],['decade','a ten-fold range of stress, e.g. 50 to 500 kPa','—']],
             def:'At high stress the grains themselves begin to break, the line steepens, and a straight fit extrapolated past your data will read the destination wrong. Honest practice is to state the range the line was fitted over.' }
         ]},
 
@@ -286,19 +286,18 @@ const MAP = {
           { id:'sign', label:'the sign', color:'#1479b8',
             plain:'Minus is safe-ish, plus is dangerous.',
             eq:'ψ < 0 dilative  ·  ψ > 0 contractive',
-            vars:[['ψ < 0','denser than critical — dilative, strengthens','—'],
-                  ['ψ > 0','looser than critical — contractive, can collapse','—']],
+            vars:[['ψ','state parameter, e − eₑ at the same stress','—'],['ψ < 0','denser than critical — dilative, strengthens as it shears','—'],['ψ > 0','looser than critical — contractive, can collapse','—']],
             def:'This single sign separates a soil that deforms badly but survives from one that can run out as a flow slide. It is the most consequential minus sign in geotechnical engineering.',
             fig:'fGrains' },
           { id:'bound', label:'the −0.05\nboundary', color:'#1479b8',
             plain:'In practice, engineers want a bit of margin rather than just the sign.',
             eq:'ψ ≤ −0.05 taken as reliably dilative',
-            vars:[['−0.05','a practical cutoff, not a law of nature','—']],
+            vars:[['ψ','state parameter','—'],['−0.05','a practical cutoff, not a law of nature','—']],
             def:'Because a cone-derived ψ carries roughly ±0.05, a soil measured at ψ = −0.02 might truly be contractive. The −0.05 line buys back the measurement uncertainty.' },
           { id:'uncert2', label:'±0.05', color:'#1479b8',
             plain:'How wrong your ψ could honestly be.',
             eq:'ψ ± 0.05 from the cone',
-            vars:[['±0.05','documented scatter in ψ from stress level alone','—']],
+            vars:[['ψ','state parameter from the cone','—'],['±0.05','documented scatter from stress level alone','—']],
             def:'Treat every ψ from a cone as a band, not a figure. A design that changes its mind inside that band has not been decided by the data.' }
         ]},
 
@@ -360,10 +359,8 @@ const MAP = {
             def:'A high-χ soil turns a small negative ψ into a large peak — and loses it just as sharply when strain catches up. Angular, well-graded soils sit high.' },
           { id:'drate', label:'D = dεᵥ/dεᵩ', color:'#268160',
             plain:'Dilatancy is a rate: volume change per unit of distortion.',
-            eq:'D = dεᵥ / dεᵩ',
-            vars:[['D','dilatancy, negative when expanding','—'],
-                  ['dεᵥ','increment of volumetric strain','—'],
-                  ['dεᵩ','increment of shear strain','—']],
+            eq:'D = dε<sub>v</sub> / dε<sub>q</sub>',
+            vars:[['D','dilatancy — negative while the soil expands','—'],['dε<sub>v</sub>','a small increment of volumetric strain (volume change)','—'],['dε<sub>q</sub>','a small increment of shear strain (distortion)','—']],
             def:'At critical state D = 0 by definition: the soil goes on distorting with no further volume change. That is what “critical” means, written as an equation.',
             fig:'fDrained' }
         ]},
@@ -440,17 +437,12 @@ const MAP = {
           { id:'norm', label:'Q , F , Bᑫ', color:'#e38a22',
             plain:'Raw readings mean nothing until you divide out the depth.',
             eq:'Q = (qₜ − σᵥₒ)/σ′ᵥₒ ,  F = fₛ/(qₜ − σᵥₒ)',
-            vars:[['Q','normalised net tip resistance','—'],
-                  ['F','friction ratio, as a percentage','%'],
-                  ['Bᑫ','pore pressure ratio, Δu/(qₜ − σᵥₒ)','—'],
-                  ['σᵥₒ , σ′ᵥₒ','total and effective vertical stress','kPa']],
+            vars:[['Q','normalised net tip resistance','—'],['F','friction ratio, as a percentage','%'],['B<sub>q</sub>','pore pressure ratio, Δu/(qₜ − σᵥₒ)','—'],['qₜ','corrected cone tip resistance','MPa'],['fₛ','sleeve friction','kPa'],['σᵥₒ','total vertical stress at this depth','kPa'],['σ′ᵥₒ','effective vertical stress, σᵥₒ − u₀','kPa']],
             def:'A tip resistance of 5 MPa is dense at 2 m and loose at 40 m. Normalising removes the depth so that readings from different depths can be compared at all.' },
           { id:'ic', label:'Iᴄ', color:'#e38a22',
             plain:'A quick check on whether you are in sand or in clay.',
             eq:'Iᴄ from Q and F',
-            vars:[['Iᴄ','soil behaviour type index','—'],
-                  ['Iᴄ < 2.6','sand-like, the inversion applies','—'],
-                  ['Iᴄ > 2.6','clay-like, it does not','—']],
+            vars:[['Iᴄ','soil behaviour type index','—'],['Q','normalised net tip resistance, from the node above','—'],['F','friction ratio, from the node above','%'],['Iᴄ < 2.6','sand-like — the ψ inversion applies','—'],['Iᴄ > 2.6','clay-like — it does not','—']],
             def:'The gate. A sand-calibrated ψ inversion applied to a clay layer produces a number that looks fine and means nothing, so this is checked at every depth before ψ is believed.' },
           { id:'inv', label:'inversion', color:'#e38a22',
             plain:'Turning the cone reading into a state parameter.',
@@ -466,10 +458,7 @@ const MAP = {
       { id:'psik', label:'ψₖ', color:'#e38a22',
         plain:'One number for a whole layer — chosen from its loose end, not its middle.',
         eq:'ψₖ = ψₘₑₐₙ + z · σ',
-        vars:[['ψₖ','characteristic state parameter for the layer','—'],
-              ['ψₘₑₐₙ','mean ψ over the layer','—'],
-              ['σ','standard deviation of ψ over the layer','—'],
-              ['z','how far into the loose tail you choose to go','—']],
+        vars:[['ψₖ','characteristic state parameter — the single value you design on','—'],['ψₘₑₐₙ','the arithmetic mean of ψ over the layer','—'],['σ','standard deviation of ψ over the layer — its scatter','—'],['z','standard normal deviate for the percentile you pick: 0.52 for the 70th, 0.84 for the 80th, 1.04 for the 85th','—']],
         def:'Liquefaction starts in the loosest pocket, not the average one, so the mean is the wrong statistic. How far into the tail depends on how much the failure mechanism can average over.',
         fig:'fPsiK', lab:'trig', mod:2 }
     ]},
@@ -522,8 +511,7 @@ const MAP = {
       { id:'static', label:'static', color:'#c64852',
         plain:'Loose soil loses its strength all at once and flows like a liquid.',
         eq:'ψ > 0 required',
-        vars:[['ψ > 0','the soil must be looser than critical','—'],
-              ['sᵣ','what strength is left afterwards','kPa']],
+        vars:[['ψ','state parameter','—'],['ψ > 0','the soil must be looser than critical for this to happen at all','—'],['sᵣ','residual strength — what is left once it has collapsed','kPa']],
         def:'<b>Flow liquefaction.</b> A contractive soil loses strength under monotonic loading and cannot get it back; once moving, the driving stress exceeds what remains and it keeps going. Fort Peck 1938, Nerlerk 1983, Aberfan 1966, Merriespruit 1994.',
         why:'This is the failure mode that kills people. It needs no earthquake — a rising water table is enough.',
         fig:'fUndrained', mod:3,
@@ -565,16 +553,12 @@ const MAP = {
           { id:'nl', label:'Nʟ', color:'#c64852',
             plain:'How many shakes it takes to get there.',
             eq:'Nʟ cycles to rᵤ = 1',
-            vars:[['Nʟ','number of uniform cycles to liquefy a specimen','—'],
-                  ['M 7.5','≈ 15 cycles','—'],
-                  ['M 6.0','≈ 6 cycles','—']],
+            vars:[['Nʟ','number of uniform cycles to liquefy a specimen','cycles'],['rᵤ','excess pore pressure ratio — reaches 1 at liquefaction','—'],['M','earthquake moment magnitude','—'],['M 7.5 → 15','the book’s mapping of magnitude to cycle count','cycles'],['M 6.0 → 6','the same mapping at a smaller magnitude','cycles']],
             def:'A bigger earthquake is not a harder push, it is <b>more pushes</b>. That is the entire physical content of magnitude scaling.' },
           { id:'km', label:'Kₘ', color:'#c64852',
             plain:'A correction for earthquakes that are not magnitude 7.5.',
             eq:'CRR = CRR₇.₅ · Kₘ',
-            vars:[['Kₘ','magnitude scaling factor','—'],
-                  ['M < 7.5','Kₘ > 1 — fewer cycles, soil survives more','—'],
-                  ['M > 7.5','Kₘ < 1','—']],
+            vars:[['Kₘ','magnitude scaling factor','—'],['CRR','cyclic resistance at your design magnitude','—'],['CRR₇.₅','cyclic resistance at the reference magnitude 7.5','—'],['M','earthquake moment magnitude','—'],['M < 7.5','Kₘ > 1 — fewer cycles, so the soil survives more','—'],['M > 7.5','Kₘ < 1','—']],
             def:'Interpolated between five tabulated points. The book gives no closed form, so none should be invented.', mod:4 },
           { id:'ksig', label:'Kσ', color:'#c64852',
             plain:'A correction for depth that turns out not to be needed at all.',
@@ -615,12 +599,8 @@ const MAP = {
         def:'How far into the tail depends on how much the mechanism can average over. A wide failure surface crossing many metres averages; a thin loose seam does not.', mod:2 },
       { id:'csr', label:'CSR', color:'#40a8d3',
         plain:'How hard the earthquake shakes this particular element.',
-        eq:'CSR = 0.65 (aₘₐₓ/g)(σᵥₒ/σ′ᵥₒ) rᵈ',
-        vars:[['CSR','cyclic stress ratio imposed by the shaking','—'],
-              ['aₘₐₓ/g','peak ground acceleration as a fraction of gravity','—'],
-              ['σᵥₒ/σ′ᵥₒ','total over effective vertical stress','—'],
-              ['rᵈ','depth reduction — the column is not rigid','—'],
-              ['0.65','converts an irregular record to uniform cycles','—']],
+        eq:'CSR = 0.65 (aₘₐₓ/g)(σᵥₒ/σ′ᵥₒ) r<sub>d</sub>',
+        vars:[['CSR','cyclic stress ratio imposed by the shaking','—'],['aₘₐₓ','peak ground acceleration at the surface','m/s²'],['g','acceleration due to gravity, 9.81 — so aₘₐₓ/g is a plain number','m/s²'],['σᵥₒ','total vertical stress at this depth','kPa'],['σ′ᵥₒ','effective vertical stress at this depth','kPa'],['r<sub>d</sub>','depth reduction factor — the soil column is not rigid, so deep layers feel less','—'],['0.65','converts an irregular earthquake record into uniform cycles','—']],
         def:'<b>This is not from the critical state framework.</b> It is Seed &amp; Idriss’s 1971 simplified procedure, included because a factor of safety needs a demand, and named explicitly so you can replace it with your own site response analysis.',
         why:'Knowing which half of your answer comes from where is the difference between a calculation and a defence.', mod:4 },
       { id:'fs', label:'factor of\nsafety', color:'#40a8d3',
@@ -639,7 +619,7 @@ const MAP = {
         def:'The honest width of a cone-derived ψ. Carry it through to the factor of safety and present the band, not the midpoint.' },
       { id:'workflow', label:'the\nworkflow', color:'#40a8d3',
         plain:'The whole thing, in the order you actually do it.',
-        eq:'lab → λ₁₀ → ψ(z) → ψₖ → CRR → FS',
+        eq:'lab → λ₁₀ → ψ at every depth → ψₖ → CRR → FS',
         vars:[['1','triaxial tests give Γ and λ₁₀','—'],
               ['2','cone gives ψ at every depth','—'],
               ['3','a percentile over the layer gives ψₖ','—'],
@@ -705,7 +685,10 @@ function layout(){
   let acc=0;
   // at 'keywords' and 'formulas' a tight ring reads best; once definitions appear
   // each leaf needs roughly 170 px of arc, which is what sets this number
-  const R1=250, STEP=(detail>=3 ? 495 : (detail>=2 ? 275 : 185));
+  // Each ring must be wide enough that neighbouring labels do not touch. The arc
+  // a node needs grows with how much text the detail slider is showing, so the
+  // radius grows with it too.
+  const R1=250, STEP=(detail>=3 ? 660 : (detail>=2 ? 300 : 190));
   kids.forEach(c=>{
     const w=span(c)/total;
     const a=(acc+w/2)*Math.PI*2 - Math.PI/2;   // start at the top
@@ -722,7 +705,7 @@ function layout(){
       const cw=span(c)/tot;
       const ca=a - spread/2 + (k+cw/2)*spread;
       k+=cw;
-      place(c, ca, w*cw, r+STEP*(depth===1?1:0.72), depth+1);
+      place(c, ca, w*cw, r+STEP*(depth===1?1:0.78), depth+1);
     });
   }
   return pts;
@@ -830,7 +813,7 @@ function draw(){
     if(isBranch) dy=(lines.length*fs*1.25+14)/2+13;    // clear of the pill
     if(isRoot) dy=78;                                  // clear of the central circle
     const extra=[];
-    if(detail>=2 && n.eq) extra.push([n.eq,11.5,n.color]);
+    if(detail>=2 && n.eq) extra.push([stripTags(n.eq),11.5,n.color]);
     if(detail>=3 && n.def && !isRoot)
       wrap(stripTags(n.def), 30, 3).forEach(l=>extra.push([l,10,'#61737b']));
     if(detail>=4 && n.lab) extra.push(['● live calculator',10,'#1479b8']);
@@ -849,6 +832,19 @@ function draw(){
       d.setAttribute('stroke',n.color); d.setAttribute('stroke-width',2);
       hit.appendChild(d);
     }
+    // A <g> is not a click target -- only the glyphs inside it are, so a leaf
+    // keyword could only be hit exactly on a letter stroke. Give every node an
+    // invisible rectangle over its whole label area.
+    try{
+      const bb=hit.getBBox();
+      const pad=7;
+      const hr=document.createElementNS(NS,'rect');
+      hr.setAttribute('x',bb.x-pad); hr.setAttribute('y',bb.y-pad);
+      hr.setAttribute('width',bb.width+pad*2); hr.setAttribute('height',bb.height+pad*2);
+      hr.setAttribute('fill','transparent');
+      hit.insertBefore(hr, hit.firstChild);
+    }catch(_){}
+
     if(n.id===selected){
       const ring=document.createElementNS(NS,'circle');
       const rr=isRoot?72:(isBranch?34:26);
@@ -858,7 +854,7 @@ function draw(){
       hit.insertBefore(ring, hit.firstChild);
     }
 
-    hit.addEventListener('click',e=>{ e.stopPropagation(); select(n.id); });
+    hit.addEventListener('click',e=>{ e.stopPropagation(); if(panned) return; select(n.id); });
     hit.addEventListener('dblclick',e=>{ e.stopPropagation(); toggle(n.id); });
     hit.addEventListener('keydown',e=>{
       if(e.key==='Enter'||e.key===' '){ e.preventDefault(); select(n.id); }
@@ -1511,13 +1507,29 @@ function buildLegend(){
 }
 
 /* pan and zoom */
-let drag=null;
-svg.addEventListener('pointerdown',e=>{ drag={x:e.clientX,y:e.clientY,vx:view.x,vy:view.y};
-  svg.classList.add('drag'); svg.setPointerCapture(e.pointerId); });
-svg.addEventListener('pointermove',e=>{ if(!drag) return;
-  view.x=drag.vx+(e.clientX-drag.x); view.y=drag.vy+(e.clientY-drag.y); draw(); });
-svg.addEventListener('pointerup',e=>{ drag=null; svg.classList.remove('drag');
-  try{svg.releasePointerCapture(e.pointerId);}catch(_){} });
+let drag=null, panned=false;
+const DRAG_SLOP=4;            // px of movement before a press counts as a pan
+svg.addEventListener('pointerdown',e=>{
+  drag={x:e.clientX, y:e.clientY, vx:view.x, vy:view.y, id:e.pointerId, cap:false};
+  panned=false;               // a press that never moves stays a click
+});
+svg.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+  if(!drag.cap){
+    if(Math.hypot(dx,dy)<DRAG_SLOP) return;
+    // only now take the pointer, so a plain click still reaches the node
+    drag.cap=true; panned=true; svg.classList.add('drag');
+    try{ svg.setPointerCapture(drag.id); }catch(_){}
+  }
+  view.x=drag.vx+dx; view.y=drag.vy+dy; draw();
+});
+function endDrag(){
+  if(drag && drag.cap){ try{ svg.releasePointerCapture(drag.id); }catch(_){} }
+  drag=null; svg.classList.remove('drag');
+}
+svg.addEventListener('pointerup',endDrag);
+svg.addEventListener('pointercancel',endDrag);
 svg.addEventListener('wheel',e=>{ e.preventDefault();
   const r=svg.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
   const f=e.deltaY<0?1.12:1/1.12, k2=Math.max(0.22,Math.min(2.4,view.k*f));
