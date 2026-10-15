@@ -53,19 +53,25 @@ svg#map.drag{cursor:grabbing}
   color:var(--muted);border:1px solid var(--line);line-height:1.5}
 .legend{position:absolute;padding-top:10px}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
-.legend span{display:inline-block;margin-right:11px;white-space:nowrap;cursor:pointer}
+.legend button[data-b]{display:inline-block;margin:0 9px 2px 0;white-space:nowrap;cursor:pointer;
+  background:none;border:0;padding:1px 2px;font:inherit;font-size:11px;color:var(--ink);border-radius:4px}
+.legend button[data-b]:hover{background:#eef4f7}
+.legend button[data-b]:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.legend span{display:inline-block;margin-right:11px;white-space:nowrap}
 .modkey{display:grid;grid-template-columns:1fr 1fr;gap:3px 10px;margin:2px 0 5px}
 .modkey a{display:block;text-decoration:none;color:var(--ink);font-weight:700;font-size:11px;
   white-space:nowrap;padding:2px 4px;border-radius:5px}
 .modkey a:hover{background:#eef4f7;text-decoration:underline}
 .modkey small{display:block;font-weight:400;font-size:9.5px;color:var(--muted);margin-left:15px}
-.legend span.off{opacity:.35}
+.legend .off{opacity:.35}
 
 /* ---- the detail panel ---- */
 .panel{flex:0 0 392px;background:#fff;border-left:1px solid var(--line);overflow-y:auto;padding:16px}
 .panel h2{margin:0 0 3px;font-size:18px;color:var(--navy)}
 .panel .crumb{font-size:11px;color:var(--muted);margin:0 0 10px}
-.panel .crumb b{color:var(--blue);cursor:pointer}
+.panel .crumb .crumb-btn{color:var(--blue);cursor:pointer;background:none;border:0;padding:0 1px;
+  font:inherit;font-size:11px;font-weight:700;text-decoration:underline;border-radius:3px}
+.panel .crumb .crumb-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
 .panel .eq{background:#f2f7f9;border-left:4px solid var(--blue);border-radius:0 6px 6px 0;padding:9px 12px;
   font-family:"Cambria Math",Georgia,serif;font-size:15.5px;margin:10px 0;overflow-x:auto}
 .panel .plain{font-size:14.5px;line-height:1.58;color:var(--navy);font-weight:600;margin:0 0 11px}
@@ -153,12 +159,12 @@ svg#map.drag{cursor:grabbing}
       <button type="button" class="ghost" id="terrBtn" aria-pressed="true">Module shading</button>
     <button type="button" class="ghost" id="printBtn">Print</button>
   </div>
-  <span class="hintbar">Drag to pan &middot; scroll to zoom &middot; click a keyword to open it</span>
+  <span class="hintbar">Drag to pan &middot; scroll to zoom &middot; click a keyword to open it &middot; click its dot to fold</span>
 </div>
 
 <div class="stage">
   <div class="mapwrap">
-    <svg id="map" role="img" aria-label="Radial mind map of critical state soil mechanics. Use the list in the side panel to navigate."></svg>
+    <svg id="map" role="tree" aria-label="Critical state soil mechanics, as a tree. Arrow right opens a branch, arrow left closes it, Enter selects."></svg>
     <div class="zoombtns">
       <button type="button" id="zin" title="Zoom in" aria-label="Zoom in">+</button>
       <button type="button" id="zout" title="Zoom out" aria-label="Zoom out">&minus;</button>
@@ -185,9 +191,9 @@ const $ = id => document.getElementById(id);
 const MAP = {
   id:'root', label:'CRITICAL\nSTATE', color:'#123b4a',
   plain:'Shear any soil far enough and it forgets how it started. It ends up at one condition that depends only on the stress it is under.',
-  eq:'eₑ = Γ − λ₁₀ · log₁₀ p′',
-  vars:[['eₑ','void ratio the soil ends at, for this stress','—'],
-        ['Γ','where the line sits: the value of eₑ at p′ = 1 kPa','—'],
+  eq:'e<sub>c</sub> = Γ − λ₁₀ · log₁₀ p′',
+  vars:[['e<sub>c</sub>','void ratio the soil ends at, for this stress','—'],
+        ['Γ','where the line sits: the value of e<sub>c</sub> at p′ = 1 kPa','—'],
         ['λ₁₀','how steeply the line falls, per ten-fold rise in stress','—'],
         ['p′','mean effective stress the element is under','kPa']],
   def:'Keep shearing a soil and it stops changing volume and stops changing stress — it just goes on distorting. That end condition is the <b>critical state</b>, and for a given soil it depends on the stress and nothing else. Loose or dense, the same soil arrives at the same place.',
@@ -198,10 +204,10 @@ const MAP = {
   /* ============================ STATE ============================ */
   { id:'state', label:'STATE', color:'#1479b8',
     plain:'Not how dense the soil is, but how dense it is compared with where it is heading.',
-    eq:'ψ = e − eₑ',
+    eq:'ψ = e − e<sub>c</sub>',
     vars:[['ψ','state parameter: the whole point of this branch','—'],
           ['e','void ratio the soil has right now','—'],
-          ['eₑ','void ratio it would end at, at this same p′','—']],
+          ['e<sub>c</sub>','void ratio it would end at, at this same p′','—']],
     def:'Density on its own tells you nothing, because the same void ratio is dense at shallow depth and loose at depth. Comparing it with the critical state line at the <i>same stress</i> is what makes the number mean something.',
     fig:'fPsi', lab:'csl', mod:1,
     children:[
@@ -251,9 +257,9 @@ const MAP = {
 
       { id:'csl', label:'critical\nstate line', color:'#1479b8',
         plain:'A straight line on a chart that tells you where the soil is going, for any stress.',
-        eq:'eₑ = Γ − λ₁₀ log₁₀ p′',
-        vars:[['eₑ','the destination void ratio at this stress','—'],
-              ['Γ','intercept: eₑ at p′ = 1 kPa, typically 0.7 – 1.0','—'],
+        eq:'e<sub>c</sub> = Γ − λ₁₀ log₁₀ p′',
+        vars:[['e<sub>c</sub>','the destination void ratio at this stress','—'],
+              ['Γ','intercept: e<sub>c</sub> at p′ = 1 kPa, typically 0.7 – 1.0','—'],
               ['λ₁₀','slope per decade of stress, typically 0.02 – 0.13','—'],
               ['p′','mean effective stress','kPa']],
         def:'Two numbers describe a soil’s destination for every stress it will ever see. They are measured, not assumed, and they are the one thing a cone cannot tell you.',
@@ -262,13 +268,13 @@ const MAP = {
         children:[
           { id:'gamma', label:'Γ', color:'#1479b8',
             plain:'How loose the soil’s destination is when the stress is very small.',
-            eq:'Γ = eₑ at p′ = 1 kPa',
-            vars:[['Γ','intercept of the critical state line','—'],['eₑ','critical void ratio — the destination at a given stress','—'],['p′','mean effective stress','kPa']],
+            eq:'Γ = e<sub>c</sub> at p′ = 1 kPa',
+            vars:[['Γ','intercept of the critical state line','—'],['e<sub>c</sub>','critical void ratio — the destination at a given stress','—'],['p′','mean effective stress','kPa']],
             def:'An extrapolation, not a measurement — nobody tests at 1 kPa. It is simply where the fitted line crosses, and it moves if λ₁₀ moves, so the two are always quoted together.' },
           { id:'lam', label:'λ₁₀', color:'#1479b8',
             plain:'How much looser the destination gets each time you multiply the stress by ten.',
-            eq:'λ₁₀ = − d eₑ / d(log₁₀ p′)',
-            vars:[['λ₁₀','slope of the critical state line','—'],['eₑ','critical void ratio','—'],['p′','mean effective stress','kPa'],['d','a small change in — so this is the gradient','—']],
+            eq:'λ₁₀ = − d e<sub>c</sub> / d(log₁₀ p′)',
+            vars:[['λ₁₀','slope of the critical state line','—'],['e<sub>c</sub>','critical void ratio','—'],['p′','mean effective stress','kPa'],['d','a small change in — so this is the gradient','—']],
             def:'A clean quartz sand sits near 0.03; a crushable or silty soil can reach 0.13. Steep soils change their destination quickly with depth, which is what makes deep deposits of them awkward.',
             why:'Both CPT inversion constants come from λ₁₀ alone, and so does Kσ. It is the single most load-bearing number in the framework.' },
           { id:'fitting', label:'fitting\nthe line', color:'#1479b8',
@@ -280,16 +286,16 @@ const MAP = {
           { id:'curve', label:'curvature', color:'#1479b8',
             plain:'The line is only straight over the range you tested.',
             eq:'valid over the tested decade(s)',
-            vars:[['p′','mean effective stress','kPa'],['eₑ','critical void ratio','—'],['decade','a ten-fold range of stress, e.g. 50 to 500 kPa','—']],
+            vars:[['p′','mean effective stress','kPa'],['e<sub>c</sub>','critical void ratio','—'],['decade','a ten-fold range of stress, e.g. 50 to 500 kPa','—']],
             def:'At high stress the grains themselves begin to break, the line steepens, and a straight fit extrapolated past your data will read the destination wrong. Honest practice is to state the range the line was fitted over.' }
         ]},
 
       { id:'psi', label:'ψ', color:'#1479b8',
         plain:'One number that says whether a soil will strengthen or collapse when you shear it.',
-        eq:'ψ = e − eₑ(p′)',
+        eq:'ψ = e − e<sub>c</sub>(p′)',
         vars:[['ψ','state parameter','—'],
               ['e','current void ratio','—'],
-              ['eₑ','critical void ratio at this p′','—']],
+              ['e<sub>c</sub>','critical void ratio at this p′','—']],
         def:'<b>Negative</b> means denser than its destination: to fail it must expand, which takes work, so it gets stronger as it shears. <b>Positive</b> means looser than its destination: there is somewhere to fall to, and under undrained loading it can lose strength it will never get back.',
         why:'Almost everything downstream — peak strength, liquefaction resistance, residual strength — is a function of ψ. It is the number the whole framework is built to deliver.',
         fig:'fPsi', lab:'csl', mod:1,
@@ -297,7 +303,7 @@ const MAP = {
           { id:'sign', label:'the sign', color:'#1479b8',
             plain:'Minus is safe-ish, plus is dangerous.',
             eq:'ψ < 0 dilative  ·  ψ > 0 contractive',
-            vars:[['ψ','state parameter, e − eₑ at the same stress','—'],['ψ < 0','denser than critical — dilative, strengthens as it shears','—'],['ψ > 0','looser than critical — contractive, can collapse','—']],
+            vars:[['ψ','state parameter, e − e<sub>c</sub> at the same stress','—'],['ψ < 0','denser than critical — dilative, strengthens as it shears','—'],['ψ > 0','looser than critical — contractive, can collapse','—']],
             def:'This single sign separates a soil that deforms badly but survives from one that can run out as a flow slide. It is the most consequential minus sign in geotechnical engineering.',
             fig:'fGrains' },
           { id:'bound', label:'the −0.05\nboundary', color:'#1479b8',
@@ -326,38 +332,38 @@ const MAP = {
   /* ============================ STRENGTH ============================ */
   { id:'strength', label:'STRENGTH', color:'#268160',
     plain:'A dense soil is strong because it has to shove its neighbours aside to move — and that borrowed strength is repaid.',
-    eq:'ηₘₐₓ = Mₜᶜ − Dₘᵢₙ',
+    eq:'ηₘₐₓ = M<sub>tc</sub> − Dₘᵢₙ',
     vars:[['ηₘₐₓ','peak stress ratio, q/p′ at its highest','—'],
-          ['Mₜᶜ','stress ratio at critical state','—'],
+          ['M<sub>tc</sub>','stress ratio at critical state','—'],
           ['Dₘᵢₙ','the most negative dilatancy reached (expansion)','—']],
     def:'Peak strength is not a property of a soil. It is what you measure when a soil denser than critical has to expand to fail, and the amount of expansion is set by ψ.',
     fig:'fPeak', lab:'dil', mod:1,
     children:[
       { id:'mtc', label:'M', color:'#268160',
         plain:'The friction that is really there — what is left after all the dilation is used up.',
-        eq:'Mₜᶜ = 6 sinφₑ / (3 − sinφₑ)',
-        vars:[['Mₜᶜ','critical stress ratio in triaxial compression','—'],
-              ['φₑ','critical state friction angle, typically 30° – 35°','degrees']],
+        eq:'M<sub>tc</sub> = 6 sinφ<sub>c</sub> / (3 − sinφ<sub>c</sub>)',
+        vars:[['M<sub>tc</sub>','critical stress ratio in triaxial compression','—'],
+              ['φ<sub>c</sub>','critical state friction angle, typically 30° – 35°','degrees']],
         def:'The honest, permanent friction of the grains. Everything measured above it was borrowed from dilation and will be given back as strain continues.',
         why:'Design on M unless you can show the strains stay small enough to keep the peak alive. Most slope failures are the peak being repaid.',
         children:[
-          { id:'phic', label:'φₑ', color:'#268160',
+          { id:'phic', label:'φ<sub>c</sub>', color:'#268160',
             plain:'The angle a pile of that soil settles at once it stops rearranging.',
-            eq:'sinφₑ = 3Mₜᶜ / (6 + Mₜᶜ)',
-            vars:[['φₑ','critical state friction angle','degrees'],['Mₜᶜ','critical stress ratio','—']],
+            eq:'sinφ<sub>c</sub> = 3M<sub>tc</sub> / (6 + M<sub>tc</sub>)',
+            vars:[['φ<sub>c</sub>','critical state friction angle','degrees'],['M<sub>tc</sub>','critical stress ratio','—']],
             def:'It depends on grain shape and mineralogy, barely on density, and not at all on how the sample was prepared. That stability is what makes it a genuine property.' },
           { id:'modes', label:'test\nmode', color:'#268160',
             plain:'The same soil gives a slightly different M depending on how you squeeze it.',
-            eq:'Mₜₑ < Mₜᶜ',
-            vars:[['Mₜᶜ','triaxial compression','—'],['Mₜₑ','triaxial extension','—']],
+            eq:'M<sub>te</sub> < M<sub>tc</sub>',
+            vars:[['M<sub>tc</sub>','triaxial compression','—'],['M<sub>te</sub>','triaxial extension','—']],
             def:'Compression and extension load the grain fabric differently, so M is not a single number for a soil. Real ground sees a mixture, which is one reason Kα cannot be tabulated.' }
         ]},
 
       { id:'dil', label:'dilatancy', color:'#268160',
         plain:'Dense soil has to swell to shear, because the grains must climb over each other.',
-        eq:'Dₘᵢₙ = χₜᶜ · ψ',
+        eq:'Dₘᵢₙ = χ<sub>tc</sub> · ψ',
         vars:[['Dₘᵢₙ','peak rate of volume change during shear','—'],
-              ['χₜᶜ','how strongly this soil converts state into dilation, 2.8 – 5.3','—'],
+              ['χ<sub>tc</sub>','how strongly this soil converts state into dilation, 2.8 – 5.3','—'],
               ['ψ','state parameter','—']],
         def:'Picture marbles packed tight in a box: to slide one layer past another, the whole upper layer must lift. That lifting is dilation, and the work it costs appears as extra strength.',
         why:'Dilation is the entire explanation for peak strength, and it is why peak strength vanishes at large strain.',
@@ -365,10 +371,10 @@ const MAP = {
         children:[
           { id:'chi', label:'χ', color:'#268160',
             plain:'How much extra strength this particular soil squeezes out of being dense.',
-            eq:'χₜᶜ ≈ 2.8 – 5.3',
-            vars:[['χₜᶜ','dilatancy coefficient, measured per soil','—']],
+            eq:'χ<sub>tc</sub> ≈ 2.8 – 5.3',
+            vars:[['χ<sub>tc</sub>','dilatancy coefficient, measured per soil','—']],
             def:'A high-χ soil turns a small negative ψ into a large peak — and loses it just as sharply when strain catches up. Angular, well-graded soils sit high.' },
-          { id:'drate', label:'D = dεᵥ/dεᵩ', color:'#268160',
+          { id:'drate', label:'D = dε<sub>v</sub>/dε<sub>q</sub>', color:'#268160',
             plain:'Dilatancy is a rate: volume change per unit of distortion.',
             eq:'D = dε<sub>v</sub> / dε<sub>q</sub>',
             vars:[['D','dilatancy — negative while the soil expands','—'],['dε<sub>v</sub>','a small increment of volumetric strain (volume change)','—'],['dε<sub>q</sub>','a small increment of shear strain (distortion)','—']],
@@ -378,10 +384,10 @@ const MAP = {
 
       { id:'peak', label:'peak\nstrength', color:'#268160',
         plain:'The highest strength you measure — and the one you should usually not design on.',
-        eq:'ηₘₐₓ = Mₜᶜ − χₜᶜψ',
+        eq:'ηₘₐₓ = M<sub>tc</sub> − χ<sub>tc</sub>ψ',
         vars:[['ηₘₐₓ','peak stress ratio','—'],
-              ['Mₜᶜ','critical stress ratio','—'],
-              ['χₜᶜ','dilatancy coefficient','—'],
+              ['M<sub>tc</sub>','critical stress ratio','—'],
+              ['χ<sub>tc</sub>','dilatancy coefficient','—'],
               ['ψ','state parameter, negative for a dense soil','—']],
         def:'Only exists when ψ &lt; 0, and only until strain erases it. On the way down from peak the soil sheds strength, and whether that matters depends entirely on how much it sheds.',
         why:'Designing on a peak that strain will erase is the single commonest route to a brittle failure.',
@@ -389,9 +395,9 @@ const MAP = {
 
       { id:'sd', label:'stress–\ndilatancy', color:'#268160',
         plain:'Strength and volume change are not two behaviours. They are one.',
-        eq:'η = Mₜᶜ − D',
+        eq:'η = M<sub>tc</sub> − D',
         vars:[['η','current stress ratio q/p′','—'],
-              ['Mₜᶜ','critical stress ratio','—'],
+              ['M<sub>tc</sub>','critical stress ratio','—'],
               ['D','current dilatancy','—']],
         def:'This one line ties the whole branch together: at any instant, how much stress ratio the soil carries above M is exactly how fast it is expanding. When expansion stops, the extra strength stops with it.' }
     ]},
@@ -408,8 +414,8 @@ const MAP = {
     children:[
       { id:'triax', label:'triaxial', color:'#e38a22',
         plain:'Squeeze a cylinder of soil in a pressure cell and shear it until it stops changing.',
-        eq:'one test → one point (eₑ , p′)',
-        vars:[['eₑ','void ratio at the end of the test','—'],
+        eq:'one test → one point (e<sub>c</sub> , p′)',
+        vars:[['e<sub>c</sub>','void ratio at the end of the test','—'],
               ['p′','mean effective stress at the end of the test','kPa']],
         def:'The only way to find the critical state line. Several specimens, each sheared to large strain at a different stress, each contributing the single point where it finished.',
         fig:'fTriax', mod:1,
@@ -445,7 +451,7 @@ const MAP = {
         def:'Continuous, repeatable, and cheap enough to do many of. The cone is the only practical way to see how variable the state really is between boreholes.',
         fig:'fCPT', lab:'cpt', mod:2,
         children:[
-          { id:'norm', label:'Q , F , Bᑫ', color:'#e38a22',
+          { id:'norm', label:'Q , F , B<sub>q</sub>', color:'#e38a22',
             plain:'Raw readings mean nothing until you divide out the depth.',
             eq:'Q = (qₜ − σᵥₒ)/σ′ᵥₒ ,  F = fₛ/(qₜ − σᵥₒ)',
             vars:[['Q','normalised net tip resistance','—'],['F','friction ratio, as a percentage','%'],['B<sub>q</sub>','pore pressure ratio, Δu/(qₜ − σᵥₒ)','—'],['qₜ','corrected cone tip resistance','MPa'],['fₛ','sleeve friction','kPa'],['σᵥₒ','total vertical stress at this depth','kPa'],['σ′ᵥₒ','effective vertical stress, σᵥₒ − u₀','kPa']],
@@ -491,16 +497,16 @@ const MAP = {
         eq:'ψ as the hardening variable',
         vars:[['ψ','state parameter, the model’s internal state','—'],
               ['χ','dilatancy coefficient','—'],
-              ['Mₜᶜ','critical stress ratio','—'],
+              ['M<sub>tc</sub>','critical stress ratio','—'],
               ['H','hardening modulus','—']],
         def:'It allows an <b>infinity of normal consolidation lines</b> rather than one, and makes the yield surface harden toward a stress image set by ψ. One parameter set reproduces the same sand loose and dense.',
         why:'This is what lets one calibration cover a whole deposit instead of one density at a time.', mod:1,
         children:[
           { id:'image', label:'image\nstress', color:'#7653a6',
             plain:'The stress ratio the soil is currently heading for, which moves as it shears.',
-            eq:'ηᵢ = Mₜᶜ − χψ',
+            eq:'ηᵢ = M<sub>tc</sub> − χψ',
             vars:[['ηᵢ','image stress ratio — the current target','—'],
-                  ['Mₜᶜ','critical stress ratio','—'],
+                  ['M<sub>tc</sub>','critical stress ratio','—'],
                   ['χ','dilatancy coefficient','—'],
                   ['ψ','current state parameter','—']],
             def:'As the soil shears, ψ changes, so the target moves, so the model smoothly turns dilative behaviour into contractive behaviour with no rules switched by hand.' },
@@ -573,10 +579,10 @@ const MAP = {
             def:'Interpolated between five tabulated points. The book gives no closed form, so none should be invented.', mod:4 },
           { id:'ksig', label:'Kσ', color:'#c64852',
             plain:'A correction for depth that turns out not to be needed at all.',
-            eq:'Kσ = exp(−9 λ₁₀ log₁₀(p′/p′ᵣₑᶠ))',
+            eq:'Kσ = exp(−9 λ₁₀ log₁₀(p′/p′<sub>ref</sub>))',
             vars:[['Kσ','stress-level correction','—'],
                   ['λ₁₀','slope of the critical state line','—'],
-                  ['p′ / p′ᵣₑᶠ','stress relative to the reference, usually 100 kPa','—']],
+                  ['p′ / p′<sub>ref</sub>','stress relative to the reference, usually 100 kPa','—']],
             def:'Work in ψ and the void ratio cancels from both sides of the ratio, leaving a function of λ₁₀ and stress alone. <b>Density has gone.</b> A factor tabulated against relative density for thirty years was never a function of density.',
             why:'This is why the published Kσ curves disagree with each other: each was fitted to different soils at different depths, all patching something a state-based analysis never creates.',
             fig:'fKsigma', mod:4 },
@@ -716,7 +722,7 @@ function KM(m){ if(m<=KM_PTS[0][0])return KM_PTS[0][1];
 const phiOfM=M=>Math.asin(3*M/(6+M))*180/Math.PI;
 
 /* ------------------------------------------------------- layout --------- */
-const LEVELS=['keywords','formulas','+ meaning','everything'];
+const LEVELS=['keywords','formulas','+ meaning (drag to pan)','everything (drag to pan)'];
 let detail=2, selected='root', collapsed=new Set(), query='', muted=new Set();
 MAP.children.sort((a,b)=>BRANCH_ORDER.indexOf(a.id)-BRANCH_ORDER.indexOf(b.id));
 const byId={}; (function index(n,parent,depth){ n._p=parent; n._d=depth; byId[n.id]=n;
@@ -744,7 +750,7 @@ function layout(){
   // Each ring must be wide enough that neighbouring labels do not touch. The arc
   // a node needs grows with how much text the detail slider is showing, so the
   // radius grows with it too.
-  const R1=250, STEP=(detail>=3 ? 660 : (detail>=2 ? 300 : 190));
+  const R1=250, STEP=(detail>=3 ? 330 : (detail>=2 ? 300 : 190));
   kids.forEach(c=>{
     const w=span(c)/total;
     const a=(acc+w/2)*Math.PI*2 - Math.PI/2;   // start at the top
@@ -800,11 +806,21 @@ function matches(n){
 }
 function anyMatch(n){ return matches(n) || (n.children||[]).some(anyMatch); }
 
+let sceneG=null;
+// Panning and zooming change one attribute. They have no business rebuilding
+// the map to do it.
+function updateTransform(){
+  if(sceneG) sceneG.setAttribute('transform','translate('+view.x+','+view.y+') scale('+view.k+')');
+}
 function draw(){
   const pts=layout();
+  // draw() throws the whole map away and rebuilds it, so note who had focus
+  const act=document.activeElement;
+  const keepFocus=(act && svg.contains(act) && act.dataset) ? act.dataset.id : null;
   while(svg.firstChild) svg.removeChild(svg.firstChild);
   const g=document.createElementNS(NS,'g'); svg.appendChild(g);
-  g.setAttribute('transform','translate('+view.x+','+view.y+') scale('+view.k+')');
+  sceneG=g; updateTransform();
+  const pending=[];                      // nodes still needing to be measured
 
   // module territories go down first of all, behind every branch
   if(showTerr) [1,2,3,4].forEach(m=>{
@@ -859,8 +875,11 @@ function draw(){
     hit.setAttribute('class','hit'+(query && !anyMatch(n) ? ' dim':''));
     hit.setAttribute('transform','translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+')');
     hit.setAttribute('tabindex','0');
-    hit.setAttribute('role','button');
-    hit.setAttribute('aria-label', n.label.replace(/\n/g,' '));
+    hit.setAttribute('role','treeitem');
+    hit.setAttribute('aria-level', String(n._d+1));
+    hit.dataset.id=n.id;
+    if((n.children||[]).length) hit.setAttribute('aria-expanded', String(!collapsed.has(n.id)));
+    hit.setAttribute('aria-label', n.label.replace(/\n/g,' ')+(n.plain? '. '+stripTags(n.plain) : ''));
     g.appendChild(hit);
 
     const isRoot=!n._p, isBranch=n._d===1; let pill=null;
@@ -882,37 +901,29 @@ function draw(){
       t.setAttribute('text-anchor','middle');
       t.setAttribute('font-size',fs);
       t.setAttribute('y', (i - (lines.length-1)/2)*fs*1.15 + fs*0.35);
-      t.setAttribute('fill', (isRoot||isBranch) ? '#fff' : n.color);
+      t.setAttribute('fill', (isRoot||isBranch) ? '#fff' : inkOf(n.color));
       if(isRoot||isBranch) t.style.stroke='none';   // beats the .node-label rule
-      t.textContent=ln;
+      svgText(t,ln);
       hit.appendChild(t);
     });
 
-    if(pill){                                          // now the glyphs are real
-      let tw=0;
-      hit.querySelectorAll('text').forEach(function(t){
-        try{ tw=Math.max(tw, t.getComputedTextLength()); }catch(_){ tw=Math.max(tw,lines[0].length*fs*0.7); }
-      });
-      const pw2=tw+30, ph2=lines.length*fs*1.25+14;
-      pill.setAttribute('x',-pw2/2); pill.setAttribute('y',-ph2/2);
-      pill.setAttribute('width',pw2); pill.setAttribute('height',ph2);
-      pill.setAttribute('rx',ph2/2);
-    }
+    // measuring here would flush layout once per node; queue it instead
+    pending.push({hit:hit, pill:pill, lines:lines, fs:fs});
 
     // what the detail slider reveals
     let dy=(lines.length/2)*fs*1.2+11;
     if(isBranch) dy=(lines.length*fs*1.25+14)/2+13;    // clear of the pill
     if(isRoot) dy=78;                                  // clear of the central circle
     const extra=[];
-    if(detail>=2 && n.eq) extra.push([stripTags(n.eq),11.5,n.color]);
-    if(detail>=3 && n.def && !isRoot)
-      wrap(stripTags(n.def), 30, 3).forEach(l=>extra.push([l,10,'#61737b']));
+    if(detail>=2 && n.eq) extra.push([stripTags(n.eq),11.5,inkOf(n.color)]);   // stripTags keeps <sub>
+    if(detail>=3 && !isRoot && nearSelected(n) && (n.plain||n.def))
+      wrap(stripTags(n.plain||n.def), 30, 2).forEach(l=>extra.push([l,10,'#61737b']));
     if(detail>=4 && n.lab) extra.push(['● live calculator',10,'#1479b8']);
     extra.forEach(([txt,size,col])=>{
       const t=document.createElementNS(NS,'text');
       t.setAttribute('class','node-sub'); t.setAttribute('text-anchor','middle');
       t.setAttribute('font-size',size); t.setAttribute('y',dy); t.setAttribute('fill',col);
-      t.textContent=txt; hit.appendChild(t); dy+=size*1.25;
+      svgText(t,txt); hit.appendChild(t); dy+=size*1.25;
     });
 
     // a dot when there is more underneath
@@ -921,21 +932,11 @@ function draw(){
       d.setAttribute('r',5.5); d.setAttribute('cy',-(lines.length/2)*fs*1.2-9);
       d.setAttribute('fill', collapsed.has(n.id)?n.color:'#fff');
       d.setAttribute('stroke',n.color); d.setAttribute('stroke-width',2);
+      d.style.cursor='pointer';
+      d.setAttribute('aria-hidden','true');
+      d.addEventListener('click',e=>{ e.stopPropagation(); if(!panned) toggle(n.id); });
       hit.appendChild(d);
     }
-    // A <g> is not a click target -- only the glyphs inside it are, so a leaf
-    // keyword could only be hit exactly on a letter stroke. Give every node an
-    // invisible rectangle over its whole label area.
-    try{
-      const bb=hit.getBBox();
-      const pad=7;
-      const hr=document.createElementNS(NS,'rect');
-      hr.setAttribute('x',bb.x-pad); hr.setAttribute('y',bb.y-pad);
-      hr.setAttribute('width',bb.width+pad*2); hr.setAttribute('height',bb.height+pad*2);
-      hr.setAttribute('fill','transparent');
-      hit.insertBefore(hr, hit.firstChild);
-    }catch(_){}
-
     if(n.id===selected){
       const ring=document.createElementNS(NS,'circle');
       const rr=isRoot?72:(isBranch?34:26);
@@ -945,7 +946,7 @@ function draw(){
       hit.insertBefore(ring, hit.firstChild);
     }
 
-    hit.addEventListener('click',e=>{ e.stopPropagation(); if(panned) return; select(n.id); });
+    hit.addEventListener('click',e=>{ e.stopPropagation(); if(panned) return; select(n.id,{fromMap:true}); });
     hit.addEventListener('dblclick',e=>{ e.stopPropagation(); toggle(n.id); });
     hit.addEventListener('keydown',e=>{
       if(e.key==='Enter'||e.key===' '){ e.preventDefault(); select(n.id); }
@@ -953,8 +954,99 @@ function draw(){
       if(e.key==='ArrowLeft')  { e.preventDefault(); collapsed.add(n.id); draw(); }
     });
   });
+  // One read pass over the finished DOM, then one write pass. A <g> is not a
+  // click target either -- only the glyphs inside it are -- so every node also
+  // gets an invisible rectangle covering its whole label.
+  const PAD=7, sized=[];
+  pending.forEach(p=>{
+    let tw=0;
+    if(p.pill) p.hit.querySelectorAll('text').forEach(t=>{
+      try{ tw=Math.max(tw,t.getComputedTextLength()); }
+      catch(_){ tw=Math.max(tw,p.lines[0].length*p.fs*0.7); }
+    });
+    let bb=null; try{ bb=p.hit.getBBox(); }catch(_){}
+    sized.push({p:p, tw:tw, bb:bb});
+  });
+  sized.forEach(({p,tw,bb})=>{
+    if(p.pill){
+      const w=tw+30, h=p.lines.length*p.fs*1.25+14;
+      p.pill.setAttribute('x',-w/2); p.pill.setAttribute('y',-h/2);
+      p.pill.setAttribute('width',w); p.pill.setAttribute('height',h);
+      p.pill.setAttribute('rx',h/2);
+    }
+    if(bb){
+      const hr=document.createElementNS(NS,'rect');
+      hr.setAttribute('x',bb.x-PAD); hr.setAttribute('y',bb.y-PAD);
+      hr.setAttribute('width',bb.width+PAD*2); hr.setAttribute('height',bb.height+PAD*2);
+      hr.setAttribute('fill','transparent');
+      p.hit.insertBefore(hr, p.hit.firstChild);
+    }
+  });
+
+  restoreFocus(keepFocus);   // the rebuild above threw away the focused node
 }
-function stripTags(s){ return s.replace(/<[^>]+>/g,''); }
+// Entities have to be decoded before text goes anywhere near textContent, or
+// the map renders a literal "&lt;". <sub> survives, because svgText draws it.
+function decodeEnt(s){
+  return s.replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&minus;/g,'\u2212')
+          .replace(/&nbsp;/g,' ').replace(/&rsquo;/g,'\u2019').replace(/&amp;/g,'&');
+}
+// Two of the six branch colours are too light for text on white: orange is
+// 2.65:1 and cyan 2.71:1, against the 4.5:1 WCAG AA asks for. The ribbons,
+// pills and module slices keep the house colour; only the lettering darkens.
+const TEXT_SAFE={'#e38a22':'#aa6719','#40a8d3':'#307e9e'};
+const inkOf=c=>TEXT_SAFE[c]||c;
+function stripTags(s){ return decodeEnt(s.replace(/<(?!\/?sub>)[^>]+>/g,'')); }
+function restoreFocus(id){
+  if(!id) return;
+  const el=svg.querySelector('.hit[data-id="'+id+'"]');
+  if(el && typeof el.focus==='function') el.focus({preventScroll:true});
+}
+// Which nodes get their sentence shown on the map: the selected one, its parent
+// and its children. Everything else would need a ring so large that fitting it
+// drops the type below the size anyone can read.
+function nearSelected(n){
+  const sel=byId[selected]; if(!sel) return false;
+  if(n.id===selected) return true;
+  if(n._p && n._p.id===selected) return true;
+  if(sel._p && sel._p.id===n.id) return true;
+  return false;
+}
+
+// SVG has no <sub>, so split the run into tspans and shift the baseline. Used
+// for every label and equation on the map.
+function svgText(t,str){
+  while(t.firstChild) t.removeChild(t.firstChild);
+  if(str.indexOf('<sub>')<0){ t.textContent=str; return; }
+  let down=false;
+  str.split(/(<sub>.*?<\/sub>)/g).filter(Boolean).forEach(part=>{
+    const isSub=part.lastIndexOf('<sub>',0)===0;
+    const sp=document.createElementNS(NS,'tspan');
+    sp.textContent=isSub?part.slice(5,-6):part;
+    if(isSub){ sp.setAttribute('font-size','0.72em'); if(!down){ sp.setAttribute('dy','0.2em'); down=true; } }
+    else if(down){ sp.setAttribute('dy','-0.2em'); down=false; }
+    t.appendChild(sp);
+  });
+}
+// and canvas has no rich text at all, so measure and place each run by hand
+function subDraw(x,str,px,py,col,align,size){
+  const parts=str.split(/(<sub>.*?<\/sub>)/g).filter(Boolean);
+  const seg=parts.map(p=>{
+    const sub=p.lastIndexOf('<sub>',0)===0, txt=sub?p.slice(5,-6):p;
+    x.font='700 '+(sub?size*0.72:size).toFixed(1)+'px Arial';
+    return {txt:txt, sub:sub, w:x.measureText(txt).width};
+  });
+  const tot=seg.reduce((a,b)=>a+b.w,0);
+  let sx = align==='right' ? px-tot : (align==='center' ? px-tot/2 : px);
+  x.textAlign='left';
+  seg.forEach(g=>{
+    x.font='700 '+(g.sub?size*0.72:size).toFixed(1)+'px Arial';
+    const yy=py+(g.sub?size*0.2:0);
+    x.lineWidth=3; x.strokeStyle='#fff'; x.strokeText(g.txt,sx,yy);
+    x.fillStyle=col; x.fillText(g.txt,sx,yy);
+    sx+=g.w;
+  });
+}
 // break a definition onto at most `max` lines of roughly `n` characters, on word
 // boundaries, so the map stays readable instead of ending every branch in an ellipsis
 function wrap(text,n,max){
@@ -975,7 +1067,16 @@ function toggle(id){ const n=byId[id]; if(!(n.children||[]).length) return;
   collapsed.has(id)?collapsed.delete(id):collapsed.add(id); draw(); }
 
 /* ------------------------------------------------------- panel ---------- */
-function select(id){ selected=id; draw(); renderPanel(); }
+function select(id, opts){
+  // Unfold every ancestor, or the thing just selected may not be on the map --
+  // which is what happened when a child was picked from the panel.
+  let a=byId[id]; while(a){ collapsed.delete(a.id); a=a._p; }
+  // Clicking a keyword that has more underneath opens it, which is what the
+  // header promises. Clicking the one already open and selected closes it again.
+  const n=byId[id], hasKids=(n.children||[]).length>0;
+  if(opts && opts.fromMap && hasKids && selected===id) collapsed.add(id);
+  selected=id; draw(); renderPanel();
+}
 
 function renderPanel(){
   const n=byId[selected], p=$('panel');
@@ -983,7 +1084,7 @@ function renderPanel(){
   p.innerHTML =
     '<p class="crumb">'+trail.map((t,i)=> i===trail.length-1
         ? t.label.replace(/\n/g,' ')
-        : '<b data-go="'+t.id+'">'+t.label.replace(/\n/g,' ')+'</b>').join(' &rsaquo; ')+'</p>'+
+        : '<button type="button" class="crumb-btn" data-go="'+t.id+'">'+t.label.replace(/\n/g,' ')+'</button>').join(' &rsaquo; ')+'</p>'+
     '<h2>'+n.label.replace(/\n/g,' ')+'</h2>'+
     (n.plain ? '<p class="plain">'+n.plain+'</p>' : '')+
     (n.fig && FIGS[n.fig] ? '<div class="figbox"><canvas id="figC" role="img" aria-label="Sketch illustrating '+n.label.replace(/\n/g,' ')+'"></canvas></div>' : '')+
@@ -1151,7 +1252,7 @@ FIGS.fCSL=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
   x.beginPath(); x.moveTo(ml,y1); x.lineTo(ml+pw,y2); x.stroke();
   tag(x,'CONTRACTIVE  ψ > 0',ml+10,mt+16,'#b03a44');
   tag(x,'DILATIVE  ψ < 0',ml+10,mt+ph-16,'#1f7a4c');
-  tag(x,'eₑ = Γ − λ₁₀ log₁₀ p′',ml+pw-8,y2-13,'#1479b8','right');
+  subDraw(x,'e<sub>c</sub> = Γ − λ₁₀ log₁₀ p′',ml+pw-8,y2-13,'#1479b8','right',9.5);
   arrow(x,ml+18,y1-4,ml+18,y1-30,'#b03a44',1.3);
   arrow(x,ml+18,y1+4,ml+18,y1+30,'#1f7a4c',1.3);
 };
@@ -1305,7 +1406,7 @@ FIGS.fPsiK=c=>{ const {x,w}=figCtx(c), ml=30,mt=16,pw=w-ml-18,ph=FIGH-mt-32;
   x.lineTo(ml+pw,mt+ph); x.closePath(); x.fill();
   const pk=mu+0.84*sd;
   x.fillStyle='#f6d9d4'; x.beginPath(); x.moveTo(X(pk),mt+ph);
-  for(let i=0;i<=40;i++){ const v=pk+(0.08-(pk+0.22-0.22))*i/40;
+  for(let i=0;i<=40;i++){
     const vv=pk+( -0.22+0.30 - pk)*i/40;
     x.lineTo(X(vv), mt+ph-ph*0.86*Math.exp(-0.5*Math.pow((vv-mu)/sd,2))); }
   x.lineTo(ml+pw,mt+ph); x.closePath(); x.fill();
@@ -1385,7 +1486,7 @@ FIGS.fKsigma=c=>{ const {x,w}=figCtx(c), ml=40,mt=14,pw=w-ml-16,ph=FIGH-mt-30;
   const Y=v=>mt+ph*(1-(v-0.5)/0.34);
   x.strokeStyle='#1479b8'; x.lineWidth=2.6;
   x.beginPath(); x.moveTo(ml,Y(0.78)); x.lineTo(ml+pw,Y(0.60)); x.stroke();
-  const e=0.69, ya=Y(e), xa=ml+pw*0.20, xb=ml+pw*0.76;
+  const e=0.565, ya=Y(e), xa=ml+pw*0.20, xb=ml+pw*0.76;   // both dilative, so the gap reads as one thing
   x.strokeStyle='#e38a22'; x.lineWidth=1.8; x.setLineDash([5,3]);
   x.beginPath(); x.moveTo(ml,ya); x.lineTo(ml+pw,ya); x.stroke(); x.setLineDash([]);
   const ycA=Y(0.78-0.18*0.20), ycB=Y(0.78-0.18*0.76);
@@ -1427,7 +1528,7 @@ LABS.csl = host=>{
     sandSelect('cS')+
     slider('cE','Void ratio e',0.35,1.05,0.005,0.70,v=>(+v).toFixed(3))+
     slider('cP','Mean stress p′ (kPa)',10,2000,10,100,v=>(+v).toFixed(0))+
-    '<div class="out"><div><small>e at critical, eₑ</small><strong id="cEc"></strong></div>'+
+    '<div class="out"><div><small>e at critical, e<sub>c</sub></small><strong id="cEc"></strong></div>'+
     '<div class="hi"><small>state parameter ψ</small><strong id="cPsi"></strong><span id="cBadge"></span></div></div>'+
     '<div id="cV"></div></div>';
   const cvs=cv(host.querySelector('.lab'),'cslC');
@@ -1476,23 +1577,28 @@ LABS.dil = host=>{
   host.innerHTML='<div class="lab"><h3>What dilation lends, strain takes back</h3>'+
     sandSelect('dS')+
     slider('dPsi','State parameter ψ',-0.25,0.10,0.005,-0.10,v=>((+v)>=0?'+':'')+(+v).toFixed(3))+
-    '<div class="out"><div><small>Dₘᵢₙ = χψ</small><strong id="dD"></strong></div>'+
-    '<div><small>ηₘₐₓ = M − Dₘᵢₙ</small><strong id="dEta"></strong></div>'+
+    '<div class="out"><div><small>D<sub>min</sub> &mdash; 0 unless dilative</small><strong id="dD"></strong></div>'+
+    '<div><small>η<sub>max</sub> = M − D<sub>min</sub></small><strong id="dEta"></strong></div>'+
     '<div><small>φ at critical state</small><strong id="dPhiC"></strong></div>'+
     '<div class="hi"><small>φ at peak</small><strong id="dPhiP"></strong></div></div>'+
     '<div id="dV"></div></div>';
   const upd=()=>{
     const s=SANDS[+$('dS').value], psi=+$('dPsi').value;
     $('dPsiOut').textContent=(psi>=0?'+':'')+psi.toFixed(3);
-    const D=s.chi*psi, eta=s.M-D;
+    // chi*psi is the dilatancy a DENSE soil reaches at peak. A soil at or above
+    // critical contracts throughout, so its lowest dilatancy is zero, reached at
+    // critical state -- and its highest stress ratio is M itself, not less.
+    const dense = psi<0;
+    const D=s.chi*psi, eta = dense ? s.M-D : s.M;
     const phiC=phiOfM(s.M), phiP=phiOfM(Math.max(0.05,eta));
-    $('dD').textContent=D.toFixed(3); $('dEta').textContent=eta.toFixed(3);
+    $('dD').textContent = dense ? D.toFixed(3) : '0.000'; $('dEta').textContent=eta.toFixed(3);
     $('dPhiC').textContent=phiC.toFixed(1)+'°'; $('dPhiP').textContent=phiP.toFixed(1)+'°';
     const gain=phiP-phiC;
-    $('dV').innerHTML='<div class="verdict '+(psi<0?'v-ok':'v-bad')+'">'+
-      (psi<0
+    $('dV').innerHTML='<div class="verdict '+(dense?'v-ok':'v-bad')+'">'+
+      (dense
         ? 'Dilation is lending this soil <b>'+gain.toFixed(1)+'°</b> of friction above its critical state value of '+phiC.toFixed(1)+'°. That loan is repaid as strain erases it — design on '+phiC.toFixed(1)+'° unless you can show the strains stay small.'
-        : 'No loan available. At ψ ≥ 0 the soil contracts when sheared, so there is no peak above critical state at all and ηₘₐₓ falls <i>below</i> M.')+'</div>';
+        : '<b>No peak at all.</b> At ψ ≥ 0 the soil contracts the whole way, so dilatancy never turns negative and the stress ratio simply climbs to M = '+s.M.toFixed(2)+' at critical state — '+phiC.toFixed(1)+'°, and no further. '+
+          'Drained, that is the end of it. <b>Undrained is the dangerous case:</b> it cannot contract, so pore pressure rises instead, p′ collapses, and it can shed strength long before it ever reaches M.')+'</div>';
   };
   ['dS','dPsi'].forEach(i=>$(i).addEventListener('input',upd)); upd();
 };
@@ -1557,7 +1663,7 @@ LABS.brit = host=>{
     slider('bP','Peak strength sₚ (kPa)',10,300,5,120,v=>(+v).toFixed(0))+
     slider('bR','Residual strength sᵣ (kPa)',1,300,1,25,v=>(+v).toFixed(0))+
     '<div class="out"><div><small>strength lost</small><strong id="bLost"></strong></div>'+
-    '<div class="hi"><small>brittleness Iᵦ</small><strong id="bIb"></strong></div></div>'+
+    '<div class="hi"><small>brittleness I<sub>B</sub></small><strong id="bIb"></strong></div></div>'+
     '<div id="bV"></div></div>';
   const upd=()=>{
     const sp=+$('bP').value; let sr=+$('bR').value;
@@ -1587,8 +1693,8 @@ $('reset').addEventListener('click',()=>{ collapsed.clear(); muted.clear(); quer
 $('terrBtn').addEventListener('click',function(){
   showTerr=!showTerr; this.setAttribute('aria-pressed',showTerr); fit(); draw(); });
 $('printBtn').addEventListener('click',()=>window.print());
-$('zin').addEventListener('click',()=>{ view.k=Math.min(2.4,view.k*1.2); draw(); });
-$('zout').addEventListener('click',()=>{ view.k=Math.max(0.22,view.k/1.2); draw(); });
+$('zin').addEventListener('click',()=>{ view.k=Math.min(2.4,view.k*1.2); updateTransform(); });
+$('zout').addEventListener('click',()=>{ view.k=Math.max(0.22,view.k/1.2); updateTransform(); });
 
 function buildLegend(){
   const l=$('legend');
@@ -1601,8 +1707,8 @@ function buildLegend(){
       '<small>'+TERRITORY[m].sub+'</small></a>').join('')+'</div>'+
     '<b style="margin-top:7px">Branches &mdash; click to mute</b>'+
     MAP.children.map(c=>
-      '<span data-b="'+c.id+'" class="'+(muted.has(c.id)?'off':'')+'"><i style="background:'+c.color+'"></i>'+
-      c.label.replace(/\n/g,' ').toLowerCase()+'</span>').join('')+'</div>';
+      '<button type="button" data-b="'+c.id+'" aria-pressed="'+muted.has(c.id)+'" class="'+(muted.has(c.id)?'off':'')+
+      '"><i style="background:'+c.color+'"></i>'+c.label.replace(/\n/g,' ').toLowerCase()+'</button>').join('')+'</div>';
   $('legTog').addEventListener('click',()=>{ l.classList.toggle('shut'); buildLegend(); });
   l.querySelectorAll('[data-b]').forEach(s=>s.addEventListener('click',()=>{
     const id=s.dataset.b; muted.has(id)?muted.delete(id):muted.add(id); buildLegend(); draw(); }));
@@ -1617,11 +1723,12 @@ function buildLegend(){
 let drag=null, panned=false;
 const DRAG_SLOP=4;            // px of movement before a press counts as a pan
 svg.addEventListener('pointerdown',e=>{
+  if(drag) return;            // already panning with another pointer
   drag={x:e.clientX, y:e.clientY, vx:view.x, vy:view.y, id:e.pointerId, cap:false};
   panned=false;               // a press that never moves stays a click
 });
 svg.addEventListener('pointermove',e=>{
-  if(!drag) return;
+  if(!drag || e.pointerId!==drag.id) return;   // ignore a second finger
   const dx=e.clientX-drag.x, dy=e.clientY-drag.y;
   if(!drag.cap){
     if(Math.hypot(dx,dy)<DRAG_SLOP) return;
@@ -1629,19 +1736,19 @@ svg.addEventListener('pointermove',e=>{
     drag.cap=true; panned=true; svg.classList.add('drag');
     try{ svg.setPointerCapture(drag.id); }catch(_){}
   }
-  view.x=drag.vx+dx; view.y=drag.vy+dy; draw();
+  view.x=drag.vx+dx; view.y=drag.vy+dy; updateTransform();
 });
 function endDrag(){
   if(drag && drag.cap){ try{ svg.releasePointerCapture(drag.id); }catch(_){} }
   drag=null; svg.classList.remove('drag');
 }
-svg.addEventListener('pointerup',endDrag);
-svg.addEventListener('pointercancel',endDrag);
+svg.addEventListener('pointerup',e=>{ if(!drag||e.pointerId===drag.id) endDrag(); });
+svg.addEventListener('pointercancel',e=>{ if(!drag||e.pointerId===drag.id) endDrag(); });
 svg.addEventListener('wheel',e=>{ e.preventDefault();
   const r=svg.getBoundingClientRect(), mx=e.clientX-r.left, my=e.clientY-r.top;
   const f=e.deltaY<0?1.12:1/1.12, k2=Math.max(0.22,Math.min(2.4,view.k*f));
   view.x=mx-(mx-view.x)*(k2/view.k); view.y=my-(my-view.y)*(k2/view.k);
-  view.k=k2; draw(); },{passive:false});
+  view.k=k2; updateTransform(); },{passive:false});
 
 function fit(){
   const r=svg.getBoundingClientRect();
@@ -1650,11 +1757,29 @@ function fit(){
   Object.values(pts).forEach(p=>{ ext=Math.max(ext, Math.hypot(p.x,p.y)); });
   ext+=detail>=3 ? 190 : 110;                    // room for the text hanging off each node
   if(showTerr) ext+=detail>=3 ? 118 : 100;       // and for the module slice and its caption
-  const k=Math.min(1.05, Math.min(r.width, r.height)/(ext*2.15));
-  view={x:r.width/2, y:r.height/2, k:Math.max(0.16,k)};
+  let k=Math.min(1.05, Math.min(r.width, r.height)/(ext*2.15));
+  // Levels 1 and 2 are the overview, so they fit. Levels 3 and 4 are for reading,
+  // so they stay legible and let the map run past the edges to be panned.
+  const floor = detail>=3 ? 0.62 : 0.16;
+  view={x:r.width/2, y:r.height/2, k:Math.max(floor,k)};
 }
-window.addEventListener('resize',()=>{ draw(); });
+// Canvas backing stores are sized from clientWidth at draw time, so anything
+// already on screen has to be drawn again when the window changes.
+let resizeT=null;
+window.addEventListener('resize',()=>{
+  clearTimeout(resizeT);
+  resizeT=setTimeout(()=>{
+    draw();
+    const n=byId[selected];
+    if(n && n.fig && FIGS[n.fig] && $('figC')){ try{ FIGS[n.fig]($('figC')); }catch(_){} }
+    const lab=$('labHost');
+    if(lab){ const r=lab.querySelector('input[type=range],select');
+             if(r) r.dispatchEvent(new Event('input')); }
+  },120);
+});
 
+// On a phone the key covers a third of the map, so it starts collapsed there.
+if(window.innerWidth<=900) $('legend').classList.add('shut');
 // 58 nodes is too many to meet at once, so the third level starts folded.
 // Click a keyword's dot, double-click it, or press Expand all to open it.
 MAP.children.forEach(b=>(b.children||[]).forEach(c=>{ if((c.children||[]).length) collapsed.add(c.id); }));
@@ -1669,9 +1794,19 @@ buildLegend(); fit(); draw(); renderPanel();
   if(n<50) out.push('map looks too small: '+n+' nodes');
   [1,2,3,4].forEach(m=>{ if(!terrIds(m).size) out.push('empty territory for module '+m);
     if(!MODULES[m]) out.push('no link for module '+m); });
-  Object.values(byId).forEach(x=>{ if(x.fig && !FIGS[x.fig]) out.push('missing figure '+x.fig+' on '+x.id); });
-  Object.values(byId).forEach(x=>{ if(x.eq && !x.vars && x.id!=='root' && (x.children||[]).length===0)
-    out.push('equation with no symbol table: '+x.id); });
+  Object.values(byId).forEach(x=>{
+    if(x.fig && !FIGS[x.fig]) out.push('missing figure '+x.fig+' on '+x.id);
+    // every equation needs its symbols explained, branch or leaf alike
+    if(x.eq && !x.vars) out.push('equation with no symbol table: '+x.id);
+    // an entity that survives stripTags lands on the map as a literal "&lt;"
+    ['plain','eq','def','why'].forEach(k=>{
+      if(x[k] && /&(lt|gt|amp|nbsp|minus|rsquo);/.test(stripTags(x[k])))
+        out.push('undecoded entity in '+x.id+'.'+k);
+    });
+    // a <sub> svgText cannot close would swallow the rest of a label
+    if(x.label && x.label.split('<sub>').length!==x.label.split('</sub>').length)
+      out.push('unbalanced sub in label of '+x.id);
+  });
   Object.keys(LABS).forEach(k=>{ if(!Object.values(byId).some(x=>x.lab===k)) out.push('unused lab '+k); });
   Object.values(byId).forEach(x=>{ if(x.lab && !LABS[x.lab]) out.push('missing lab '+x.lab);
     if(x.mod && !MODULES[x.mod]) out.push('bad module ref on '+x.id); });
