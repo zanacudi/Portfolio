@@ -90,6 +90,10 @@ svg#map.drag{cursor:grabbing}
   padding:9px 11px;font-size:12.5px;line-height:1.55;margin:10px 0}
 .kids{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
 .kids button{background:#eef4f7;color:var(--navy);border:1px solid var(--line);font-size:11.5px;font-weight:700}
+.panel h4.xh{margin:14px 0 5px;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.xlinks button{background:#fff;border-style:dashed}
+.xwhy{font-size:11.5px;line-height:1.6;color:var(--muted);margin:7px 0 0}
+.xwhy b{color:var(--navy)}
 .goto{margin-top:12px;font-size:12px}
 .goto a{color:var(--blue)}
 .empty{color:var(--muted);font-size:13px;line-height:1.6}
@@ -157,6 +161,7 @@ svg#map.drag{cursor:grabbing}
     <button type="button" class="ghost" id="collapseAll">Branches only</button>
     <button type="button" class="ghost" id="reset">Reset view</button>
       <button type="button" class="ghost" id="terrBtn" aria-pressed="true">Module shading</button>
+    <button type="button" class="ghost" id="linkBtn" aria-pressed="true">Cross-links</button>
     <button type="button" class="ghost" id="printBtn">Print</button>
   </div>
   <span class="hintbar">Drag to pan &middot; scroll to zoom &middot; click a keyword to open it &middot; click its dot to fold</span>
@@ -693,6 +698,24 @@ function sector(a0,a1,r0,r1){
          'L'+P(a1,r0)+'A'+f(r0)+','+f(r0)+' 0 '+big+' 0 '+P(a0,r0)+'Z';
 }
 
+/* Relations the tree cannot express, because they run across branches rather
+ * than down them. [from, to, why] -- the reason is shown when either end is
+ * selected, and listed in that node's panel. */
+const LINKS=[
+  ['csl','inv',       '\u03bb\u2081\u2080 from the laboratory sets both inversion constants'],
+  ['csl','norsand',   'the model is built on this line'],
+  ['psi','dil',       '\u03c8 decides how much the soil must dilate to fail'],
+  ['psi','cyclic',    'and how much cyclic loading it can take'],
+  ['dr','ksig',       'using D\u1d63 instead of \u03c8 is why this correction had to exist'],
+  ['psik','char',     'the characteristic value a design is read from'],
+  ['undrained','static','the test in which flow liquefaction actually happens'],
+  ['peak','brittle',  'the peak you lose is what brittleness measures'],
+  ['effstress','ru',  'raising u is how shaking takes strength away'],
+  ['mtc','resid',     'what the soil still carries once it has nothing left to lose']
+];
+let showLinks=true;
+function linksFor(id){ return LINKS.filter(l=>l[0]===id||l[1]===id); }
+
 const MODULES = {
   1:['Module 1 — the critical state framework','jb-critical-state-lab.html'],
   2:['Module 2 — in-situ state from the CPT','jb-insitu-state-lab.html'],
@@ -758,7 +781,8 @@ function layout(){
     place(c,a,w,R1,1);
   });
   function place(n,a,w,r,depth){
-    pts[n.id]={x:Math.cos(a)*r, y:Math.sin(a)*r, a, n};
+    const rr=r+(rOffset.get(n.id)||0);       // nudged out if its label collided
+    pts[n.id]={x:Math.cos(a)*rr, y:Math.sin(a)*rr, a, n};
     const kk=visibleChildren(n); if(!kk.length) return;
     const tot=kk.reduce((s,c)=>s+span(c),0)||1;
     let k=0;
@@ -806,6 +830,31 @@ function matches(n){
 }
 function anyMatch(n){ return matches(n) || (n.children||[]).some(anyMatch); }
 
+// Labels get pushed outward until none of them touch. The map pans, so space
+// is not the constraint here -- legibility is.
+const rOffset=new Map();
+let relaxPass=0;
+const RELAX_MAX=12, RELAX_STEP=28;
+function resolveOverlaps(boxes){
+  let moved=false;
+  for(let i=0;i<boxes.length;i++) for(let j=i+1;j<boxes.length;j++){
+    const A=boxes[i], B=boxes[j];
+    if(Math.min(A.x+A.w,B.x+B.w)-Math.max(A.x,B.x) <= 2) continue;
+    if(Math.min(A.y+A.h,B.y+B.h)-Math.max(A.y,B.y) <= 2) continue;
+    const out = A.r>=B.r ? A : B;             // move the outer of the pair
+    if(!byId[out.id] || !byId[out.id]._p) continue;
+    rOffset.set(out.id,(rOffset.get(out.id)||0)+RELAX_STEP);
+    moved=true;
+  }
+  return moved;
+}
+// Clear the nudges and let them settle again, for anything that changes which
+// nodes exist or how much text each carries.
+function relayout(doFit){
+  rOffset.clear(); relaxPass=0;
+  draw();
+  if(doFit){ fit(); draw(); }
+}
 let sceneG=null;
 // Panning and zooming change one attribute. They have no business rebuilding
 // the map to do it.
@@ -869,6 +918,42 @@ function draw(){
     g.appendChild(path);
   });
 
+  // relations across branches, over the ribbons but under the keywords
+  if(showLinks) LINKS.forEach(([aId,bId,why])=>{
+    const A=pts[aId], B=pts[bId];
+    if(!A||!B) return;                       // one end folded away
+    const lit = (selected===aId||selected===bId);
+    const mx=(A.x+B.x)/2, my=(A.y+B.y)/2;
+    const cx=mx*0.55, cy=my*0.55;            // bow it in toward the centre
+    const path=document.createElementNS(NS,'path');
+    path.setAttribute('d','M'+A.x.toFixed(1)+','+A.y.toFixed(1)+
+                          'Q'+cx.toFixed(1)+','+cy.toFixed(1)+
+                          ' '+B.x.toFixed(1)+','+B.y.toFixed(1));
+    path.setAttribute('fill','none');
+    path.setAttribute('stroke', lit ? inkOf(byId[selected].color) : '#8a97a0');
+    path.setAttribute('stroke-width', lit ? 2.4 : 1.3);
+    path.setAttribute('stroke-opacity', lit ? 0.9 : 0.22);
+    path.setAttribute('stroke-dasharray', lit ? '1 0' : '6 5');
+    path.setAttribute('pointer-events','none');
+    g.appendChild(path);
+    if(lit && why){
+      const t=document.createElementNS(NS,'text');
+      // put the reason near the end you clicked: a link between opposite
+      // branches has its midpoint sitting on top of the central node
+      const u=(selected===aId)?0.26:0.74, v=1-u;
+      let qx=v*v*A.x+2*v*u*cx+u*u*B.x, qy=v*v*A.y+2*v*u*cy+u*u*B.y;
+      // and sit it just off the curve, so it does not lie across a formula
+      const ql=Math.hypot(qx,qy)||1; qx+=qx/ql*22; qy+=qy/ql*22;
+      t.setAttribute('x',qx.toFixed(1)); t.setAttribute('y',qy.toFixed(1));
+      t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',10.5);
+      t.setAttribute('font-weight','700'); t.setAttribute('fill',inkOf(byId[selected].color));
+      t.style.stroke='#fff'; t.style.strokeWidth='4px';
+      t.style.paintOrder='stroke'; t.style.strokeLinejoin='round';
+      t.setAttribute('pointer-events','none');
+      svgText(t,why); g.appendChild(t);
+    }
+  });
+
   Object.values(pts).forEach(p=>{
     const n=p.n;
     const hit=document.createElementNS(NS,'g');
@@ -908,7 +993,7 @@ function draw(){
     });
 
     // measuring here would flush layout once per node; queue it instead
-    pending.push({hit:hit, pill:pill, lines:lines, fs:fs});
+    pending.push({hit:hit, pill:pill, lines:lines, fs:fs, pt:p, id:n.id});
 
     // what the detail slider reveals
     let dy=(lines.length/2)*fs*1.2+11;
@@ -967,7 +1052,11 @@ function draw(){
     let bb=null; try{ bb=p.hit.getBBox(); }catch(_){}
     sized.push({p:p, tw:tw, bb:bb});
   });
+  const boxes=[];
   sized.forEach(({p,tw,bb})=>{
+    if(bb && p.pt && p.id!=='root')
+      boxes.push({id:p.id, x:p.pt.x+bb.x, y:p.pt.y+bb.y, w:bb.width, h:bb.height,
+                  r:Math.hypot(p.pt.x,p.pt.y)});
     if(p.pill){
       const w=tw+30, h=p.lines.length*p.fs*1.25+14;
       p.pill.setAttribute('x',-w/2); p.pill.setAttribute('y',-h/2);
@@ -982,6 +1071,10 @@ function draw(){
       p.hit.insertBefore(hr, p.hit.firstChild);
     }
   });
+
+  // Spread anything still touching, then draw again. A few passes settle it;
+  // the cap only exists so a pathological case cannot spin.
+  if(relaxPass<RELAX_MAX && resolveOverlaps(boxes)){ relaxPass++; draw(); return; }
 
   restoreFocus(keepFocus);   // the rebuild above threw away the focused node
 }
@@ -1063,8 +1156,8 @@ function wrap(text,n,max){
   }
   return out;
 }
-function toggle(id){ const n=byId[id]; if(!(n.children||[]).length) return;
-  collapsed.has(id)?collapsed.delete(id):collapsed.add(id); draw(); }
+function toggle(id){ const n=byId[id]; if(!n._p || !(n.children||[]).length) return;
+  collapsed.has(id)?collapsed.delete(id):collapsed.add(id); relayout(false); }
 
 /* ------------------------------------------------------- panel ---------- */
 function select(id, opts){
@@ -1074,8 +1167,9 @@ function select(id, opts){
   // Clicking a keyword that has more underneath opens it, which is what the
   // header promises. Clicking the one already open and selected closes it again.
   const n=byId[id], hasKids=(n.children||[]).length>0;
-  if(opts && opts.fromMap && hasKids && selected===id) collapsed.add(id);
-  selected=id; draw(); renderPanel();
+  // never the root: folding it would take the whole map with it
+  if(opts && opts.fromMap && hasKids && selected===id && n._p) collapsed.add(id);
+  selected=id; relayout(false); renderPanel();
 }
 
 function renderPanel(){
@@ -1096,6 +1190,15 @@ function renderPanel(){
     (n.why ? '<div class="why">'+n.why+'</div>' : '')+
     ((n.children||[]).length
       ? '<div class="kids">'+n.children.map(k=>'<button type="button" data-go="'+k.id+'">'+k.label.replace(/\n/g,' ')+'</button>').join('')+'</div>'
+      : '')+
+    (linksFor(n.id).length
+      ? '<h4 class="xh">Also connects to</h4><div class="kids xlinks">'+
+        linksFor(n.id).map(l=>{ const o=(l[0]===n.id?l[1]:l[0]);
+          return '<button type="button" data-go="'+o+'" title="'+l[2]+'">'+
+                 byId[o].label.replace(/\n/g,' ')+'</button>'; }).join('')+
+        '</div><p class="xwhy">'+linksFor(n.id).map(l=>{
+          const o=(l[0]===n.id?l[1]:l[0]);
+          return '<b>'+byId[o].label.replace(/\n/g,' ')+'</b> \u2014 '+l[2]; }).join('<br>')+'</p>'
       : '')+
     (n.lab ? '<div id="labHost"></div>' : '')+
     (n.mod ? '<p class="goto">Treated properly in <a href="'+MODULES[n.mod][1]+'">'+MODULES[n.mod][0]+'</a>.</p>' : '');
@@ -1683,15 +1786,17 @@ LABS.brit = host=>{
 
 /* ------------------------------------------------------- controls ------- */
 $('lvl').addEventListener('input',function(){ detail=+this.value;
-  $('lvlName').textContent=LEVELS[detail-1]; fit(); draw(); });
+  $('lvlName').textContent=LEVELS[detail-1]; relayout(true); });
 $('q').addEventListener('input',function(){ query=this.value.trim().toLowerCase(); draw(); });
-$('expandAll').addEventListener('click',()=>{ collapsed.clear(); draw(); });
+$('expandAll').addEventListener('click',()=>{ collapsed.clear(); relayout(true); });
 $('collapseAll').addEventListener('click',()=>{
-  collapsed.clear(); MAP.children.forEach(c=>collapsed.add(c.id)); draw(); });
+  collapsed.clear(); MAP.children.forEach(c=>collapsed.add(c.id)); relayout(true); });
 $('reset').addEventListener('click',()=>{ collapsed.clear(); muted.clear(); query=''; $('q').value='';
-  fit(); buildLegend(); draw(); });
+  buildLegend(); relayout(true); });
 $('terrBtn').addEventListener('click',function(){
-  showTerr=!showTerr; this.setAttribute('aria-pressed',showTerr); fit(); draw(); });
+  showTerr=!showTerr; this.setAttribute('aria-pressed',showTerr); relayout(true); });
+$('linkBtn').addEventListener('click',function(){
+  showLinks=!showLinks; this.setAttribute('aria-pressed',showLinks); draw(); });
 $('printBtn').addEventListener('click',()=>window.print());
 $('zin').addEventListener('click',()=>{ view.k=Math.min(2.4,view.k*1.2); updateTransform(); });
 $('zout').addEventListener('click',()=>{ view.k=Math.max(0.22,view.k/1.2); updateTransform(); });
@@ -1705,13 +1810,14 @@ function buildLegend(){
       '<a href="'+MODULES[m][1]+'" data-m="'+m+'" title="Open '+MODULES[m][0]+'">'+
       '<i style="background:'+TERRITORY[m].color+'"></i>'+TERRITORY[m].name+
       '<small>'+TERRITORY[m].sub+'</small></a>').join('')+'</div>'+
+    '<b style="margin-top:7px">Dashed curve = a link across branches</b>'+
     '<b style="margin-top:7px">Branches &mdash; click to mute</b>'+
     MAP.children.map(c=>
       '<button type="button" data-b="'+c.id+'" aria-pressed="'+muted.has(c.id)+'" class="'+(muted.has(c.id)?'off':'')+
       '"><i style="background:'+c.color+'"></i>'+c.label.replace(/\n/g,' ').toLowerCase()+'</button>').join('')+'</div>';
   $('legTog').addEventListener('click',()=>{ l.classList.toggle('shut'); buildLegend(); });
   l.querySelectorAll('[data-b]').forEach(s=>s.addEventListener('click',()=>{
-    const id=s.dataset.b; muted.has(id)?muted.delete(id):muted.add(id); buildLegend(); draw(); }));
+    const id=s.dataset.b; muted.has(id)?muted.delete(id):muted.add(id); buildLegend(); relayout(true); }));
   // hovering a module lifts its slice out of the rest
   l.querySelectorAll('[data-m]').forEach(a=>{
     a.addEventListener('mouseenter',()=>{ hiTerr=+a.dataset.m; draw(); });
@@ -1761,7 +1867,17 @@ function fit(){
   // Levels 1 and 2 are the overview, so they fit. Levels 3 and 4 are for reading,
   // so they stay legible and let the map run past the edges to be panned.
   const floor = detail>=3 ? 0.62 : 0.16;
-  view={x:r.width/2, y:r.height/2, k:Math.max(floor,k)};
+  k=Math.max(floor,k);
+  // The key floats over the bottom-left of the pane and will happily swallow a
+  // keyword underneath it, so bias the map away rather than leave a node that
+  // cannot be clicked.
+  let ox=0, oy=0;
+  const lg=$('legend');
+  if(lg && !lg.classList.contains('shut')){
+    const lb=lg.getBoundingClientRect();
+    if(lb.width < r.width*0.55){ ox=lb.width*0.30; oy=-lb.height*0.30; }
+  }
+  view={x:r.width/2+ox, y:r.height/2+oy, k:k};
 }
 // Canvas backing stores are sized from clientWidth at draw time, so anything
 // already on screen has to be drawn again when the window changes.
@@ -1769,7 +1885,7 @@ let resizeT=null;
 window.addEventListener('resize',()=>{
   clearTimeout(resizeT);
   resizeT=setTimeout(()=>{
-    draw();
+    fitLegend(); relayout(true);
     const n=byId[selected];
     if(n && n.fig && FIGS[n.fig] && $('figC')){ try{ FIGS[n.fig]($('figC')); }catch(_){} }
     const lab=$('labHost');
@@ -1778,12 +1894,21 @@ window.addEventListener('resize',()=>{
   },120);
 });
 
-// On a phone the key covers a third of the map, so it starts collapsed there.
-if(window.innerWidth<=900) $('legend').classList.add('shut');
+// The key floats over the map, so it is only worth leaving open when the map
+// has room to spare. Re-judged whenever the window changes.
+function fitLegend(){
+  const l=$('legend'), pane=document.querySelector('.mapwrap');
+  if(!l||!pane) return;
+  const open=l.classList.contains('shut');
+  l.classList.remove('shut');
+  const lb=l.getBoundingClientRect(), pb=pane.getBoundingClientRect();
+  const covers=(lb.width*lb.height)/Math.max(1,pb.width*pb.height);
+  if(covers>0.16) l.classList.add('shut'); else if(open) l.classList.remove('shut');
+}
 // 58 nodes is too many to meet at once, so the third level starts folded.
 // Click a keyword's dot, double-click it, or press Expand all to open it.
 MAP.children.forEach(b=>(b.children||[]).forEach(c=>{ if((c.children||[]).length) collapsed.add(c.id); }));
-buildLegend(); fit(); draw(); renderPanel();
+buildLegend(); fitLegend(); relayout(true); renderPanel();
 
 /* a tiny self-check, so a broken map is loud rather than quiet */
 (function selftest(){
@@ -1792,10 +1917,15 @@ buildLegend(); fit(); draw(); renderPanel();
   (function walk(x){ n++; if(seen.has(x.id)) out.push('duplicate id '+x.id); seen.add(x.id);
     (x.children||[]).forEach(walk); })(MAP);
   if(n<50) out.push('map looks too small: '+n+' nodes');
+  LINKS.forEach(l=>{ if(!byId[l[0]]||!byId[l[1]]) out.push('cross-link to a node that is not there: '+l[0]+' / '+l[1]);
+    if(!l[2]) out.push('cross-link with no reason given: '+l[0]+'-'+l[1]);
+    if(byId[l[0]]&&byId[l[1]]&&rootBranch(byId[l[0]])===rootBranch(byId[l[1]]))
+      out.push('cross-link inside one branch, where the tree already says it: '+l[0]+'-'+l[1]); });
   [1,2,3,4].forEach(m=>{ if(!terrIds(m).size) out.push('empty territory for module '+m);
     if(!MODULES[m]) out.push('no link for module '+m); });
   Object.values(byId).forEach(x=>{
     if(x.fig && !FIGS[x.fig]) out.push('missing figure '+x.fig+' on '+x.id);
+    if(x.id==='root' && false) out.push('');
     // every equation needs its symbols explained, branch or leaf alike
     if(x.eq && !x.vars) out.push('equation with no symbol table: '+x.id);
     // an entity that survives stripTags lands on the map as a literal "&lt;"
