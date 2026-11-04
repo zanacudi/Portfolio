@@ -188,6 +188,13 @@ const MISC = [
     tags: ["Nutrition", "Interactive"],
     link: "brain-healthy-diet.html"
   },
+  {
+    title: "Seismoplot",
+    meta: "Acceleration time histories in, intensity measures and spectra out",
+    description: "Load a recorded acceleration time history as Excel or CSV and work it up in the browser: baseline correction by mean removal or linear, quadratic and cubic detrending, an optional zero-phase high-pass filter, and integration to velocity and displacement. It returns the elastic response spectra at a damping ratio you choose, solved by Newmark-beta over a logarithmic period range; the Fourier amplitude spectrum and power spectral density; and the intensity measures a report usually asks for \u2014 PGA, PGV, PGD, Arias intensity, CAV and CAV5, significant durations D5\u201375 and D5\u201395, and bracketed duration above 0.05g. Everything exports to a four-sheet Excel workbook or to CSV. The page is deliberately blunt about the fact that baseline correction and filtering change PGV, PGD and the long-period end of the spectrum, and shows the raw trace against the corrected one so you can see what the processing did.",
+    tags: ["Earthquake", "Signal processing", "Interactive"],
+    link: "seismoplot.html"
+  },
   // Access-code tools: names only, stacked in one card. What they do is shown inside each page, after the code.
   { group: [
     { title: "Tomar", link: "tomarkar.html" },
