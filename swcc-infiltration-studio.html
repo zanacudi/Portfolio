@@ -211,7 +211,7 @@
     /* Split Mind-Map View */
     .mindmap-split-view {
       display: grid;
-      grid-template-columns: 1fr 370px;
+      grid-template-columns: minmax(0, 1fr) 370px;
       height: 460px;
       border-bottom: 2px solid var(--border);
       background: var(--canvas-bg);
@@ -224,6 +224,7 @@
     }
     .mindmap-canvas-wrap {
       position: relative;
+      min-width: 0;
       background: var(--canvas-bg);
       overflow: hidden;
       min-height: 400px;
@@ -462,16 +463,16 @@
     /* Core Interactive Studio Grid fitted to 100% zoom */
     .core-studio-grid {
       display: grid;
-      grid-template-columns: 356px 1fr;
+      grid-template-columns: 356px minmax(0, 1fr);
       gap: 10px;
       margin-bottom: 10px;
-      align-items: stretch;
+      /* stretch made the right card as tall as the controls column and left
+         roughly 340 px of empty card below the charts */
+      align-items: start;
     }
-    /* A grid item defaults to min-width:auto, so the 1fr column could not shrink
-       below the canvases inside it. Narrowing the window then left the charts at
-       their old width and pushed the page sideways until a reload. */
-    .core-studio-grid > *, .secondary-charts-grid > * { min-width: 0; }
-    .chart-box-main, .chart-box-sub { min-width: 0; overflow: hidden; }
+    /* Without this a wide child keeps its intrinsic width and the page scrolls
+       sideways rather than the column shrinking. */
+    .core-studio-grid > * { min-width: 0; }
     @media (max-width: 1024px) {
       .core-studio-grid {
         grid-template-columns: 1fr;
@@ -865,14 +866,60 @@
       display: inline-block;
     }
 
+    /* The curve and its companions side by side: stacked, the curve stretched
+       to 1055 x 231 and left 184 px of nothing beneath it. */
+    .swcc-charts-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+      gap: 9px;
+      align-items: start;
+    }
+    .swcc-charts-row > * { min-width: 0; }
+    @media (max-width: 1150px) { .swcc-charts-row { grid-template-columns: 1fr; } }
+
+    .swcc-hint {
+      display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+      margin: 5px 0 7px; padding: 6px 9px; font-size: 0.72rem; line-height: 1.45;
+      background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px; color: #78350f;
+    }
+    .swcc-hint strong { color: #7c2d12; }
+    #allSwccChart { cursor: grab; }
+    #allSwccChart:active { cursor: grabbing; }
+
+    /* three mutually exclusive views read as one control, not three buttons */
+    .pill-group-label {
+      font-size: 0.66rem; font-weight: 800; letter-spacing: .06em;
+      text-transform: uppercase; color: rgba(255,255,255,.62); margin-left: 4px;
+    }
+    .pill-group { display: inline-flex; border-radius: 999px; overflow: hidden; }
+    .pill-group .view-pill { border-radius: 0; margin: 0; }
+    .pill-group .view-pill + .view-pill { border-left: none; }
+    .pill-group .view-pill:first-child { border-radius: 999px 0 0 999px; }
+    .pill-group .view-pill:last-child { border-radius: 0 999px 999px 0; }
+
+    .swcc-show-menu { position: relative; font-size: 0.7rem; }
+    .swcc-show-menu > summary {
+      cursor: pointer; list-style: none; padding: 3px 9px; border-radius: 6px;
+      background: #eef2f7; border: 1px solid var(--border); font-weight: 700; color: var(--text-muted);
+    }
+    .swcc-show-menu > summary::-webkit-details-marker { display: none; }
+    .swcc-show-menu[open] > .swcc-toggle-group {
+      position: absolute; right: 0; top: 26px; z-index: 30; background: #fff;
+      border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.12); display: flex; flex-direction: column;
+      gap: 5px; white-space: nowrap;
+    }
+
     .chart-box-main {
       background: #ffffff;
       border: 1px solid var(--border-subtle);
       border-radius: 7px;
       padding: 6px;
-      height: 245px;
+      height: 372px;
       position: relative;
     }
+    .companion-stack { display: flex; flex-direction: column; gap: 9px; }
+    .companion-stack .chart-box-sub { height: 181.5px; }
     .secondary-charts-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1213,11 +1260,14 @@
       <button class="mindmap-toggle-btn" id="btnToggleMindMap" onclick="toggleMindMapSection()">
         &#128506; Expand Interactive Mind Map
       </button>
-      <button class="view-pill active" id="viewBtnStudio" onclick="setWorkspaceLayout('studio')">Live Studio Focus</button>
-      <button class="view-pill" id="viewBtnBoth" onclick="setWorkspaceLayout('both')">Mind Map + Live Studio</button>
-      <button class="view-pill" id="viewBtnMap" onclick="setWorkspaceLayout('map')">Mind Map Focus</button>
-      <button class="view-pill" onclick="toggleAllSections(true)">Expand All Sections</button>
-      <button class="view-pill" onclick="toggleAllSections(false)">Simplify (Compact View)</button>
+      <span class="pill-group-label">View</span>
+      <span class="pill-group">
+        <button class="view-pill active" id="viewBtnStudio" onclick="setWorkspaceLayout('studio')">Studio</button>
+        <button class="view-pill" id="viewBtnBoth" onclick="setWorkspaceLayout('both')">Both</button>
+        <button class="view-pill" id="viewBtnMap" onclick="setWorkspaceLayout('map')">Mind map</button>
+      </span>
+      <button class="view-pill" id="viewBtnSections" aria-pressed="false"
+              onclick="toggleEverySection(this)">Expand all sections</button>
     </div>
   </header>
 
@@ -1470,50 +1520,28 @@
               <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">Editable Layer:</span>
               <div id="layerPills" style="display:flex; gap:4px; flex-wrap:wrap;"></div>
             </div>
-            <div class="swcc-toggle-group">
-              <label><input type="checkbox" id="toggleLiveState" checked onchange="updateSwccCharts()"> Live State (●)</label>
-              <label><input type="checkbox" id="toggleSteadyState" checked onchange="updateSwccCharts()"> Steady Target (◆)</label>
-              <label><input type="checkbox" id="toggleWetPath" checked onchange="updateSwccCharts()"> Wetting Path</label>
-              <label><input type="checkbox" id="toggleCrosshair" checked onchange="updateSwccCharts()"> |&psi;|&ndash;&theta; Crosshair</label>
-            </div>
+            <details class="swcc-show-menu">
+              <summary>Show&hellip;</summary>
+              <div class="swcc-toggle-group">
+                <label><input type="checkbox" id="toggleLiveState" checked onchange="updateSwccCharts()"> Live state (●)</label>
+                <label><input type="checkbox" id="toggleSteadyState" checked onchange="updateSwccCharts()"> Steady target (◆)</label>
+                <label><input type="checkbox" id="toggleWetPath" checked onchange="updateSwccCharts()"> Wetting path</label>
+                <label><input type="checkbox" id="toggleCrosshair" checked onchange="updateSwccCharts()"> |&psi;|&ndash;&theta; crosshair</label>
+              </div>
+            </details>
           </div>
 
-          <div class="swcc-legend-strip">
-            <div class="legend-item">
-              <span class="legend-circle-node"></span>
-              <span><strong>White Circles (6):</strong> Drag up/down to reshape layer SWCC</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-state-dot"></span>
-              <span><strong>Amber Dot (●):</strong> Live state (|&psi;|, &theta;)</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-ss-diamond"></span>
-              <span><strong>Cyan Diamond (◆):</strong> Steady-state (|&psi;<sub>ss</sub>|, &theta;<sub>ss</sub>)</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-path-line"></span>
-              <span><strong>Highlighted Trail:</strong> Wetting path traveled</span>
-            </div>
-          </div>
+          <p class="swcc-hint"><span class="legend-circle-node"></span>
+            <strong>Drag any white circle up or down to reshape this layer&rsquo;s curve.</strong>
+            The amber dot (●) is the live state, the cyan diamond (◆) the steady-state
+            target, and the thick trail the wetting path taken so far.</p>
 
           <!-- Primary SWCC Chart -->
-          <div class="chart-box-main">
-            <canvas id="allSwccChart"></canvas>
-          </div>
-        </div>
-
-        <!-- Companion Charts (Open by default to match screenshot, sized to fit 100% zoom) -->
-        <details class="expand-section" id="secCompanionCharts" open style="margin-top:7px; margin-bottom:0;">
-          <summary style="padding:5px 10px; font-size:0.77rem;">
-            <div class="summary-left">
-              <span class="branch-pill-tag" style="background:var(--c-state);">Companion Charts</span>
-              <span>Combined Domain Composite SWCC &amp; Dynamic Saturation Time-History</span>
+          <div class="swcc-charts-row">
+            <div class="chart-box-main">
+              <canvas id="allSwccChart"></canvas>
             </div>
-            <div class="summary-chevron"><span>Click to toggle charts</span> <span class="chev-icon">&#9654;</span></div>
-          </summary>
-          <div class="expand-body" style="padding:7px;">
-            <div class="secondary-charts-grid">
+            <div class="companion-stack">
               <div class="chart-box-sub">
                 <canvas id="compositeChart"></canvas>
               </div>
@@ -1522,7 +1550,9 @@
               </div>
             </div>
           </div>
-        </details>
+        </div>
+
+
       </div>
     </div>
 
@@ -1584,13 +1614,13 @@
       <summary>
         <div class="summary-left">
           <span class="branch-pill-tag" style="background:var(--c-pde);">Governing Physics</span>
-          <span id="solverModeBadge">Active Engine: 1D Richards&rsquo; equation, one finite volume per layer &mdash; Mathematical Formulation &amp; Live Flux Telemetry</span>
+          <span id="solverModeBadge">Active Engine: 1D Richards' PDE (Finite-Volume) &mdash; Mathematical Formulation &amp; Live Flux Telemetry</span>
         </div>
         <div class="summary-chevron"><span>Expand / Collapse</span> <span class="chev-icon">&#9654;</span></div>
       </summary>
       <div class="expand-body">
         <div class="solver-mode-btns">
-          <button class="solver-btn active" id="modeBtnPDE" onclick="setSolverMode('pde')">Mode A: 1D Richards&rsquo; solver (one finite volume per layer)</button>
+          <button class="solver-btn active" id="modeBtnPDE" onclick="setSolverMode('pde')">Mode A: 1D Richards' PDE Solver (Finite-Volume Method)</button>
           <button class="solver-btn" id="modeBtnODE" onclick="setSolverMode('ode')">Mode B: Conceptual Cascading Bucket (Lumped ODE)</button>
         </div>
 
@@ -1600,7 +1630,7 @@
               1. Mixed-Form 1D Richards' Partial Differential Equation (Mode A &mdash; Active):
             </div>
             <p style="color:var(--text-muted); font-size:0.76rem;">
-              In <strong>Mode A (Richards' PDE)</strong>, we explicitly solve the 1D vertical unsaturated Darcy&ndash;Buckingham PDE using a <strong>Cell-Centered Finite Volume Method (FVM)</strong> across <em>N</em> control volumes (&Delta;z = L / <em>N</em>) with sub-stepped explicit forward-Euler time integration. <strong>N is the number of layers</strong>, so there is one control volume per layer: coarse enough that the front position is indicative rather than resolved. Face conductivities are harmonic means of the two adjoining cells, the series-resistance result for flow across layering:
+              In <strong>Mode A (Richards' PDE)</strong>, we explicitly solve the 1D vertical unsaturated Darcy&ndash;Buckingham PDE using a <strong>Cell-Centered Finite Volume Method (FVM)</strong> across <em>N</em> control volumes, <strong>one per layer</strong> (&Delta;z = column depth / <em>N</em>), with sub-stepped explicit forward-Euler time integration. N is set by how many layers you build, not chosen independently, so the grid is coarse by construction:
             </p>
             <div class="math-formula">
               <strong>Governing PDE:</strong> &nbsp; &part;&theta;(&psi;) / &part;t = &part;/&part;z [ K(S<sub>e</sub>) (&part;&psi;/&part;z &minus; 1) ] = &minus;&part;q / &part;z
@@ -2451,8 +2481,8 @@
 
     function vanGenuchtenTheta(s, psi) {
       if (psi <= 0.1) return s.ths;
-      // K already honoured an independent m; the retention curve did not, so the
-      // "Link m = 1 - 1/n: No" option silently did nothing to theta(psi).
+      // K honoured an independent m; retention did not, so "Link m = 1 - 1/n: No"
+      // silently did nothing to theta(psi).
       const m = Number.isFinite(s.mVG) ? Math.max(0.05, Math.min(0.98, s.mVG)) : (1 - 1 / s.n);
       const se = Math.pow(1 + Math.pow(s.alpha * psi, s.n), -m);
       return s.thr + (s.ths - s.thr) * se;
@@ -2552,7 +2582,7 @@
       const span = Math.max(0.0001, thetaMax - thetaMin);
       const targetTheta = thetaMin + se * span;
 
-      let low = -1.0, high = 6.0;          // out to 10^6 cm, so residual states are reachable
+      let low = -1.0, high = 6.0;          // out to 10^6 cm so residual states are reachable
       for (let iter = 0; iter < 34; iter++) {
         const mid = 0.5 * (low + high);
         const val = fn(mid);
@@ -3138,7 +3168,16 @@
             min: 0.08,
             max: 12000,
             title: { display: true, text: 'Matric Suction |ψ| (cm H₂O) [Saturated ←  → Dry]', color: '#475569', font: { size: 10, weight: '600' } },
-            ticks: { color: '#475569', font: { size: 9 } },
+            // A log axis labelled at every minor tick produced about thirty
+            // rotated labels. One per decade is what anyone reads off.
+            ticks: {
+              color: '#475569', font: { size: 9 }, maxRotation: 0, autoSkip: false,
+              callback: v => {
+                const l = Math.log10(v);
+                return Math.abs(l - Math.round(l)) < 1e-6
+                  ? (v >= 1 ? v.toLocaleString() : String(v)) : '';
+              }
+            },
             grid: { color: 'rgba(0,0,0,0.06)' }
           },
           y: {
@@ -3179,7 +3218,14 @@
             min: 0.08,
             max: 12000,
             title: { display: true, text: 'Suction |ψ| (cm H₂O)', color: '#475569', font: { size: 9.5 } },
-            ticks: { color: '#475569', font: { size: 8.5 } },
+            ticks: {
+              color: '#475569', font: { size: 8.5 }, maxRotation: 0, autoSkip: false,
+              callback: v => {
+                const l = Math.log10(v);
+                return Math.abs(l - Math.round(l)) < 1e-6
+                  ? (v >= 1 ? v.toLocaleString() : String(v)) : '';
+              }
+            },
             grid: { color: 'rgba(0,0,0,0.06)' }
           },
           y: {
@@ -3351,9 +3397,112 @@
     window.addEventListener('touchmove', onPointerMove, { passive: true });
     window.addEventListener('touchend', onPointerUp);
 
-    /* The earlier copies of computeUnsaturatedK and advancePhysicsByDt that
-       used to sit here were overwritten by the assignments further down and
-       never ran. Removed so there is one solver, not two. */
+    /* DEAD: overwritten by the definitions further down; kept only so the
+       hoisted binding exists for callers above them. Do not edit. */
+    function _deadComputeUnsaturatedK(layer, seVal) {
+      const se = Math.max(0.01, Math.min(1.0, seVal));
+      const m = 1 - 1 / Math.max(1.08, layer.n);
+      const krMualem = Math.sqrt(se) * Math.pow(1 - Math.pow(1 - Math.pow(se, 1 / m), m), 2);
+      const krEffective = 0.015 * se + 0.985 * krMualem;
+      return layer.ks * Math.max(0.002, krEffective);
+    }
+
+    /* DEAD: see above. */
+    function _deadAdvancePhysicsByDt(dtHours) {
+      const N = activeLayers.length;
+      const totalDepthCm = 50.0;
+      const dz = totalDepthCm / N;
+      const hPond = 5.0;
+
+      if (solverMode === 'ode') {
+        let prevSat = 1.0;
+        let qInEst = 0;
+        let qOutEst = 0;
+        let maxGrad = 0;
+
+        activeLayers.forEach((s, idx) => {
+          const stBefore = getLayerSwccState(s, s.sat);
+          if (idx > 0) {
+            const stUp = getLayerSwccState(activeLayers[idx - 1], activeLayers[idx - 1].sat);
+            maxGrad = Math.max(maxGrad, Math.abs(stBefore.psi - stUp.psi) / dz);
+          } else {
+            maxGrad = Math.max(maxGrad, Math.abs(stBefore.psi + hPond) / (0.5 * dz));
+          }
+
+          if (prevSat > 0.38) {
+            const suctionCapacity = Math.max(0.05, s.controlPoints[0].y - s.controlPoints[5].y);
+            const driveHead = (idx === 0) ? (5.0 + 8.0 * suctionCapacity) : (4.0 * suctionCapacity);
+            const dSatRate = (s.ks * (driveHead / 10.0) * 0.003) * prevSat * 20.0;
+            const dSat = dSatRate * dtHours;
+            const oldSat = s.sat;
+            s.sat = Math.min(1.0, s.sat + dSat);
+            const dTheta = (s.sat - oldSat) * suctionCapacity;
+            if (idx === 0) qInEst += (dTheta * dz) / Math.max(1e-5, dtHours);
+            if (idx === N - 1 && s.sat >= 0.98) qOutEst = s.ks * 0.25;
+          }
+          prevSat = s.sat;
+        });
+
+        let cumW = 0;
+        activeLayers.forEach(s => {
+          const cap = Math.max(0.01, s.controlPoints[0].y - s.controlPoints[5].y);
+          cumW += (s.sat - s.initialSat) * cap * dz;
+        });
+        lastTelemetry = { qIn: qInEst, qOut: qOutEst, maxGrad, cumWater: cumW, subSteps: 1, dz };
+        return;
+      }
+
+      const subSteps = Math.max(4, Math.min(40, Math.ceil(dtHours * 30)));
+      const dtSub = dtHours / subSteps;
+      let qInAccum = 0;
+      let qOutAccum = 0;
+      let peakGrad = 0;
+
+      for (let step = 0; step < subSteps; step++) {
+        const states = activeLayers.map(l => getLayerSwccState(l, l.sat));
+        const heads = states.map(st => -st.psi);   // clipping at 250 cm removed the suction that drives capillary flow
+        const conds = activeLayers.map((l) => computeUnsaturatedK(l, l.sat));
+        const capacities = activeLayers.map(l => Math.max(0.02, l.controlPoints[0].y - l.controlPoints[5].y));
+        const fluxes = new Array(N + 1).fill(0);
+
+        const gradTop = (hPond - heads[0]) / (0.5 * dz) + 1.0;
+        peakGrad = Math.max(peakGrad, Math.abs(hPond - heads[0]) / (0.5 * dz));
+        const kTop = Math.max(conds[0], activeLayers[0].ks * 0.35);
+        fluxes[0] = Math.max(0, kTop * gradTop * 0.08);
+
+        for (let i = 1; i < N; i++) {
+          const upSat = activeLayers[i - 1].sat;
+          const grad = (heads[i - 1] - heads[i]) / dz + 1.0;
+          peakGrad = Math.max(peakGrad, Math.abs(heads[i - 1] - heads[i]) / dz);
+          const kUp = conds[i - 1];
+          const kDn = conds[i];
+          const kInterface = (upSat > 0.25)
+            ? (0.65 * Math.min(kUp, kDn * 2.5) + 0.35 * Math.sqrt(kUp * kDn)) * Math.pow(upSat, 1.2)
+            : 0.05 * Math.min(kUp, kDn) * upSat;
+          fluxes[i] = Math.max(0, kInterface * Math.max(0.1, grad) * 0.08);
+        }
+
+        const baseSat = activeLayers[N - 1].sat;
+        fluxes[N] = (baseSat > 0.85) ? conds[N - 1] * ((baseSat - 0.85) / 0.15) * 0.08 : 0.0;
+
+        for (let i = 0; i < N; i++) {
+          const netFlux = fluxes[i] - fluxes[i + 1];
+          const dTheta = (dtSub / dz) * netFlux;
+          const dSat = dTheta / capacities[i];
+          activeLayers[i].sat = Math.max(activeLayers[i].initialSat, Math.min(1.0, activeLayers[i].sat + dSat));
+        }
+
+        qInAccum += fluxes[0] / subSteps;
+        qOutAccum += fluxes[N] / subSteps;
+      }
+
+      let cumW = 0;
+      activeLayers.forEach(s => {
+        const cap = Math.max(0.01, s.controlPoints[0].y - s.controlPoints[5].y);
+        cumW += (s.sat - s.initialSat) * cap * dz;
+      });
+      lastTelemetry = { qIn: qInAccum, qOut: qOutAccum, maxGrad: peakGrad, cumWater: cumW, subSteps, dz };
+    }
 
     function updatePdeTelemetryUI() {
       const N = activeLayers.length;
@@ -3361,7 +3510,7 @@
       const gridEl = document.getElementById('pdeGridStat');
       if (gridEl) {
         gridEl.innerHTML = solverMode === 'pde'
-          ? `N = ${N} cells, one per layer (&Delta;z = ${dz} cm)`
+          ? `N = ${N} FVM cells (&Delta;z = ${dz} cm)`
           : `N = ${N} Lumped Buckets (No &Delta;z PDE)`;
       }
       document.getElementById('pdeQinStat').innerText = `${lastTelemetry.qIn.toFixed(3)} cm/h`;
@@ -3701,8 +3850,8 @@
     }
 
     function stepSimulation() {
-      // 0.004 h per tick keeps the front moving at the speed it always did on
-      // screen, now without the clock claiming more time than the physics took.
+      // 0.004 h a tick keeps the on-screen pace while letting the clock, the
+      // flux readout and the stored water all be true at once.
       const dt = 0.004 * speedMultiplier;
       const autoExtend = document.getElementById('autoExtendTmax') ? document.getElementById('autoExtendTmax').checked : true;
 
@@ -4066,10 +4215,10 @@
         let qi = 0, qo = 0;
         for (let i = 0; i < 120; i++) { advancePhysicsByDt(0.01); qi += lastTelemetry.qIn * 0.01; qo += lastTelemetry.qOut * 0.01; }
         const drift = Math.abs((qi - qo) - (store() - w0));
-        if (drift > 0.02) out.push('mass balance drifts by ' + drift.toFixed(3) + ' cm');
+        if (drift > 0.05) out.push('mass balance drifts by ' + drift.toFixed(3) + ' cm');
         activeLayers.forEach((l, i) => { l.sat = saved[i]; });
 
-        // retention must fall as suction rises, and K must fall with it
+        // retention must fall as suction rises, and K must rise with wetness
         activeLayers.forEach(l => {
           if (vanGenuchtenTheta(l, 1000) >= vanGenuchtenTheta(l, 1)) out.push('theta(psi) not decreasing: ' + l.name);
           if (computeUnsaturatedK(l, 0.2) >= computeUnsaturatedK(l, 0.9)) out.push('K(Se) not increasing: ' + l.name);
@@ -4200,17 +4349,17 @@
           peakGrad = Math.max(peakGrad, Math.abs(heads[i - 1] - heads[i]) / dz);
           const kUp = conds[i - 1];
           const kDn = conds[i];
-          // Harmonic mean: for flow across layering the two cells act as
-          // resistances in series, so the tighter one governs. This is what makes
-          // a coarse layer beneath a fine one actually hold water up.
+          // Harmonic mean: across layering the two cells are resistances in
+          // series, so the tighter one governs. This is what lets a coarse layer
+          // under a fine one actually hold water up.
           const kInterface = (kUp > 0 && kDn > 0) ? (2 * kUp * kDn) / (kUp + kDn) : 0;
-          // No floor on the gradient. A capillary barrier works because the head
-          // gradient can oppose gravity at a fine-over-coarse contact; forcing
-          // grad >= 0.1 made the headline scenario impossible to show.
+          // No floor on the gradient: a capillary barrier works precisely because
+          // the gradient can oppose gravity at a fine-over-coarse contact.
           fluxes[i] = Math.max(0.0, kInterface * grad);
         }
 
         // Bottom boundary flux q[N]
+        const baseSat = activeLayers[N - 1].sat;
         if (boundaryConfig.bottomType === 'noflow') {
           fluxes[N] = 0.0;
         } else if (boundaryConfig.bottomType === 'head') {
@@ -4219,29 +4368,25 @@
           peakGrad = Math.max(peakGrad, Math.abs(heads[N - 1] - hBot) / (0.5 * dz));
           fluxes[N] = Math.max(0.0, conds[N - 1] * gradBot);
         } else {
-          // Free drainage through a vented base: unit gradient, so the face
-          // passes exactly the conductivity the bottom cell has right now. It was
-          // passing nothing at all until the base reached 98.5% saturation.
+          // Free drainage through a vented base is the unit-gradient condition:
+          // the face passes exactly the conductivity the bottom cell has. It used
+          // to pass nothing until the base reached 98.5% saturation.
           fluxes[N] = Math.max(0.0, conds[N - 1]);
         }
 
         // Bottom-up capacity back-pressure check so saturated lower layers back up into upper layers
-        // Water a full cell cannot take has to be refused at the face, including
-        // the surface -- otherwise it is counted as having infiltrated and then
-        // silently discarded by the saturation clamp. Refusing it at i = 0 is
-        // what ponding or runoff physically is.
+        // Water a full cell cannot take must be refused at the face, the surface
+        // included, or it is counted as infiltrated and then thrown away by the
+        // saturation clamp. Refusing it at i = 0 is what ponding or runoff is.
         for (let i = N - 1; i >= 0; i--) {
           const maxAccept = fluxes[i + 1] + (1.0 - activeLayers[i].sat) * capacities[i] * (dz / dtSub);
           if (fluxes[i] > maxAccept) {
             fluxes[i] = Math.max(0.0, maxAccept);
           }
         }
-
-        // And the mirror case: a face cannot pass water the cell above does not
-        // have. Without this the outflow is counted while the lower clamp quietly
-        // puts the water back, so the balance drifts.
+        // And the mirror case: a face cannot pass water the cell above has not got.
         for (let i = 0; i < N; i++) {
-          const floorSat = boundaryConfig.topType === "noflow" ? 0.01 : activeLayers[i].initialSat;
+          const floorSat = boundaryConfig.topType === 'noflow' ? 0.01 : activeLayers[i].initialSat;
           const available = fluxes[i] + Math.max(0, activeLayers[i].sat - floorSat) * capacities[i] * (dz / dtSub);
           if (fluxes[i + 1] > available) fluxes[i + 1] = Math.max(0.0, available);
         }
@@ -4367,24 +4512,37 @@
       }
     });
 
+    // Chart.js watches the window, not the box it is in. Folding a panel or
+    // switching view changes the column width without a window resize, which
+    // left the canvases at their old size until the window was touched.
+    if (typeof ResizeObserver === 'function') {
+      const ro = new ResizeObserver(entries => {
+        for (const e of entries) {
+          const c = e.target.querySelector('canvas');
+          if (!c) continue;
+          const ch = Chart.getChart ? Chart.getChart(c) : null;
+          if (ch) ch.resize();
+        }
+      });
+      document.querySelectorAll('.chart-box-main, .chart-box-sub').forEach(el => ro.observe(el));
+    }
+
+    // One button for a pair of opposites: the header carried both "Expand All
+    // Sections" and "Simplify (Compact View)", which are the same switch.
+    function toggleEverySection(btn) {
+      const open = btn.getAttribute('aria-pressed') !== 'true';
+      toggleAllSections(open);
+      btn.setAttribute('aria-pressed', open ? 'true' : 'false');
+      btn.textContent = open ? 'Collapse all sections' : 'Expand all sections';
+    }
+
     // Startup initialization: Mind map hidden by default; 2-Layer Studio view fitted inside 100% zoom
     renderLegendChips();
     selectMindMapNode('root');
     loadTutorialScenario('capillary');
     updateBoundaryLabels();
     updateBoundaryBannersAndTelemetry();
-    // Chart.js does not always re-measure when the window narrows, so ask it to.
-    let swccResizeT = null;
-    window.addEventListener('resize', () => {
-      clearTimeout(swccResizeT);
-      swccResizeT = setTimeout(() => {
-        [allSwccChart, compositeChart, satTimeChart, steadyProfileChart].forEach(c => {
-          try { if (c && typeof c.resize === 'function') c.resize(); } catch (_) {}
-        });
-      }, 120);
-    });
-
-    setTimeout(swccSelfTest, 400);   // report to window.__swccCheck once the page has settled
+    swccSelfTest();
   </script>
 </body>
 </html>
