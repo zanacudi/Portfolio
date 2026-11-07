@@ -2636,7 +2636,24 @@
       resetSim();
     }
 
+    /* Each tutorial's text describes what happens under the conditions it was
+       written for. Without this, setting "no flow" and then picking T2 leaves
+       the text promising a capillary barrier while nothing moves. */
+    function applyScenarioBoundaries() {
+      const set = (id, v) => { const e = document.getElementById(id); if (e) e.value = v; };
+      set('topBcType', 'head');
+      set('topBcValue', 5);
+      set('bottomBcType', 'free');
+      set('bottomBcValue', 0);
+      boundaryConfig.topType = 'head';
+      boundaryConfig.topValue = 5.0;
+      boundaryConfig.bottomType = 'free';
+      boundaryConfig.bottomValue = 0.0;
+      updateBoundaryLabels();
+    }
+
     function loadTutorialScenario(type) {
+      applyScenarioBoundaries();
       ['single', 'capillary', 'impedance', 'stratified10'].forEach(id => {
         const el1 = document.getElementById(`scen-${id}`);
         const el2 = document.getElementById(`quickScen-${id}`);
@@ -2658,7 +2675,7 @@
         selectedLayerIdx = 0;
         setLayerCount(2, true);
         lessonEl.innerHTML =
-          `<strong>Tutorial 2 (2-Layer Fine-over-Coarse Capillary Barrier):</strong> Layer 1 is <em>Silt Loam</em> (fine pores, high curve) over Layer 2 <em>Porous Clean Gravel</em> (huge pores, steep drop-off curve). On the SWCC chart, see how Gravel holds almost zero water above |&psi;| &gt; 10 cm! When you run infiltration, L1 wets first while L2 stays pinned at its dry right-hand state until L1 crosses ~38% saturation and forces water across the interface.`;
+          `<strong>Tutorial 2 (2-Layer Fine-over-Coarse Capillary Barrier):</strong> Layer 1 is <em>Silt Loam</em> (fine pores, high curve) over Layer 2 <em>Porous Clean Gravel</em> (huge pores, steep drop-off curve). On the SWCC chart, see how Gravel holds almost zero water above |&psi;| &gt; 10 cm! When you run infiltration, L1 wets first while L2 stays pinned near its dry right-hand state at about 2% until L1 reaches roughly <strong>98%</strong> saturation. Only then does the gravel begin to take water, climbing slowly to about 26% at steady state. That is the barrier: coarse material under fine does not drain it, it blocks it, because the large pores will not fill until the suction at the contact has fallen to nearly zero &mdash; which is to say, until the silt above is nearly saturated.`;
       } else if (type === 'impedance') {
         allLayersPool[0] = createLayerObject('medium_sand', 0);
         allLayersPool[1] = createLayerObject('heavy_clay', 1);
@@ -4211,12 +4228,16 @@
         const cap = l => Math.max(0.01, l.controlPoints[0].y - l.controlPoints[5].y);
         const store = () => activeLayers.reduce((w, l) => w + l.sat * cap(l) * dz, 0);
         const saved = activeLayers.map(l => l.sat);
+        // the solver writes lastTelemetry on every call, so the check has to put
+        // it back or the page opens reporting fluxes from its own self-test
+        const savedTelem = Object.assign({}, lastTelemetry);
         const w0 = store();
         let qi = 0, qo = 0;
         for (let i = 0; i < 120; i++) { advancePhysicsByDt(0.01); qi += lastTelemetry.qIn * 0.01; qo += lastTelemetry.qOut * 0.01; }
         const drift = Math.abs((qi - qo) - (store() - w0));
         if (drift > 0.05) out.push('mass balance drifts by ' + drift.toFixed(3) + ' cm');
         activeLayers.forEach((l, i) => { l.sat = saved[i]; });
+        lastTelemetry = savedTelem;
 
         // retention must fall as suction rises, and K must rise with wetness
         activeLayers.forEach(l => {
@@ -4543,6 +4564,7 @@
     updateBoundaryLabels();
     updateBoundaryBannersAndTelemetry();
     swccSelfTest();
+    updateBoundaryBannersAndTelemetry();   // repaint from the restored state
   </script>
 </body>
 </html>
