@@ -34,6 +34,7 @@ function renderContact() {
 renderTimeline("education-list", EDUCATION);
 renderTimeline("resume-list", RESUME);
 renderCards("project-grid", PROJECTS);
+renderCards("publication-grid", PUBLICATIONS);
 renderCards("litreview-grid", LITREVIEW);
 renderCards("tutorial-grid", TUTORIALS, { showDate: true });
 renderCards("misc-grid", MISC);

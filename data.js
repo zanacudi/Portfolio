@@ -135,6 +135,37 @@ const TUTORIALS = [
   }
 ];
 
+const PUBLICATIONS = [
+  {
+    title: "Comparative accuracy of photogrammetry for volume measurements in shrinkage limit tests of soils with varying plasticity",
+    meta: "Zana J. Taher \u00b7 International Journal of Geotechnical Engineering, 2026, 1\u201311 \u00b7 doi:10.1080/19386362.2026.2759724",
+    description: "Tests whether close-range photogrammetry can replace the wax and mercury methods for measuring the volume of a shrinkage-limit specimen, across soils spanning a range of plasticity, and reports where the agreement holds and where it breaks down.",
+    tags: ["Journal article", "Unsaturated soils", "Photogrammetry"],
+    link: "https://www.tandfonline.com/doi/full/10.1080/19386362.2026.2759724"
+  },
+  {
+    title: "One-dimensional inverse modelling of saturated\u2013unsaturated volume change behaviour of tailings",
+    meta: "Zana J. Taher, Joseph Scalia, Christopher A. Bareither \u00b7 International Journal of Geotechnical Engineering, 2024, 18(7\u201310), 788\u2013801 \u00b7 doi:10.1080/19386362.2024.2435447",
+    description: "Back-calculates hydraulic and volume-change parameters for tailings from column-test settlement data, so that a single one-dimensional model reproduces behaviour through both saturated and unsaturated states. An interactive companion to this paper is under Tutorials.",
+    tags: ["Journal article", "Tailings", "Inverse modelling"],
+    link: "https://www.tandfonline.com/doi/abs/10.1080/19386362.2024.2435447"
+  },
+  {
+    title: "Comparative assessment of expansive soil stabilization by commercially available polymers",
+    meta: "Zana J. Taher, Joseph Scalia IV, Christopher A. Bareither \u00b7 Transportation Geotechnics, 2020, 24, 100387 \u00b7 doi:10.1016/j.trgeo.2020.100387",
+    description: "Measures lime, fly ash and three commercial polymers against the same expansive soil on swell, strength and hydraulic conductivity, and shows that no single treatment wins on all three \u2014 which one looks best depends on what you weight. An interactive companion to this paper is under Tutorials.",
+    tags: ["Journal article", "Expansive soils", "Ground improvement"],
+    link: "https://www.sciencedirect.com/science/article/abs/pii/S2214391220302750"
+  },
+  {
+    title: "Effectiveness of Polymer for Mitigation of Expansive Soils",
+    meta: "Zana Taher \u00b7 Thesis, Colorado State University, 2017",
+    description: "The graduate research the Transportation Geotechnics paper grew out of: a laboratory programme on whether commercially available polymers can control swell in expansive soil, and under what conditions the improvement survives wetting and drying.",
+    tags: ["Thesis", "Expansive soils"],
+    link: "https://www.proquest.com/openview/4aa44a16ea342e78cfa21d1a484276ce/1?pq-origsite=gscholar&cbl=18750"
+  }
+];
+
 const LITREVIEW = [
   {
     title: "Jefferies & Been — Soil Liquefaction: A Critical State Approach (2015)",
