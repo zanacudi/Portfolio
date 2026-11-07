@@ -1,0 +1,4390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stratified Soil Infiltration &amp; Live SWCC Studio — Interactive Mind Map</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --header-bg: #0e4b58;
+      --header-accent: #14697a;
+      --toolbar-bg: #f8fafc;
+      --toolbar-border: #cbd5e1;
+      --canvas-bg: #ebf0f3;
+      --card-bg: #ffffff;
+      --card-alt: #f8fafc;
+      --border: #cbd5e1;
+      --border-subtle: #e2e8f0;
+      --text: #1e293b;
+      --text-muted: #475569;
+      --text-light: #64748b;
+      --c-state: #1d70b8;
+      --c-domain: #00805a;
+      --c-pde: #6b3074;
+      --c-steady: #0284c7;
+      --c-barrier: #c0392b;
+      --c-params: #d97706;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--canvas-bg);
+      color: var(--text);
+      line-height: 1.38;
+      overflow-x: hidden;
+    }
+
+    /* Ultra-Compact Top Header + Bar so the initial Studio Screen fits 100% in 100% zoom */
+    header.site-header {
+      background: var(--header-bg);
+      color: #ffffff;
+      padding: 6px 14px;
+      border-bottom: 1px solid #09353f;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .back-link {
+      color: #bae6fd;
+      text-decoration: none;
+      font-size: 0.74rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      transition: background 0.15s;
+    }
+    .back-link:hover {
+      background: rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+    }
+    .site-header h1 {
+      font-size: 1.02rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #ffffff;
+    }
+    .header-subtitle {
+      display: none;
+    }
+    .view-mode-pills {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .view-pill {
+      background: rgba(255, 255, 255, 0.14);
+      color: #e0f2fe;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.73rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .view-pill:hover {
+      background: rgba(255, 255, 255, 0.24);
+    }
+    .view-pill.active {
+      background: #ffffff;
+      color: var(--header-bg);
+      border-color: #ffffff;
+      font-weight: 700;
+    }
+    .mindmap-toggle-btn {
+      background: #fde047;
+      color: #0f172a;
+      border: 1px solid #facc15;
+      padding: 4px 11px;
+      border-radius: 999px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .mindmap-toggle-btn:hover {
+      background: #fef08a;
+    }
+
+    /* Collapsible Mind-Map Wrapper (Hidden by default on startup!) */
+    #mindmapCollapsibleWrapper {
+      display: none;
+    }
+
+    /* Mind-Map Toolbar (visible when Mind Map is expanded) */
+    .toolbar {
+      background: var(--toolbar-bg);
+      border-bottom: 1px solid var(--toolbar-border);
+      padding: 6px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      justify-content: space-between;
+    }
+    .toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .toolbar-label {
+      font-size: 0.73rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .detail-slider-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 0.72rem;
+    }
+    .detail-slider-wrap input[type="range"] {
+      width: 80px;
+      accent-color: var(--header-bg);
+      cursor: pointer;
+    }
+    .detail-level-tag {
+      font-weight: 700;
+      color: var(--header-bg);
+      min-width: 60px;
+    }
+    .search-input {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      color: var(--text);
+      width: 190px;
+      outline: none;
+    }
+    .tb-btn {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tb-btn:hover {
+      background: #f1f5f9;
+      border-color: #94a3b8;
+    }
+    .tb-btn.active {
+      background: #1e293b;
+      color: #ffffff;
+      border-color: #1e293b;
+    }
+    .tb-btn.primary {
+      background: var(--header-bg);
+      color: #ffffff;
+      border-color: var(--header-bg);
+    }
+
+    /* Split Mind-Map View */
+    .mindmap-split-view {
+      display: grid;
+      grid-template-columns: 1fr 370px;
+      height: 460px;
+      border-bottom: 2px solid var(--border);
+      background: var(--canvas-bg);
+    }
+    @media (max-width: 1024px) {
+      .mindmap-split-view {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+    }
+    .mindmap-canvas-wrap {
+      position: relative;
+      background: var(--canvas-bg);
+      overflow: hidden;
+      min-height: 400px;
+      cursor: grab;
+      user-select: none;
+    }
+    .mindmap-canvas-wrap:active { cursor: grabbing; }
+    #mindmapSvg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .legend-card {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      max-width: 430px;
+      z-index: 10;
+    }
+    .legend-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 5px;
+      gap: 10px;
+    }
+    .legend-branches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .branch-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 0.69rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      background: #f1f5f9;
+      color: var(--text);
+    }
+    .branch-chip.muted {
+      opacity: 0.38;
+      text-decoration: line-through;
+    }
+    .branch-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 10;
+    }
+    .zoom-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .detail-sidebar {
+      background: var(--card-bg);
+      border-left: 1px solid var(--border);
+      padding: 12px 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .breadcrumb {
+      font-size: 0.69rem;
+      font-weight: 700;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .sidebar-node-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--text);
+      border-left: 4px solid var(--c-state);
+      padding-left: 8px;
+      line-height: 1.25;
+    }
+    .sidebar-summary {
+      font-size: 0.79rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+    .diagram-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+    .formula-card {
+      background: #f1f5f9;
+      border-left: 3px solid var(--header-bg);
+      border-radius: 6px;
+      padding: 7px 10px;
+      font-family: "Cambria Math", "Times New Roman", serif;
+      font-size: 0.88rem;
+      color: #0f172a;
+      overflow-x: auto;
+    }
+    .symbol-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+    }
+    .symbol-table th, .symbol-table td {
+      border: 1px solid var(--border-subtle);
+      padding: 4px 6px;
+      text-align: left;
+    }
+    .symbol-table th {
+      background: #f8fafc;
+      color: var(--text-muted);
+      font-size: 0.66rem;
+      text-transform: uppercase;
+    }
+    .tag-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tag-pill {
+      background: #f1f5f9;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    /* Main Studio Container: sized to fit 100% zoom viewport cleanly */
+    .studio-container {
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 8px 12px 18px;
+    }
+
+    /* Ultra-Compact Config Strip */
+    .quick-config-strip {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .domain-control-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+    }
+    .count-btn {
+      background: #f8fafc;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .count-btn.active {
+      background: var(--c-domain);
+      color: #ffffff;
+      border-color: var(--c-domain);
+      font-weight: 700;
+    }
+    .domain-slider-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #f8fafc;
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      font-size: 0.72rem;
+    }
+    .domain-slider-wrap input[type="range"] {
+      width: 75px;
+      accent-color: var(--c-domain);
+      cursor: pointer;
+    }
+    .domain-count-badge {
+      font-family: monospace;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--c-domain);
+      min-width: 56px;
+    }
+
+    /* Core Interactive Studio Grid fitted to 100% zoom */
+    .core-studio-grid {
+      display: grid;
+      grid-template-columns: 356px 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+      align-items: stretch;
+    }
+    /* A grid item defaults to min-width:auto, so the 1fr column could not shrink
+       below the canvases inside it. Narrowing the window then left the charts at
+       their old width and pushed the page sideways until a reload. */
+    .core-studio-grid > *, .secondary-charts-grid > * { min-width: 0; }
+    .chart-box-main, .chart-box-sub { min-width: 0; overflow: hidden; }
+    @media (max-width: 1024px) {
+      .core-studio-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* Soil Column Cross-Section */
+    .column-box {
+      border: 2px solid #475569;
+      border-radius: 7px;
+      background: #0f172a;
+      overflow: hidden;
+    }
+    .pond-layer {
+      height: 26px;
+      background: linear-gradient(180deg, rgba(56,189,248,0.55), rgba(2,132,199,0.9));
+      border-bottom: 2px dashed #bae6fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.72rem;
+      color: #ffffff;
+    }
+    .soil-layers {
+      display: flex;
+      flex-direction: column;
+      height: 250px;
+    }
+    .soil-row {
+      flex: 1;
+      display: flex;
+      position: relative;
+      border-bottom: 1px dashed rgba(255,255,255,0.18);
+      align-items: center;
+      padding: 0 8px;
+      cursor: pointer;
+      transition: filter 0.15s;
+    }
+    .soil-row:hover { filter: brightness(1.12); }
+    .soil-row:last-child { border-bottom: none; }
+    .soil-row.selected-row {
+      outline: 2px solid #38bdf8;
+      outline-offset: -2px;
+    }
+    .sat-bar {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: linear-gradient(90deg, rgba(29, 78, 216, 0.82), rgba(2, 132, 199, 0.85));
+      border-right: 2px solid #7dd3fc;
+      z-index: 1;
+      transition: width 0.08s linear;
+    }
+    .soil-info {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      font-size: 0.69rem;
+      font-weight: 600;
+      color: #f8fafc;
+      text-shadow: 0 1px 3px #000;
+      gap: 4px;
+    }
+    .soil-state-pill {
+      font-family: monospace;
+      font-size: 0.64rem;
+      background: rgba(15, 23, 42, 0.84);
+      color: #e2e8f0;
+      padding: 1px 5px;
+      border-radius: 4px;
+      border: 1px solid rgba(255,255,255,0.22);
+      white-space: nowrap;
+    }
+    .vent-base {
+      padding: 4px;
+      background: #0f172a;
+      border-top: 2px dashed #10b981;
+      text-align: center;
+      font-size: 0.66rem;
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    /* Playback Controls & Non-Overflowing Time Sliders */
+    .btn-group {
+      display: flex;
+      gap: 4px;
+      margin-top: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    button.sim-btn {
+      background: var(--c-state);
+      color: #ffffff;
+      border: none;
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.72rem;
+      transition: background 0.15s;
+    }
+    button.sim-btn:hover { background: #155e9c; }
+    button.sim-btn.alt { background: #64748b; color: #fff; }
+    button.sim-btn.alt:hover { background: #475569; }
+    button.sim-btn.step-btn { background: var(--c-domain); color: #fff; }
+    button.sim-btn.step-btn:hover { background: #006647; }
+    button.sim-btn.reset-swcc { background: var(--c-barrier); color: #fff; }
+    button.sim-btn.reset-swcc:hover { background: #992d22; }
+    .speed-btn {
+      background: #f8fafc;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 3px 6px;
+      border-radius: 4px;
+      font-size: 0.69rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .speed-btn.active {
+      background: var(--header-bg);
+      color: #ffffff;
+      border-color: var(--header-bg);
+    }
+    .timer {
+      margin-left: auto;
+      font-family: monospace;
+      font-size: 0.73rem;
+      font-weight: 700;
+      background: #f8fafc;
+      color: var(--text);
+      padding: 3px 6px;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .time-sliders-box {
+      margin-top: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 6px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .time-slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+      font-size: 0.7rem;
+      width: 100%;
+    }
+    .time-slider-row label {
+      color: var(--text-muted);
+      font-weight: 700;
+      min-width: 88px;
+      white-space: nowrap;
+    }
+    .time-slider-row input[type="range"] {
+      flex: 1;
+      min-width: 0;
+      accent-color: var(--c-state);
+      cursor: pointer;
+    }
+    .time-slider-val {
+      font-family: monospace;
+      font-size: 0.71rem;
+      font-weight: 800;
+      color: var(--c-state);
+      min-width: 58px;
+      text-align: right;
+      white-space: nowrap;
+    }
+    .tmax-flex-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--border);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .tmax-preset-btns {
+      display: flex;
+      gap: 3px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .tmax-chip {
+      background: #ffffff;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tmax-chip:hover, .tmax-chip.active {
+      background: var(--c-state);
+      color: #ffffff;
+      border-color: var(--c-state);
+    }
+    .tmax-num-input {
+      width: 48px;
+      background: #ffffff;
+      color: var(--c-state);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-family: monospace;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    /* Selected Layer State Inspector */
+    .state-inspector-box {
+      margin-top: 6px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 6px 8px;
+    }
+    .state-inspector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--c-state);
+      margin-bottom: 4px;
+    }
+    .state-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5px;
+    }
+    .state-metric {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 3px 5px;
+      text-align: center;
+    }
+    .state-metric .m-label {
+      font-size: 0.62rem;
+      color: var(--text-light);
+      display: block;
+    }
+    .state-metric .m-val {
+      font-family: monospace;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .regime-badge {
+      margin-top: 4px;
+      font-size: 0.67rem;
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Right Card: SWCC Editor & Companion Charts fitted inside 100% zoom */
+    .layer-selector-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 5px;
+      align-items: center;
+      justify-content: space-between;
+      background: #f8fafc;
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+    .layer-pill {
+      border: 1px solid var(--border);
+      background: #ffffff;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.69rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+    .layer-pill.active {
+      background: #0f172a;
+      border-color: #0f172a;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .swcc-toggle-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 0.69rem;
+      color: var(--text-muted);
+    }
+    .swcc-toggle-group label {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .swcc-legend-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 4px 8px;
+      margin-bottom: 5px;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .legend-circle-node {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--c-state);
+      display: inline-block;
+    }
+    .legend-state-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #f59e0b;
+      border: 1.5px solid #0f172a;
+      display: inline-block;
+    }
+    .legend-ss-diamond {
+      width: 8px;
+      height: 8px;
+      background: #0284c7;
+      border: 1.5px solid #0f172a;
+      transform: rotate(45deg);
+      display: inline-block;
+    }
+    .legend-path-line {
+      width: 16px;
+      height: 3.5px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, #1d70b8, #f59e0b);
+      display: inline-block;
+    }
+
+    .chart-box-main {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 6px;
+      height: 245px;
+      position: relative;
+    }
+    .secondary-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    @media (max-width: 900px) {
+      .secondary-charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .chart-box-sub {
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 6px;
+      height: 175px;
+      position: relative;
+    }
+
+    /* Expandable Sections */
+    details.expand-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      overflow: hidden;
+    }
+    details.expand-section > summary {
+      list-style: none;
+      padding: 8px 12px;
+      background: #f8fafc;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      user-select: none;
+      border-bottom: 1px solid transparent;
+      transition: background 0.15s;
+    }
+    details.expand-section > summary::-webkit-details-marker { display: none; }
+    details.expand-section > summary:hover { background: #f1f5f9; }
+    details.expand-section[open] > summary {
+      border-bottom-color: var(--border-subtle);
+      background: #f1f5f9;
+    }
+    .summary-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .branch-pill-tag {
+      font-size: 0.64rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 999px;
+      color: #ffffff;
+    }
+    .summary-chevron {
+      font-size: 0.72rem;
+      color: var(--text-light);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    details.expand-section[open] .summary-chevron .chev-icon {
+      transform: rotate(90deg);
+    }
+    .chev-icon {
+      display: inline-block;
+      transition: transform 0.18s ease;
+    }
+    .expand-body {
+      padding: 10px 12px;
+    }
+
+    /* Guided Scenario Cards */
+    .scenario-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .scenario-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .scenario-card:hover { border-color: var(--c-state); }
+    .scenario-card.active {
+      border-color: var(--c-state);
+      background: #eff6ff;
+      box-shadow: 0 0 0 1px var(--c-state);
+    }
+    .scenario-tag {
+      font-size: 0.66rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--c-state);
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .scenario-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+    .scenario-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .lesson-explainer {
+      background: #f0fdf4;
+      border-left: 4px solid var(--c-domain);
+      border-radius: 6px;
+      padding: 8px 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .lesson-text {
+      flex: 1;
+      min-width: 240px;
+      font-size: 0.76rem;
+      color: var(--text);
+    }
+    .live-narration-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      min-width: 260px;
+      flex: 1;
+    }
+    .narration-header {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--c-params);
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #94a3b8;
+      display: inline-block;
+    }
+    .pulse-dot.running {
+      background: var(--c-domain);
+      box-shadow: 0 0 7px var(--c-domain);
+    }
+
+    /* PDE & Steady State Grids */
+    .pde-grid, .steady-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 12px;
+    }
+    @media (max-width: 960px) {
+      .pde-grid, .steady-grid { grid-template-columns: 1fr; }
+    }
+    .pde-eq-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 9px 12px;
+      font-size: 0.76rem;
+      color: var(--text);
+    }
+    .math-formula {
+      font-family: "Cambria Math", "Times New Roman", serif;
+      font-size: 0.9rem;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-left: 3px solid var(--c-pde);
+      padding: 6px 10px;
+      margin: 6px 0;
+      border-radius: 4px;
+      color: #0f172a;
+      overflow-x: auto;
+    }
+    .pde-telemetry-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .Steady-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .pde-stat, .steady-kpi {
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 6px 8px;
+    }
+    .ps-label, .sk-label {
+      font-size: 0.66rem;
+      color: var(--text-light);
+      display: block;
+    }
+    .ps-val {
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--c-pde);
+    }
+    .sk-val {
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--c-steady);
+    }
+    .solver-mode-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .solver-btn {
+      background: #f8fafc;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .solver-btn.active {
+      background: var(--c-pde);
+      color: #ffffff;
+      border-color: var(--c-pde);
+    }
+
+    /* Report & Parameter Table */
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .report-block {
+      background: #f8fafc;
+      border: 1px solid var(--border-subtle);
+      border-left: 4px solid var(--c-state);
+      padding: 8px 10px;
+      border-radius: 6px;
+    }
+    .report-block h4 {
+      color: var(--c-state);
+      margin-bottom: 3px;
+      font-size: 0.8rem;
+    }
+    .report-block p {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .table-wrap { overflow-x: auto; }
+    table.param-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.73rem;
+    }
+    table.param-table th, table.param-table td {
+      border: 1px solid var(--border);
+      padding: 5px 7px;
+      text-align: left;
+    }
+    table.param-table th {
+      background: #f1f5f9;
+      color: var(--text);
+      font-weight: 700;
+    }
+    table.param-table tr:nth-child(even) { background: #f8fafc; }
+    table.param-table tr.active-table-row { background: #e0f2fe; }
+    select.layer-select {
+      background: #ffffff;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      width: 100%;
+    }
+
+    /* Advanced hydraulic-property and boundary-condition editor */
+    .hydraulic-editor { background:var(--card-bg); border:1px solid var(--border); border-radius:9px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,.04); }
+    .hydraulic-editor summary { cursor:pointer; padding:9px 12px; font-weight:800; color:var(--text); background:#f8fafc; }
+    .hydraulic-editor-body { padding:10px 12px; display:grid; gap:10px; }
+    .editor-grid { display:grid; grid-template-columns:repeat(3,minmax(250px,1fr)); gap:10px; }
+    @media(max-width:1000px){.editor-grid{grid-template-columns:1fr}.field-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .editor-panel { border:1px solid var(--border-subtle); border-radius:7px; padding:9px; background:#fff; }
+    .editor-panel h3 { font-size:.78rem; margin-bottom:7px; color:var(--header-bg); }
+    .field-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+    .form-field { display:flex; flex-direction:column; gap:2px; font-size:.68rem; color:var(--text-muted); font-weight:700; }
+    .form-field input,.form-field select,.form-field textarea { width:100%; border:1px solid var(--border); border-radius:5px; padding:5px 6px; font:inherit; color:var(--text); background:#fff; }
+    .form-field textarea { min-height:94px; resize:vertical; font-family:monospace; font-weight:500; }
+    .wide-field { grid-column:1/-1; }
+    .editor-actions { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+    .validation-box { border-radius:6px; padding:7px 9px; font-size:.72rem; background:#f0fdf4; border:1px solid #86efac; color:#166534; }
+    .validation-box.error { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
+    .model-note { font-size:.69rem; color:var(--text-light); line-height:1.4; }
+  </style>
+</head>
+<body>
+
+  <!-- Ultra-Compact Header Bar -->
+  <header class="site-header">
+    <div class="header-left">
+      <a class="back-link" href="index.html">&larr; Back to portfolio</a>
+      <h1>Stratified Soil Infiltration &amp; Live SWCC State Studio</h1>
+    </div>
+
+    <div class="view-mode-pills">
+      <button class="mindmap-toggle-btn" id="btnToggleMindMap" onclick="toggleMindMapSection()">
+        &#128506; Expand Interactive Mind Map
+      </button>
+      <button class="view-pill active" id="viewBtnStudio" onclick="setWorkspaceLayout('studio')">Live Studio Focus</button>
+      <button class="view-pill" id="viewBtnBoth" onclick="setWorkspaceLayout('both')">Mind Map + Live Studio</button>
+      <button class="view-pill" id="viewBtnMap" onclick="setWorkspaceLayout('map')">Mind Map Focus</button>
+      <button class="view-pill" onclick="toggleAllSections(true)">Expand All Sections</button>
+      <button class="view-pill" onclick="toggleAllSections(false)">Simplify (Compact View)</button>
+    </div>
+  </header>
+
+  <!-- COLLAPSIBLE MIND MAP SECTION (Hidden by default on startup; expands on button click) -->
+  <div id="mindmapCollapsibleWrapper">
+    <nav class="toolbar">
+      <div class="toolbar-group">
+        <div class="detail-slider-wrap">
+          <span class="toolbar-label">Detail level:</span>
+          <input type="range" id="detailLevelSlider" min="1" max="3" step="1" value="2" oninput="setDetailLevel(parseInt(this.value, 10))">
+          <span class="detail-level-tag" id="detailLevelLabel">formulas</span>
+        </div>
+
+        <input type="text" class="search-input" id="mindmapSearch" placeholder="Search... e.g. capillary, PCHIP, harmonic" oninput="onSearchMindMap(this.value)">
+
+        <button class="tb-btn" onclick="expandAllMindMapNodes()">Expand all</button>
+        <button class="tb-btn" onclick="collapseToBranchesOnly()">Branches only</button>
+        <button class="tb-btn" onclick="resetMindMapView()">Reset view</button>
+        <button class="tb-btn active" id="btnShading" onclick="toggleMapShading()">Branch shading</button>
+        <button class="tb-btn active" id="btnCrossLinks" onclick="toggleMapCrossLinks()">Cross-links</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="tb-btn primary" onclick="toggleMindMapSection()">Hide Mind Map &uarr;</button>
+      </div>
+    </nav>
+
+    <section class="mindmap-split-view" id="mindmapSection">
+      <div class="mindmap-canvas-wrap" id="mindmapCanvasWrap">
+        <svg id="mindmapSvg" viewBox="0 0 1050 540" preserveAspectRatio="xMidYMid meet"></svg>
+
+        <!-- Floating Branch Legend Card (Bottom-Left) -->
+        <div class="legend-card" id="mapLegendCard">
+          <div class="legend-card-header">
+            <span>TOPIC BRANCHES (CLICK TO MUTE/SOLO)</span>
+            <button class="tmax-chip" onclick="toggleLegendBody()" id="legendHideBtn">hide</button>
+          </div>
+          <div class="legend-branches" id="legendBranchesList"></div>
+        </div>
+
+        <!-- Floating Zoom Controls (Bottom-Right) -->
+        <div class="zoom-controls">
+          <button class="zoom-btn" onclick="zoomMindMap(1.18)" title="Zoom in">+</button>
+          <button class="zoom-btn" onclick="zoomMindMap(0.84)" title="Zoom out">&minus;</button>
+          <button class="zoom-btn" style="font-size:0.68rem;" onclick="resetMindMapView()" title="Reset view">1:1</button>
+        </div>
+      </div>
+
+      <!-- Right Detail Sidebar -->
+      <aside class="detail-sidebar" id="mindmapSidebar">
+        <div class="breadcrumb" id="sbBreadcrumb">ROOT &rsaquo; STATE &amp; SWCC</div>
+        <div class="sidebar-node-title" id="sbTitle">Stratified Soil Infiltration &amp; SWCC Studio</div>
+        <p class="sidebar-summary" id="sbDesc"></p>
+        <div class="diagram-box" id="sbDiagram"></div>
+        <div class="formula-card" id="sbFormula"></div>
+        <div id="sbTableWrap"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-top:4px;">
+          <div class="tag-pills" id="sbTags"></div>
+          <button class="tb-btn primary" id="sbActionBtn" onclick="triggerNodeStudioAction()">Open in Studio &darr;</button>
+        </div>
+      </aside>
+    </section>
+  </div>
+
+  <!-- MAIN LIVE STUDIO (Visible immediately on startup and sized to fit 100% inside 100% zoom) -->
+  <main class="studio-container" id="studioSection">
+
+    <!-- Compact Top Bar: Domain Size (1-10) + Quick Scenario Buttons -->
+    <div class="quick-config-strip">
+      <div class="domain-control-group">
+        <span class="toolbar-label" style="color:var(--text);">Domain Layers (1&ndash;10):</span>
+        <button class="count-btn" id="cntBtn1" onclick="setLayerCount(1)">1 Layer</button>
+        <button class="count-btn active" id="cntBtn2" onclick="setLayerCount(2)">2 Layers</button>
+        <button class="count-btn" id="cntBtn3" onclick="setLayerCount(3)">3 Layers</button>
+        <button class="count-btn" id="cntBtn5" onclick="setLayerCount(5)">5 Layers</button>
+        <button class="count-btn" id="cntBtn10" onclick="setLayerCount(10)">10 Layers</button>
+        <div class="domain-slider-wrap">
+          <span>N:</span>
+          <input type="range" id="layerCountSlider" min="1" max="10" value="2" oninput="setLayerCount(parseInt(this.value, 10))">
+          <span class="domain-count-badge" id="domainCountLabel">2 Layers</span>
+        </div>
+      </div>
+
+      <div class="domain-control-group">
+        <span class="toolbar-label" style="color:var(--text);">Scenarios:</span>
+        <button class="tb-btn" id="quickScen-single" onclick="loadTutorialScenario('single')">T1: 1-Layer Loam</button>
+        <button class="tb-btn active" id="quickScen-capillary" onclick="loadTutorialScenario('capillary')">T2: Capillary Barrier</button>
+        <button class="tb-btn" id="quickScen-impedance" onclick="loadTutorialScenario('impedance')">T3: Clay Retardation</button>
+        <button class="tb-btn" id="quickScen-stratified10" onclick="loadTutorialScenario('stratified10')">T4: 10-Layer Graded</button>
+      </div>
+    </div>
+
+
+    <details class="hydraulic-editor expand-section" id="hydraulicEditor">
+      <summary>
+        <div class="summary-left">
+          <span class="branch-pill-tag" style="background:var(--c-domain);">Hydraulic &amp; BC Editor</span>
+          <span>Hydraulic Properties (van Genuchten / 6-Node), Conductivity Curve K(|&psi;|), and Transient Boundary Conditions</span>
+        </div>
+        <div class="summary-chevron"><span>Click to edit parameters &amp; BCs</span> <span class="chev-icon">&#9654;</span></div>
+      </summary>
+      <div class="hydraulic-editor-body">
+        <div class="editor-grid">
+          <section class="editor-panel">
+            <h3>Selected-layer van Genuchten retention properties</h3>
+            <div class="field-grid">
+              <label class="form-field">Layer<select id="propertyLayerSelect" onchange="selectPropertyLayer(parseInt(this.value,10))"></select></label>
+              <label class="form-field">Model<select id="retentionModel"><option value="vg">van Genuchten</option><option value="nodes">Six-node SWCC</option></select></label>
+              <label class="form-field">θr<input id="vgThr" type="number" min="0" max="0.7" step="0.001"></label>
+              <label class="form-field">θs<input id="vgThs" type="number" min="0.01" max="0.8" step="0.001"></label>
+              <label class="form-field">α (cm⁻¹)<input id="vgAlpha" type="number" min="0.000001" max="10" step="0.001"></label>
+              <label class="form-field">n (&gt; 1)<input id="vgN" type="number" min="1.001" max="20" step="0.01" oninput="syncLinkedM()"></label>
+              <label class="form-field">m<input id="vgM" type="number" min="0.001" max="0.999" step="0.001"></label>
+              <label class="form-field">Ks (cm/h)<input id="vgKs" type="number" min="0.0000001" max="100000" step="0.01"></label>
+              <label class="form-field">Mualem l<input id="vgL" type="number" min="-5" max="5" step="0.1" value="0.5"></label>
+              <label class="form-field">Link m = 1 − 1/n<select id="linkM" onchange="syncLinkedM()"><option value="yes">Yes</option><option value="no">No</option></select></label>
+            </div>
+            <div class="editor-actions" style="margin-top:7px"><button type="button" class="tb-btn primary" onclick="applyHydraulicProperties()">Apply to selected layer</button><button type="button" class="tb-btn" onclick="loadHydraulicEditor()">Revert fields</button></div>
+          </section>
+          <section class="editor-panel">
+            <h3>Hydraulic conductivity K(|ψ|)</h3>
+            <div class="field-grid">
+              <label class="form-field wide-field">Conductivity model<select id="conductivityModel" onchange="toggleConductivityEditor()"><option value="mualem">Mualem–van Genuchten</option><option value="table">User-entered suction–conductivity table</option></select></label>
+              <label class="form-field wide-field" id="kTableWrap">Pairs: suction_cm, K_cm_per_h<textarea id="kTable" spellcheck="false">0.1, 1.0
+1, 0.5
+10, 0.05
+100, 0.001
+1000, 0.00001</textarea></label>
+            </div>
+            <p class="model-note">Tabulated values are log–log interpolated, clamped at the end values, and constrained to 0 &lt; K ≤ Ks. Enter one positive pair per line.</p>
+          </section>
+          <section class="editor-panel">
+            <h3>Transient boundary conditions</h3>
+            <div class="field-grid">
+              <label class="form-field">Top type<select id="topBcType" onchange="updateBoundaryLabels()"><option value="head">Specified pressure head</option><option value="flux">Specified downward flux</option><option value="noflow">No flow</option></select></label>
+              <label class="form-field">Top value <span id="topBcUnits">(cm)</span><input id="topBcValue" type="number" step="0.01" value="5"></label>
+              <label class="form-field">Bottom type<select id="bottomBcType" onchange="updateBoundaryLabels()"><option value="free">Free drainage</option><option value="head">Specified pressure head</option><option value="noflow">No flow</option></select></label>
+              <label class="form-field">Bottom value <span id="bottomBcUnits">(not used)</span><input id="bottomBcValue" type="number" step="0.01" value="0" disabled></label>
+              <label class="form-field">Column depth (cm)<input id="domainDepth" type="number" min="1" max="100000" step="1" value="50"></label>
+              <label class="form-field">Solver time step (h)<input id="solverDt" type="number" min="0.000001" max="1000" step="0.001" value="0.05"></label>
+            </div>
+            <div class="editor-actions" style="margin-top:7px"><button type="button" class="tb-btn primary" onclick="applyBoundarySettings()">Apply boundaries</button></div>
+          </section>
+        </div>
+        <div id="hydraulicValidation" class="validation-box" aria-live="polite">Properties ready for validation.</div>
+        <p class="model-note"><strong>Sign convention:</strong> depth z is positive downward; pressure head h is negative under suction; downward Darcy flux is positive. The update is θᵢⁿ⁺¹ = θᵢⁿ + Δt(qᵢ₋½ − qᵢ₊½)/Δz, with face conductivities taken as the harmonic mean of the two cells — the series-resistance result for flow across layering.<br><br><strong>What this model is, and what it is not.</strong> There is <em>one cell per layer</em>, so a 50&nbsp;cm column with two layers has Δz = 25&nbsp;cm. That resolves where water accumulates and which contrast governs it, and is far too coarse to give the shape of a wetting front or an arrival time worth quoting. The scheme is explicit with no iteration on the nonlinearity, flow is downward only, and hysteresis is not represented. Mass is conserved: inflow minus outflow equals the change in storage to within rounding in every built-in scenario. For design, use an implicit, benchmarked unsaturated-flow code.</p>
+      </div>
+    </details>
+    <!-- Core Two-Column Studio Grid (Matches user's screenshot at 100% zoom) -->
+    <div class="core-studio-grid" id="coreWorkspaceAnchor">
+      <!-- Left Card: Visual Soil Column & Playback Controls -->
+      <div class="card">
+        <div>
+          <div class="card-title">
+            <span>Soil Column Cross-Section</span>
+            <span style="font-size:0.68rem; color:var(--text-light);" id="columnSubtitle">Layers 1 &rarr; 2 (Click any layer to inspect &amp; edit SWCC)</span>
+          </div>
+
+          <div class="column-box">
+            <div class="pond-layer" id="pondLayerBanner" onclick="openHydraulicEditor()" style="cursor:pointer;" title="Click to edit top boundary condition">Ponded Top Boundary (h<sub>p</sub> = +5.0 cm) &mdash; Click to Edit</div>
+            <div class="soil-layers" id="columnView"></div>
+            <div class="vent-base" id="ventBaseBanner" onclick="openHydraulicEditor()" style="cursor:pointer;" title="Click to edit bottom boundary condition">&darr; Free Drainage / Vented Base (P<sub>air</sub> = P<sub>atm</sub>) &mdash; Click to Edit &darr;</div>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="btn-group">
+            <button class="sim-btn" id="runBtn" onclick="toggleSim()">Start Infiltration</button>
+            <button class="sim-btn step-btn" onclick="stepOnce()" title="Advance simulation by 1 step">Step +1</button>
+            <button class="sim-btn alt" onclick="resetSim()">Reset</button>
+
+            <button class="speed-btn active" id="spd1" onclick="setSpeed(1)">1x</button>
+            <button class="speed-btn" id="spd10" onclick="setSpeed(10)">10x</button>
+            <button class="speed-btn" id="spd100" onclick="setSpeed(100)">100x</button>
+
+            <div class="timer">t = <span id="clock">0.00</span> / <span id="maxClock">100.0</span> h</div>
+          </div>
+
+          <!-- Scrubber & Horizon Sliders (Fixed width so 100 h never overflows!) -->
+          <div class="time-sliders-box">
+            <div class="time-slider-row">
+              <label for="timeScrubberSlider">Scrub Run Time (t):</label>
+              <input type="range" id="timeScrubberSlider" min="0" max="100" step="0.05" value="0" oninput="scrubToTime(parseFloat(this.value))">
+              <span class="time-slider-val" id="scrubberTimeVal">t = 0.00 h</span>
+            </div>
+            <div class="time-slider-row">
+              <label for="maxTimeSlider">Horizon (T<sub>max</sub>):</label>
+              <input type="range" id="maxTimeSlider" min="1" max="5000" step="1" value="100" oninput="setMaxRunTime(parseFloat(this.value))">
+              <input type="number" id="maxTimeInput" class="tmax-num-input" min="1" max="50000" step="5" value="100" onchange="setMaxRunTime(parseFloat(this.value))">
+              <span class="time-slider-val" id="maxTimeVal" style="min-width:36px;">100 h</span>
+            </div>
+            <div class="tmax-flex-bar">
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="autoExtendTmax" checked style="accent-color:var(--c-domain); cursor:pointer;">
+                <span><strong>Auto-Extend T<sub>max</sub></strong></span>
+              </label>
+              <div class="tmax-preset-btns">
+                <button class="tmax-chip" onclick="setMaxRunTime(20)">20h</button>
+                <button class="tmax-chip active" onclick="setMaxRunTime(100)">100h</button>
+                <button class="tmax-chip" onclick="setMaxRunTime(500)">500h</button>
+                <button class="tmax-chip" onclick="setMaxRunTime(2000)">2000h</button>
+                <button class="tmax-chip" style="border-color:var(--c-domain); color:var(--c-domain);" onclick="fitTmaxToFullSaturation()">Fit T<sub>sat</sub> (<span id="estTsatLabel">--</span>)</button>
+              </div>
+            </div>
+            <div class="tmax-flex-bar" style="padding-top:3px;">
+              <button class="sim-btn step-btn" style="flex:1; padding:4px 6px; font-size:0.69rem;" onclick="jumpToFullSaturation()">Jump to Estimated 99% Saturation</button>
+              <button class="sim-btn" style="flex:1; padding:4px 6px; font-size:0.69rem; background:var(--c-steady);" onclick="applySteadyStateToColumn()">Snap to Steady State (&part;&theta;/&part;t = 0)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Selected Layer Live State Inspector -->
+        <div class="state-inspector-box">
+          <div class="state-inspector-header">
+            <span id="inspectorTitle">Active Layer L1 Live State on SWCC</span>
+            <span style="font-size:0.66rem; color:var(--text-light);">Wetting: Right &rarr; Left</span>
+          </div>
+          <div class="state-metrics-grid">
+            <div class="state-metric">
+              <span class="m-label">Matric Suction |&psi;|</span>
+              <span class="m-val" id="inspPsi">0.0 cm</span>
+            </div>
+            <div class="state-metric">
+              <span class="m-label">Water Content &theta;</span>
+              <span class="m-val" id="inspTheta">0.000</span>
+            </div>
+            <div class="state-metric">
+              <span class="m-label">Saturation S<sub>e</sub></span>
+              <span class="m-val" id="inspSat">0.0%</span>
+            </div>
+          </div>
+          <div class="regime-badge">
+            <span id="inspRegimeLabel">Regime: Residual / Dry Initial State</span>
+            <span style="font-family:monospace; font-weight:700;" id="inspKsLabel">K<sub>s</sub> = 0.85 cm/h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Card: Interactive SWCC Editor & Companion Charts -->
+      <div class="card">
+        <div>
+          <div class="card-title">
+            <span>Interactive SWCC Editor &amp; Live State Tracker (6 Moveable Nodes per Layer)</span>
+            <div style="display:flex; gap:5px; flex-wrap:wrap;">
+              <button class="tb-btn" onclick="resetSelectedSwcc()">Reset Selected Layer</button>
+              <button class="sim-btn reset-swcc" style="font-size:0.69rem; padding:3px 8px;" onclick="resetAllSwcc()">Reset All SWCCs</button>
+            </div>
+          </div>
+
+          <div class="layer-selector-bar">
+            <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap;">
+              <span style="font-size:0.7rem; font-weight:700; color:var(--text-muted);">Editable Layer:</span>
+              <div id="layerPills" style="display:flex; gap:4px; flex-wrap:wrap;"></div>
+            </div>
+            <div class="swcc-toggle-group">
+              <label><input type="checkbox" id="toggleLiveState" checked onchange="updateSwccCharts()"> Live State (●)</label>
+              <label><input type="checkbox" id="toggleSteadyState" checked onchange="updateSwccCharts()"> Steady Target (◆)</label>
+              <label><input type="checkbox" id="toggleWetPath" checked onchange="updateSwccCharts()"> Wetting Path</label>
+              <label><input type="checkbox" id="toggleCrosshair" checked onchange="updateSwccCharts()"> |&psi;|&ndash;&theta; Crosshair</label>
+            </div>
+          </div>
+
+          <div class="swcc-legend-strip">
+            <div class="legend-item">
+              <span class="legend-circle-node"></span>
+              <span><strong>White Circles (6):</strong> Drag up/down to reshape layer SWCC</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-state-dot"></span>
+              <span><strong>Amber Dot (●):</strong> Live state (|&psi;|, &theta;)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-ss-diamond"></span>
+              <span><strong>Cyan Diamond (◆):</strong> Steady-state (|&psi;<sub>ss</sub>|, &theta;<sub>ss</sub>)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-path-line"></span>
+              <span><strong>Highlighted Trail:</strong> Wetting path traveled</span>
+            </div>
+          </div>
+
+          <!-- Primary SWCC Chart -->
+          <div class="chart-box-main">
+            <canvas id="allSwccChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Companion Charts (Open by default to match screenshot, sized to fit 100% zoom) -->
+        <details class="expand-section" id="secCompanionCharts" open style="margin-top:7px; margin-bottom:0;">
+          <summary style="padding:5px 10px; font-size:0.77rem;">
+            <div class="summary-left">
+              <span class="branch-pill-tag" style="background:var(--c-state);">Companion Charts</span>
+              <span>Combined Domain Composite SWCC &amp; Dynamic Saturation Time-History</span>
+            </div>
+            <div class="summary-chevron"><span>Click to toggle charts</span> <span class="chev-icon">&#9654;</span></div>
+          </summary>
+          <div class="expand-body" style="padding:7px;">
+            <div class="secondary-charts-grid">
+              <div class="chart-box-sub">
+                <canvas id="compositeChart"></canvas>
+              </div>
+              <div class="chart-box-sub">
+                <canvas id="satTimeChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <!-- EXPANDABLE DRAWER 1: Guided Scenarios & Live Narration (Collapsed by default so initial screen is clean) -->
+    <details class="expand-section" id="secTutorials">
+      <summary>
+        <div class="summary-left">
+          <span class="branch-pill-tag" style="background:var(--c-barrier);">Guided Scenarios</span>
+          <span>4 Interactive Tutorial Scenarios &amp; Live Wetting Front Telemetry</span>
+        </div>
+        <div class="summary-chevron"><span>Expand / Collapse</span> <span class="chev-icon">&#9654;</span></div>
+      </summary>
+      <div class="expand-body">
+        <div class="scenario-strip">
+          <div class="scenario-card" id="scen-single" onclick="loadTutorialScenario('single')">
+            <div class="scenario-tag"><span>Tutorial 1</span><span>1 Layer</span></div>
+            <div class="scenario-title">Single Homogeneous Soil Basics</div>
+            <div class="scenario-desc">Learn how a single Loam layer starts at high suction |&psi;| on the right of the SWCC and travels left toward &theta;<sub>s</sub> as water fills pores.</div>
+          </div>
+
+          <div class="scenario-card active" id="scen-capillary" onclick="loadTutorialScenario('capillary')">
+            <div class="scenario-tag"><span>Tutorial 2</span><span>2 Layers</span></div>
+            <div class="scenario-title">Fine-over-Coarse Capillary Barrier</div>
+            <div class="scenario-desc">Silt Loam over Clean Gravel: see why water pauses at the interface until upper suction |&psi;| drops low enough for gravel breakthrough.</div>
+          </div>
+
+          <div class="scenario-card" id="scen-impedance" onclick="loadTutorialScenario('impedance')">
+            <div class="scenario-tag"><span>Tutorial 3</span><span>2 Layers</span></div>
+            <div class="scenario-title">Coarse-over-Fine Hydraulic Retardation</div>
+            <div class="scenario-desc">Medium Sand over Heavy Clay: watch L1 wet almost instantly while L2 creeps slowly along its high-retention clay SWCC.</div>
+          </div>
+
+          <div class="scenario-card" id="scen-stratified10" onclick="loadTutorialScenario('stratified10')">
+            <div class="scenario-tag"><span>Tutorial 4</span><span>10 Layers</span></div>
+            <div class="scenario-title">10-Layer Stratified Soil Profile</div>
+            <div class="scenario-desc">Full 10-layer column grading from Heavy Clay to Coarse Sand. Observe sequential wetting states across all 10 SWCC curves.</div>
+          </div>
+        </div>
+
+        <div class="lesson-explainer">
+          <div class="lesson-text" id="tutorialLessonText">
+            <strong>Tutorial 2 (2-Layer Fine-over-Coarse Capillary Barrier):</strong> Layer 1 is <em>Silt Loam</em> over Layer 2 <em>Porous Clean Gravel</em>. Press <strong>Start Infiltration</strong> to watch L1 wet first while L2 pauses until upper suction drops low enough for breakthrough.
+          </div>
+          <div class="live-narration-box">
+            <div class="narration-header">
+              <span class="pulse-dot" id="simPulseDot"></span>
+              <span id="simStatusTitle">Live SWCC State Telemetry (Ready)</span>
+            </div>
+            <div id="liveNarrativeText">
+              Click <strong>Start Infiltration</strong> or <strong>Step +1</strong> to watch the live state point (|&psi;|, &theta;) move along the SWCC curve as water infiltrates.
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- EXPANDABLE DRAWER 2: Governing Physics — 1D Richards' PDE (FVM) vs. Lumped Bucket ODE -->
+    <details class="expand-section" id="secPdeSolver">
+      <summary>
+        <div class="summary-left">
+          <span class="branch-pill-tag" style="background:var(--c-pde);">Governing Physics</span>
+          <span id="solverModeBadge">Active Engine: 1D Richards&rsquo; equation, one finite volume per layer &mdash; Mathematical Formulation &amp; Live Flux Telemetry</span>
+        </div>
+        <div class="summary-chevron"><span>Expand / Collapse</span> <span class="chev-icon">&#9654;</span></div>
+      </summary>
+      <div class="expand-body">
+        <div class="solver-mode-btns">
+          <button class="solver-btn active" id="modeBtnPDE" onclick="setSolverMode('pde')">Mode A: 1D Richards&rsquo; solver (one finite volume per layer)</button>
+          <button class="solver-btn" id="modeBtnODE" onclick="setSolverMode('ode')">Mode B: Conceptual Cascading Bucket (Lumped ODE)</button>
+        </div>
+
+        <div class="pde-grid">
+          <div class="pde-eq-box" id="pdeExplanationBox">
+            <div style="font-weight:700; color:var(--c-pde); margin-bottom:4px;">
+              1. Mixed-Form 1D Richards' Partial Differential Equation (Mode A &mdash; Active):
+            </div>
+            <p style="color:var(--text-muted); font-size:0.76rem;">
+              In <strong>Mode A (Richards' PDE)</strong>, we explicitly solve the 1D vertical unsaturated Darcy&ndash;Buckingham PDE using a <strong>Cell-Centered Finite Volume Method (FVM)</strong> across <em>N</em> control volumes (&Delta;z = L / <em>N</em>) with sub-stepped explicit forward-Euler time integration. <strong>N is the number of layers</strong>, so there is one control volume per layer: coarse enough that the front position is indicative rather than resolved. Face conductivities are harmonic means of the two adjoining cells, the series-resistance result for flow across layering:
+            </p>
+            <div class="math-formula">
+              <strong>Governing PDE:</strong> &nbsp; &part;&theta;(&psi;) / &part;t = &part;/&part;z [ K(S<sub>e</sub>) (&part;&psi;/&part;z &minus; 1) ] = &minus;&part;q / &part;z
+              <br>
+              <strong>FVM Discretization (Cell <em>i</em>):</strong> &nbsp; &theta;<sub>i</sub><sup>n+1</sup> = &theta;<sub>i</sub><sup>n</sup> + (&Delta;t / &Delta;z) &middot; ( q<sub>i&minus;1/2</sub><sup>n</sup> &minus; q<sub>i+1/2</sub><sup>n</sup> )
+              <br>
+              <strong>Interfacial Darcy Flux:</strong> &nbsp; q<sub>i&minus;1/2</sub> = K<sub>i&minus;1/2</sub> &middot; [ (&psi;<sub>i&minus;1</sub> &minus; &psi;<sub>i</sub>) / &Delta;z + 1 ]
+            </div>
+            <p style="color:var(--text-muted); font-size:0.74rem;">
+              <strong>How SWCC &amp; K(S<sub>e</sub>) Close the PDE:</strong> At every time step, each cell's volumetric water content &theta;<sub>i</sub> is mapped via <strong>monotonic PCHIP spline inversion</strong> of its 6-point SWCC to obtain matric head &psi;<sub>i</sub> = &minus;|&psi;<sub>i</sub>|, and unsaturated conductivity is evaluated via the <strong>Mualem&ndash;van Genuchten</strong> relation K(S<sub>e</sub>) = K<sub>s</sub> &middot; S<sub>e</sub><sup>0.5</sup> [1 &minus; (1 &minus; S<sub>e</sub><sup>1/m</sup>)<sup>m</sup>]<sup>2</sup>.
+            </p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div class="pde-telemetry-grid">
+              <div class="pde-stat">
+                <span class="ps-label">Numerical Discretization</span>
+                <span class="ps-val" id="pdeGridStat">N = 2 cells, one per layer (&Delta;z = 25.0 cm)</span>
+              </div>
+              <div class="pde-stat">
+                <span class="ps-label">Boundary Conditions (Top / Base)</span>
+                <span class="ps-val" id="pdeBcStat">&psi;<sub>top</sub> = +5 cm / Free Vent</span>
+              </div>
+              <div class="pde-stat">
+                <span class="ps-label">Top Surface Flux q<sub>in</sub> (z = 0)</span>
+                <span class="ps-val" id="pdeQinStat">0.000 cm/h</span>
+              </div>
+              <div class="pde-stat">
+                <span class="ps-label">Base Drainage Flux q<sub>out</sub> (z = L)</span>
+                <span class="ps-val" id="pdeQoutStat">0.000 cm/h</span>
+              </div>
+              <div class="pde-stat">
+                <span class="ps-label">Max Suction Gradient |&Delta;&psi;/&Delta;z|</span>
+                <span class="ps-val" id="pdeGradStat">0.00 cm/cm</span>
+              </div>
+              <div class="pde-stat">
+                <span class="ps-label">Cumulative Infiltrated Depth</span>
+                <span class="ps-val" id="pdeCumWaterStat">0.00 cm H<sub>2</sub>O</span>
+              </div>
+            </div>
+            <div class="pde-eq-box" style="font-size:0.74rem; color:var(--text-muted);">
+              <strong>Interactive Comparison:</strong> Switch between <strong>Mode A (Richards' PDE)</strong> and <strong>Mode B (Cascading Bucket ODE)</strong> above to see how explicit suction-head gradients (&psi;<sub>i&minus;1</sub> &minus; &psi;<sub>i</sub>)/&Delta;z compare against a simplified threshold bucket model.
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- EXPANDABLE DRAWER 3: Analytical Steady-State Equilibrium Studio (dTheta/dt = 0) -->
+    <details class="expand-section" id="secSteadyState">
+      <summary>
+        <div class="summary-left">
+          <span class="branch-pill-tag" style="background:var(--c-steady);">Steady-State (&part;&theta;/&part;t = 0)</span>
+          <span>Analytical Steady-State Equilibrium, Harmonic/Arithmetic Conductivity &amp; Bottleneck Profile</span>
+        </div>
+        <div class="summary-chevron"><span>Expand / Collapse</span> <span class="chev-icon">&#9654;</span></div>
+      </summary>
+      <div class="expand-body">
+        <div class="solver-mode-btns">
+          <button class="solver-btn active" id="ssBtnPonded" onclick="setSteadyBoundaryMode('ponded')">BC 1: Constant Top Ponding (h<sub>p</sub> = 5 cm, Gravity + Head Driven)</button>
+          <button class="solver-btn" id="ssBtnFlux" onclick="setSteadyBoundaryMode('flux')">BC 2: Prescribed Top Recharge Flux (q<sub>top</sub> Controlled)</button>
+        </div>
+
+        <div class="steady-grid">
+          <div>
+            <div class="pde-eq-box" style="margin-bottom:8px;">
+              <div class="time-slider-row" id="ssFluxSliderRow" style="display:none; margin-bottom:6px;">
+                <label for="ssFluxSlider">Prescribed Top Flux q<sub>top</sub>:</label>
+                <input type="range" id="ssFluxSlider" min="-2.3" max="1.7" step="0.02" value="-0.3" oninput="onSteadyFluxSliderChange(parseFloat(this.value))">
+                <span class="time-slider-val" id="ssFluxVal">0.500 cm/h</span>
+              </div>
+              <div style="font-size:0.74rem; color:var(--text-muted);" id="ssBoundaryExplanation">
+                <strong>Ponded Steady-State Theory (&part;&theta;/&part;t = 0 &rArr; q<sub>1</sub> = q<sub>2</sub> = &hellip; = q<sub>N</sub> = q<sub>ss</sub>):</strong>
+                Under continuous top ponding (h<sub>p</sub> = 5.0 cm) and a free atmospheric base, the vertical steady throughflow flux is governed by the <strong>Harmonic Mean Conductivity K<sub>V,harm</sub></strong> and limited by the tightest bottleneck stratum. Layers more permeable than q<sub>ss</sub> conduct the steady flux at an <strong>unsaturated equilibrium (|&psi;<sub>ss,i</sub>|, &theta;<sub>ss,i</sub>)</strong> where K<sub>i</sub>(|&psi;<sub>ss,i</sub>|) = q<sub>ss</sub> (shown as <strong>cyan diamonds ◆</strong> on the SWCC chart).
+              </div>
+            </div>
+
+            <div class="Steady-kpi-grid">
+              <div class="steady-kpi">
+                <span class="sk-label">Harmonic K<sub>V,harm</sub> (Vertical)</span>
+                <span class="sk-val" id="ssKharmStat">0.000 cm/h</span>
+              </div>
+              <div class="steady-kpi">
+                <span class="sk-label">Arithmetic K<sub>H,arith</sub> (Horiz.)</span>
+                <span class="sk-val" id="ssKarithStat">0.000 cm/h</span>
+              </div>
+              <div class="steady-kpi">
+                <span class="sk-label">Anisotropy Ratio (K<sub>H</sub> / K<sub>V</sub>)</span>
+                <span class="sk-val" id="ssAnisoStat">1.00 &times;</span>
+              </div>
+              <div class="steady-kpi">
+                <span class="sk-label">Steady-State Flux q<sub>ss</sub></span>
+                <span class="sk-val" id="ssQssStat">0.000 cm/h</span>
+              </div>
+              <div class="steady-kpi">
+                <span class="sk-label">Primary Hydraulic Bottleneck</span>
+                <span class="sk-val" id="ssBottleneckStat">L1 (100%)</span>
+              </div>
+              <div class="steady-kpi">
+                <span class="sk-label">Est. Time to Full Saturation</span>
+                <span class="sk-val" id="ssTimeSatStat">0.0 h</span>
+              </div>
+            </div>
+
+            <div class="pde-eq-box" style="font-size:0.74rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:4px;">
+                <strong style="color:var(--c-steady);">Steady-State Governing Equations (1D Stratified Series):</strong>
+                <button class="tmax-chip" style="border-color:var(--c-steady); color:var(--c-steady);" onclick="applySteadyStateToColumn()">Apply Steady-State Profile to Column Now</button>
+              </div>
+              <div class="math-formula" style="margin:4px 0; font-size:0.84rem; border-left-color:var(--c-steady);">
+                &part;&theta;/&part;t = 0 &nbsp;&rArr;&nbsp; q(z) = K<sub>i</sub>(&psi;<sub>ss,i</sub>) &middot; (1 &minus; &part;&psi;/&part;z) = q<sub>ss</sub> = const
+                &nbsp;|&nbsp;
+                K<sub>V,harm</sub> = L / &Sigma;(&Delta;z<sub>i</sub> / K<sub>s,i</sub>)
+                &nbsp;|&nbsp;
+                &Delta;H<sub>i</sub> / &Delta;H<sub>tot</sub> = (&Delta;z<sub>i</sub>/K<sub>s,i</sub>) / &Sigma;(&Delta;z<sub>k</sub>/K<sub>s,k</sub>)
+              </div>
+              <div id="ssBottleneckNarrative" style="color:var(--text-muted); font-size:0.73rem;">
+                Inspect the depth profile chart on the right to compare current transient wetting against the asymptotic steady-state equilibrium.
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
+              <span style="font-size:0.76rem; font-weight:700; color:var(--text);">Depth Profile: Transient State (t) vs. Steady-State (t &rarr; &infin;)</span>
+              <div style="display:flex; gap:4px;">
+                <button class="tmax-chip active" id="profMetricSat" onclick="setSteadyProfileMetric('sat')">Saturation S<sub>e</sub>(z)</button>
+                <button class="tmax-chip" id="profMetricTheta" onclick="setSteadyProfileMetric('theta')">Water &theta;(z)</button>
+                <button class="tmax-chip" id="profMetricHeadLoss" onclick="setSteadyProfileMetric('headloss')">Head Loss Share (%)</button>
+              </div>
+            </div>
+            <div class="chart-box-sub" style="height:240px;">
+              <canvas id="steadyProfileChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- EXPANDABLE DRAWER 4: Full 11-Column Layer Parameter Table & Geotechnical Guide -->
+    <details class="expand-section" id="secParamTable">
+      <summary>
+        <div class="summary-left">
+          <span class="branch-pill-tag" style="background:var(--c-params);">Layer Parameters &amp; Guide</span>
+          <span>Real-Time 11-Column Layer Parameter Table (13 USDA Soil Presets) &amp; Geotechnical Guide</span>
+        </div>
+        <div class="summary-chevron"><span>Expand / Collapse</span> <span class="chev-icon">&#9654;</span></div>
+      </summary>
+      <div class="expand-body">
+        <div class="report-grid">
+          <div class="report-block">
+            <h4>1. Reading the Live State on the SWCC</h4>
+            <p>The horizontal axis is <strong>Matric Suction |&psi;|</strong> (log scale, cm H<sub>2</sub>O) and the vertical axis is <strong>Volumetric Water Content &theta;</strong>. Dry soil starts on the right (high suction pulling tightly on scarce water). As water infiltrates, saturation rises, suction drops, and the <strong>live state dot</strong> travels leftward and upward along the SWCC toward saturation (&theta;<sub>s</sub> at |&psi;| = 0.1 cm).</p>
+          </div>
+          <div class="report-block">
+            <h4>2. Click &amp; Drag the 6 Control Nodes</h4>
+            <p>The 6 white control circles sit at suction heads |&psi;| = 0.1, 1, 10, 100, 1,000, and 10,000 cm. Dragging nodes upward increases pore water storage capacity (&theta;<sub>s</sub> &minus; &theta;<sub>r</sub>) and scales effective saturated conductivity K<sub>s</sub>. Monotonic PCHIP spline interpolation ensures physically realistic, non-oscillating retention curves.</p>
+          </div>
+          <div class="report-block">
+            <h4>3. Why Domain Size (1 vs. 2 vs. 10 Layers) Matters</h4>
+            <p>With <strong>1 Layer</strong>, infiltration is governed purely by a single curve's storage capacity and K<sub>s</sub>. With <strong>2 Layers</strong>, contrasting SWCCs create sharp interfacial phenomena like <em>capillary barriers</em> (fine over coarse) or <em>perched retardation</em> (coarse over fine). With <strong>up to 10 Layers</strong>, you model realistic field-scale stratified vadose zones.</p>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="param-table">
+            <thead>
+              <tr>
+                <th style="width: 55px;">Layer</th>
+                <th style="width: 210px;">Soil Texture Class</th>
+                <th>Effective K<sub>s</sub> (cm/h)</th>
+                <th>Initial &theta;<sub>s</sub></th>
+                <th>Current &theta;<sub>s</sub> (Pt 1)</th>
+                <th>Wilting &theta;<sub>10000</sub> (Pt 6)</th>
+                <th>Live Suction |&psi;| (cm)</th>
+                <th>Live Water &theta;</th>
+                <th>Current Saturation (S<sub>e</sub>)</th>
+                <th>Steady-State S<sub>e,ss</sub> (|&psi;<sub>ss</sub>|)</th>
+                <th>Resistance / Head Loss Share</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+  </main>
+
+  <script>
+    // =========================================================================
+    // PART 1: INTERACTIVE BUZAN MIND MAP (Hidden by default; expands via button)
+    // =========================================================================
+    const MINDMAP_BRANCHES = [
+      { id: 'state',   name: 'SWCC & Capillary State', color: '#1d70b8', angleStart: -155, angleEnd: -95 },
+      { id: 'domain',  name: 'Stratified Soil Domain', color: '#00805a', angleStart: -85,  angleEnd: -25 },
+      { id: 'pde',     name: 'Richards PDE vs. ODE',   color: '#6b3074', angleStart: -15,  angleEnd: 45  },
+      { id: 'steady',  name: 'Steady-State (∂θ/∂t=0)', color: '#0284c7', angleStart: 55,   angleEnd: 115 },
+      { id: 'barrier', name: 'Barriers & Tutorials',   color: '#c0392b', angleStart: 125,  angleEnd: 175 },
+      { id: 'params',  name: 'USDA Soils & Parameters',color: '#d97706', angleStart: 176,  angleEnd: 205 }
+    ];
+
+    const MINDMAP_NODES = [
+      {
+        id: 'root', parent: null, branch: 'state', x: 520, y: 270, r: 34,
+        label: 'Stratified Infiltration\n& SWCC Studio',
+        shortFormula: 'θ(|ψ|), K(Se), ∂θ/∂t = -∂q/∂z',
+        breadcrumb: 'ROOT CONCEPT',
+        title: 'Stratified Soil Infiltration & Live SWCC State Studio',
+        desc: 'An interactive unsaturated soil mechanics mind map and live numerical laboratory. Explore how the Soil-Water Characteristic Curve (SWCC) governs matric suction |ψ|, volumetric water content θ, unsaturated hydraulic conductivity K(Se), transient wetting fronts, and steady-state equilibrium across 1 to 10 soil strata.',
+        formula: '∂θ(ψ)/∂t = ∂/∂z [ K(Se) (∂ψ/∂z − 1) ]   with   Se = (θ − θr) / (θs − θr)',
+        symbols: [
+          ['|ψ|', 'Matric suction head (capillary tension)', 'cm H₂O'],
+          ['θ', 'Volumetric water content (Vw / Vt)', 'cm³/cm³'],
+          ['Se', 'Effective degree of saturation in [0, 1]', '—'],
+          ['Ks', 'Saturated hydraulic conductivity', 'cm/h']
+        ],
+        tags: ['swcc', 'richards-pde', 'steady-state', 'capillary-barrier'],
+        targetSection: 'coreWorkspaceAnchor'
+      },
+      {
+        id: 'swcc', parent: 'root', branch: 'state', x: 310, y: 145, expanded: true,
+        label: '1. SWCC & Live State',
+        shortFormula: 'θ = θr + (θs − θr) Se(|ψ|)',
+        breadcrumb: 'SWCC & STATE',
+        title: 'Soil-Water Characteristic Curve (SWCC) & Live State (|ψ|, θ)',
+        desc: 'The SWCC defines the constitutive relationship between matric suction |ψ| (log scale) and volumetric water content θ. Dry soil sits on the right tail (high suction, low θ). During infiltration, each layer’s live state marker travels from right to left along its SWCC toward the saturated plateau θs.',
+        formula: 'θ(|ψ|) = θr + (θs − θr) · [ 1 + (α |ψ|)ⁿ ]⁻ᵐ,   m = 1 − 1/n',
+        symbols: [
+          ['α', 'Inverse air-entry suction scaling parameter', 'cm⁻¹'],
+          ['n, m', 'Pore-size distribution steepness parameters', '—'],
+          ['θs', 'Saturated volumetric water content (at |ψ|=0.1 cm)', 'cm³/cm³'],
+          ['θr', 'Residual water content at high suction (|ψ|=10,000 cm)', 'cm³/cm³']
+        ],
+        tags: ['pchip-spline', 'regimes', 'mualem'],
+        targetSection: 'coreWorkspaceAnchor'
+      },
+      {
+        id: 'pchip-spline', parent: 'swcc', branch: 'state', x: 145, y: 78, expanded: true,
+        label: '6-Node PCHIP Spline',
+        shortFormula: 'ψ ∈ {0.1, 1, 10, 100, 1k, 10k}',
+        breadcrumb: 'SWCC & STATE › PCHIP SPLINE',
+        title: '6 Draggable Control Nodes & Monotonic PCHIP Interpolation',
+        desc: 'Each layer’s SWCC is controlled by 6 moveable white nodes at |ψ| = 0.1, 1, 10, 100, 1,000, and 10,000 cm. Piecewise Cubic Hermite Interpolating Polynomial (PCHIP) interpolation in log₁₀(|ψ|) guarantees physical monotonicity without artificial overshoot when you drag nodes.',
+        formula: 'Ks,eff = Ks,0 · ( θs,current / θs,initial )²·⁵   (Monotonic constraint: ∂θ/∂|ψ| ≤ 0)',
+        symbols: [
+          ['Pt 1', 'Saturated plateau θs at |ψ| = 0.1 cm', 'cm³/cm³'],
+          ['Pt 6', 'Wilting/residual tail θ₁₀₀₀₀ at |ψ| = 10,000 cm', 'cm³/cm³']
+        ],
+        tags: ['swcc', 'usda-presets'],
+        targetSection: 'coreWorkspaceAnchor'
+      },
+      {
+        id: 'regimes', parent: 'swcc', branch: 'state', x: 140, y: 155, expanded: true,
+        label: '5 Capillary Regimes',
+        shortFormula: 'Residual → Funicular → Saturated',
+        breadcrumb: 'SWCC & STATE › CAPILLARY REGIMES',
+        title: 'Five Capillary Retention & Wetting Regimes',
+        desc: 'As |ψ| decreases from 10,000 cm to 0.1 cm during wetting, pore water transitions through five physical regimes: (1) Residual Adsorptive Film (|ψ|>1000 cm), (2) High-Suction Meniscus Transition, (3) Active Funicular Capillary Wetting, (4) Capillary Fringe / Near Air-Entry, and (5) Saturated Conduction.',
+        formula: 'Right (High |ψ|, Dry Adsorptive Films)  ⟶  Left (Low |ψ| ≤ 0.25 cm, Saturated Pores)',
+        symbols: [
+          ['ψb ≈ 1/α', 'Bubbling / air-entry suction head', 'cm H₂O'],
+          ['Se ≥ 0.98', 'Full capillary saturation threshold', '—']
+        ],
+        tags: ['swcc', 'capillary-barrier'],
+        targetSection: 'coreWorkspaceAnchor'
+      },
+      {
+        id: 'domain-node', parent: 'root', branch: 'domain', x: 730, y: 145, expanded: true,
+        label: '2. Stratified Domain (1–10)',
+        shortFormula: 'N ∈ [1..10], L = 50 cm',
+        breadcrumb: 'STRATIFIED DOMAIN',
+        title: 'Configurable Stratified Soil Column (1 to 10 Layers)',
+        desc: 'Switch seamlessly between a 1-Layer homogeneous column, a 2-Layer contrasting interface (to isolate capillary barriers or hydraulic impedance), or up to 10 stratified horizons across a 50 cm total column depth with constant top ponding (hp = 5.0 cm) and a vented atmospheric base.',
+        formula: 'Δz = L / N = 50 cm / N,   ψtop = +hp = +5.0 cm,   Pair,base = Patm',
+        symbols: [
+          ['N', 'Number of active soil layers in domain (1 to 10)', 'layers'],
+          ['Δz', 'Individual layer / FVM cell thickness', 'cm'],
+          ['hp', 'Constant surface water ponding depth', '5.0 cm']
+        ],
+        tags: ['bc-node', 'usda-presets', 'capillary-barrier'],
+        targetSection: 'coreWorkspaceAnchor'
+      },
+      {
+        id: 'bc-node', parent: 'domain-node', branch: 'domain', x: 900, y: 95, expanded: true,
+        label: 'Ponded Top & Vented Base',
+        shortFormula: 'ψ(0)=+5 cm, Free Air Vent',
+        breadcrumb: 'STRATIFIED DOMAIN › BOUNDARIES',
+        title: 'Boundary Conditions: Ponded Surface & Vented Base',
+        desc: 'The top boundary applies a constant positive hydrostatic head hp = +5.0 cm (or a user-prescribed recharge flux q_top in Steady-State BC 2). The bottom boundary is an open free-air vent (Pair = Patm) that prevents pore-air compression and allows gravity drainage once the base approaches saturation.',
+        formula: 'q_top = Ktop · [ (hp − ψ₁)/(0.5 Δz) + 1 ],   q_base = K_N · ((Se,N − 0.85)/0.15)  for Se,N > 0.85',
+        symbols: [
+          ['q_in', 'Infiltration flux entering top surface (z = 0)', 'cm/h'],
+          ['q_out', 'Drainage flux exiting vented base (z = L)', 'cm/h']
+        ],
+        tags: ['domain-node', 'richards-pde'],
+        targetSection: 'secPdeSolver'
+      },
+      {
+        id: 'richards-pde', parent: 'root', branch: 'pde', x: 755, y: 280, expanded: true,
+        label: '3. Richards PDE vs. ODE',
+        shortFormula: '∂θ/∂t = ∂/∂z[K(∂ψ/∂z−1)]',
+        breadcrumb: 'GOVERNING PHYSICS',
+        title: '1D Mixed-Form Richards’ PDE (FVM) vs. Lumped Bucket ODE',
+        desc: 'Compare two live numerical engines side-by-side: Mode A solves the 1D unsaturated Richards’ Partial Differential Equation via a conservative Cell-Centered Finite Volume Method (FVM) driven by interfacial suction gradients, while Mode B runs the pedagogical cascading-bucket ODE.',
+        formula: 'θᵢⁿ⁺¹ = θᵢⁿ + (Δt / Δz) · ( qᵢ₋₁/₂ⁿ − qᵢ₊₁/₂ⁿ ),   qᵢ₋₁/₂ = Kᵢ₋₁/₂ · [ (ψᵢ₋₁ − ψᵢ)/Δz + 1 ]',
+        symbols: [
+          ['qᵢ₋₁/₂', 'Darcy-Buckingham flux across cell interface i−1/2', 'cm/h'],
+          ['Kᵢ₋₁/₂', 'Upstream-weighted interfacial hydraulic conductivity', 'cm/h'],
+          ['|Δψ/Δz|', 'Local capillary matric suction gradient', 'cm/cm']
+        ],
+        tags: ['mualem', 'bucket-ode', 'steady-state'],
+        targetSection: 'secPdeSolver'
+      },
+      {
+        id: 'mualem', parent: 'richards-pde', branch: 'pde', x: 930, y: 235, expanded: true,
+        label: 'Mualem K(Se) Closure',
+        shortFormula: 'K = Ks·Se⁰·⁵[1−(1−Se¹/ᵐ)ᵐ]²',
+        breadcrumb: 'GOVERNING PHYSICS › MUALEM CONDUCTIVITY',
+        title: 'Mualem–van Genuchten Unsaturated Conductivity K(Se)',
+        desc: 'Unsaturated hydraulic conductivity drops by orders of magnitude as a soil desaturates because air fills the largest, most conductive pore throats first. Mualem’s pore-bundle integral coupled with the SWCC slope parameter m = 1 − 1/n closes Richards’ PDE.',
+        formula: 'K(Se) = Ks · Se⁰·⁵ · [ 1 − (1 − Se¹/ᵐ)ᵐ ]²',
+        symbols: [
+          ['kr(Se)', 'Relative permeability factor in (0, 1]', '—'],
+          ['m', 'Van Genuchten shape factor 1 − 1/n', '—']
+        ],
+        tags: ['richards-pde', 'swcc'],
+        targetSection: 'secPdeSolver'
+      },
+      {
+        id: 'bucket-ode', parent: 'richards-pde', branch: 'pde', x: 930, y: 325, expanded: true,
+        label: 'Mode B: Bucket ODE',
+        shortFormula: 'dSe,i/dt ∝ Ks,i·(θs−θr)·Se,i−1',
+        breadcrumb: 'GOVERNING PHYSICS › LUMPED BUCKET ODE',
+        title: 'Conceptual Cascading-Bucket Heuristic (Mode B)',
+        desc: 'In Mode B, spatial derivatives ∂ψ/∂z are omitted and each layer acts as a lumped storage bucket that begins filling once the overlying layer exceeds an effective saturation gate of Se,i−1 > 38%. Toggle between Mode A and Mode B to observe the difference!',
+        formula: 'dSe,i / dt = c · Ks,i · h_drive,i · Se,i−1   (active when Se,i−1 > 0.38)',
+        symbols: [
+          ['Se,gate', 'Upstream breakthrough threshold (0.38)', '—'],
+          ['h_drive', 'Effective lumped capillary driving head', 'cm']
+        ],
+        tags: ['richards-pde'],
+        targetSection: 'secPdeSolver'
+      },
+      {
+        id: 'steady-state', parent: 'root', branch: 'steady', x: 700, y: 415, expanded: true,
+        label: '4. Steady-State (∂θ/∂t=0)',
+        shortFormula: 'q(z) = q_ss = const',
+        breadcrumb: 'STEADY-STATE EQUILIBRIUM',
+        title: 'Analytical Steady-State Analysis & Bottleneck Desaturation',
+        desc: 'As t → ∞, storage change vanishes (∂θ/∂t = 0) and vertical flux becomes identical across every layer: q₁ = q₂ = … = q_N = q_ss. Layers more permeable than the bottleneck flux q_ss equilibrate at an unsaturated steady state (cyan diamonds ◆ on the SWCC) where Kᵢ(ψ_ss,i) = q_ss.',
+        formula: 'KV,harm = L / Σ(Δzᵢ / Ks,i),   KH,arith = (1/L) Σ(Δzᵢ · Ks,i),   q_ss = KV,harm · (L + hp)/L',
+        symbols: [
+          ['KV,harm', 'Effective vertical harmonic mean conductivity', 'cm/h'],
+          ['KH,arith', 'Effective horizontal arithmetic mean conductivity', 'cm/h'],
+          ['q_ss', 'Uniform steady-state vertical throughflow flux', 'cm/h']
+        ],
+        tags: ['anisotropy', 'richards-pde'],
+        targetSection: 'secSteadyState'
+      },
+      {
+        id: 'anisotropy', parent: 'steady-state', branch: 'steady', x: 905, y: 440, expanded: true,
+        label: 'Harmonic KV & Bottleneck',
+        shortFormula: 'ΔHᵢ/ΔHtot = (Δzᵢ/Ks,i)/Σ(Δz/Ks)',
+        breadcrumb: 'STEADY-STATE › ANISOTROPY & HEAD LOSS',
+        title: 'Hydraulic Resistance Share & Macroscopic Anisotropy (KH / KV)',
+        desc: 'In stratified series flow, the tightest clay layer dominates total head loss ΔHᵢ/ΔHtot and caps q_ss. Meanwhile, horizontal flow parallel to bedding is governed by KH,arith, producing large macroscopic anisotropy ratios KH / KV in graded profiles.',
+        formula: 'Anisotropy Ratio = KH,arith / KV,harm ≥ 1.0,   Se,ss,i = Kᵢ⁻¹(q_ss)',
+        symbols: [
+          ['ΔHᵢ/ΔHtot', 'Percentage of hydraulic head dissipated in Layer i', '%'],
+          ['Se,ss,i', 'Steady-state saturation of Layer i (◆ on SWCC)', '%']
+        ],
+        tags: ['steady-state', 'usda-presets'],
+        targetSection: 'secSteadyState'
+      },
+      {
+        id: 'capillary-barrier', parent: 'root', branch: 'barrier', x: 325, y: 410, expanded: true,
+        label: '5. Barriers & 4 Tutorials',
+        shortFormula: 'Fine-over-Coarse vs. Coarse-over-Fine',
+        breadcrumb: 'INTERFACIAL PHENOMENA & TUTORIALS',
+        title: 'Interfacial Capillary Barriers, Retardation & Guided Scenarios',
+        desc: 'Contrasting SWCCs across layer interfaces produce dramatic non-linear flow behaviors: a fine-over-coarse interface forms a Capillary Barrier that halts downward percolation until suction drops near saturation, whereas a coarse-over-fine interface causes perched hydraulic impedance.',
+        formula: 'Capillary Barrier Breakthrough: |ψ_interface| ≤ |ψ_water-entry,coarse|',
+        symbols: [
+          ['T1 (1L)', 'Homogeneous Loam baseline wetting path', '1 Layer'],
+          ['T2 (2L)', 'Silt Loam over Clean Gravel capillary barrier', '2 Layers'],
+          ['T3 (2L)', 'Medium Sand over Heavy Clay impedance', '2 Layers'],
+          ['T4 (10L)', '10-Layer graded Clay-to-Sand profile', '10 Layers']
+        ],
+        tags: ['swcc', 'domain-node'],
+        targetSection: 'secTutorials'
+      },
+      {
+        id: 'tut-scenarios', parent: 'capillary-barrier', branch: 'barrier', x: 135, y: 445, expanded: true,
+        label: 'Click to Load Scenarios',
+        shortFormula: 'T1: Loam | T2: Barrier | T3: Clay',
+        breadcrumb: 'TUTORIAL SCENARIOS',
+        title: 'Interactive Guided Scenarios (T1–T4)',
+        desc: 'Use the 4 Guided Tutorial buttons in the studio to automatically configure the domain layer count (1, 2, or 10 layers), load the corresponding USDA soil textures, and follow the live narration box as the wetting front progresses.',
+        formula: 'Select T1, T2, T3, or T4 in the Studio Toolbar to auto-configure layers & SWCCs',
+        symbols: [
+          ['Tsat', 'Estimated time to reach 99% full column saturation', 'hours']
+        ],
+        tags: ['capillary-barrier'],
+        targetSection: 'secTutorials'
+      },
+      {
+        id: 'usda-presets', parent: 'root', branch: 'params', x: 300, y: 280, expanded: true,
+        label: '6. 13 USDA Soils & Table',
+        shortFormula: 'Ks: 0.015 → 115 cm/h',
+        breadcrumb: 'SOIL LIBRARY & PARAMETER TABLE',
+        title: '13 USDA Soil Texture Classes & Live 11-Column Parameter Table',
+        desc: 'Every layer can be assigned any of 13 canonical USDA soil textures ranging from Dense Smectite Clay (Ks = 0.015 cm/h, θs = 0.52) to Porous Clean Gravel (Ks = 115 cm/h, θs = 0.35), with live readouts of |ψ|, θ, Se, Se,ss, and head-loss share.',
+        formula: 'Ks ∈ [0.015, 115.0] cm/h,   α ∈ [0.005, 0.320] cm⁻¹,   n ∈ [1.18, 3.50]',
+        symbols: [
+          ['Clay → Gravel', '13 selectable USDA presets in Layer Table dropdowns', '—'],
+          ['11 Columns', 'Live Ks, θs, θ₁₀₀₀₀, |ψ|, θ, Se, Se,ss, Head Loss %', '—']
+        ],
+        tags: ['pchip-spline', 'anisotropy'],
+        targetSection: 'secParamTable'
+      }
+    ];
+
+    const MINDMAP_CROSSLINKS = [
+      { from: 'pchip-spline', to: 'mualem', label: 'SWCC slope m closes K(Se)' },
+      { from: 'mualem', to: 'anisotropy', label: 'K(Se)=q_ss sets Se,ss' },
+      { from: 'regimes', to: 'capillary-barrier', label: 'Water-entry breakthrough' },
+      { from: 'usda-presets', to: 'domain-node', label: 'Layer texture assignment' }
+    ];
+
+    let selectedMapNodeId = 'root';
+    let mapDetailLevel = 2;
+    let showMapShading = true;
+    let showMapCrossLinks = true;
+    let mutedBranches = new Set();
+    let mapSearchQuery = '';
+    let mapTransform = { x: 0, y: 0, k: 1.0 };
+    let isPanningMap = false;
+    let panStart = { x: 0, y: 0 };
+    let mindMapVisible = false;
+
+    function toggleMindMapSection() {
+      mindMapVisible = !mindMapVisible;
+      const wrap = document.getElementById('mindmapCollapsibleWrapper');
+      const btn = document.getElementById('btnToggleMindMap');
+      if (mindMapVisible) {
+        wrap.style.display = 'block';
+        btn.innerHTML = '&#128506; Hide Interactive Mind Map';
+        renderMindMapSvg();
+      } else {
+        wrap.style.display = 'none';
+        btn.innerHTML = '&#128506; Expand Interactive Mind Map';
+      }
+    }
+
+    function renderLegendChips() {
+      const container = document.getElementById('legendBranchesList');
+      container.innerHTML = '';
+      MINDMAP_BRANCHES.forEach(b => {
+        const chip = document.createElement('button');
+        chip.className = 'branch-chip' + (mutedBranches.has(b.id) ? ' muted' : '');
+        chip.innerHTML = `<span class="branch-dot" style="background:${b.color}"></span><span>${b.name}</span>`;
+        chip.onclick = () => {
+          if (mutedBranches.has(b.id)) mutedBranches.delete(b.id);
+          else mutedBranches.add(b.id);
+          renderLegendChips();
+          renderMindMapSvg();
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function toggleLegendBody() {
+      const list = document.getElementById('legendBranchesList');
+      const btn = document.getElementById('legendHideBtn');
+      if (list.style.display === 'none') {
+        list.style.display = 'flex';
+        btn.innerText = 'hide';
+      } else {
+        list.style.display = 'none';
+        btn.innerText = 'show';
+      }
+    }
+
+    function isNodeVisible(node) {
+      if (node.id === 'root') return true;
+      if (mutedBranches.has(node.branch)) return false;
+      let curr = node;
+      while (curr.parent) {
+        const p = MINDMAP_NODES.find(n => n.id === curr.parent);
+        if (!p) break;
+        if (p.id !== 'root' && p.expanded === false) return false;
+        curr = p;
+      }
+      return true;
+    }
+
+    function hasChildren(nodeId) {
+      return MINDMAP_NODES.some(n => n.parent === nodeId && n.id !== 'root');
+    }
+
+    function renderMindMapSvg() {
+      const svg = document.getElementById('mindmapSvg');
+      if (!svg) return;
+      const rootNode = MINDMAP_NODES[0];
+      let html = `<g transform="translate(${mapTransform.x}, ${mapTransform.y}) scale(${mapTransform.k})">`;
+
+      if (showMapShading) {
+        MINDMAP_BRANCHES.forEach(b => {
+          if (mutedBranches.has(b.id)) return;
+          const a1 = (b.angleStart * Math.PI) / 180;
+          const a2 = (b.angleEnd * Math.PI) / 180;
+          const R = 470;
+          const x1 = rootNode.x + R * Math.cos(a1);
+          const y1 = rootNode.y + R * Math.sin(a1);
+          const x2 = rootNode.x + R * Math.cos(a2);
+          const y2 = rootNode.y + R * Math.sin(a2);
+          html += `<path d="M ${rootNode.x} ${rootNode.y} L ${x1} ${y1} A ${R} ${R} 0 0 1 ${x2} ${y2} Z" fill="${b.color}" fill-opacity="0.055" />`;
+        });
+      }
+
+      if (showMapCrossLinks) {
+        MINDMAP_CROSSLINKS.forEach(cl => {
+          const n1 = MINDMAP_NODES.find(n => n.id === cl.from);
+          const n2 = MINDMAP_NODES.find(n => n.id === cl.to);
+          if (!n1 || !n2 || !isNodeVisible(n1) || !isNodeVisible(n2)) return;
+          const mx = (n1.x + n2.x) / 2;
+          const my = (n1.y + n2.y) / 2 - 28;
+          html += `<path d="M ${n1.x} ${n1.y} Q ${mx} ${my} ${n2.x} ${n2.y}" fill="none" stroke="#64748b" stroke-width="1.4" stroke-dasharray="5,4" opacity="0.65" />`;
+          if (mapDetailLevel >= 2) {
+            html += `<text x="${mx}" y="${my - 4}" text-anchor="middle" fill="#475569" font-size="9.5" font-style="italic">${cl.label}</text>`;
+          }
+        });
+      }
+
+      MINDMAP_NODES.forEach(node => {
+        if (!node.parent || !isNodeVisible(node)) return;
+        const p = MINDMAP_NODES.find(n => n.id === node.parent);
+        if (!p) return;
+        const bObj = MINDMAP_BRANCHES.find(b => b.id === node.branch) || MINDMAP_BRANCHES[0];
+        const dx = node.x - p.x;
+        const cx1 = p.x + dx * 0.45;
+        const cy1 = p.y;
+        const cx2 = p.x + dx * 0.65;
+        const cy2 = node.y;
+        const strokeW = p.id === 'root' ? 4.2 : 2.5;
+        html += `<path d="M ${p.x} ${p.y} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${node.x} ${node.y}" fill="none" stroke="${bObj.color}" stroke-width="${strokeW}" stroke-linecap="round" opacity="0.85" />`;
+      });
+
+      MINDMAP_NODES.forEach(node => {
+        if (!isNodeVisible(node)) return;
+        const bObj = MINDMAP_BRANCHES.find(b => b.id === node.branch) || MINDMAP_BRANCHES[0];
+        const isSel = node.id === selectedMapNodeId;
+        const isRoot = node.id === 'root';
+        const matchesSearch = mapSearchQuery.length > 1 && (
+          node.label.toLowerCase().includes(mapSearchQuery) ||
+          node.title.toLowerCase().includes(mapSearchQuery) ||
+          node.desc.toLowerCase().includes(mapSearchQuery) ||
+          node.shortFormula.toLowerCase().includes(mapSearchQuery)
+        );
+
+        const boxW = isRoot ? 186 : (mapDetailLevel === 1 ? 150 : 178);
+        const boxH = isRoot ? 54 : (mapDetailLevel === 1 ? 32 : (mapDetailLevel === 2 ? 48 : 62));
+        const rx = isRoot ? 27 : 10;
+
+        const fillCol = isRoot ? '#0e4b58' : '#ffffff';
+        const textCol = isRoot ? '#ffffff' : '#1e293b';
+        const strokeCol = matchesSearch ? '#f59e0b' : (isSel ? '#0f172a' : bObj.color);
+        const strokeW = (isSel || matchesSearch) ? 3.2 : 2.0;
+
+        html += `<g class="mm-node" transform="translate(${node.x}, ${node.y})" onclick="selectMindMapNode('${node.id}', event)" style="cursor:pointer;">`;
+        if (isSel || matchesSearch) {
+          html += `<rect x="${-boxW/2 - 4}" y="${-boxH/2 - 4}" width="${boxW + 8}" height="${boxH + 8}" rx="${rx + 3}" fill="none" stroke="${matchesSearch ? '#f59e0b' : bObj.color}" stroke-width="2" stroke-dasharray="3,2" />`;
+        }
+        html += `<rect x="${-boxW/2}" y="${-boxH/2}" width="${boxW}" height="${boxH}" rx="${rx}" fill="${fillCol}" stroke="${strokeCol}" stroke-width="${strokeW}" />`;
+
+        if (!isRoot) {
+          html += `<rect x="${-boxW/2}" y="${-boxH/2}" width="6" height="${boxH}" rx="3" fill="${bObj.color}" />`;
+        }
+
+        const lines = node.label.split('\n');
+        if (isRoot) {
+          html += `<text x="0" y="-6" text-anchor="middle" fill="${textCol}" font-size="12" font-weight="800">${lines[0]}</text>`;
+          html += `<text x="0" y="11" text-anchor="middle" fill="#bae6fd" font-size="11" font-weight="700">${lines[1] || ''}</text>`;
+        } else {
+          const titleY = mapDetailLevel === 1 ? 4 : (mapDetailLevel === 2 ? -5 : -12);
+          html += `<text x="3" y="${titleY}" text-anchor="middle" fill="${textCol}" font-size="11" font-weight="700">${node.label}</text>`;
+          if (mapDetailLevel >= 2) {
+            html += `<text x="3" y="${titleY + 15}" text-anchor="middle" fill="${bObj.color}" font-size="9.5" font-family="monospace" font-weight="700">${node.shortFormula}</text>`;
+          }
+          if (mapDetailLevel === 3) {
+            const snippet = node.desc.slice(0, 28) + '…';
+            html += `<text x="3" y="${titleY + 28}" text-anchor="middle" fill="#64748b" font-size="8.5">${snippet}</text>`;
+          }
+        }
+
+        if (!isRoot && hasChildren(node.id)) {
+          const dotX = node.x > rootNode.x ? boxW / 2 + 10 : -boxW / 2 - 10;
+          const sym = node.expanded ? '−' : '+';
+          html += `<g onclick="toggleNodeChildren('${node.id}', event)" style="cursor:pointer;">
+            <circle cx="${dotX}" cy="0" r="9" fill="${bObj.color}" stroke="#ffffff" stroke-width="1.5" />
+            <text x="${dotX}" y="3.5" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="800">${sym}</text>
+          </g>`;
+        }
+
+        html += `</g>`;
+      });
+
+      html += `</g>`;
+      svg.innerHTML = html;
+    }
+
+    function getConceptSvgDiagram(nodeId, color) {
+      if (nodeId === 'swcc' || nodeId === 'pchip-spline' || nodeId === 'regimes') {
+        return `<svg viewBox="0 0 260 95" width="100%" height="84">
+          <line x1="30" y1="80" x2="245" y2="80" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="30" y1="12" x2="30" y2="80" stroke="#94a3b8" stroke-width="1.5"/>
+          <path d="M 35 22 C 85 22, 115 45, 165 65 C 195 74, 220 76, 240 77" fill="none" stroke="${color}" stroke-width="3"/>
+          <circle cx="210" cy="75" r="4.5" fill="#94a3b8"/>
+          <circle cx="125" cy="48" r="5.5" fill="#f59e0b" stroke="#0f172a" stroke-width="1.5"/>
+          <path d="M 202 72 Q 165 62 135 50" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,2"/>
+          <text x="138" y="18" font-size="9.5" fill="#1e293b" font-weight="700">Wetting: Right (Dry) → Left (Sat)</text>
+          <text x="140" y="92" text-anchor="middle" font-size="8.5" fill="#475569">Log Matric Suction |ψ| (cm) →</text>
+          <text x="12" y="48" font-size="9" fill="#475569" transform="rotate(-90 12 48)">Water θ</text>
+        </svg>`;
+      }
+      if (nodeId === 'steady-state' || nodeId === 'anisotropy') {
+        return `<svg viewBox="0 0 260 95" width="100%" height="84">
+          <rect x="45" y="12" width="75" height="32" fill="#fde68a" stroke="#d97706"/>
+          <rect x="45" y="44" width="75" height="34" fill="#bae6fd" stroke="#0284c7"/>
+          <text x="82" y="31" text-anchor="middle" font-size="9" font-weight="700" fill="#78350f">Tight Clay (Ks↓)</text>
+          <text x="82" y="64" text-anchor="middle" font-size="9" font-weight="700" fill="#0c4a6e">Coarse Sand (Se&lt;1)</text>
+          <line x1="145" y1="15" x2="145" y2="76" stroke="#0284c7" stroke-width="2.5" stroke-dasharray="4,2"/>
+          <text x="198" y="38" text-anchor="middle" font-size="9.5" font-weight="700" fill="#0284c7">q₁ = q₂ = q_ss</text>
+          <text x="198" y="55" text-anchor="middle" font-size="8.5" fill="#475569">KV = L / Σ(Δzᵢ/Ks,i)</text>
+        </svg>`;
+      }
+      return `<svg viewBox="0 0 260 95" width="100%" height="84">
+        <rect x="35" y="10" width="60" height="14" fill="#38bdf8" opacity="0.7"/>
+        <rect x="35" y="24" width="60" height="26" fill="#1d70b8" opacity="0.85"/>
+        <rect x="35" y="50" width="60" height="28" fill="#78350f" opacity="0.75"/>
+        <text x="65" y="20" text-anchor="middle" font-size="8" fill="#0f172a" font-weight="700">Pond hp=5cm</text>
+        <text x="65" y="40" text-anchor="middle" font-size="8.5" fill="#ffffff" font-weight="700">Wetting Front</text>
+        <text x="65" y="67" text-anchor="middle" font-size="8.5" fill="#fef3c7">Dry Sub-layer</text>
+        <text x="175" y="36" text-anchor="middle" font-size="9.5" font-weight="700" fill="${color}">∂θ/∂t = −∂q/∂z</text>
+        <text x="175" y="54" text-anchor="middle" font-size="8.5" fill="#475569">q = −K(Se)(∂ψ/∂z − 1)</text>
+      </svg>`;
+    }
+
+    function selectMindMapNode(nodeId, evt) {
+      if (evt) evt.stopPropagation();
+      const node = MINDMAP_NODES.find(n => n.id === nodeId);
+      if (!node) return;
+      selectedMapNodeId = nodeId;
+      const bObj = MINDMAP_BRANCHES.find(b => b.id === node.branch) || MINDMAP_BRANCHES[0];
+
+      document.getElementById('sbBreadcrumb').innerText = node.breadcrumb;
+      const titleEl = document.getElementById('sbTitle');
+      titleEl.innerText = node.title;
+      titleEl.style.borderLeftColor = bObj.color;
+      document.getElementById('sbDesc').innerText = node.desc;
+      document.getElementById('sbDiagram').innerHTML = getConceptSvgDiagram(node.id, bObj.color);
+      document.getElementById('sbFormula').innerText = node.formula;
+
+      let tbl = `<table class="symbol-table"><thead><tr><th>Symbol</th><th>What It Means</th><th>Units</th></tr></thead><tbody>`;
+      node.symbols.forEach(row => {
+        tbl += `<tr><td><strong>${row[0]}</strong></td><td>${row[1]}</td><td><code>${row[2]}</code></td></tr>`;
+      });
+      tbl += `</tbody></table>`;
+      document.getElementById('sbTableWrap').innerHTML = tbl;
+
+      const tagsEl = document.getElementById('sbTags');
+      tagsEl.innerHTML = '';
+      node.tags.forEach(tId => {
+        const target = MINDMAP_NODES.find(n => n.id === tId);
+        if (!target) return;
+        const span = document.createElement('span');
+        span.className = 'tag-pill';
+        span.innerText = `→ ${target.label.replace('\n', ' ')}`;
+        span.onclick = () => selectMindMapNode(tId);
+        tagsEl.appendChild(span);
+      });
+
+      renderMindMapSvg();
+    }
+
+    function triggerNodeStudioAction() {
+      const node = MINDMAP_NODES.find(n => n.id === selectedMapNodeId);
+      if (!node || !node.targetSection) return;
+      document.getElementById('studioSection').style.display = 'block';
+      const targetEl = document.getElementById(node.targetSection);
+      if (targetEl) {
+        if (targetEl.tagName.toLowerCase() === 'details') targetEl.open = true;
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function toggleNodeChildren(nodeId, evt) {
+      if (evt) evt.stopPropagation();
+      const node = MINDMAP_NODES.find(n => n.id === nodeId);
+      if (node) {
+        node.expanded = !node.expanded;
+        renderMindMapSvg();
+      }
+    }
+
+    function expandAllMindMapNodes() {
+      MINDMAP_NODES.forEach(n => { if (n.id !== 'root') n.expanded = true; });
+      mutedBranches.clear();
+      renderLegendChips();
+      renderMindMapSvg();
+    }
+
+    function collapseToBranchesOnly() {
+      MINDMAP_NODES.forEach(n => {
+        if (n.parent === 'root') n.expanded = false;
+      });
+      renderMindMapSvg();
+    }
+
+    function setDetailLevel(lvl) {
+      mapDetailLevel = lvl;
+      const names = { 1: 'keywords', 2: 'formulas', 3: 'everything' };
+      document.getElementById('detailLevelLabel').innerText = names[lvl] || 'formulas';
+      renderMindMapSvg();
+      if (lvl === 3) toggleAllSections(true);
+      if (lvl === 1) toggleAllSections(false);
+    }
+
+    function onSearchMindMap(q) {
+      mapSearchQuery = (q || '').trim().toLowerCase();
+      if (mapSearchQuery.length > 1) {
+        const match = MINDMAP_NODES.find(n =>
+          n.label.toLowerCase().includes(mapSearchQuery) ||
+          n.title.toLowerCase().includes(mapSearchQuery) ||
+          n.desc.toLowerCase().includes(mapSearchQuery)
+        );
+        if (match) {
+          MINDMAP_NODES.forEach(n => { if (n.id !== 'root') n.expanded = true; });
+          selectMindMapNode(match.id);
+          return;
+        }
+      }
+      renderMindMapSvg();
+    }
+
+    function toggleMapShading() {
+      showMapShading = !showMapShading;
+      document.getElementById('btnShading').classList.toggle('active', showMapShading);
+      renderMindMapSvg();
+    }
+
+    function toggleMapCrossLinks() {
+      showMapCrossLinks = !showMapCrossLinks;
+      document.getElementById('btnCrossLinks').classList.toggle('active', showMapCrossLinks);
+      renderMindMapSvg();
+    }
+
+    function zoomMindMap(factor) {
+      mapTransform.k = Math.max(0.55, Math.min(2.2, mapTransform.k * factor));
+      renderMindMapSvg();
+    }
+
+    function resetMindMapView() {
+      mapTransform = { x: 0, y: 0, k: 1.0 };
+      renderMindMapSvg();
+    }
+
+    function setWorkspaceLayout(mode) {
+      ['Both', 'Map', 'Studio'].forEach(m => {
+        const el = document.getElementById(`viewBtn${m}`);
+        if (el) el.classList.toggle('active', m.toLowerCase() === mode);
+      });
+      const wrap = document.getElementById('mindmapCollapsibleWrapper');
+      const btn = document.getElementById('btnToggleMindMap');
+      if (mode === 'studio') {
+        mindMapVisible = false;
+        wrap.style.display = 'none';
+        btn.innerHTML = '&#128506; Expand Interactive Mind Map';
+        document.getElementById('studioSection').style.display = 'block';
+      } else if (mode === 'map') {
+        mindMapVisible = true;
+        wrap.style.display = 'block';
+        btn.innerHTML = '&#128506; Hide Interactive Mind Map';
+        document.getElementById('studioSection').style.display = 'none';
+        renderMindMapSvg();
+      } else {
+        mindMapVisible = true;
+        wrap.style.display = 'block';
+        btn.innerHTML = '&#128506; Hide Interactive Mind Map';
+        document.getElementById('studioSection').style.display = 'block';
+        renderMindMapSvg();
+      }
+    }
+
+    function toggleAllSections(openState) {
+      ['hydraulicEditor', 'secTutorials', 'secPdeSolver', 'secSteadyState', 'secParamTable'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.open = openState;
+      });
+    }
+
+    const mapWrap = document.getElementById('mindmapCanvasWrap');
+    mapWrap.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.mm-node') || e.target.closest('.legend-card') || e.target.closest('.zoom-controls')) return;
+      isPanningMap = true;
+      panStart = { x: e.clientX - mapTransform.x, y: e.clientY - mapTransform.y };
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isPanningMap) return;
+      mapTransform.x = e.clientX - panStart.x;
+      mapTransform.y = e.clientY - panStart.y;
+      renderMindMapSvg();
+    });
+    window.addEventListener('mouseup', () => { isPanningMap = false; });
+
+    // =========================================================================
+    // PART 2: LIVE STRATIFIED SOIL INFILTRATION & 6-NODE SWCC STUDIO
+    // =========================================================================
+    const CONTROL_PSI = [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0];
+    const psiPoints = [];
+    for (let p = -1; p <= 4.0001; p += 0.08) {
+      psiPoints.push(Math.pow(10, p));
+    }
+
+    const SOIL_LIBRARY = {
+      "smectite_clay":  { name: "Dense Smectite Clay", ks: 0.015, alpha: 0.005, n: 1.18, thr: 0.13, ths: 0.52, color: "#2d1508", sat0: 0.14 },
+      "heavy_clay":     { name: "Heavy Clay",          ks: 0.05,  alpha: 0.008, n: 1.22, thr: 0.11, ths: 0.49, color: "#3e1f0e", sat0: 0.12 },
+      "silty_clay":     { name: "Silty Clay",          ks: 0.12,  alpha: 0.010, n: 1.28, thr: 0.09, ths: 0.47, color: "#502812", sat0: 0.10 },
+      "clay_loam":      { name: "Clay Loam",           ks: 0.32,  alpha: 0.014, n: 1.35, thr: 0.08, ths: 0.45, color: "#653415", sat0: 0.09 },
+      "silt_loam":      { name: "Silt Loam",           ks: 0.85,  alpha: 0.019, n: 1.44, thr: 0.07, ths: 0.43, color: "#79401a", sat0: 0.08 },
+      "loam":           { name: "Loam",                ks: 1.95,  alpha: 0.026, n: 1.56, thr: 0.06, ths: 0.41, color: "#8c4d21", sat0: 0.07 },
+      "sandy_clay_loam":{ name: "Sandy Clay Loam",     ks: 4.10,  alpha: 0.035, n: 1.70, thr: 0.05, ths: 0.40, color: "#9f5c29", sat0: 0.06 },
+      "sandy_loam":     { name: "Sandy Loam",          ks: 7.80,  alpha: 0.048, n: 1.88, thr: 0.045, ths: 0.39, color: "#b36c34", sat0: 0.05 },
+      "fine_sand":      { name: "Uniform Fine Sand",   ks: 11.2,  alpha: 0.058, n: 2.00, thr: 0.042, ths: 0.38, color: "#bf743a", sat0: 0.05 },
+      "loamy_sand":     { name: "Loamy Sand",          ks: 14.5,  alpha: 0.068, n: 2.12, thr: 0.04, ths: 0.38, color: "#c67d40", sat0: 0.05 },
+      "medium_sand":    { name: "Medium Sharp Sand",   ks: 24.0,  alpha: 0.096, n: 2.42, thr: 0.03, ths: 0.37, color: "#d9904f", sat0: 0.04 },
+      "coarse_sand":    { name: "Coarse Gravelly Sand",ks: 38.0,  alpha: 0.135, n: 2.75, thr: 0.02, ths: 0.36, color: "#eaab67", sat0: 0.03 },
+      "clean_gravel":   { name: "Porous Clean Gravel", ks: 115.0, alpha: 0.320, n: 3.50, thr: 0.01, ths: 0.35, color: "#d4a359", sat0: 0.02 }
+    };
+
+    const initialKeys = [
+      "silt_loam", "clean_gravel", "clay_loam", "silt_loam", "loam",
+      "sandy_clay_loam", "sandy_loam", "loamy_sand", "medium_sand", "coarse_sand"
+    ];
+
+    const palette = ['#e11d48','#db2777','#9333ea','#7c3aed','#4f46e5','#2563eb','#0284c7','#0d9488','#059669','#d97706'];
+
+    function vanGenuchtenTheta(s, psi) {
+      if (psi <= 0.1) return s.ths;
+      // K already honoured an independent m; the retention curve did not, so the
+      // "Link m = 1 - 1/n: No" option silently did nothing to theta(psi).
+      const m = Number.isFinite(s.mVG) ? Math.max(0.05, Math.min(0.98, s.mVG)) : (1 - 1 / s.n);
+      const se = Math.pow(1 + Math.pow(s.alpha * psi, s.n), -m);
+      return s.thr + (s.ths - s.thr) * se;
+    }
+
+    function createMonotonicInterpolant(xs, ys) {
+      const n = xs.length;
+      const ms = [];
+      for (let i = 0; i < n - 1; i++) {
+        ms.push((ys[i + 1] - ys[i]) / (xs[i + 1] - xs[i]));
+      }
+      const c1s = [ms[0]];
+      for (let i = 0; i < n - 2; i++) {
+        const m = ms[i], mNext = ms[i + 1];
+        if (m * mNext <= 0) {
+          c1s.push(0);
+        } else {
+          const dx_ = xs[i + 1] - xs[i];
+          const dxNext = xs[i + 2] - xs[i + 1];
+          const common = dx_ + dxNext;
+          c1s.push(3 * common / ((common + dxNext) / m + (common + dx_) / mNext));
+        }
+      }
+      c1s.push(ms[ms.length - 1]);
+
+      const c2s = [], c3s = [];
+      for (let i = 0; i < n - 1; i++) {
+        const c1 = c1s[i], m = ms[i], invDx = 1 / (xs[i + 1] - xs[i]);
+        const common_ = c1 + c1s[i + 1] - 2 * m;
+        c2s.push((m - c1 - common_) * invDx);
+        c3s.push(common_ * invDx * invDx);
+      }
+
+      return function(val) {
+        let i = xs.length - 1;
+        if (val <= xs[0]) return ys[0];
+        if (val >= xs[i]) return ys[i];
+        let low = 0, high = i;
+        while (low <= high) {
+          const mid = (low + high) >> 1;
+          if (xs[mid] < val) { low = mid + 1; i = mid; }
+          else { high = mid - 1; }
+        }
+        const diff = val - xs[i];
+        return ys[i] + c1s[i] * diff + c2s[i] * diff * diff + c3s[i] * diff * diff * diff;
+      };
+    }
+
+    function createLayerObject(key, i) {
+      const template = SOIL_LIBRARY[key];
+      const baseObj = {
+        id: i + 1,
+        key: key,
+        name: template.name,
+        ks: template.ks,
+        alpha: template.alpha,
+        n: template.n,
+        thr: template.thr,
+        ths: template.ths,
+        color: template.color,
+        curveColor: palette[i],
+        sat: template.sat0,
+        initialSat: template.sat0
+      };
+      const origPts = CONTROL_PSI.map(psi => ({
+        x: psi,
+        y: vanGenuchtenTheta(baseObj, psi)
+      }));
+      baseObj.origControlPoints = JSON.parse(JSON.stringify(origPts));
+      baseObj.controlPoints = JSON.parse(JSON.stringify(origPts));
+      return baseObj;
+    }
+
+    let allLayersPool = initialKeys.map((key, i) => createLayerObject(key, i));
+    let domainLayerCount = 2; // Matches the 2-layer view in the user's screenshot!
+    let activeLayers = allLayersPool.slice(0, domainLayerCount);
+    let selectedLayerIdx = 0;
+    let speedMultiplier = 1;
+    let simTimer = null;
+    let simTime = 0;
+    let maxRunTime = 100.0;
+    let solverMode = 'pde';
+    let lastTelemetry = { qIn: 0, qOut: 0, maxGrad: 0, cumWater: 0, subSteps: 1 };
+    let steadyBoundaryMode = 'ponded';
+    let prescribedTopFlux = 0.50;
+    let steadyProfileMetric = 'sat';
+    let cachedTsatHours = 25.0;
+
+    function getLayerSwccState(layer, satVal) {
+      const se = Math.max(0.0, Math.min(1.0, satVal !== undefined ? satVal : layer.sat));
+      const logXs = layer.controlPoints.map(p => Math.log10(p.x));
+      const ys = layer.controlPoints.map(p => p.y);
+      const fn = createMonotonicInterpolant(logXs, ys);
+
+      const thetaMax = ys[0];
+      const thetaMin = ys[ys.length - 1];
+      const span = Math.max(0.0001, thetaMax - thetaMin);
+      const targetTheta = thetaMin + se * span;
+
+      let low = -1.0, high = 6.0;          // out to 10^6 cm, so residual states are reachable
+      for (let iter = 0; iter < 34; iter++) {
+        const mid = 0.5 * (low + high);
+        const val = fn(mid);
+        if (val > targetTheta) low = mid;
+        else high = mid;
+      }
+      const logPsi = 0.5 * (low + high);
+      const psi = Math.pow(10, logPsi);
+      const thetaOnCurve = Math.max(0.005, Math.min(0.60, fn(logPsi)));
+      return { psi, theta: thetaOnCurve, se };
+    }
+
+    function classifyCapillaryRegime(psi, se) {
+      if (se >= 0.98 || psi <= 0.25) return "Saturated / Ponded Conduction (Max Ks)";
+      if (psi <= 2.5) return "Capillary Fringe / Near Air-Entry Zone";
+      if (psi <= 80.0) return "Active Funicular Capillary Wetting Zone";
+      if (psi <= 1000.0) return "High-Suction Capillary Meniscus Transition";
+      return "Residual / Adsorptive Film State (High Suction)";
+    }
+
+    function setLayerCount(count, skipScenarioClear) {
+      const n = Math.max(1, Math.min(10, parseInt(count, 10) || 1));
+      domainLayerCount = n;
+      activeLayers = allLayersPool.slice(0, domainLayerCount);
+      if (selectedLayerIdx >= domainLayerCount) {
+        selectedLayerIdx = domainLayerCount - 1;
+      }
+
+      document.getElementById('layerCountSlider').value = String(n);
+      document.getElementById('domainCountLabel').innerText = n === 1 ? "1 Layer" : `${n} Layers`;
+      [1, 2, 3, 5, 10].forEach(c => {
+        const btn = document.getElementById(`cntBtn${c}`);
+        if (btn) btn.classList.toggle('active', c === n);
+      });
+
+      document.getElementById('columnSubtitle').innerText =
+        n === 1
+          ? "Single Homogeneous Layer (Click to inspect & edit SWCC)"
+          : `Layers 1 → ${n} (Click any layer to inspect & edit SWCC)`;
+
+      if (!skipScenarioClear) {
+        ['single', 'capillary', 'impedance', 'stratified10'].forEach(id => {
+          const el1 = document.getElementById(`scen-${id}`);
+          const el2 = document.getElementById(`quickScen-${id}`);
+          if (el1) el1.classList.remove('active');
+          if (el2) el2.classList.remove('active');
+        });
+      }
+
+      renderInterface();
+      resetSim();
+    }
+
+    function loadTutorialScenario(type) {
+      ['single', 'capillary', 'impedance', 'stratified10'].forEach(id => {
+        const el1 = document.getElementById(`scen-${id}`);
+        const el2 = document.getElementById(`quickScen-${id}`);
+        if (el1) el1.classList.toggle('active', id === type);
+        if (el2) el2.classList.toggle('active', id === type);
+      });
+
+      const lessonEl = document.getElementById('tutorialLessonText');
+
+      if (type === 'single') {
+        allLayersPool[0] = createLayerObject('loam', 0);
+        selectedLayerIdx = 0;
+        setLayerCount(1, true);
+        lessonEl.innerHTML =
+          `<strong>Tutorial 1 (1-Layer Homogeneous Loam):</strong> With only <strong>1 layer</strong> in the domain, watch how simple infiltration works on the SWCC. At t = 0, Layer 1 sits at 7% saturation on the dry right tail of the curve (high suction |&psi;| &approx; 1,900 cm). Press <strong>Start Infiltration</strong> or <strong>Step +1</strong> to watch the state marker climb leftward along the curve toward saturation (&theta;<sub>s</sub> = 0.410 at |&psi;| = 0.1 cm).`;
+      } else if (type === 'capillary') {
+        allLayersPool[0] = createLayerObject('silt_loam', 0);
+        allLayersPool[1] = createLayerObject('clean_gravel', 1);
+        selectedLayerIdx = 0;
+        setLayerCount(2, true);
+        lessonEl.innerHTML =
+          `<strong>Tutorial 2 (2-Layer Fine-over-Coarse Capillary Barrier):</strong> Layer 1 is <em>Silt Loam</em> (fine pores, high curve) over Layer 2 <em>Porous Clean Gravel</em> (huge pores, steep drop-off curve). On the SWCC chart, see how Gravel holds almost zero water above |&psi;| &gt; 10 cm! When you run infiltration, L1 wets first while L2 stays pinned at its dry right-hand state until L1 crosses ~38% saturation and forces water across the interface.`;
+      } else if (type === 'impedance') {
+        allLayersPool[0] = createLayerObject('medium_sand', 0);
+        allLayersPool[1] = createLayerObject('heavy_clay', 1);
+        selectedLayerIdx = 1;
+        setLayerCount(2, true);
+        lessonEl.innerHTML =
+          `<strong>Tutorial 3 (2-Layer Coarse-over-Fine Retardation):</strong> Layer 1 is <em>Medium Sharp Sand</em> (K<sub>s</sub> = 24 cm/h) over Layer 2 <em>Heavy Clay</em> (K<sub>s</sub> = 0.05 cm/h). Press <strong>Start Infiltration</strong>: L1's state marker races left across its steep SWCC in moments, whereas L2's state marker creeps slowly along the high, flat clay curve because clay requires large water volume and has tiny hydraulic conductivity.`;
+      } else {
+        const gradedKeys = [
+          "heavy_clay", "silty_clay", "clay_loam", "silt_loam", "loam",
+          "sandy_clay_loam", "sandy_loam", "loamy_sand", "medium_sand", "coarse_sand"
+        ];
+        allLayersPool = gradedKeys.map((key, i) => createLayerObject(key, i));
+        selectedLayerIdx = 0;
+        setLayerCount(10, true);
+        lessonEl.innerHTML =
+          `<strong>Tutorial 4 (10-Layer Stratified Profile):</strong> Full 10-layer column grading from <em>Heavy Clay</em> (L1) down to <em>Coarse Gravelly Sand</em> (L10). Watch all 10 live state dots march sequentially from right to left across their SWCC curves as the wetting front cascades down the column, while the <strong>Composite Column State Dot</strong> tracks the bulk domain average!`;
+      }
+    }
+
+    function setSpeed(mult) {
+      speedMultiplier = mult;
+      ['spd1', 'spd10', 'spd100'].forEach(id => document.getElementById(id).classList.remove('active'));
+      document.getElementById(`spd${mult}`).classList.add('active');
+    }
+
+    function selectLayerForEditing(idx) {
+      if (idx < 0 || idx >= activeLayers.length) return;
+      selectedLayerIdx = idx;
+      document.querySelectorAll('.layer-pill').forEach((pill, i) => {
+        pill.classList.toggle('active', i === idx);
+      });
+      document.querySelectorAll('.soil-row').forEach((row, i) => {
+        row.classList.toggle('selected-row', i === idx);
+      });
+      document.querySelectorAll('#tableBody tr').forEach((tr, i) => {
+        tr.classList.toggle('active-table-row', i === idx);
+      });
+      updateSwccCharts();
+      updateInspectorAndNarration();
+    }
+
+    function resetSelectedSwcc() {
+      const layer = activeLayers[selectedLayerIdx];
+      layer.controlPoints = JSON.parse(JSON.stringify(layer.origControlPoints));
+      layer.ks = SOIL_LIBRARY[layer.key].ks;
+      estimateFullSaturationTime();
+      updateSteadyStateUI();
+      updateSwccCharts();
+      updateTableAndColumnText();
+      updateInspectorAndNarration();
+    }
+
+    function resetAllSwcc() {
+      activeLayers.forEach(layer => {
+        layer.controlPoints = JSON.parse(JSON.stringify(layer.origControlPoints));
+        layer.ks = SOIL_LIBRARY[layer.key].ks;
+      });
+      estimateFullSaturationTime();
+      updateSteadyStateUI();
+      updateSwccCharts();
+      updateTableAndColumnText();
+      updateInspectorAndNarration();
+    }
+
+    const columnView = document.getElementById("columnView");
+    const tableBody = document.getElementById("tableBody");
+    const layerPills = document.getElementById("layerPills");
+
+    function formatPsi(psi) {
+      if (psi >= 100) return Math.round(psi).toLocaleString();
+      if (psi >= 10) return psi.toFixed(1);
+      return psi.toFixed(2);
+    }
+
+    function renderInterface() {
+      columnView.innerHTML = "";
+      tableBody.innerHTML = "";
+      layerPills.innerHTML = "";
+
+      activeLayers.forEach((s, idx) => {
+        const st = getLayerSwccState(s);
+
+        const pill = document.createElement("button");
+        pill.className = `layer-pill ${idx === selectedLayerIdx ? 'active' : ''}`;
+        pill.style.color = idx === selectedLayerIdx ? '#ffffff' : s.curveColor;
+        pill.innerText = `L${s.id}`;
+        pill.onclick = () => selectLayerForEditing(idx);
+        layerPills.appendChild(pill);
+
+        const row = document.createElement("div");
+        row.className = `soil-row ${idx === selectedLayerIdx ? 'selected-row' : ''}`;
+        row.id = `soil-row-${idx}`;
+        row.style.background = s.color;
+        row.onclick = () => selectLayerForEditing(idx);
+        row.innerHTML = `
+          <div class="sat-bar" id="bar-${idx}" style="width: ${s.sat * 100}%"></div>
+          <div class="soil-info">
+            <span id="col-label-${idx}">L${s.id}: ${s.name}</span>
+            <span class="soil-state-pill" id="psi-pill-${idx}">|&psi;|=${formatPsi(st.psi)} cm | &theta;=${st.theta.toFixed(2)}</span>
+            <span id="sat-label-${idx}">${Math.round(s.sat * 100)}%</span>
+          </div>
+        `;
+        columnView.appendChild(row);
+
+        const tr = document.createElement("tr");
+        if (idx === selectedLayerIdx) tr.className = "active-table-row";
+        tr.onclick = (e) => {
+          if (e.target.tagName.toLowerCase() !== 'select') selectLayerForEditing(idx);
+        };
+        tr.style.cursor = "pointer";
+
+        let optionsHtml = "";
+        for (const [k, item] of Object.entries(SOIL_LIBRARY)) {
+          const selected = (k === s.key) ? "selected" : "";
+          optionsHtml += `<option value="${k}" ${selected}>${item.name}</option>`;
+        }
+
+        tr.innerHTML = `
+          <td><strong style="color:${s.curveColor}">L${s.id}</strong></td>
+          <td>
+            <select class="layer-select" onchange="changeLayerPreset(${idx}, this.value)">
+              ${optionsHtml}
+            </select>
+          </td>
+          <td id="ks-${idx}">${s.ks.toFixed(2)}</td>
+          <td id="orig-ths-${idx}">${s.origControlPoints[0].y.toFixed(3)}</td>
+          <td id="curr-ths-${idx}" style="font-weight:700; color:var(--c-state);">${s.controlPoints[0].y.toFixed(3)}</td>
+          <td id="curr-res-${idx}">${s.controlPoints[5].y.toFixed(3)}</td>
+          <td id="table-psi-${idx}" style="font-family:monospace; font-weight:700; color:#b45309;">${formatPsi(st.psi)}</td>
+          <td id="table-theta-${idx}" style="font-family:monospace; color:var(--c-state);">${st.theta.toFixed(3)}</td>
+          <td id="table-sat-${idx}" style="font-weight:700;">${(s.sat * 100).toFixed(1)}%</td>
+          <td id="table-ss-${idx}" style="font-family:monospace; color:var(--c-steady);">--</td>
+          <td id="table-loss-${idx}" style="font-family:monospace; color:var(--c-barrier);">--</td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function changeLayerPreset(index, newKey) {
+      const template = SOIL_LIBRARY[newKey];
+      const layer = activeLayers[index];
+      layer.key = newKey;
+      layer.name = template.name;
+      layer.ks = template.ks;
+      layer.alpha = template.alpha;
+      layer.n = template.n;
+      layer.thr = template.thr;
+      layer.ths = template.ths;
+      layer.color = template.color;
+      layer.sat = template.sat0;
+      layer.initialSat = template.sat0;
+
+      const origPts = CONTROL_PSI.map(psi => ({
+        x: psi,
+        y: vanGenuchtenTheta(layer, psi)
+      }));
+      layer.origControlPoints = JSON.parse(JSON.stringify(origPts));
+      layer.controlPoints = JSON.parse(JSON.stringify(origPts));
+
+      document.getElementById(`soil-row-${index}`).style.background = template.color;
+      document.getElementById(`col-label-${index}`).innerText = `L${index + 1}: ${template.name}`;
+      estimateFullSaturationTime();
+      updateSteadyStateUI();
+      updateTableAndColumnText();
+      updateSwccCharts();
+      updateInspectorAndNarration();
+    }
+
+    function updateTableAndColumnText() {
+      activeLayers.forEach((s, idx) => {
+        const st = getLayerSwccState(s);
+        const barEl = document.getElementById(`bar-${idx}`);
+        if (barEl) barEl.style.width = `${s.sat * 100}%`;
+        const satLbl = document.getElementById(`sat-label-${idx}`);
+        if (satLbl) satLbl.innerText = `${Math.round(s.sat * 100)}%`;
+        const psiPill = document.getElementById(`psi-pill-${idx}`);
+        if (psiPill) psiPill.innerHTML = `|&psi;|=${formatPsi(st.psi)} cm | &theta;=${st.theta.toFixed(2)}`;
+
+        document.getElementById(`ks-${idx}`).innerText = s.ks.toFixed(2);
+        document.getElementById(`orig-ths-${idx}`).innerText = s.origControlPoints[0].y.toFixed(3);
+        document.getElementById(`curr-ths-${idx}`).innerText = s.controlPoints[0].y.toFixed(3);
+        document.getElementById(`curr-res-${idx}`).innerText = s.controlPoints[5].y.toFixed(3);
+        document.getElementById(`table-psi-${idx}`).innerText = formatPsi(st.psi);
+        document.getElementById(`table-theta-${idx}`).innerText = st.theta.toFixed(3);
+        document.getElementById(`table-sat-${idx}`).innerText = `${(s.sat * 100).toFixed(1)}%`;
+      });
+
+      document.querySelectorAll('.layer-pill').forEach((pill, i) => {
+        pill.style.color = i === selectedLayerIdx ? '#ffffff' : activeLayers[i].curveColor;
+      });
+    }
+
+    function updateInspectorAndNarration() {
+      const sel = activeLayers[selectedLayerIdx] || activeLayers[0];
+      if (!sel) return;
+      const st = getLayerSwccState(sel);
+
+      document.getElementById('inspectorTitle').innerHTML =
+        `Active Layer <strong style="color:${sel.curveColor}">L${sel.id} (${sel.name})</strong> State on SWCC`;
+      document.getElementById('inspPsi').innerText = `${formatPsi(st.psi)} cm`;
+      document.getElementById('inspTheta').innerText = `${st.theta.toFixed(3)}`;
+      document.getElementById('inspSat').innerText = `${(st.se * 100).toFixed(1)}%`;
+      document.getElementById('inspRegimeLabel').innerText = `Regime: ${classifyCapillaryRegime(st.psi, st.se)}`;
+      document.getElementById('inspKsLabel').innerHTML = `K<sub>s</sub> = ${sel.ks.toFixed(2)} cm/h`;
+
+      let activeFrontLayer = activeLayers.find(l => l.sat > l.initialSat + 0.005 && l.sat < 0.99);
+      if (!activeFrontLayer) {
+        activeFrontLayer = activeLayers.every(l => l.sat >= 0.99)
+          ? activeLayers[activeLayers.length - 1]
+          : activeLayers[0];
+      }
+      const frontState = getLayerSwccState(activeFrontLayer);
+
+      const pulseDot = document.getElementById('simPulseDot');
+      const statusTitle = document.getElementById('simStatusTitle');
+      const narrative = document.getElementById('liveNarrativeText');
+
+      if (simTimer) {
+        pulseDot.classList.add('running');
+        statusTitle.innerText = `Infiltration Running (t = ${simTime.toFixed(2)} h) — Wetting Front in Layer L${activeFrontLayer.id}`;
+        narrative.innerHTML =
+          `<strong>Layer L${activeFrontLayer.id} (${activeFrontLayer.name})</strong> state dot on the SWCC is at <strong>|&psi;| = ${formatPsi(frontState.psi)} cm, &theta; = ${frontState.theta.toFixed(3)}</strong> (S<sub>e</sub> = ${(frontState.se * 100).toFixed(1)}%), moving <strong>leftward</strong> toward saturation as pores fill.`;
+      } else if (simTime > 0 && activeLayers.every(l => l.sat >= 0.99)) {
+        pulseDot.classList.remove('running');
+        statusTitle.innerText = `Column Fully Saturated at t = ${simTime.toFixed(2)} h`;
+        narrative.innerHTML =
+          `All ${activeLayers.length} layer state markers have reached the <strong>left-hand saturated plateau (|&psi;| = 0.10 cm, &theta; = &theta;<sub>s</sub>)</strong> on their SWCC curves.`;
+      } else {
+        pulseDot.classList.remove('running');
+        statusTitle.innerText = simTime > 0 ? `Simulation Paused (t = ${simTime.toFixed(2)} h)` : `Live SWCC State Telemetry (Initial State t = 0.00 h)`;
+        narrative.innerHTML =
+          `Selected <strong>L${sel.id} (${sel.name})</strong> is at <strong>|&psi;| = ${formatPsi(st.psi)} cm, &theta; = ${st.theta.toFixed(3)}</strong> (${(st.se * 100).toFixed(1)}% saturation) on the SWCC. Drag its 6 white control circles or click <strong>Start Infiltration</strong>.`;
+      }
+    }
+
+    function getLayerCurveData(layer) {
+      const logXs = layer.controlPoints.map(p => Math.log10(p.x));
+      const ys = layer.controlPoints.map(p => p.y);
+      const interpolator = createMonotonicInterpolant(logXs, ys);
+      return psiPoints.map(psi => {
+        const val = interpolator(Math.log10(psi));
+        return { x: psi, y: Math.max(0.005, Math.min(0.60, val)) };
+      });
+    }
+
+    const interactiveSwccPlugin = {
+      id: 'interactiveSwccPlugin',
+      afterDatasetsDraw(chart) {
+        const { ctx, scales: { x, y }, chartArea } = chart;
+        if (!x || !y) return;
+
+        const showLiveState = document.getElementById('toggleLiveState') ? document.getElementById('toggleLiveState').checked : true;
+        const showWetPath = document.getElementById('toggleWetPath') ? document.getElementById('toggleWetPath').checked : true;
+        const showCrosshair = document.getElementById('toggleCrosshair') ? document.getElementById('toggleCrosshair').checked : true;
+
+        ctx.save();
+        ctx.font = 'bold 10px monospace';
+        ctx.textBaseline = 'middle';
+
+        if (showWetPath) {
+          activeLayers.forEach((layer, i) => {
+            if (layer.sat <= layer.initialSat + 0.002) return;
+            const stInit = getLayerSwccState(layer, layer.initialSat);
+            const stCurr = getLayerSwccState(layer, layer.sat);
+            const logXs = layer.controlPoints.map(p => Math.log10(p.x));
+            const ys = layer.controlPoints.map(p => p.y);
+            const fn = createMonotonicInterpolant(logXs, ys);
+
+            ctx.save();
+            ctx.beginPath();
+            const steps = 28;
+            const logStart = Math.log10(stInit.psi);
+            const logEnd = Math.log10(stCurr.psi);
+            for (let s = 0; s <= steps; s++) {
+              const lp = logStart + (logEnd - logStart) * (s / steps);
+              const pVal = Math.pow(10, lp);
+              const tVal = Math.max(0.005, Math.min(0.60, fn(lp)));
+              const px = x.getPixelForValue(pVal);
+              const py = y.getPixelForValue(tVal);
+              if (s === 0) ctx.moveTo(px, py);
+              else ctx.lineTo(px, py);
+            }
+            ctx.strokeStyle = i === selectedLayerIdx ? '#f59e0b' : layer.curveColor;
+            ctx.lineWidth = i === selectedLayerIdx ? 4.8 : 3.2;
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        activeLayers.forEach((layer) => {
+          const pt = layer.controlPoints[layer.controlPoints.length - 1];
+          const px = x.getPixelForValue(pt.x);
+          const py = y.getPixelForValue(pt.y);
+          if (px && py) {
+            const labelText = `L${layer.id}`;
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+            ctx.strokeStyle = layer.curveColor;
+            ctx.lineWidth = 1.2;
+            const tw = ctx.measureText(labelText).width;
+            ctx.beginPath();
+            ctx.roundRect(px - tw - 12, py - 7, tw + 8, 14, 3);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = layer.curveColor;
+            ctx.fillText(labelText, px - tw - 8, py);
+          }
+        });
+
+        const targetLayer = activeLayers[selectedLayerIdx];
+        if (targetLayer) {
+          targetLayer.controlPoints.forEach((pt) => {
+            const px = x.getPixelForValue(pt.x);
+            const py = y.getPixelForValue(pt.y);
+            ctx.beginPath();
+            ctx.arc(px, py, 6.5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(29, 112, 184, 0.18)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(px, py, 4.5, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = targetLayer.curveColor;
+            ctx.lineWidth = 2.4;
+            ctx.fill();
+            ctx.stroke();
+          });
+        }
+
+        const showSteadyState = document.getElementById('toggleSteadyState') ? document.getElementById('toggleSteadyState').checked : true;
+        if (showSteadyState && typeof computeSteadyStateAnalysis === 'function') {
+          const ssResult = computeSteadyStateAnalysis();
+          ssResult.layerStates.forEach((ssLayer, i) => {
+            const px = x.getPixelForValue(ssLayer.psiSS);
+            const py = y.getPixelForValue(ssLayer.thetaSS);
+            if (!isFinite(px) || !isFinite(py)) return;
+            const isSel = (i === selectedLayerIdx);
+            const r = isSel ? 5.8 : 4.2;
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(Math.PI / 4);
+            ctx.fillStyle = '#0284c7';
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.rect(-r, -r, 2 * r, 2 * r);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+          });
+        }
+
+        if (showLiveState) {
+          activeLayers.forEach((layer, i) => {
+            const isSelected = (i === selectedLayerIdx);
+            const st = getLayerSwccState(layer, layer.sat);
+            const px = x.getPixelForValue(st.psi);
+            const py = y.getPixelForValue(st.theta);
+            if (!isFinite(px) || !isFinite(py)) return;
+
+            if (showCrosshair && (isSelected || activeLayers.length <= 2)) {
+              ctx.save();
+              ctx.setLineDash([4, 4]);
+              ctx.strokeStyle = isSelected ? '#d97706' : layer.curveColor;
+              ctx.lineWidth = isSelected ? 1.4 : 1.0;
+              ctx.beginPath();
+              ctx.moveTo(px, py);
+              ctx.lineTo(px, chartArea.bottom);
+              ctx.moveTo(px, py);
+              ctx.lineTo(chartArea.left, py);
+              ctx.stroke();
+              ctx.restore();
+            }
+
+            ctx.beginPath();
+            ctx.arc(px, py, isSelected ? 8.5 : 5.5, 0, 2 * Math.PI);
+            ctx.fillStyle = isSelected ? 'rgba(245, 158, 11, 0.28)' : 'rgba(2, 132, 199, 0.18)';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(px, py, isSelected ? 5.2 : 3.8, 0, 2 * Math.PI);
+            ctx.fillStyle = isSelected ? '#f59e0b' : layer.curveColor;
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1.8;
+            ctx.fill();
+            ctx.stroke();
+
+            if (isSelected || activeLayers.length <= 3) {
+              const badgeText = `L${layer.id}: |ψ|=${formatPsi(st.psi)}cm, θ=${st.theta.toFixed(2)} (${Math.round(st.se * 100)}%)`;
+              ctx.font = 'bold 9px monospace';
+              const bw = ctx.measureText(badgeText).width + 10;
+              const bh = 15;
+              let bx = px - bw / 2;
+              let by = py - 20 - (isSelected ? 0 : (i % 2) * 15);
+              if (bx < chartArea.left + 4) bx = chartArea.left + 4;
+              if (bx + bw > chartArea.right - 4) bx = chartArea.right - bw - 4;
+              if (by < chartArea.top + 4) by = py + 11;
+
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+              ctx.strokeStyle = isSelected ? '#d97706' : layer.curveColor;
+              ctx.lineWidth = 1.3;
+              ctx.beginPath();
+              ctx.roundRect(bx, by, bw, bh, 4);
+              ctx.fill();
+              ctx.stroke();
+
+              ctx.fillStyle = '#0f172a';
+              ctx.fillText(badgeText, bx + 5, by + bh / 2);
+            }
+          });
+        }
+
+        ctx.restore();
+      }
+    };
+
+    const compositeStatePlugin = {
+      id: 'compositeStatePlugin',
+      afterDatasetsDraw(chart) {
+        const showLiveState = document.getElementById('toggleLiveState') ? document.getElementById('toggleLiveState').checked : true;
+        if (!showLiveState || activeLayers.length === 0) return;
+
+        const { ctx, scales: { x, y }, chartArea } = chart;
+        if (!x || !y) return;
+
+        const compPts = chart.data.datasets[0].data;
+        if (!compPts || compPts.length === 0) return;
+
+        const thetaMax = compPts[0].y;
+        const thetaMin = compPts[compPts.length - 1].y;
+        const avgSat = activeLayers.reduce((acc, l) => acc + l.sat, 0) / activeLayers.length;
+        const targetTheta = thetaMin + avgSat * Math.max(0.0001, thetaMax - thetaMin);
+
+        let bestPt = compPts[0];
+        let minDiff = Infinity;
+        compPts.forEach(pt => {
+          const d = Math.abs(pt.y - targetTheta);
+          if (d < minDiff) { minDiff = d; bestPt = pt; }
+        });
+
+        const px = x.getPixelForValue(bestPt.x);
+        const py = y.getPixelForValue(bestPt.y);
+        if (!isFinite(px) || !isFinite(py)) return;
+
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(px, chartArea.bottom);
+        ctx.moveTo(px, py);
+        ctx.lineTo(chartArea.left, py);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.arc(px, py, 4.8, 0, 2 * Math.PI);
+        ctx.fillStyle = '#f59e0b';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.6;
+        ctx.fill();
+        ctx.stroke();
+
+        const label = `Mean: |ψ|=${formatPsi(bestPt.x)}cm, θ=${bestPt.y.toFixed(2)} (${Math.round(avgSat * 100)}%)`;
+        ctx.font = 'bold 8.5px monospace';
+        ctx.textBaseline = 'middle';
+        const bw = ctx.measureText(label).width + 8;
+        const bh = 14;
+        let bx = Math.max(chartArea.left + 4, Math.min(chartArea.right - bw - 4, px - bw / 2));
+        let by = py - 16 < chartArea.top + 4 ? py + 11 : py - 16;
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1.1;
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 4);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillText(label, bx + 4, by + bh / 2);
+        ctx.restore();
+      }
+    };
+
+    const swccCanvas = document.getElementById('allSwccChart');
+    const swccChart = new Chart(swccCanvas, {
+      type: 'line',
+      data: { datasets: [] },
+      plugins: [interactiveSwccPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 12, top: 8 } },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Layer SWCC Curves & Live State (|ψ|, θ) — Drag White Circles to Edit',
+            color: '#1e293b',
+            font: { size: 11, weight: 'bold' }
+          },
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            type: 'logarithmic',
+            min: 0.08,
+            max: 12000,
+            title: { display: true, text: 'Matric Suction |ψ| (cm H₂O) [Saturated ←  → Dry]', color: '#475569', font: { size: 10, weight: '600' } },
+            ticks: { color: '#475569', font: { size: 9 } },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          },
+          y: {
+            min: 0,
+            max: 0.60,
+            title: { display: true, text: 'Volumetric Water Content θ (cm³/cm³)', color: '#475569', font: { size: 10, weight: '600' } },
+            ticks: { color: '#475569', font: { size: 9 } },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          }
+        }
+      }
+    });
+
+    const compositeChart = new Chart(document.getElementById('compositeChart'), {
+      type: 'line',
+      data: {
+        datasets: [{
+          label: 'Composite Domain Averaged SWCC',
+          data: [],
+          borderColor: '#1d70b8',
+          borderWidth: 2.2,
+          backgroundColor: 'rgba(29, 112, 184, 0.12)',
+          fill: true,
+          pointRadius: 0
+        }]
+      },
+      plugins: [compositeStatePlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: 'Combined Domain Composite SWCC & Mean State', color: '#1e293b', font: { size: 10.5 } },
+          legend: { labels: { color: '#475569', boxWidth: 10, font: { size: 9 } } }
+        },
+        scales: {
+          x: {
+            type: 'logarithmic',
+            min: 0.08,
+            max: 12000,
+            title: { display: true, text: 'Suction |ψ| (cm H₂O)', color: '#475569', font: { size: 9.5 } },
+            ticks: { color: '#475569', font: { size: 8.5 } },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          },
+          y: {
+            min: 0,
+            max: 0.60,
+            title: { display: true, text: 'Domain Mean θ (cm³/cm³)', color: '#475569', font: { size: 9.5 } },
+            ticks: { color: '#475569', font: { size: 8.5 } },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          }
+        }
+      }
+    });
+
+    const satTimeChart = new Chart(document.getElementById('satTimeChart'), {
+      type: 'line',
+      data: { labels: [0], datasets: [] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          title: { display: true, text: 'Dynamic Saturation vs. Time Across Active Layers', color: '#1e293b', font: { size: 10.5 } },
+          legend: { labels: { color: '#475569', boxWidth: 10, font: { size: 9 } } }
+        },
+        scales: {
+          x: {
+            title: { display: true, text: 'Time (hours)', color: '#475569', font: { size: 9.5 } },
+            ticks: { color: '#475569', font: { size: 8.5 } },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          },
+          y: {
+            min: 0,
+            max: 100,
+            title: { display: true, text: 'Effective Saturation (%)', color: '#475569', font: { size: 9.5 } },
+            ticks: { color: '#475569', font: { size: 8.5 } },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          }
+        }
+      }
+    });
+
+    function getTrackedLayerIndices() {
+      const n = activeLayers.length;
+      if (n <= 4) return activeLayers.map((_, idx) => idx);
+      const set = new Set([0, Math.floor((n - 1) / 3), Math.floor((2 * (n - 1)) / 3), n - 1]);
+      return Array.from(set);
+    }
+
+    function rebuildSatTimeDatasets() {
+      const tracked = getTrackedLayerIndices();
+      satTimeChart.data.labels = [0];
+      satTimeChart.data.datasets = tracked.map(idx => {
+        const l = activeLayers[idx];
+        const posTag = idx === 0 ? ' (Top)' : (idx === activeLayers.length - 1 ? ' (Base)' : '');
+        return {
+          layerIdx: idx,
+          label: `L${l.id}: ${l.name}${posTag}`,
+          data: [l.sat * 100],
+          borderColor: l.curveColor,
+          borderWidth: 2,
+          pointRadius: 0
+        };
+      });
+      satTimeChart.update('none');
+    }
+
+    function updateSwccCharts() {
+      swccChart.data.datasets = activeLayers.map((layer, idx) => {
+        const isSelected = (idx === selectedLayerIdx);
+        return {
+          label: `L${layer.id}: ${layer.name}`,
+          data: getLayerCurveData(layer),
+          borderColor: layer.curveColor,
+          borderWidth: isSelected ? 3.0 : 1.6,
+          pointRadius: 0
+        };
+      });
+      swccChart.update('none');
+
+      const compData = psiPoints.map(psi => {
+        let sum = 0;
+        activeLayers.forEach(layer => {
+          const logXs = layer.controlPoints.map(p => Math.log10(p.x));
+          const ys = layer.controlPoints.map(p => p.y);
+          const fn = createMonotonicInterpolant(logXs, ys);
+          sum += Math.max(0.005, Math.min(0.60, fn(Math.log10(psi))));
+        });
+        return { x: psi, y: sum / activeLayers.length };
+      });
+      compositeChart.data.datasets[0].data = compData;
+      compositeChart.update('none');
+    }
+
+    let draggingPointIndex = -1;
+    function getCanvasCoordinates(e) {
+      const rect = swccCanvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    function onPointerDown(e) {
+      const pos = getCanvasCoordinates(e);
+      const { x: xScale, y: yScale } = swccChart.scales;
+      const layer = activeLayers[selectedLayerIdx];
+      if (!layer) return;
+      layer.controlPoints.forEach((pt, pIdx) => {
+        const px = xScale.getPixelForValue(pt.x);
+        const py = yScale.getPixelForValue(pt.y);
+        if (Math.hypot(pos.x - px, pos.y - py) <= 14) {
+          draggingPointIndex = pIdx;
+          swccCanvas.style.cursor = 'ns-resize';
+        }
+      });
+    }
+
+    function onPointerMove(e) {
+      const layer = activeLayers[selectedLayerIdx];
+      if (!layer) return;
+
+      if (draggingPointIndex === -1) {
+        const pos = getCanvasCoordinates(e);
+        const { x: xScale, y: yScale } = swccChart.scales;
+        let hovering = false;
+        layer.controlPoints.forEach(pt => {
+          if (Math.hypot(pos.x - xScale.getPixelForValue(pt.x), pos.y - yScale.getPixelForValue(pt.y)) <= 12) hovering = true;
+        });
+        swccCanvas.style.cursor = hovering ? 'pointer' : 'default';
+        return;
+      }
+
+      const pos = getCanvasCoordinates(e);
+      let newY = swccChart.scales.y.getValueForPixel(pos.y);
+      newY = Math.max(0.01, Math.min(0.58, newY));
+      layer.controlPoints[draggingPointIndex].y = newY;
+
+      for (let i = draggingPointIndex - 1; i >= 0; i--) {
+        if (layer.controlPoints[i].y < layer.controlPoints[i + 1].y) {
+          layer.controlPoints[i].y = layer.controlPoints[i + 1].y;
+        }
+      }
+      for (let i = draggingPointIndex + 1; i < layer.controlPoints.length; i++) {
+        if (layer.controlPoints[i].y > layer.controlPoints[i - 1].y) {
+          layer.controlPoints[i].y = layer.controlPoints[i - 1].y;
+        }
+      }
+
+      const initialCapacity = layer.origControlPoints[0].y;
+      const currentCapacity = layer.controlPoints[0].y;
+      layer.ks = SOIL_LIBRARY[layer.key].ks * Math.pow(currentCapacity / initialCapacity, 2.5);
+
+      estimateFullSaturationTime();
+      updateSteadyStateUI();
+      updateSwccCharts();
+      updateTableAndColumnText();
+      updateInspectorAndNarration();
+    }
+
+    function onPointerUp() {
+      if (draggingPointIndex !== -1) {
+        draggingPointIndex = -1;
+        swccCanvas.style.cursor = 'default';
+      }
+    }
+
+    swccCanvas.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+    swccCanvas.addEventListener('touchstart', onPointerDown, { passive: true });
+    window.addEventListener('touchmove', onPointerMove, { passive: true });
+    window.addEventListener('touchend', onPointerUp);
+
+    /* The earlier copies of computeUnsaturatedK and advancePhysicsByDt that
+       used to sit here were overwritten by the assignments further down and
+       never ran. Removed so there is one solver, not two. */
+
+    function updatePdeTelemetryUI() {
+      const N = activeLayers.length;
+      const dz = (50.0 / N).toFixed(1);
+      const gridEl = document.getElementById('pdeGridStat');
+      if (gridEl) {
+        gridEl.innerHTML = solverMode === 'pde'
+          ? `N = ${N} cells, one per layer (&Delta;z = ${dz} cm)`
+          : `N = ${N} Lumped Buckets (No &Delta;z PDE)`;
+      }
+      document.getElementById('pdeQinStat').innerText = `${lastTelemetry.qIn.toFixed(3)} cm/h`;
+      document.getElementById('pdeQoutStat').innerText = `${lastTelemetry.qOut.toFixed(3)} cm/h`;
+      document.getElementById('pdeGradStat').innerText = `${lastTelemetry.maxGrad.toFixed(2)} cm/cm`;
+      document.getElementById('pdeCumWaterStat').innerHTML = `${lastTelemetry.cumWater.toFixed(2)} cm H<sub>2</sub>O`;
+    }
+
+    function setSolverMode(mode) {
+      solverMode = mode === 'ode' ? 'ode' : 'pde';
+      document.getElementById('modeBtnPDE').classList.toggle('active', solverMode === 'pde');
+      document.getElementById('modeBtnODE').classList.toggle('active', solverMode === 'ode');
+
+      const badge = document.getElementById('solverModeBadge');
+      const eqBox = document.getElementById('pdeExplanationBox');
+
+      if (solverMode === 'pde') {
+        badge.innerText = "Active Engine: 1D Richards' PDE (Finite-Volume) — Mathematical Formulation & Live Flux Telemetry";
+        eqBox.innerHTML = `
+          <div style="font-weight:700; color:var(--c-pde); margin-bottom:4px;">
+            1. Mixed-Form 1D Richards' Partial Differential Equation (Mode A — Active):
+          </div>
+          <p style="color:var(--text-muted); font-size:0.76rem;">
+            In <strong>Mode A (Richards' PDE)</strong>, we explicitly solve the 1D vertical unsaturated Darcy–Buckingham PDE using a <strong>Cell-Centered Finite Volume Method (FVM)</strong> across <em>N</em> control volumes (&Delta;z = 50 cm / <em>N</em>):
+          </p>
+          <div class="math-formula">
+            <strong>Governing PDE:</strong> &nbsp; &part;&theta;(&psi;) / &part;t = &part;/&part;z [ K(S<sub>e</sub>) (&part;&psi;/&part;z &minus; 1) ] = &minus;&part;q / &part;z
+            <br>
+            <strong>FVM Discretization (Cell <em>i</em>):</strong> &nbsp; &theta;<sub>i</sub><sup>n+1</sup> = &theta;<sub>i</sub><sup>n</sup> + (&Delta;t / &Delta;z) &middot; ( q<sub>i&minus;1/2</sub><sup>n</sup> &minus; q<sub>i+1/2</sub><sup>n</sup> )
+            <br>
+            <strong>Interfacial Darcy Flux:</strong> &nbsp; q<sub>i&minus;1/2</sub> = K<sub>i&minus;1/2</sub> &middot; [ (&psi;<sub>i&minus;1</sub> &minus; &psi;<sub>i</sub>) / &Delta;z + 1 ]
+          </div>
+          <p style="color:var(--text-muted); font-size:0.74rem;">
+            <strong>How SWCC &amp; K(S<sub>e</sub>) Close the PDE:</strong> Each cell's water content &theta;<sub>i</sub> is mapped via <strong>monotonic PCHIP spline inversion</strong> of its 6-point SWCC to obtain matric head &psi;<sub>i</sub> = &minus;|&psi;<sub>i</sub>|, and unsaturated conductivity is evaluated via the <strong>Mualem–van Genuchten</strong> relation.
+          </p>`;
+      } else {
+        badge.innerText = "Active Engine: Conceptual Cascading Bucket (Lumped ODE) — Formulation & Telemetry";
+        eqBox.innerHTML = `
+          <div style="font-weight:700; color:var(--c-params); margin-bottom:4px;">
+            2. Conceptual Cascading Bucket Heuristic (Mode B — Original Script Formula):
+          </div>
+          <p style="color:var(--text-muted); font-size:0.76rem;">
+            In <strong>Mode B (Original Lumped ODE)</strong>, a partial differential equation is <strong>NOT</strong> solved. Instead, each layer acts as a lumped reservoir gated by an upstream saturation threshold (S<sub>e,i&minus;1</sub> &gt; 0.38):
+          </p>
+          <div class="math-formula">
+            <strong>Lumped Rate Law (No &part;&psi;/&part;z gradient):</strong> &nbsp; dS<sub>e,i</sub> / dt = c &middot; K<sub>s,i</sub> &middot; h<sub>drive,i</sub> &middot; S<sub>e,i&minus;1</sub> &nbsp; (for S<sub>e,i&minus;1</sub> &gt; 0.38)
+            <br>
+            <strong>Explicit Update:</strong> &nbsp; S<sub>e,i</sub><sup>n+1</sup> = min(1.0, S<sub>e,i</sub><sup>n</sup> + &Delta;t &middot; dS<sub>e,i</sub>/dt)
+          </div>
+          <p style="color:var(--text-muted); font-size:0.74rem;">
+            <strong>Why Compare Mode B with Mode A?</strong> Mode B is a fast pedagogical heuristic that links SWCC storage (&theta;<sub>s</sub> &minus; &theta;<sub>r</sub>) and K<sub>s</sub> to wetting speed, whereas <strong>Mode A (Richards' PDE)</strong> explicitly resolves interfacial suction head differences (&psi;<sub>i&minus;1</sub> &minus; &psi;<sub>i</sub>)/&Delta;z.
+          </p>`;
+      }
+
+      if (simTime > 0) scrubToTime(simTime);
+      else resetSim();
+    }
+
+    const steadyProfileChart = new Chart(document.getElementById('steadyProfileChart'), {
+      type: 'bar',
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: 'Steady-State Equilibrium (t → ∞)',
+            data: [],
+            backgroundColor: 'rgba(2, 132, 199, 0.35)',
+            borderColor: '#0284c7',
+            borderWidth: 2
+          },
+          {
+            label: 'Current Transient State (t)',
+            data: [],
+            backgroundColor: 'rgba(245, 158, 11, 0.55)',
+            borderColor: '#d97706',
+            borderWidth: 1.5
+          }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#475569', boxWidth: 12, font: { size: 10 } } }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            max: 100,
+            title: { display: true, text: 'Effective Saturation Se (%)', color: '#475569', font: { size: 10 } },
+            ticks: { color: '#475569' },
+            grid: { color: 'rgba(0,0,0,0.06)' }
+          },
+          y: {
+            ticks: { color: '#1e293b', font: { size: 10, weight: 'bold' } },
+            grid: { color: 'rgba(0,0,0,0.04)' }
+          }
+        }
+      }
+    });
+
+    function invertUnsaturatedKForSe(layer, targetFlux) {
+      if (targetFlux >= layer.ks) return 1.0;
+      if (targetFlux <= 0) return layer.initialSat;
+      let low = 0.02, high = 1.0;
+      for (let iter = 0; iter < 26; iter++) {
+        const mid = 0.5 * (low + high);
+        if (computeUnsaturatedK(layer, mid) < targetFlux) low = mid;
+        else high = mid;
+      }
+      return 0.5 * (low + high);
+    }
+
+    function computeSteadyStateAnalysis() {
+      const N = activeLayers.length;
+      const L = 50.0;
+      const dz = L / N;
+      const hPond = 5.0;
+
+      let sumInvK = 0, sumK = 0, minKs = Infinity, bottleneckIdx = 0;
+      activeLayers.forEach((l, idx) => {
+        const r = dz / Math.max(1e-5, l.ks);
+        sumInvK += r;
+        sumK += l.ks;
+        if (l.ks < minKs) { minKs = l.ks; bottleneckIdx = idx; }
+      });
+
+      const kHarm = L / Math.max(1e-6, sumInvK);
+      const kArith = sumK / N;
+      const anisoRatio = kArith / Math.max(1e-6, kHarm);
+      const qSS = (steadyBoundaryMode === 'ponded') ? kHarm * ((L + hPond) / L) : prescribedTopFlux;
+
+      const layerStates = activeLayers.map((l, idx) => {
+        const resistance = dz / Math.max(1e-5, l.ks);
+        const headLossShare = (resistance / Math.max(1e-6, sumInvK)) * 100.0;
+        let seSS = 1.0;
+        if (steadyBoundaryMode === 'ponded') {
+          seSS = (l.ks <= qSS * 1.05 || idx <= bottleneckIdx) ? 1.0 : Math.max(l.initialSat, invertUnsaturatedKForSe(l, qSS));
+        } else {
+          seSS = (qSS >= l.ks) ? 1.0 : Math.max(l.initialSat, invertUnsaturatedKForSe(l, qSS));
+        }
+        const swccSt = getLayerSwccState(l, seSS);
+        return { idx, id: l.id, name: l.name, seSS, thetaSS: swccSt.theta, psiSS: swccSt.psi, headLossShare };
+      });
+
+      return { kHarm, kArith, anisoRatio, qSS, bottleneckIdx, bottleneckLayer: activeLayers[bottleneckIdx], layerStates };
+    }
+
+    function estimateFullSaturationTime() {
+      const savedSats = activeLayers.map(l => l.sat);
+      const savedTelem = Object.assign({}, lastTelemetry);
+      activeLayers.forEach(l => { l.sat = l.initialSat; });
+      let tSim = 0;
+      const dtChunk = 0.5;
+      while (tSim < 5000.0) {
+        if (activeLayers.every(l => l.sat >= 0.99)) break;
+        advancePhysicsByDt(dtChunk);
+        tSim += dtChunk;
+      }
+      activeLayers.forEach((l, i) => { l.sat = savedSats[i]; });
+      lastTelemetry = savedTelem;
+      cachedTsatHours = Math.max(2.0, Math.ceil(tSim));
+      const lbl = document.getElementById('estTsatLabel');
+      if (lbl) lbl.innerText = `${cachedTsatHours}h`;
+      const ssTimeEl = document.getElementById('ssTimeSatStat');
+      if (ssTimeEl) ssTimeEl.innerText = `${cachedTsatHours.toFixed(1)} h`;
+      return cachedTsatHours;
+    }
+
+    function updateSteadyStateUI() {
+      const ss = computeSteadyStateAnalysis();
+      document.getElementById('ssKharmStat').innerText = `${ss.kHarm.toFixed(3)} cm/h`;
+      document.getElementById('ssKarithStat').innerText = `${ss.kArith.toFixed(2)} cm/h`;
+      document.getElementById('ssAnisoStat').innerText = `${ss.anisoRatio.toFixed(1)} ×`;
+      document.getElementById('ssQssStat').innerText = `${ss.qSS.toFixed(3)} cm/h`;
+
+      const bLayer = ss.bottleneckLayer;
+      const bState = ss.layerStates[ss.bottleneckIdx];
+      if (bLayer && bState) {
+        document.getElementById('ssBottleneckStat').innerText = `L${bLayer.id}: ${bLayer.name} (${bState.headLossShare.toFixed(1)}% loss)`;
+        const unsatCoarse = ss.layerStates.filter(ls => ls.seSS < 0.96);
+        const narEl = document.getElementById('ssBottleneckNarrative');
+        if (unsatCoarse.length > 0) {
+          narEl.innerHTML =
+            `<strong>Bottleneck &amp; Unsaturated Sub-Layer Effect:</strong> Layer <strong>L${bLayer.id} (${bLayer.name}, K<sub>s</sub> = ${bLayer.ks.toFixed(2)} cm/h)</strong> accounts for <strong>${bState.headLossShare.toFixed(1)}%</strong> of total hydraulic resistance, limiting steady flux to <strong>q<sub>ss</sub> = ${ss.qSS.toFixed(3)} cm/h</strong>. Underlying coarser strata equilibrate at <em>unsaturated steady state</em> (S<sub>e,ss</sub> &lt; 100%, cyan diamonds ◆ on SWCC).`;
+        } else {
+          narEl.innerHTML =
+            `<strong>Fully Saturated Steady State:</strong> All ${activeLayers.length} layers equilibrate at <strong>100% saturation (&theta;<sub>ss</sub> = &theta;<sub>s</sub>)</strong> with uniform Darcy flux <strong>q<sub>ss</sub> = ${ss.qSS.toFixed(3)} cm/h</strong> governed by L${bLayer.id} (${bState.headLossShare.toFixed(1)}% head loss share).`;
+        }
+      }
+
+      ss.layerStates.forEach((ls, idx) => {
+        const ssCell = document.getElementById(`table-ss-${idx}`);
+        if (ssCell) ssCell.innerText = `${(ls.seSS * 100).toFixed(1)}% (${formatPsi(ls.psiSS)} cm)`;
+        const lossCell = document.getElementById(`table-loss-${idx}`);
+        if (lossCell) lossCell.innerText = `${ls.headLossShare.toFixed(1)}%`;
+      });
+
+      steadyProfileChart.data.labels = activeLayers.map(l => `L${l.id}`);
+      if (steadyProfileMetric === 'sat') {
+        steadyProfileChart.options.scales.x.max = 100;
+        steadyProfileChart.options.scales.x.title.text = 'Effective Saturation Se (%)';
+        steadyProfileChart.data.datasets[0].label = 'Steady-State Se,ss (%)';
+        steadyProfileChart.data.datasets[0].data = ss.layerStates.map(ls => +(ls.seSS * 100).toFixed(1));
+        steadyProfileChart.data.datasets[1].label = `Current Transient Se (%) at t=${simTime.toFixed(1)}h`;
+        steadyProfileChart.data.datasets[1].data = activeLayers.map(l => +(l.sat * 100).toFixed(1));
+      } else if (steadyProfileMetric === 'theta') {
+        steadyProfileChart.options.scales.x.max = 0.60;
+        steadyProfileChart.options.scales.x.title.text = 'Volumetric Water Content θ (cm³/cm³)';
+        steadyProfileChart.data.datasets[0].label = 'Steady-State θ_ss';
+        steadyProfileChart.data.datasets[0].data = ss.layerStates.map(ls => +ls.thetaSS.toFixed(3));
+        steadyProfileChart.data.datasets[1].label = `Current Transient θ at t=${simTime.toFixed(1)}h`;
+        steadyProfileChart.data.datasets[1].data = activeLayers.map(l => +getLayerSwccState(l, l.sat).theta.toFixed(3));
+      } else {
+        steadyProfileChart.options.scales.x.max = 100;
+        steadyProfileChart.options.scales.x.title.text = 'Hydraulic Head Loss / Resistance Share (%)';
+        steadyProfileChart.data.datasets[0].label = 'Layer Head Loss Share ΔH_i / ΔH_tot (%)';
+        steadyProfileChart.data.datasets[0].data = ss.layerStates.map(ls => +ls.headLossShare.toFixed(1));
+        steadyProfileChart.data.datasets[1].label = 'Current Saturation Se (%)';
+        steadyProfileChart.data.datasets[1].data = activeLayers.map(l => +(l.sat * 100).toFixed(1));
+      }
+      steadyProfileChart.update('none');
+    }
+
+    function setSteadyBoundaryMode(mode) {
+      steadyBoundaryMode = mode === 'flux' ? 'flux' : 'ponded';
+      document.getElementById('ssBtnPonded').classList.toggle('active', steadyBoundaryMode === 'ponded');
+      document.getElementById('ssBtnFlux').classList.toggle('active', steadyBoundaryMode === 'flux');
+      document.getElementById('ssFluxSliderRow').style.display = steadyBoundaryMode === 'flux' ? 'flex' : 'none';
+      updateSteadyStateUI();
+      updateSwccCharts();
+    }
+
+    function onSteadyFluxSliderChange(logVal) {
+      prescribedTopFlux = Math.pow(10, logVal);
+      document.getElementById('ssFluxVal').innerText = `${prescribedTopFlux.toFixed(3)} cm/h`;
+      updateSteadyStateUI();
+      updateSwccCharts();
+    }
+
+    function setSteadyProfileMetric(metric) {
+      steadyProfileMetric = metric;
+      ['Sat', 'Theta', 'HeadLoss'].forEach(m => {
+        const btn = document.getElementById(`profMetric${m}`);
+        if (btn) btn.classList.toggle('active', m.toLowerCase() === metric);
+      });
+      updateSteadyStateUI();
+    }
+
+    function applySteadyStateToColumn() {
+      if (simTimer) { clearInterval(simTimer); simTimer = null; }
+      const ss = computeSteadyStateAnalysis();
+      activeLayers.forEach((l, idx) => { l.sat = ss.layerStates[idx].seSS; });
+      simTime = Math.max(simTime, cachedTsatHours);
+      if (simTime > maxRunTime) setMaxRunTime(simTime, true);
+      document.getElementById('clock').innerText = simTime.toFixed(2);
+      document.getElementById('timeScrubberSlider').value = String(simTime);
+      document.getElementById('scrubberTimeVal').innerText = `t = ${simTime.toFixed(2)} h`;
+      document.getElementById('runBtn').innerText = "At Steady State";
+
+      lastTelemetry.qIn = ss.qSS;
+      lastTelemetry.qOut = ss.qSS;
+      updateTableAndColumnText();
+      updateSwccCharts();
+      updatePdeTelemetryUI();
+      updateSteadyStateUI();
+      updateInspectorAndNarration();
+    }
+
+    function fitTmaxToFullSaturation() {
+      const tSat = estimateFullSaturationTime();
+      setMaxRunTime(tSat);
+    }
+
+    function jumpToFullSaturation() {
+      const tSat = estimateFullSaturationTime();
+      if (tSat > maxRunTime) setMaxRunTime(tSat, true);
+      scrubToTime(tSat);
+    }
+
+    function setMaxRunTime(val, skipScrub) {
+      maxRunTime = Math.max(1.0, Math.min(50000.0, val || 100.0));
+      document.getElementById('maxClock').innerText = maxRunTime.toFixed(1);
+      document.getElementById('maxTimeVal').innerText = `${maxRunTime.toFixed(0)} h`;
+      const sliderEl = document.getElementById('maxTimeSlider');
+      if (sliderEl) {
+        if (maxRunTime > parseFloat(sliderEl.max)) sliderEl.max = String(Math.ceil(maxRunTime));
+        sliderEl.value = String(maxRunTime);
+      }
+      const inputEl = document.getElementById('maxTimeInput');
+      if (inputEl) inputEl.value = String(Math.round(maxRunTime));
+
+      const scrubber = document.getElementById('timeScrubberSlider');
+      scrubber.max = String(maxRunTime);
+      scrubber.step = maxRunTime <= 10 ? "0.02" : (maxRunTime <= 100 ? "0.1" : "0.5");
+      if (!skipScrub && simTime > maxRunTime) scrubToTime(maxRunTime);
+    }
+
+    function scrubToTime(targetTime) {
+      if (simTimer) {
+        clearInterval(simTimer);
+        simTimer = null;
+        document.getElementById('runBtn').innerText = "Resume";
+      }
+
+      const clampedTarget = Math.max(0.0, Math.min(maxRunTime, targetTime || 0.0));
+      activeLayers.forEach(s => { s.sat = s.initialSat; });
+      lastTelemetry = { qIn: 0, qOut: 0, maxGrad: 0, cumWater: 0, subSteps: 1, dz: 50.0 / activeLayers.length };
+      rebuildSatTimeDatasets();
+
+      const nSteps = clampedTarget > 0 ? Math.min(80, Math.max(1, Math.ceil(clampedTarget / 0.1))) : 0;
+      const dtStep = nSteps > 0 ? (clampedTarget / nSteps) : 0;
+      let tCurr = 0.0;
+
+      for (let k = 1; k <= nSteps; k++) {
+        advancePhysicsByDt(dtStep);
+        tCurr += dtStep;
+        satTimeChart.data.labels.push(tCurr.toFixed(2));
+        satTimeChart.data.datasets.forEach(ds => {
+          const layer = activeLayers[ds.layerIdx];
+          if (layer) ds.data.push(layer.sat * 100);
+        });
+      }
+
+      simTime = clampedTarget;
+      document.getElementById('clock').innerText = simTime.toFixed(2);
+      document.getElementById('timeScrubberSlider').value = String(simTime);
+      document.getElementById('scrubberTimeVal').innerText = `t = ${simTime.toFixed(2)} h`;
+
+      satTimeChart.update('none');
+      updateTableAndColumnText();
+      updateSwccCharts();
+      updatePdeTelemetryUI();
+      updateSteadyStateUI();
+      updateInspectorAndNarration();
+    }
+
+    function stepSimulation() {
+      // 0.004 h per tick keeps the front moving at the speed it always did on
+      // screen, now without the clock claiming more time than the physics took.
+      const dt = 0.004 * speedMultiplier;
+      const autoExtend = document.getElementById('autoExtendTmax') ? document.getElementById('autoExtendTmax').checked : true;
+
+      if (autoExtend && (simTime + dt >= maxRunTime) && !activeLayers.every(s => s.sat >= 0.99)) {
+        const expandedTmax = Math.min(50000, Math.max(maxRunTime + 50, Math.round(maxRunTime * 1.5)));
+        setMaxRunTime(expandedTmax, true);
+      }
+
+      const nextTime = Math.min(maxRunTime, simTime + dt);
+      const actualDt = nextTime - simTime;
+      if (actualDt <= 1e-6) {
+        if (simTimer) { clearInterval(simTimer); simTimer = null; }
+        document.getElementById('runBtn').innerText = "Reached T_max";
+        updateInspectorAndNarration();
+        return;
+      }
+
+      simTime = nextTime;
+      document.getElementById('clock').innerText = simTime.toFixed(2);
+      document.getElementById('timeScrubberSlider').value = String(simTime);
+      document.getElementById('scrubberTimeVal').innerText = `t = ${simTime.toFixed(2)} h`;
+
+      advancePhysicsByDt(actualDt);
+      updateTableAndColumnText();
+      updateSwccCharts();
+      updatePdeTelemetryUI();
+      updateSteadyStateUI();
+      updateInspectorAndNarration();
+
+      satTimeChart.data.labels.push(simTime.toFixed(2));
+      satTimeChart.data.datasets.forEach(ds => {
+        const layer = activeLayers[ds.layerIdx];
+        if (layer) ds.data.push(layer.sat * 100);
+      });
+
+      if (satTimeChart.data.labels.length > 60) {
+        satTimeChart.data.labels.shift();
+        satTimeChart.data.datasets.forEach(d => d.data.shift());
+      }
+      satTimeChart.update('none');
+
+      if (activeLayers.every(s => s.sat >= 0.99) || simTime >= maxRunTime - 1e-5) {
+        if (simTimer) { clearInterval(simTimer); simTimer = null; }
+        document.getElementById('runBtn').innerText = activeLayers.every(s => s.sat >= 0.99) ? "Finished" : "Reached T_max";
+        updateInspectorAndNarration();
+      }
+    }
+
+    function stepOnce() {
+      if (simTimer) {
+        clearInterval(simTimer);
+        simTimer = null;
+        document.getElementById('runBtn').innerText = "Resume";
+      }
+      if (activeLayers.every(s => s.sat >= 0.99) || simTime >= maxRunTime) return;
+      stepSimulation();
+    }
+
+    function toggleSim() {
+      const btn = document.getElementById('runBtn');
+      if (simTimer) {
+        clearInterval(simTimer);
+        simTimer = null;
+        btn.innerText = "Resume";
+        updateInspectorAndNarration();
+      } else {
+        if (activeLayers.every(s => s.sat >= 0.99) || simTime >= maxRunTime - 1e-4) {
+          resetSim();
+        }
+        simTimer = setInterval(stepSimulation, 50);
+        btn.innerText = "Pause";
+        updateInspectorAndNarration();
+      }
+    }
+
+    function resetSim() {
+      if (simTimer) clearInterval(simTimer);
+      simTimer = null;
+      simTime = 0;
+      document.getElementById('clock').innerText = "0.00";
+      document.getElementById('timeScrubberSlider').value = "0";
+      document.getElementById('scrubberTimeVal').innerText = "t = 0.00 h";
+      document.getElementById('runBtn').innerText = "Start Infiltration";
+
+      activeLayers.forEach((s) => { s.sat = s.initialSat; });
+      lastTelemetry = { qIn: 0, qOut: 0, maxGrad: 0, cumWater: 0, subSteps: 1, dz: 50.0 / activeLayers.length };
+
+      estimateFullSaturationTime();
+      updateTableAndColumnText();
+      rebuildSatTimeDatasets();
+      updateSteadyStateUI();
+      updateSwccCharts();
+      updatePdeTelemetryUI();
+      updateInspectorAndNarration();
+    }
+
+
+    // =========================================================================
+    // ADVANCED USER-EDITABLE HYDRAULIC PROPERTIES AND BOUNDARY CONDITIONS
+    // =========================================================================
+    const boundaryConfig = { topType: 'head', topValue: 5.0, bottomType: 'free', bottomValue: 0.0, depth: 50.0, userDt: 0.05 };
+
+    function openHydraulicEditor() {
+      const ed = document.getElementById('hydraulicEditor');
+      if (ed) {
+        ed.open = true;
+        ed.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function finiteNumber(id) {
+      const el = document.getElementById(id);
+      if (!el) return NaN;
+      const v = Number(el.value);
+      return Number.isFinite(v) ? v : NaN;
+    }
+
+    function setValidation(msg, error = false) {
+      const el = document.getElementById('hydraulicValidation');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.toggle('error', error);
+    }
+
+    function syncLinkedM() {
+      const linkEl = document.getElementById('linkM');
+      const mEl = document.getElementById('vgM');
+      const nVal = finiteNumber('vgN');
+      if (!linkEl || !mEl) return;
+      const linked = linkEl.value === 'yes';
+      mEl.disabled = linked;
+      if (linked && Number.isFinite(nVal) && nVal > 1.0001) {
+        mEl.value = (1 - 1 / nVal).toFixed(4);
+      }
+    }
+
+    function layerThetaFromVG(layer, psi) {
+      const h = Math.max(0, Math.abs(psi));
+      const m = Number.isFinite(layer.mVG) ? layer.mVG : (1 - 1 / layer.n);
+      const se = Math.pow(1 + Math.pow(layer.alpha * h, layer.n), -m);
+      return layer.thr + (layer.ths - layer.thr) * se;
+    }
+
+    function refreshLayerControlPointsFromVG(layer) {
+      const pts = CONTROL_PSI.map(psi => ({ x: psi, y: layerThetaFromVG(layer, psi) }));
+      layer.origControlPoints = JSON.parse(JSON.stringify(pts));
+      layer.controlPoints = JSON.parse(JSON.stringify(pts));
+    }
+
+    function parseKTable(text, ks) {
+      const rows = [];
+      String(text || '').split(/\r?\n/).forEach((line, i) => {
+        const clean = line.trim();
+        if (!clean) return;
+        const a = clean.split(/[;,\s]+/).map(Number);
+        if (a.length < 2 || !Number.isFinite(a[0]) || !Number.isFinite(a[1]) || a[0] <= 0 || a[1] <= 0) {
+          throw new Error(`Invalid conductivity row ${i + 1}: enter positive "suction_cm, K_cm_per_h".`);
+        }
+        rows.push({ psi: a[0], k: a[1] });
+      });
+      rows.sort((a, b) => a.psi - b.psi);
+      if (rows.length < 2) throw new Error('Enter at least two positive suction–conductivity pairs.');
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i].psi <= rows[i - 1].psi) throw new Error('Suction values in the conductivity table must be strictly increasing.');
+      }
+      return rows.map(r => ({ psi: r.psi, k: Math.min(ks, r.k) }));
+    }
+
+    function loadHydraulicEditor() {
+      const sel = document.getElementById('propertyLayerSelect');
+      if (!sel) return;
+      sel.innerHTML = activeLayers.map((l, i) => `<option value="${i}">L${l.id}: ${l.name}</option>`).join('');
+      sel.value = String(selectedLayerIdx);
+      const l = activeLayers[selectedLayerIdx];
+      if (!l) return;
+
+      document.getElementById('retentionModel').value = l.retentionModel || 'vg';
+      document.getElementById('vgThr').value = Number(l.thr).toFixed(3);
+      document.getElementById('vgThs').value = Number(l.ths).toFixed(3);
+      document.getElementById('vgAlpha').value = Number(l.alpha).toFixed(4);
+      document.getElementById('vgN').value = Number(l.n).toFixed(2);
+      const mVal = Number.isFinite(l.mVG) ? l.mVG : (1 - 1 / l.n);
+      document.getElementById('vgM').value = mVal.toFixed(4);
+      document.getElementById('vgKs').value = Number(l.ks).toFixed(3);
+      document.getElementById('vgL').value = Number.isFinite(l.poreL) ? l.poreL : 0.5;
+      document.getElementById('linkM').value = l.linkM === false ? 'no' : 'yes';
+      document.getElementById('conductivityModel').value = l.kModel || 'mualem';
+      if (l.kTable && l.kTable.length >= 2) {
+        document.getElementById('kTable').value = l.kTable.map(r => `${r.psi}, ${r.k}`).join('\n');
+      }
+      syncLinkedM();
+      toggleConductivityEditor();
+      updateBoundaryBannersAndTelemetry();
+    }
+
+    function selectPropertyLayer(i) {
+      selectLayerForEditing(i);
+      loadHydraulicEditor();
+    }
+
+    function toggleConductivityEditor() {
+      const isTable = document.getElementById('conductivityModel').value === 'table';
+      const wrap = document.getElementById('kTableWrap');
+      if (wrap) wrap.style.display = isTable ? 'flex' : 'none';
+    }
+
+    function applyHydraulicProperties() {
+      try {
+        const l = activeLayers[selectedLayerIdx];
+        const thr = finiteNumber('vgThr');
+        const ths = finiteNumber('vgThs');
+        const alpha = finiteNumber('vgAlpha');
+        const n = finiteNumber('vgN');
+        const ks = finiteNumber('vgKs');
+        const poreL = finiteNumber('vgL');
+        const linked = document.getElementById('linkM').value === 'yes';
+        const m = linked ? (1 - 1 / n) : finiteNumber('vgM');
+
+        if (!(thr >= 0 && ths > thr && ths <= 0.8)) throw new Error('Require 0 ≤ θr < θs ≤ 0.8.');
+        if (!(alpha > 0)) throw new Error('α must be positive.');
+        if (!(n > 1.001)) throw new Error('n must exceed 1.001.');
+        if (!(m > 0 && m < 1)) throw new Error('m must be between 0 and 1.');
+        if (!(ks > 0)) throw new Error('Ks must be positive.');
+        if (!Number.isFinite(poreL)) throw new Error('Mualem l must be finite.');
+
+        l.thr = thr;
+        l.ths = ths;
+        l.alpha = alpha;
+        l.n = n;
+        l.mVG = m;
+        l.poreL = poreL;
+        l.linkM = linked;
+        l.ks = ks;
+        l.retentionModel = document.getElementById('retentionModel').value;
+        l.kModel = document.getElementById('conductivityModel').value;
+
+        if (l.retentionModel === 'vg') {
+          refreshLayerControlPointsFromVG(l);
+        } else {
+          l.controlPoints[0].y = Math.max(thr + 0.01, Math.min(0.58, ths));
+          l.controlPoints[5].y = Math.max(0.005, Math.min(l.controlPoints[0].y - 0.01, thr));
+        }
+        if (l.kModel === 'table') {
+          l.kTable = parseKTable(document.getElementById('kTable').value, ks);
+        }
+
+        syncLinkedM();
+        estimateFullSaturationTime();
+        updateTableAndColumnText();
+        updateSwccCharts();
+        updateSteadyStateUI();
+        updateInspectorAndNarration();
+        setValidation(`Applied validated hydraulic properties to L${l.id} (${l.name}).`, false);
+      } catch (err) {
+        setValidation(err.message, true);
+      }
+    }
+
+    function updateBoundaryLabels() {
+      const t = document.getElementById('topBcType').value;
+      const b = document.getElementById('bottomBcType').value;
+      document.getElementById('topBcUnits').textContent =
+        t === 'head' ? '(cm pressure head)' : (t === 'flux' ? '(cm/h downward)' : '(not used)');
+      document.getElementById('topBcValue').disabled = (t === 'noflow');
+      document.getElementById('bottomBcUnits').textContent =
+        b === 'head' ? '(cm pressure head)' : '(not used)';
+      document.getElementById('bottomBcValue').disabled = (b !== 'head');
+    }
+
+    function updateBoundaryBannersAndTelemetry() {
+      const topBanner = document.getElementById('pondLayerBanner');
+      const botBanner = document.getElementById('ventBaseBanner');
+      const bcStat = document.getElementById('pdeBcStat');
+
+      let topShort = '';
+      if (boundaryConfig.topType === 'head') {
+        const sign = boundaryConfig.topValue >= 0 ? '+' : '';
+        topShort = `h_top = ${sign}${boundaryConfig.topValue.toFixed(1)} cm`;
+        if (topBanner) {
+          topBanner.innerHTML = boundaryConfig.topValue >= 0
+            ? `Ponded Top Boundary (h<sub>p</sub> = +${boundaryConfig.topValue.toFixed(1)} cm) &mdash; Click to Edit`
+            : `Unsaturated Top Head (h<sub>top</sub> = ${boundaryConfig.topValue.toFixed(1)} cm) &mdash; Click to Edit`;
+        }
+      } else if (boundaryConfig.topType === 'flux') {
+        topShort = `q_top = ${boundaryConfig.topValue.toFixed(2)} cm/h`;
+        if (topBanner) {
+          topBanner.innerHTML = `Specified Top Flux (q<sub>top</sub> = ${boundaryConfig.topValue.toFixed(2)} cm/h) &mdash; Click to Edit`;
+        }
+      } else {
+        topShort = `No Flow (q_top = 0)`;
+        if (topBanner) {
+          topBanner.innerHTML = `Sealed Zero-Flux Top Boundary (q<sub>top</sub> = 0) &mdash; Click to Edit`;
+        }
+      }
+
+      let botShort = '';
+      if (boundaryConfig.bottomType === 'free') {
+        botShort = `Free Drainage`;
+        if (botBanner) {
+          botBanner.innerHTML = `&darr; Free Drainage / Vented Base (P<sub>air</sub> = P<sub>atm</sub>) &mdash; Click to Edit &darr;`;
+        }
+      } else if (boundaryConfig.bottomType === 'head') {
+        const sign = boundaryConfig.bottomValue >= 0 ? '+' : '';
+        botShort = `h_bot = ${sign}${boundaryConfig.bottomValue.toFixed(1)} cm`;
+        if (botBanner) {
+          botBanner.innerHTML = `&darr; Specified Base Head (h<sub>bot</sub> = ${sign}${boundaryConfig.bottomValue.toFixed(1)} cm) &mdash; Click to Edit &darr;`;
+        }
+      } else {
+        botShort = `No Flow Base`;
+        if (botBanner) {
+          botBanner.innerHTML = `&darr; Impervious No-Flow Base (q<sub>bot</sub> = 0) &mdash; Click to Edit &darr;`;
+        }
+      }
+
+      if (bcStat) {
+        bcStat.textContent = `${topShort} / ${botShort}`;
+      }
+    }
+
+    function applyBoundarySettings() {
+      try {
+        const depth = finiteNumber('domainDepth');
+        const dt = finiteNumber('solverDt');
+        const tv = finiteNumber('topBcValue');
+        const bv = finiteNumber('bottomBcValue');
+        const topType = document.getElementById('topBcType').value;
+        const bottomType = document.getElementById('bottomBcType').value;
+
+        if (!(depth >= 1 && depth <= 100000)) throw new Error('Column depth must be between 1 and 100,000 cm.');
+        if (!(dt >= 0.000001 && dt <= 1000)) throw new Error('Solver time step Δt must be between 1e-6 and 1,000 h.');
+        if (topType === 'flux' && (!Number.isFinite(tv) || tv < 0)) {
+          throw new Error('Specified downward top flux must be ≥ 0 cm/h.');
+        }
+
+        boundaryConfig.topType = topType;
+        boundaryConfig.bottomType = bottomType;
+        boundaryConfig.topValue = Number.isFinite(tv) ? tv : 0.0;
+        boundaryConfig.bottomValue = Number.isFinite(bv) ? bv : 0.0;
+        boundaryConfig.depth = depth;
+        boundaryConfig.userDt = dt;
+
+        updateBoundaryLabels();
+        updateBoundaryBannersAndTelemetry();
+        resetSim();
+        setValidation(`Applied boundary conditions (L = ${depth} cm, Δt = ${dt} h).`, false);
+      } catch (err) {
+        setValidation(err.message, true);
+      }
+    }
+
+    /* A check on load, so a broken build is loud rather than quiet. Reports to
+       window.__swccCheck and warns to the console. */
+    function swccSelfTest() {
+      const out = [];
+      try {
+        const dz = (boundaryConfig.depth || 50) / activeLayers.length;
+        const cap = l => Math.max(0.01, l.controlPoints[0].y - l.controlPoints[5].y);
+        const store = () => activeLayers.reduce((w, l) => w + l.sat * cap(l) * dz, 0);
+        const saved = activeLayers.map(l => l.sat);
+        const w0 = store();
+        let qi = 0, qo = 0;
+        for (let i = 0; i < 120; i++) { advancePhysicsByDt(0.01); qi += lastTelemetry.qIn * 0.01; qo += lastTelemetry.qOut * 0.01; }
+        const drift = Math.abs((qi - qo) - (store() - w0));
+        if (drift > 0.02) out.push('mass balance drifts by ' + drift.toFixed(3) + ' cm');
+        activeLayers.forEach((l, i) => { l.sat = saved[i]; });
+
+        // retention must fall as suction rises, and K must fall with it
+        activeLayers.forEach(l => {
+          if (vanGenuchtenTheta(l, 1000) >= vanGenuchtenTheta(l, 1)) out.push('theta(psi) not decreasing: ' + l.name);
+          if (computeUnsaturatedK(l, 0.2) >= computeUnsaturatedK(l, 0.9)) out.push('K(Se) not increasing: ' + l.name);
+          if (computeUnsaturatedK(l, 1.0) > l.ks * 1.0001) out.push('K exceeds Ks: ' + l.name);
+          if (l.thr >= l.ths) out.push('thr >= ths: ' + l.name);
+        });
+      } catch (e) { out.push('self-test threw: ' + e.message); }
+      window.__swccCheck = { layers: activeLayers.length, problems: out };
+      if (out.length) console.warn('SWCC studio self-check:', out);
+      return out;
+    }
+
+    function conductivityFromTable(layer, psi) {
+      const rows = layer.kTable;
+      if (!rows || rows.length < 2) return layer.ks;
+      const p = Math.max(rows[0].psi, Math.min(rows[rows.length - 1].psi, Math.abs(psi)));
+      if (p <= rows[0].psi) return rows[0].k;
+      if (p >= rows[rows.length - 1].psi) return rows[rows.length - 1].k;
+      let j = 1;
+      while (j < rows.length && rows[j].psi < p) j++;
+      const a = rows[j - 1], b = rows[j];
+      const f = (Math.log(p) - Math.log(a.psi)) / (Math.log(b.psi) - Math.log(a.psi));
+      return Math.exp(Math.log(a.k) + f * (Math.log(b.k) - Math.log(a.k)));
+    }
+
+    function computeUnsaturatedK(layer, seVal, psiVal) {
+      const se = Math.max(0.01, Math.min(1.0, seVal));
+      if ((layer.kModel || 'mualem') === 'table') {
+        const psi = psiVal === undefined ? getLayerSwccState(layer, se).psi : psiVal;
+        return Math.max(1e-6, Math.min(layer.ks, conductivityFromTable(layer, psi)));
+      }
+      const m = Number.isFinite(layer.mVG) ? Math.max(0.05, Math.min(0.98, layer.mVG)) : (1 - 1 / Math.max(1.08, layer.n));
+      const ell = Number.isFinite(layer.poreL) ? layer.poreL : 0.5;
+      const krMualem = Math.pow(se, ell) * Math.pow(1 - Math.pow(1 - Math.pow(se, 1 / m), m), 2);
+      const krEffective = 0.015 * se + 0.985 * krMualem;
+      return layer.ks * Math.max(0.002, Math.min(1.0, krEffective));
+    }
+
+    function advancePhysicsByDt(dtHours) {
+      const N = activeLayers.length;
+      const totalDepthCm = boundaryConfig.depth || 50.0;
+      const dz = totalDepthCm / N;
+      const hPond = boundaryConfig.topType === 'head' ? boundaryConfig.topValue : 5.0;
+
+      // Preserve Mode B (Lumped Cascading Bucket ODE) when selected
+      if (solverMode === 'ode') {
+        let prevSat = boundaryConfig.topType === 'noflow' ? 0.0 : 1.0;
+        let qInEst = 0;
+        let qOutEst = 0;
+        let maxGrad = 0;
+
+        activeLayers.forEach((s, idx) => {
+          const stBefore = getLayerSwccState(s, s.sat);
+          if (idx > 0) {
+            const stUp = getLayerSwccState(activeLayers[idx - 1], activeLayers[idx - 1].sat);
+            maxGrad = Math.max(maxGrad, Math.abs(stBefore.psi - stUp.psi) / dz);
+          } else {
+            maxGrad = Math.max(maxGrad, Math.abs(stBefore.psi + hPond) / (0.5 * dz));
+          }
+
+          if (prevSat > 0.38) {
+            const suctionCapacity = Math.max(0.05, s.controlPoints[0].y - s.controlPoints[5].y);
+            const driveHead = (idx === 0) ? (Math.max(0, hPond) + 8.0 * suctionCapacity) : (4.0 * suctionCapacity);
+            const fluxScale = boundaryConfig.topType === 'flux'
+              ? Math.min(2.5, Math.max(0.0, boundaryConfig.topValue / Math.max(0.05, s.ks)))
+              : 1.0;
+            const dSatRate = (s.ks * (driveHead / 10.0) * 0.003) * prevSat * 20.0 * fluxScale;
+            const dSat = dSatRate * dtHours;
+            const oldSat = s.sat;
+            s.sat = Math.min(1.0, s.sat + dSat);
+            const dTheta = (s.sat - oldSat) * suctionCapacity;
+            if (idx === 0) qInEst += (dTheta * dz) / Math.max(1e-5, dtHours);
+            if (idx === N - 1 && s.sat >= 0.98 && boundaryConfig.bottomType !== 'noflow') qOutEst = s.ks * 0.25;
+          }
+          prevSat = s.sat;
+        });
+
+        let cumW = 0;
+        activeLayers.forEach(s => {
+          const cap = Math.max(0.01, s.controlPoints[0].y - s.controlPoints[5].y);
+          cumW += (s.sat - s.initialSat) * cap * dz;
+        });
+        lastTelemetry = { qIn: qInEst, qOut: qOutEst, maxGrad, cumWater: cumW, subSteps: 1, dz };
+        return;
+      }
+
+      // Mode A: 1D Richards' PDE Finite-Volume Solver with configurable BCs & time step
+      const targetSubDt = Math.min(0.035, Math.max(0.002, boundaryConfig.userDt || 0.05));
+      const subSteps = Math.max(4, Math.min(60, Math.ceil(dtHours / targetSubDt)));
+      const dtSub = dtHours / subSteps;
+      let qInAccum = 0;
+      let qOutAccum = 0;
+      let peakGrad = 0;
+
+      for (let step = 0; step < subSteps; step++) {
+        const states = activeLayers.map(l => getLayerSwccState(l, l.sat));
+        const heads = states.map(st => -st.psi);   // clipping at 250 cm removed the suction that drives capillary flow
+        const conds = activeLayers.map((l, i) => computeUnsaturatedK(l, l.sat, states[i].psi));
+        const capacities = activeLayers.map(l => Math.max(0.02, l.controlPoints[0].y - l.controlPoints[5].y));
+        const fluxes = new Array(N + 1).fill(0);
+
+        // Top boundary flux q[0]
+        if (boundaryConfig.topType === 'noflow') {
+          fluxes[0] = 0.0;
+        } else if (boundaryConfig.topType === 'flux') {
+          fluxes[0] = Math.max(0.0, boundaryConfig.topValue);
+          peakGrad = Math.max(peakGrad, fluxes[0] / Math.max(1e-6, conds[0]));
+        } else {
+          const hTop = boundaryConfig.topValue;
+          const gradTop = (hTop - heads[0]) / (0.5 * dz) + 1.0;
+          peakGrad = Math.max(peakGrad, Math.abs(hTop - heads[0]) / (0.5 * dz));
+          let kTopFace;
+          if (hTop >= 0) {
+            kTopFace = Math.max(conds[0], activeLayers[0].ks * 0.35);
+          } else {
+            const m0 = Number.isFinite(activeLayers[0].mVG) ? activeLayers[0].mVG : (1 - 1 / activeLayers[0].n);
+            const seTop = Math.pow(1 + Math.pow(activeLayers[0].alpha * Math.abs(hTop), activeLayers[0].n), -m0);
+            const kSurf = computeUnsaturatedK(activeLayers[0], seTop, Math.abs(hTop));
+            kTopFace = 0.5 * (kSurf + conds[0]);
+          }
+          fluxes[0] = Math.max(0.0, kTopFace * gradTop);
+        }
+
+        // Internal interfaces i = 1..N-1
+        for (let i = 1; i < N; i++) {
+          const upSat = activeLayers[i - 1].sat;
+          const grad = (heads[i - 1] - heads[i]) / dz + 1.0;
+          peakGrad = Math.max(peakGrad, Math.abs(heads[i - 1] - heads[i]) / dz);
+          const kUp = conds[i - 1];
+          const kDn = conds[i];
+          // Harmonic mean: for flow across layering the two cells act as
+          // resistances in series, so the tighter one governs. This is what makes
+          // a coarse layer beneath a fine one actually hold water up.
+          const kInterface = (kUp > 0 && kDn > 0) ? (2 * kUp * kDn) / (kUp + kDn) : 0;
+          // No floor on the gradient. A capillary barrier works because the head
+          // gradient can oppose gravity at a fine-over-coarse contact; forcing
+          // grad >= 0.1 made the headline scenario impossible to show.
+          fluxes[i] = Math.max(0.0, kInterface * grad);
+        }
+
+        // Bottom boundary flux q[N]
+        if (boundaryConfig.bottomType === 'noflow') {
+          fluxes[N] = 0.0;
+        } else if (boundaryConfig.bottomType === 'head') {
+          const hBot = boundaryConfig.bottomValue;
+          const gradBot = (heads[N - 1] - hBot) / (0.5 * dz) + 1.0;
+          peakGrad = Math.max(peakGrad, Math.abs(heads[N - 1] - hBot) / (0.5 * dz));
+          fluxes[N] = Math.max(0.0, conds[N - 1] * gradBot);
+        } else {
+          // Free drainage through a vented base: unit gradient, so the face
+          // passes exactly the conductivity the bottom cell has right now. It was
+          // passing nothing at all until the base reached 98.5% saturation.
+          fluxes[N] = Math.max(0.0, conds[N - 1]);
+        }
+
+        // Bottom-up capacity back-pressure check so saturated lower layers back up into upper layers
+        // Water a full cell cannot take has to be refused at the face, including
+        // the surface -- otherwise it is counted as having infiltrated and then
+        // silently discarded by the saturation clamp. Refusing it at i = 0 is
+        // what ponding or runoff physically is.
+        for (let i = N - 1; i >= 0; i--) {
+          const maxAccept = fluxes[i + 1] + (1.0 - activeLayers[i].sat) * capacities[i] * (dz / dtSub);
+          if (fluxes[i] > maxAccept) {
+            fluxes[i] = Math.max(0.0, maxAccept);
+          }
+        }
+
+        // And the mirror case: a face cannot pass water the cell above does not
+        // have. Without this the outflow is counted while the lower clamp quietly
+        // puts the water back, so the balance drifts.
+        for (let i = 0; i < N; i++) {
+          const floorSat = boundaryConfig.topType === "noflow" ? 0.01 : activeLayers[i].initialSat;
+          const available = fluxes[i] + Math.max(0, activeLayers[i].sat - floorSat) * capacities[i] * (dz / dtSub);
+          if (fluxes[i + 1] > available) fluxes[i + 1] = Math.max(0.0, available);
+        }
+
+        for (let i = 0; i < N; i++) {
+          const netFlux = fluxes[i] - fluxes[i + 1];
+          const dTheta = (dtSub / dz) * netFlux;
+          const dSat = dTheta / capacities[i];
+          const minSat = boundaryConfig.topType === 'noflow' ? 0.01 : activeLayers[i].initialSat;
+          activeLayers[i].sat = Math.max(minSat, Math.min(1.0, activeLayers[i].sat + dSat));
+        }
+
+        qInAccum += fluxes[0] / subSteps;
+        qOutAccum += fluxes[N] / subSteps;
+      }
+
+      let cumW = 0;
+      activeLayers.forEach(s => {
+        const cap = Math.max(0.01, s.controlPoints[0].y - s.controlPoints[5].y);
+        cumW += (s.sat - s.initialSat) * cap * dz;
+      });
+      lastTelemetry = { qIn: qInAccum, qOut: qOutAccum, maxGrad: peakGrad, cumWater: cumW, subSteps, dz };
+    }
+
+    // Override estimateFullSaturationTime so it converges cleanly and rapidly for any BC/layer setup
+    estimateFullSaturationTime = function() {
+      if (boundaryConfig.topType === 'noflow' || (boundaryConfig.topType === 'flux' && boundaryConfig.topValue <= 0)) {
+        cachedTsatHours = 100.0;
+        const lbl = document.getElementById('estTsatLabel');
+        if (lbl) lbl.innerText = `${cachedTsatHours}h`;
+        return cachedTsatHours;
+      }
+      const savedSats = activeLayers.map(l => l.sat);
+      const savedTelem = Object.assign({}, lastTelemetry);
+      activeLayers.forEach(l => { l.sat = l.initialSat; });
+      let tSim = 0;
+      const dtChunk = 1.0;
+      while (tSim < 2500.0) {
+        if (activeLayers.every(l => l.sat >= 0.99)) break;
+        const prevSats = activeLayers.map(l => l.sat);
+        advancePhysicsByDt(dtChunk);
+        tSim += dtChunk;
+        const maxDiff = Math.max(...activeLayers.map((l, i) => Math.abs(l.sat - prevSats[i])));
+        if (activeLayers[activeLayers.length - 1].sat >= 0.98 && maxDiff < 0.0004) break;
+      }
+      activeLayers.forEach((l, i) => { l.sat = savedSats[i]; });
+      lastTelemetry = savedTelem;
+      cachedTsatHours = Math.max(2.0, Math.ceil(tSim));
+      const lbl = document.getElementById('estTsatLabel');
+      if (lbl) lbl.innerText = `${cachedTsatHours}h`;
+      const ssTimeEl = document.getElementById('ssTimeSatStat');
+      if (ssTimeEl) ssTimeEl.innerText = `${cachedTsatHours.toFixed(1)} h`;
+      return cachedTsatHours;
+    };
+
+    // Keep PDE telemetry grid depth synchronized with boundaryConfig.depth
+    const _origUpdatePdeTelemetryUI = updatePdeTelemetryUI;
+    updatePdeTelemetryUI = function() {
+      _origUpdatePdeTelemetryUI();
+      const N = activeLayers.length;
+      const L = boundaryConfig.depth || 50.0;
+      const dz = (L / N).toFixed(1);
+      const gridEl = document.getElementById('pdeGridStat');
+      if (gridEl) {
+        gridEl.innerHTML = solverMode === 'pde'
+          ? `N = ${N} cells, one per layer (&Delta;z = ${dz} cm, L = ${L} cm)`
+          : `N = ${N} Lumped Buckets (L = ${L} cm)`;
+      }
+      updateBoundaryBannersAndTelemetry();
+    };
+
+    // Sync hydraulic editor whenever presets change, SWCCs reset, or control nodes are dragged
+    const _originalRenderInterface = renderInterface;
+    renderInterface = function() {
+      _originalRenderInterface();
+      loadHydraulicEditor();
+    };
+    const _originalSelectLayer = selectLayerForEditing;
+    selectLayerForEditing = function(idx) {
+      _originalSelectLayer(idx);
+      loadHydraulicEditor();
+    };
+    const _originalChangeLayerPreset = changeLayerPreset;
+    changeLayerPreset = function(index, newKey) {
+      _originalChangeLayerPreset(index, newKey);
+      const layer = activeLayers[index];
+      if (layer) {
+        layer.mVG = 1 - 1 / layer.n;
+        layer.poreL = 0.5;
+        layer.linkM = true;
+        layer.retentionModel = 'vg';
+        layer.kModel = 'mualem';
+      }
+      loadHydraulicEditor();
+    };
+    const _originalResetSelectedSwcc = resetSelectedSwcc;
+    resetSelectedSwcc = function() {
+      _originalResetSelectedSwcc();
+      const layer = activeLayers[selectedLayerIdx];
+      if (layer) {
+        layer.ths = layer.controlPoints[0].y;
+        layer.thr = layer.controlPoints[5].y;
+        layer.retentionModel = 'vg';
+      }
+      loadHydraulicEditor();
+    };
+    const _originalResetAllSwcc = resetAllSwcc;
+    resetAllSwcc = function() {
+      _originalResetAllSwcc();
+      activeLayers.forEach(layer => {
+        layer.ths = layer.controlPoints[0].y;
+        layer.thr = layer.controlPoints[5].y;
+        layer.retentionModel = 'vg';
+      });
+      loadHydraulicEditor();
+    };
+    window.addEventListener('mouseup', () => {
+      const layer = activeLayers[selectedLayerIdx];
+      if (layer) {
+        layer.ths = layer.controlPoints[0].y;
+        layer.thr = layer.controlPoints[5].y;
+        loadHydraulicEditor();
+      }
+    });
+
+    // Startup initialization: Mind map hidden by default; 2-Layer Studio view fitted inside 100% zoom
+    renderLegendChips();
+    selectMindMapNode('root');
+    loadTutorialScenario('capillary');
+    updateBoundaryLabels();
+    updateBoundaryBannersAndTelemetry();
+    // Chart.js does not always re-measure when the window narrows, so ask it to.
+    let swccResizeT = null;
+    window.addEventListener('resize', () => {
+      clearTimeout(swccResizeT);
+      swccResizeT = setTimeout(() => {
+        [allSwccChart, compositeChart, satTimeChart, steadyProfileChart].forEach(c => {
+          try { if (c && typeof c.resize === 'function') c.resize(); } catch (_) {}
+        });
+      }, 120);
+    });
+
+    setTimeout(swccSelfTest, 400);   // report to window.__swccCheck once the page has settled
+  </script>
+</body>
+</html>

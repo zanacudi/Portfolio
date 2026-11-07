@@ -86,6 +86,12 @@ const PROJECTS = [
 
 const TUTORIALS = [
   {
+    title: "Stratified Soil Infiltration \u2014 Live SWCC Studio",
+    description: "Water entering a layered column, with every layer carrying its own soil water characteristic curve and the SWCC itself editable by dragging six nodes. Build one to ten layers, set van Genuchten parameters or paste a measured suction\u2013conductivity table, choose ponded, specified-flux or no-flow at the surface and free drainage, fixed head or no-flow at the vented base, then watch suction, water content and saturation move together on the curve and down the column. Four scenarios are built in, and the one that makes the point best is the capillary barrier: fine soil over coarse holds water up rather than letting it through, because the gradient at the contact opposes gravity until the fine layer is nearly saturated. One finite volume per layer, harmonic-mean face conductivities, and mass conserved to rounding \u2014 the page says plainly what it resolves and what it does not.",
+    date: "2026",
+    link: "swcc-infiltration-studio.html"
+  },
+  {
     title: "Critical State Soil Mechanics — Interactive Mind Map",
     description: "The whole framework on one radiant map, drawn to Buzan’s conventions after Rama Rao &amp; Samatha Chowdary, <i>Geotechnical Engineering Through Mind Maps</i> (2019): a central idea, curved branches, one keyword each. A detail slider takes the same map from bare keywords to formulas to full explanations, so it works as a lecture overview and as revision notes. Fifty-eight nodes over three levels. <b>Every equation carries a table of its symbols</b>, each explained in words with its units, and twenty-five ideas carry a drawn sketch — grains climbing over each other to dilate, undrained stress paths turning back or collapsing, pore pressure ratcheting cycle by cycle. Six branches — state, strength, measuring, models, liquefaction, design — and five keywords open a live calculator: fit a state parameter against the critical state line, watch dilatancy lend and then take back peak friction, invert a cone reading for ψ, test a triggering factor of safety, and see what brittleness really measures. Every branch links through to the module that treats it properly.",
     date: "2026",
