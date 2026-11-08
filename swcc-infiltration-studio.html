@@ -1869,6 +1869,9 @@
           <label class="form-field">Column height H0 (m)<input id="vc_H0" type="text"></label>
           <label class="form-field">Run to (days)<input id="vc_days" type="text"></label>
           <label class="form-field">Cells<input id="vc_cells" type="number" min="4" max="300" step="1" value="40"></label>
+          <label class="form-field">Max surface suction (kPa)<input id="vc_psiMax" type="text" value="1000" title="Where the surface boundary switches from potential evaporation to constant head (Qi et al. 2017)."></label>
+          <label class="form-field">Gardner n<input id="vc_gn" type="text" value="3" title="Suction exponent in k = C e^D / (1 + m (psi/gamma_w)^n)."></label>
+          <label class="form-field">Surcharge q0 (kPa)<input id="vc_q0" type="text" value="0.0021"></label>
           <label class="form-field">a_sh<input id="vc_a_sh" type="text" title="Fredlund, Wilson & Fredlund shrinkage curve"></label>
           <label class="form-field">b_sh<input id="vc_b_sh" type="text"></label>
           <label class="form-field">c_sh<input id="vc_c_sh" type="text"></label>
@@ -1884,6 +1887,15 @@
           <button type="button" class="tb-btn" onclick="vcGo(true)">Run to rest</button>
           <button type="button" class="tb-btn" onclick="vcResetRun()">Reset</button>
           <button type="button" class="tb-btn" onclick="vcVerify()">Check against the resting state</button>
+        </div>
+        <div class="editor-actions" style="margin-top:6px; align-items:center">
+          <label class="form-field" style="max-width:280px">Unsaturated constitutive model
+            <select id="vc_surfaceMode">
+              <option value="taher">Taher et al. (2024): shrinkage curve + SWCC, superposed</option>
+              <option value="vu">Vu &amp; Fredlund (2006) 3D surfaces, as fitted by Qi et al. (2017)</option>
+            </select>
+          </label>
+          <button type="button" class="tb-btn primary" onclick="vcSoleimani()">Run the drying column test</button>
         </div>
         <div id="vcStatus" class="validation-box" aria-live="polite">Ready.</div>
         <div id="vcVerifyOut" class="verify-out"></div>
@@ -5966,13 +5978,250 @@
       return { t: vcSim.t, H: vcHeight(), steps, fails: vcSim.fails };
     }
 
+
+    /* =====================================================================
+       COUPLED CONSOLIDATION AND DRYING
+
+       Adds evaporation to the column. The state variable is the pore water
+       pressure p, continuous through the saturated/unsaturated transition:
+       p >= 0 is saturated, p < 0 means suction psi = -p.
+
+       Water conservation is Qi, Simms and Vanapalli (2017) Eq. 16, written
+       per unit solids. The element water volume is L*theta_w = dzeta*Gs*w, so
+
+           dzeta * Gs * dw/dt = v_top - v_bottom
+
+       with v the Darcy velocity relative to the solids,
+
+           v = k (h_above - h_below) / (z_above - z_below),   h = z + p/gamma_w
+
+       and k at a face the distance-weighted harmonic mean of the two cells,
+       their Eq. 6, which is the same series-resistance form the Richards
+       engine on this page uses across a material contact.
+
+       Conductivity depends on void ratio and on suction, their Eq. 5:
+
+           k = C e^D / (1 + m [psi / gamma_w]^n)
+
+       the Gjerapic power law divided by a Gardner suction term.
+
+       The surface moves through the three regimes they describe: while free
+       water stands on the deposit the boundary is a head boundary at the
+       water surface; once that is gone the boundary is the potential
+       evaporation rate; and when the surface suction reaches its cap the
+       boundary becomes a constant head at that suction, so actual evaporation
+       falls below potential. The base is sealed.
+
+       Two constitutive options. Taher, Scalia and Bareither (2024) section
+       2.2.3 superposes de(sigma') and de(psi); Vu and Fredlund (2006), as Qi
+       et al. write them, use 3D state surfaces
+
+         e = a + b log[(1 + c(sig-ua) + d(ua-uw)) / (1 + f(sig-ua) + g(ua-uw))]
+         w = A + B log[(1 + C(sig-ua) + D(ua-uw)) / (1 + F(sig-ua) + G(ua-uw))]
+
+       with the parameters they fitted for the polymer-amended MFT.
+       ===================================================================== */
+    const VU_PAMFT = { a: 4.50, b: 0.780, c: 7.56e-3, d: 0.136, f: 1.62e3, g: 2.17e3,
+                       A: 2.12, B: 0.370, C: 7.56e-3, D: 3.95e-2, F: 1.62e3, G: 2.86e3 };
+
+    function vcSurfaceVu(q, sig, psi) {
+      const e = q.a + q.b * Math.log10((1 + q.c * sig + q.d * psi) / (1 + q.f * sig + q.g * psi));
+      const w = q.A + q.B * Math.log10((1 + q.C * sig + q.D * psi) / (1 + q.F * sig + q.G * psi));
+      return { e: Math.max(1e-3, e), w: Math.max(1e-6, w) };
+    }
+
+    // (e, w) at net stress and suction, both kPa
+    function vcStateAt(p, sig, psi) {
+      if (p.surfaceMode === 'vu') return vcSurfaceVu(p.vu || VU_PAMFT, sig, psi);
+      const w = vcWaterFromSuction(p, psi);
+      const e = p.e0 + (vcVoidFromStress(p, sig) - vcVoidFromStress(p, 0))
+                     + (vcVoidFromWater(p, w) - vcVoidFromWater(p, p.w_s));
+      return { e: Math.max(p.a_sh || 1e-3, e), w: w };
+    }
+
+    function vcKsuction(p, e, psi) {
+      const k = vcKfromVoid(p, e);
+      const n = Number.isFinite(p.gn) ? p.gn : 3;
+      const m = Number.isFinite(p.gm) ? p.gm : Math.pow(GAMMA_W / (p.a_f || 2.5), n);
+      return Math.max(1e-16, k / (1 + m * Math.pow(Math.max(0, psi) / GAMMA_W, n)));
+    }
+
+    function vcInvertSuction(p, sig, wTarget) {
+      let lo = 0, hi = 1e6;
+      for (let i = 0; i < 34; i++) {
+        const mid = 0.5 * (lo + hi);
+        if (vcStateAt(p, sig, mid).w > wTarget) lo = mid; else hi = mid;
+      }
+      return 0.5 * (lo + hi);
+    }
+
+    const vcDry = { w: null, p: null, pond: 0, evapCum: 0, decanted: 0, dt: 1e-5, steps: 0 };
+
+    function vcDryInit(p) {
+      const N = vcSim.n;
+      vcDry.w = new Float64Array(N).fill(p.e0 / p.Gs);
+      vcDry.p = new Float64Array(N);
+      vcDry.pond = 0; vcDry.evapCum = 0; vcDry.decanted = 0; vcDry.dt = 1e-5;
+    }
+
+    function vcGeometry(p) {
+      const N = vcSim.n;
+      const L = new Float64Array(N), z = new Float64Array(N), sig = new Float64Array(N);
+      let Htot = 0;
+      for (let j = 0; j < N; j++) { L[j] = vcSim.dzeta * (1 + vcSim.e[j]); Htot += L[j]; }
+      let acc = 0, s = (p.q0 || 0) + vcDry.pond * GAMMA_W;
+      for (let j = 0; j < N; j++) {
+        z[j] = Htot - (acc + L[j] / 2);
+        const gam = GAMMA_W * p.Gs * (1 + vcDry.w[j]) / (1 + vcSim.e[j]);
+        sig[j] = s + gam * L[j] / 2;
+        s += gam * L[j];
+        acc += L[j];
+      }
+      return { L: L, z: z, sig: sig, Htot: Htot };
+    }
+
+    function vcDryStep(p, dtDays, evapMperDay) {
+      const N = vcSim.n, dt = dtDays * 86400;
+      const g = vcGeometry(p);
+      const k = new Float64Array(N), h = new Float64Array(N);
+      for (let j = 0; j < N; j++) {
+        k[j] = vcKsuction(p, vcSim.e[j], Math.max(0, -vcDry.p[j]));
+        h[j] = g.z[j] + vcDry.p[j] / GAMMA_W;
+      }
+      const v = new Float64Array(N + 1);
+      for (let j = 1; j < N; j++) {
+        const ks = (g.L[j - 1] + g.L[j]) / (g.L[j - 1] / k[j - 1] + g.L[j] / k[j]);
+        v[j] = ks * (h[j - 1] - h[j]) / (g.z[j - 1] - g.z[j]);
+      }
+      if (vcDry.pond > 1e-9 || !(evapMperDay > 0)) {
+        v[0] = k[0] * ((g.Htot + vcDry.pond) - h[0]) / (g.Htot - g.z[0]);
+      } else if (Math.max(0, -vcDry.p[0]) >= (p.psiMax || 1000) * 0.999) {
+        const hw = g.Htot - (p.psiMax || 1000) / GAMMA_W;
+        v[0] = Math.max(k[0] * (hw - h[0]) / (g.Htot - g.z[0]), -evapMperDay / 86400);
+      } else {
+        v[0] = -evapMperDay / 86400;
+      }
+      v[N] = 0;
+
+      for (let j = 0; j < N; j++) {
+        vcDry.w[j] += ((v[j] - v[j + 1]) * dt) / (vcSim.dzeta * p.Gs);
+        if (vcDry.w[j] < 1e-5) vcDry.w[j] = 1e-5;
+      }
+      const top = -v[0] * dt;
+      if (evapMperDay > 0) vcDry.evapCum += top;
+      else { vcDry.pond += top; if (vcDry.pond < 0) vcDry.pond = 0; }
+
+      for (let j = 0; j < N; j++) {
+        /* e falls as suction rises, so the largest void space on offer is the
+           one at zero suction. If the water will not fit in even that, the
+           element is saturated and the void ratio is set by the water, not by
+           suction. Testing water content against the old void ratio instead
+           let the degree of saturation reach 2.8. */
+        const eWet = vcStateAt(p, g.sig[j], 0).e;
+        let sat = (p.Gs * vcDry.w[j] >= eWet);
+        let psi = 0, eUns = eWet;
+        if (!sat) {
+          psi = vcInvertSuction(p, g.sig[j], vcDry.w[j]);
+          eUns = vcStateAt(p, g.sig[j], psi).e;
+          /* The zero-suction test above is only a shortcut. The water also
+             has to fit in the void space the unsaturated relations actually
+             give at this suction, and Taher's additive superposition of
+             de(sigma') and de(psi) does not by itself guarantee that: without
+             this second check the degree of saturation reached 1.45. The Vu
+             and Fredlund surfaces are self-consistent and stay at 1.000. */
+          sat = (p.Gs * vcDry.w[j] >= eUns);
+        }
+        if (sat) {
+          vcSim.e[j] = p.Gs * vcDry.w[j];
+          vcDry.p[j] = g.sig[j] - vcStressFromVoid(p, vcSim.e[j]);
+        } else {
+          vcSim.e[j] = eUns;
+          vcDry.p[j] = -psi;
+        }
+      }
+      vcSim.t += dtDays;
+    }
+
+    /* Take a step, then judge it. An analytic stability bound here is
+       awkward: the tightest face is the surface, which spans half a cell, and
+       the stiffness collapses towards zero effective stress, so a bound that
+       looked safe still let the void ratio run away until the total height
+       swamped the cell thicknesses and two nodes landed on the same
+       elevation. Taking the step and refusing it is simpler and safer. */
+    function vcDryRun(p, tEnd, evapMperDay, wTol) {
+      const tol = wTol || 0.004;
+      let guard = 0;
+      while (vcSim.t < tEnd - 1e-12 && guard < 400000) {
+        guard++;
+        const d = Math.min(vcDry.dt, tEnd - vcSim.t);
+        const se = Float64Array.from(vcSim.e), sw = Float64Array.from(vcDry.w),
+              sp = Float64Array.from(vcDry.p);
+        const st = vcSim.t, spo = vcDry.pond, sev = vcDry.evapCum;
+        let bad = false;
+        try { vcDryStep(p, d, evapMperDay); } catch (err) { bad = true; }
+        if (!bad) {
+          for (let j = 0; j < vcSim.n; j++) {
+            if (!isFinite(vcSim.e[j]) || !isFinite(vcDry.w[j])
+                || vcSim.e[j] <= 0 || vcSim.e[j] > 50 * p.e0
+                || Math.abs(vcDry.w[j] - sw[j]) > tol) { bad = true; break; }
+          }
+        }
+        if (bad) {
+          vcSim.e.set(se); vcDry.w.set(sw); vcDry.p.set(sp);
+          vcSim.t = st; vcDry.pond = spo; vcDry.evapCum = sev;
+          vcDry.dt *= 0.4;
+          if (vcDry.dt < 1e-12) break;
+        } else {
+          vcDry.dt = Math.min(vcDry.dt * 1.08, 0.25);
+          vcSim.hist.push({ t: vcSim.t, H: vcHeight() });
+        }
+      }
+      vcDry.steps = guard;
+      return { t: vcSim.t, H: vcHeight(), steps: guard };
+    }
+
+    function vcWaterHeld(p) {
+      let s = 0;
+      for (let j = 0; j < vcSim.n; j++) s += vcSim.dzeta * p.Gs * vcDry.w[j];
+      return s;
+    }
+
+    /* The column test of Soleimani et al. (2014), staged as Qi et al. (2017)
+       part II describe it: nine days with neither evaporation nor
+       decantation, the bleed water removed at the end of day nine, then
+       1.5 mm/day to day 27 and 5 mm/day to day 46, base sealed throughout. */
+    function vcRunSoleimani(p) {
+      vcReset(p, 0.5, vcSim.n);
+      vcDryInit(p);
+      const w0 = vcWaterHeld(p);
+      vcDryRun(p, 9, 0);
+      const H9 = vcHeight();
+      vcDry.decanted = vcDry.pond; vcDry.pond = 0;
+      vcDryRun(p, 27, 0.0015);
+      const H27 = vcHeight();
+      vcDryRun(p, 46, 0.005);
+      const w1 = vcWaterHeld(p);
+      let smax = 0, smin = 9;
+      for (let j = 0; j < vcSim.n; j++) {
+        const S = p.Gs * vcDry.w[j] / vcSim.e[j];
+        if (S > smax) smax = S;
+        if (S < smin) smin = S;
+      }
+      return { H9: H9, H27: H27, H46: vcHeight(), w0: w0, w1: w1,
+               decanted: vcDry.decanted, evap: vcDry.evapCum, pond: vcDry.pond,
+               balance: Math.abs((w0 - w1) - (vcDry.decanted + vcDry.evapCum + vcDry.pond)),
+               smax: smax, smin: smin,
+               psiTop: Math.max(0, -vcDry.p[0]), eTop: vcSim.e[0] };
+    }
+
     /* ---------------------------------------------------------------------
        The panel: parameters, charts and the resting-state check.
        --------------------------------------------------------------------- */
     let vcHeightChart = null, vcProfileChart = null;
 
     const VC_FIELDS = ['A', 'Z', 'B', 'C', 'D', 'Cf', 'Gs', 'e0',
-                       'a_sh', 'b_sh', 'c_sh', 'w_s', 'psi_r', 'a_f', 'n_f', 'm_f'];
+                       'a_sh', 'b_sh', 'c_sh', 'w_s', 'psi_r', 'a_f', 'n_f', 'm_f',
+                       'psiMax', 'gn', 'q0'];
 
     function vcLoadPreset(key) {
       vc.preset = key;
@@ -6003,6 +6252,10 @@
       if (!(p.C > 0) || !(p.D > 0)) throw new Error('C and D must be positive.');
       if (!(p.Gs > 1)) throw new Error('Specific gravity must exceed 1.');
       if (!(p.e0 > 0)) throw new Error('Initial void ratio must be positive.');
+      if (p.psiMax === null || !(p.psiMax > 0)) p.psiMax = 1000;
+      if (p.gn === null || !(p.gn > 0)) p.gn = 3;
+      if (p.q0 === null) p.q0 = 0;
+      p.surfaceMode = (document.getElementById('vc_surfaceMode') || {}).value || 'taher';
       vc.p = p;
       return p;
     }
@@ -6033,6 +6286,33 @@
             + `&nbsp; settlement ${(H0 - r.H).toFixed(4)} m (${(100 * (H0 - r.H) / H0).toFixed(1)}%) `
             + `&nbsp;|&nbsp; resting state ${eq.H.toFixed(4)} m, gap ${(r.H - eq.H).toFixed(5)} m `
             + `&nbsp;|&nbsp; ${r.steps} steps, ${r.fails} rejected, ${(performance.now() - t0).toFixed(0)} ms`);
+      } catch (err) { vcSay(err.message, true); }
+    }
+
+    /* The staged column test, with its water balance reported rather than
+       asserted. The no-evaporation stage has an answer this page already
+       knows independently: the saturated resting height. */
+    function vcSoleimani() {
+      try {
+        const p = vcReadFields();
+        p.H0 = 0.5;
+        const t0 = performance.now();
+        const r = vcRunSoleimani(p);
+        const eq = vcEquilibrium(p);
+        vcDraw();
+        vcSay(
+          `<strong>Soleimani et al. (2014), 0.5 m column, base sealed.</strong><br>`
+          + `day 9, no evaporation: H = ${r.H9.toFixed(4)} m, bleed water ${r.decanted.toFixed(4)} m `
+          + `&nbsp;(sum ${(r.H9 + r.decanted).toFixed(4)} m, started at 0.5000; `
+          + `saturated resting height ${eq.H.toFixed(4)} m)<br>`
+          + `day 27, after 1.5 mm/day: H = ${r.H27.toFixed(4)} m<br>`
+          + `day 46, after 5 mm/day: H = ${r.H46.toFixed(4)} m &nbsp; surface suction `
+          + `${r.psiTop.toFixed(0)} kPa, e = ${r.eTop.toFixed(3)}<br>`
+          + `water: held ${r.w0.toFixed(4)} &rarr; ${r.w1.toFixed(4)} m, decanted ${r.decanted.toFixed(4)}, `
+          + `evaporated ${r.evap.toFixed(4)} &nbsp;<strong>balance closes to `
+          + `${r.balance.toExponential(1)} m</strong><br>`
+          + `degree of saturation ${r.smin.toFixed(3)} to ${r.smax.toFixed(3)} `
+          + `&nbsp;|&nbsp; ${r.steps || vcDry.steps} steps, ${(performance.now() - t0).toFixed(0)} ms`);
       } catch (err) { vcSay(err.message, true); }
     }
 
@@ -6170,6 +6450,22 @@
           rows.push(['Shrinkage curve stays physical', 'highest degree of saturation it implies',
                      'S = ' + worst.toFixed(3) + ' at w = ' + atW.toFixed(2), worst <= 1.0005]);
         }
+        /* With no evaporation the coupled drying solver has to reproduce the
+           saturated consolidation answer, which is known exactly. Two
+           different solvers, one target. */
+        vcReset(p, 0.5, 30); vcDryInit(p);
+        const eqD = vcEquilibrium(p);
+        vcDryRun(p, 200, 0);
+        const gapD = Math.abs(vcHeight() - eqD.H);
+        rows.push(['Drying solver with no evaporation', 'against the saturated resting height',
+                   gapD.toExponential(1) + ' m', gapD < 5e-3]);
+
+        const r = vcRunSoleimani(p);
+        rows.push(['Water balance over the column test', 'held + decanted + evaporated',
+                   r.balance.toExponential(1) + ' m of 0.4', r.balance < 1e-3]);
+        rows.push(['Degree of saturation stays at or below 1', 'highest S anywhere during drying',
+                   r.smax.toFixed(4), r.smax <= 1.0005]);
+
         vcReset(p, H0, n);
         vcDraw();
       } catch (err) {
