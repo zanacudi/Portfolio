@@ -1437,7 +1437,9 @@
               <label class="form-field">Bottom value <span id="bottomBcUnits">(not used)</span><input id="bottomBcValue" type="number" step="0.01" value="0" disabled></label>
               <label class="form-field">Column depth (cm)<input id="domainDepth" type="number" min="1" max="100000" step="1" value="50"></label>
               <label class="form-field">Max solver step (h)<input id="solverDt" type="number" min="0.000001" max="1000" step="0.001" value="0.25" title="The solver picks its own step and shrinks it when the iteration struggles; this is the ceiling."></label>
-              <label class="form-field">Nodes per layer<input id="nodesPerLayer" type="number" min="1" max="60" step="1" value="10"></label>
+              <label class="form-field">Nodes per layer<input id="nodesPerLayer" type="number" min="1" max="60" step="1" value="10" title="Applied to every layer unless the per-layer list below is filled in."></label>
+              <label class="form-field">Per layer, in order<input id="nodesList" type="text" placeholder="blank = all the same, e.g. 8, 24" title="One count per layer, comma separated. Spend cells where the contrast is."></label>
+              <label class="form-field">Grade to contacts (%)<input id="gradeContacts" type="number" min="0" max="100" step="5" value="0" title="0 keeps cells equal. Higher clusters them onto the top and bottom of each layer, which is where the contacts and the surface are."></label>
             </div>
             <div class="editor-actions" style="margin-top:7px">
               <button type="button" class="tb-btn primary" onclick="applyBoundarySettings()">Apply boundaries</button>
@@ -4259,8 +4261,35 @@
         if (npEl) {
           const np = Math.round(Number(npEl.value));
           if (!(np >= 1 && np <= 60)) throw new Error('Nodes per layer must be between 1 and 60.');
-          if (np !== richards.nodesPerLayer) { richards.nodesPerLayer = np; rBuildGrid(true); }
+          richards.nodesPerLayer = np;
         }
+        const listEl = document.getElementById('nodesList');
+        if (listEl) {
+          const raw = (listEl.value || '').trim();
+          if (!raw) {
+            richards.nodesList = null;
+          } else {
+            const parts = raw.split(/[,\s]+/).filter(Boolean).map(Number);
+            if (parts.length !== activeLayers.length) {
+              throw new Error(`Give one node count per layer: ${activeLayers.length} numbers, not ${parts.length}.`);
+            }
+            if (!parts.every(v => Number.isFinite(v) && v >= 1 && v <= 60)) {
+              throw new Error('Each per-layer node count must be between 1 and 60.');
+            }
+            richards.nodesList = parts;
+          }
+        }
+        const gEl = document.getElementById('gradeContacts');
+        if (gEl) {
+          const gp = Number(gEl.value);
+          if (!(gp >= 0 && gp <= 100)) throw new Error('Grading must be between 0 and 100%.');
+          richards.grading = gp / 100;
+        }
+        const total = rNodeCounts().reduce((a, b) => a + b, 0);
+        if (total > richards.maxCells) {
+          throw new Error(`${total} cells is past the ${richards.maxCells} this page will run; reduce the node counts.`);
+        }
+        rBuildGrid(true);
 
         updateBoundaryLabels();
         updateBoundaryBannersAndTelemetry();
@@ -4505,7 +4534,11 @@
       // at the running grid it was tens of thousands of implicit solves.
       const savedGrid = rSnapshot();
       const savedDtMax = richards.dtMax;
+      // one cell per layer means one cell per layer: a per-layer list or any
+      // grading would put the full grid back and the estimate is not worth that
       richards.nodesPerLayer = 1;
+      richards.nodesList = null;
+      richards.grading = 0;
       richards.dtMax = 20.0;
       rBuildGrid(false);
       activeLayers.forEach(l => { l.sat = l.initialSat; });
@@ -4543,7 +4576,7 @@
       const gridEl = document.getElementById('pdeGridStat');
       if (gridEl) {
         gridEl.innerHTML = solverMode === 'pde'
-          ? `N = ${N} cells (&Delta;z = ${dz} cm, L = ${L} cm)`
+          ? `N = ${rGridLabel()}, L = ${L} cm`
           : `N = ${N} Lumped Buckets (L = ${L} cm)`;
       }
       updateBoundaryBannersAndTelemetry();
@@ -4634,7 +4667,10 @@
        under steady flux (K(h) = q in every cell). Both come out exact.
        ===================================================================== */
     const richards = {
-      nodesPerLayer: 10,
+      nodesPerLayer: 10,  // applied to every layer unless nodesList overrides
+      nodesList: null,    // e.g. [8, 24]: one count per layer
+      grading: 0,         // 0 uniform, 1 cells clustered hard onto the contacts
+      maxCells: 400,
       cells: [],
       curves: [],
       dt: 0.01,
@@ -4753,9 +4789,36 @@
       return true;
     }
 
+    // One node count per layer: the list when it matches the layer count,
+    // otherwise the single value applied to all of them.
+    function rNodeCounts() {
+      const nL = activeLayers.length;
+      const clamp = v => Math.max(1, Math.min(60, Math.round(v)));
+      const list = richards.nodesList;
+      if (Array.isArray(list) && list.length === nL && list.every(Number.isFinite)) {
+        return list.map(clamp);
+      }
+      return new Array(nL).fill(clamp(richards.nodesPerLayer));
+    }
+
+    /* Cell sizes within one layer. g = 0 is uniform; g = 1 places the cell
+       faces at the Chebyshev points, which clusters them onto both ends of the
+       layer. Both ends is what you want: the ends are the contacts with the
+       layers above and below, and for the top layer one of them is the surface,
+       where a ponded boundary drives the sharpest gradient in the problem. */
+    function rCellSizes(T, n, g) {
+      const face = k => {
+        const u = k / n;
+        return (1 - g) * u + g * 0.5 * (1 - Math.cos(Math.PI * u));
+      };
+      const out = [];
+      for (let k = 0; k < n; k++) out.push(T * (face(k + 1) - face(k)));
+      return out;
+    }
+
     function rGridStamp() {
-      return [activeLayers.length, richards.nodesPerLayer, boundaryConfig.depth,
-              activeLayers.map(l => l.key).join('.')].join('|');
+      return [activeLayers.length, rNodeCounts().join(','), richards.grading,
+              boundaryConfig.depth, activeLayers.map(l => l.key).join('.')].join('|');
     }
 
     /* Build or rebuild the grid. On a refinement the head profile is resampled
@@ -4766,12 +4829,12 @@
       const L = boundaryConfig.depth || 50.0;
       const nL = activeLayers.length;
       const tL = L / nL;
-      const npl = Math.max(1, Math.min(60, Math.round(richards.nodesPerLayer)));
+      const counts = rNodeCounts();
+      const g = Math.max(0, Math.min(1, richards.grading || 0));
       const cells = [];
       let z = 0;
       for (let li = 0; li < nL; li++) {
-        const dz = tL / npl;
-        for (let k = 0; k < npl; k++) {
+        for (const dz of rCellSizes(tL, counts[li], g)) {
           cells.push({ li, dz, zc: z + dz / 2, h: -100 });
           z += dz;
         }
@@ -4813,21 +4876,37 @@
       richards.budgetHit = false; richards.forced = 0;
     }
 
+    // With grading the cells are not all the same size, so say the range.
+    function rGridLabel() {
+      const c = richards.cells;
+      if (!c.length) return '';
+      let lo = Infinity, hi = -Infinity;
+      for (const x of c) { if (x.dz < lo) lo = x.dz; if (x.dz > hi) hi = x.dz; }
+      return (hi - lo < 1e-9)
+        ? `${c.length} cells (&Delta;z = ${lo.toFixed(2)} cm)`
+        : `${c.length} cells (&Delta;z ${lo.toFixed(2)}&ndash;${hi.toFixed(2)} cm, graded to the contacts)`;
+    }
+
     function rSnapshot() {
       return {
         h: richards.cells.map(c => c.h),
         sat: activeLayers.map(l => l.sat),
-        npl: richards.nodesPerLayer, stamp: richards.stamp, dt: richards.dt,
+        npl: richards.nodesPerLayer, list: richards.nodesList, grading: richards.grading,
+        stamp: richards.stamp, dt: richards.dt,
         mb: richards.mbError, ro: richards.runoff, ci: richards.cumIn, co: richards.cumOut
       };
     }
 
     function rRestore(snap) {
       if (!snap) return;
-      if (snap.npl !== richards.nodesPerLayer || snap.stamp !== richards.stamp) {
-        richards.nodesPerLayer = snap.npl;
-        rBuildGrid(false);
-      }
+      richards.nodesPerLayer = snap.npl;
+      richards.nodesList = snap.list;
+      richards.grading = snap.grading;
+      /* Compare against the stamp of the grid that is actually built, not one
+         recomputed from the settings just restored -- that compares a value
+         with itself, never rebuilds, and leaves whatever grid the caller was
+         using (one cell per layer, in the estimator's case). */
+      if (richards.stamp !== snap.stamp) rBuildGrid(false);
       if (snap.h.length === richards.cells.length) {
         for (let i = 0; i < richards.cells.length; i++) richards.cells[i].h = snap.h[i];
       }
@@ -5280,12 +5359,14 @@
       if (!profileChart || !richards.cells.length) return;
       const note = document.getElementById('profileNote');
       if (note) {
-        const n = richards.cells.length, dz = richards.cells[0].dz;
-        note.innerHTML = `Each step is one finite-volume cell: <strong>${n} cells</strong> `
-          + `at &Delta;z = ${dz.toFixed(2)} cm (${richards.nodesPerLayer} per layer). `
-          + (richards.nodesPerLayer === 1
+        const counts = rNodeCounts();
+        note.innerHTML = `Each step is one finite-volume cell: <strong>${rGridLabel()}</strong>, `
+          + `${counts.join(' / ')} per layer`
+          + (richards.grading > 0 ? `, graded ${Math.round(richards.grading * 100)}% toward the contacts` : '')
+          + '. '
+          + (counts.every(c => c === 1)
               ? 'At one node per layer the profile is a single step per layer and a wetting front cannot be seen; raise the node count in the editor.'
-              : 'Raise or lower it in the editor to see the profile sharpen or coarsen.')
+              : 'Set them per layer in the editor, and grade them to put cells where the contrast is.')
           + (richards.budgetHit ? ' <strong>The solver ran out of steps this frame.</strong>' : '');
       }
       profileChart.data.datasets[0].data =
