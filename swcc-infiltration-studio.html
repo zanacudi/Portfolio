@@ -1268,6 +1268,13 @@
     .editor-actions { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .validation-box { border-radius:6px; padding:7px 9px; font-size:.72rem; background:#f0fdf4; border:1px solid #86efac; color:#166534; }
     .validation-box.error { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
+    .vc-presets { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .vc-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+    .vc-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; margin-top: 10px; }
+    .vc-charts > * { min-width: 0; }
+    .tb-btn.vc-preset.active { background: var(--header-bg); color: #fff; border-color: var(--header-bg); }
+    .validation-box.invalid { border-color: #fca5a5; background: #fef2f2; color: #991b1b; }
+
     .verify-out { margin-top: 8px; }
     .verify-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
     .verify-table th, .verify-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--border-subtle); }
@@ -1813,6 +1820,81 @@
     </details>
 
     <!-- EXPANDABLE DRAWER 4: Full 11-Column Layer Parameter Table & Geotechnical Guide -->
+    <details class="expand-section" id="secVolumeChange">
+      <summary>
+        <div class="summary-left">
+          <span class="branch-pill-tag" style="background:#7c2d12;">Volume Change</span>
+          <span>Self-Weight Consolidation and Drying Shrinkage of Tailings &mdash; k(e), e(&sigma;&prime;), e(w)</span>
+        </div>
+        <div class="summary-chevron"><span>Expand / Collapse</span> <span class="chev-icon">&#9654;</span></div>
+      </summary>
+      <div class="expand-body">
+        <p class="model-note" style="margin-bottom:9px">
+          Everything above this point assumes the solid skeleton never moves. For tailings that is wrong from the
+          first hour: the material is placed as a slurry at a void ratio of four, or eighteen, consolidates under its
+          own weight, and shrinks further as it dries. Hydraulic conductivity follows the void ratio over orders of
+          magnitude while it happens, so flow and deformation cannot honestly be solved apart.
+          <br><br>
+          The constitutive set is the one in <strong>Taher, Scalia &amp; Bareither (2024)</strong>,
+          <em>One-dimensional inverse modelling of saturated-unsaturated volume change behaviour of tailings</em>,
+          International Journal of Geotechnical Engineering:
+          <br>&nbsp;&nbsp;&bull; <strong>e(&sigma;&prime;) = A(&sigma;&prime; + Z)<sup>B</sup></strong> &mdash; Liu &amp; Znidar&#269;i&#263; (1991)
+          <br>&nbsp;&nbsp;&bull; <strong>k(e) = C e<sup>D</sup></strong> &mdash; Gjerapic et al. (2008)
+          <br>&nbsp;&nbsp;&bull; <strong>e(w) = a<sub>sh</sub>[w<sup>c</sup>/b<sub>sh</sub><sup>c</sup> + 1]<sup>1/c</sup></strong> &mdash; Fredlund, Wilson &amp; Fredlund (2002)
+          <br>&nbsp;&nbsp;&bull; <strong>w(&psi;)</strong> &mdash; Fredlund, Xing &amp; Huang (1994)
+          <br><br>
+          Consolidation is solved at <strong>finite strain in solids coordinates</strong>: each cell keeps a fixed
+          amount of solid particles for ever and its physical thickness is &Delta;&zeta;(1+e), so the column settles
+          because e falls and no mesh has to be moved. In those coordinates the buoyant weight carried above a point
+          is exactly (G<sub>s</sub>&minus;1)&gamma;<sub>w</sub>&zeta;, which makes the resting state known in closed
+          form &mdash; and that is what <em>Check against the resting state</em> below compares against.
+        </p>
+
+        <div class="vc-presets">
+          <span class="pill-group-label" style="color:var(--text-muted)">Material</span>
+          <button type="button" class="tb-btn vc-preset" data-key="spwc" onclick="vcLoadPreset('spwc')">Phosphatic waste clay</button>
+          <button type="button" class="tb-btn vc-preset active" data-key="pamft" onclick="vcLoadPreset('pamft')">Polymer-amended MFT</button>
+        </div>
+        <p class="model-note" id="vcPresetNote" style="margin:6px 0 9px"></p>
+
+        <div class="field-grid vc-grid">
+          <label class="form-field">A (kPa)<input id="vc_A" type="text" title="Liu & Znidarcic: e = A(sigma+Z)^B"></label>
+          <label class="form-field">Z (kPa)<input id="vc_Z" type="text"></label>
+          <label class="form-field">B (negative)<input id="vc_B" type="text"></label>
+          <label class="form-field">C (m/s)<input id="vc_C" type="text" title="Gjerapic: k = C e^D"></label>
+          <label class="form-field">D<input id="vc_D" type="text"></label>
+          <label class="form-field">C correction factor<input id="vc_Cf" type="text" title="The paper applies 5 or 10 to C for the PAMFT data."></label>
+          <label class="form-field">Specific gravity Gs<input id="vc_Gs" type="text"></label>
+          <label class="form-field">Initial void ratio e0<input id="vc_e0" type="text"></label>
+          <label class="form-field">Column height H0 (m)<input id="vc_H0" type="text"></label>
+          <label class="form-field">Run to (days)<input id="vc_days" type="text"></label>
+          <label class="form-field">Cells<input id="vc_cells" type="number" min="4" max="300" step="1" value="40"></label>
+          <label class="form-field">a_sh<input id="vc_a_sh" type="text" title="Fredlund, Wilson & Fredlund shrinkage curve"></label>
+          <label class="form-field">b_sh<input id="vc_b_sh" type="text"></label>
+          <label class="form-field">c_sh<input id="vc_c_sh" type="text"></label>
+          <label class="form-field">w_s (saturated w)<input id="vc_w_s" type="text"></label>
+          <label class="form-field">psi_r (kPa)<input id="vc_psi_r" type="text" title="Fredlund & Xing residual suction"></label>
+          <label class="form-field">a_f (kPa)<input id="vc_a_f" type="text"></label>
+          <label class="form-field">n_f<input id="vc_n_f" type="text"></label>
+          <label class="form-field">m_f<input id="vc_m_f" type="text"></label>
+        </div>
+
+        <div class="editor-actions" style="margin-top:8px">
+          <button type="button" class="tb-btn primary" onclick="vcGo(false)">Run to the test duration</button>
+          <button type="button" class="tb-btn" onclick="vcGo(true)">Run to rest</button>
+          <button type="button" class="tb-btn" onclick="vcResetRun()">Reset</button>
+          <button type="button" class="tb-btn" onclick="vcVerify()">Check against the resting state</button>
+        </div>
+        <div id="vcStatus" class="validation-box" aria-live="polite">Ready.</div>
+        <div id="vcVerifyOut" class="verify-out"></div>
+
+        <div class="vc-charts">
+          <div class="chart-box-sub" style="height:260px"><canvas id="vcHeightChart"></canvas></div>
+          <div class="chart-box-sub" style="height:260px"><canvas id="vcProfileChart"></canvas></div>
+        </div>
+      </div>
+    </details>
+
     <details class="expand-section" id="secParamTable">
       <summary>
         <div class="summary-left">
@@ -5579,6 +5661,530 @@
       return rows;
     }
 
+    /* =====================================================================
+       VOLUME CHANGE
+
+       Richards on a rigid grid assumes the solid skeleton never moves. For
+       tailings that is the wrong assumption from the first hour: the material
+       is placed as a slurry at a void ratio of four or eighteen, consolidates
+       under its own weight, and then shrinks further as it dries. Hydraulic
+       conductivity follows the void ratio over orders of magnitude while it
+       happens, so flow and deformation cannot be solved apart.
+
+       The constitutive set here is the one in Taher, Scalia & Bareither
+       (2024), "One-dimensional inverse modelling of saturated-unsaturated
+       volume change behaviour of tailings", Int. J. Geotech. Eng.
+
+         e(sigma')  = A (sigma' + Z)^B                   Liu & Znidarcic 1991
+         k(e)       = C e^D                              Gjerapic et al. 2008
+         e(w)       = a_sh [ w^c_sh / b_sh^c_sh + 1 ]^(1/c_sh)
+                                                 Fredlund, Wilson & F. 2002
+         w(psi)     = Cf(psi) w_s / { ln[ e + (psi/a_f)^n_f ] }^m_f
+                                                 Fredlund, Xing & Huang 1994
+         Cf(psi)    = 1 - ln(1 + psi/psi_r) / ln(1 + 1e6/psi_r)
+
+       and the saturated and unsaturated parts are combined incrementally,
+       e = e0 + de(sigma') + de(psi), as in section 2.2.3 of that paper.
+
+       Units here: stress and suction in kPa, k in m/s, w gravimetric.
+       ===================================================================== */
+    const VC_PRESETS = {
+      spwc: {
+        name: 'Phosphatic waste clay (slurry)',
+        note: 'Somogyi (1980), column test of McVay, Townsend & Bloomquist (1986): 6.33 m, 430 days.',
+        A: 12.19, Z: 0.0, B: -0.290,          // kPa
+        C: 1.410e-11, D: 4.110,               // m/s
+        Gs: 2.710, e0: 18.80,
+        // no shrinkage or SWCC parameters were reported: saturated case only
+        a_sh: null, b_sh: null, c_sh: null,
+        w_s: null, psi_r: null, a_f: null, n_f: null, m_f: null,
+        H0: 6.33, days: 430
+      },
+      pamft: {
+        name: 'Polymer-amended mature fine tailings',
+        note: 'Jeeravipoolvarn (2010), Dunmola et al. (2013); column test of Soleimani et al. (2014): 0.5 m, 46 days (9 saturated + 37 drying).',
+        A: 1.903, Z: 0.023, B: -0.230,
+        C: 3.500e-11, D: 8.00,
+        Cf: 10,                                // correction factor on C, 5 or 10
+        Gs: 2.120, e0: 4.000,
+        a_sh: 1.139, b_sh: 0.523, c_sh: 3.749,
+        w_s: 1.500, psi_r: 894.7, a_f: 2.569, n_f: 2.911, m_f: 0.540,
+        H0: 0.5, days: 46
+      }
+    };
+
+    const GAMMA_W = 9.810;        // kN/m3
+    const vc = {
+      on: false,
+      preset: 'pamft',
+      p: Object.assign({}, VC_PRESETS.pamft)
+    };
+
+    // ---- the five relations -------------------------------------------------
+
+    // Liu & Znidarcic: void ratio from vertical effective stress, kPa
+    function vcVoidFromStress(p, sigEff) {
+      const s = Math.max(1e-6, sigEff + p.Z);
+      return Math.max(1e-4, p.A * Math.pow(s, p.B));
+    }
+
+    // and its inverse, for finding the stress that holds a given void ratio
+    function vcStressFromVoid(p, e) {
+      return Math.max(0, Math.pow(Math.max(1e-9, e) / p.A, 1 / p.B) - p.Z);
+    }
+
+    // Gjerapic: saturated conductivity from void ratio, m/s. The correction
+    // factor is the one the paper applies to C, not a separate parameter.
+    function vcKfromVoid(p, e) {
+      const C = p.C * (p.Cf || 1);
+      return Math.max(1e-16, C * Math.pow(Math.max(1e-6, e), p.D));
+    }
+
+    // Fredlund, Wilson & Fredlund shrinkage curve: void ratio from gravimetric
+    // water content. At w = 0 it gives a_sh, the void ratio at the shrinkage
+    // limit; at high w it rises along the saturation line e = Gs w.
+    function vcVoidFromWater(p, w) {
+      if (!(p.a_sh > 0)) return null;
+      const t = Math.pow(Math.max(0, w), p.c_sh) / Math.pow(p.b_sh, p.c_sh);
+      return p.a_sh * Math.pow(t + 1, 1 / p.c_sh);
+    }
+
+    // Fredlund & Xing: gravimetric water content from matric suction, kPa
+    function vcWaterFromSuction(p, psi) {
+      if (!(p.w_s > 0)) return null;
+      const s = Math.max(1e-6, psi);
+      const corr = 1 - Math.log(1 + s / p.psi_r) / Math.log(1 + 1e6 / p.psi_r);
+      const inner = Math.log(Math.E + Math.pow(s / p.a_f, p.n_f));
+      return Math.max(0, corr * p.w_s / Math.pow(inner, p.m_f));
+    }
+
+    // phase relations
+    function vcSaturation(p, w, e) { return (e > 0) ? Math.min(1, p.Gs * w / e) : 0; }
+    function vcUnitWeight(p, w, e) { return GAMMA_W * p.Gs * (1 + w) / (1 + e); }   // kN/m3, total
+
+    /* The combination of section 2.2.3: the change the saturated relation
+       asks for and the change the unsaturated relation asks for are both
+       measured from the initial state and added to it, rather than one
+       overriding the other. */
+    function vcCombine(p, e0, sigEff, psi) {
+      const deSig = vcVoidFromStress(p, sigEff) - vcVoidFromStress(p, 0);
+      let dePsi = 0;
+      if (p.a_sh > 0 && p.w_s > 0) {
+        const w = vcWaterFromSuction(p, psi);
+        const w0 = vcWaterFromSuction(p, 0);
+        dePsi = vcVoidFromWater(p, w) - vcVoidFromWater(p, w0);
+      }
+      return Math.max(p.a_sh || 1e-3, e0 + deSig + dePsi);
+    }
+
+    /* ---------------------------------------------------------------------
+       SELF-WEIGHT CONSOLIDATION, FINITE STRAIN
+
+       Solved in solids coordinates: zeta is the cumulative thickness of solid
+       particles, measured down from the surface, and each cell keeps a fixed
+       amount of solids for ever. Its physical thickness is dzeta*(1+e), so the
+       column settles simply because e falls, and no mesh has to be moved.
+
+       Water in a cell is e*dzeta per unit area, so conservation is
+
+           de/dt = -dv/dzeta
+
+       with v the Darcy velocity of water relative to the solids, positive
+       downward. In these coordinates the buoyant weight carried above a point
+       is exactly (Gs-1)*gamma_w*zeta, so the excess pore pressure is that
+       minus whatever the skeleton is actually carrying, sigma'(e), and
+
+           v = -(k/(1+e)) [ (Gs-1) - (1/gamma_w) d sigma'/d zeta ]
+
+       which is Gibson's equation written out. At rest v = 0 everywhere, so
+       sigma' = (Gs-1) gamma_w zeta: the final state is exact and known, and
+       that is what the verification checks.
+
+       Top: free draining, sigma' = 0 at the surface. Bottom: impermeable.
+       --------------------------------------------------------------------- */
+    const vcSim = {
+      n: 40,
+      dzeta: 0,          // solids thickness per cell, m
+      e: null,           // void ratio, one per cell
+      t: 0,              // days
+      dt: 1e-6,          // days
+      hist: [],          // [{t, H}]
+      iters: 0, fails: 0, budget: 0
+    };
+
+    function vcReset(p, H0, n) {
+      const N = Math.max(4, Math.min(300, n || vcSim.n));
+      vcSim.n = N;
+      vcSim.dzeta = (H0 / (1 + p.e0)) / N;
+      vcSim.e = new Float64Array(N).fill(p.e0);
+      vcSim.t = 0; vcSim.dt = 1e-6;
+      vcSim.hist = [{ t: 0, H: H0 }];
+      vcSim.fails = 0;
+    }
+
+    function vcHeight() {
+      let H = 0;
+      for (let i = 0; i < vcSim.n; i++) H += vcSim.dzeta * (1 + vcSim.e[i]);
+      return H;
+    }
+
+    // depth of each cell centre in the deformed column, m
+    function vcDepths() {
+      const z = new Float64Array(vcSim.n);
+      let acc = 0;
+      for (let i = 0; i < vcSim.n; i++) {
+        const th = vcSim.dzeta * (1 + vcSim.e[i]);
+        z[i] = acc + th / 2;
+        acc += th;
+      }
+      return z;
+    }
+
+    // the exact resting state: sigma' = (Gs-1) gamma_w zeta
+    function vcEquilibrium(p) {
+      let H = 0;
+      const e = new Float64Array(vcSim.n);
+      for (let i = 0; i < vcSim.n; i++) {
+        const zeta = (i + 0.5) * vcSim.dzeta;
+        e[i] = vcVoidFromStress(p, (p.Gs - 1) * GAMMA_W * zeta);
+        H += vcSim.dzeta * (1 + e[i]);
+      }
+      return { e, H };
+    }
+
+    /* One implicit step on e. Backward Euler, Picard on the nonlinearity,
+       tridiagonal solve -- the same treatment the Richards engine gets, and
+       for the same reason: explicit stepping on a diffusion equation this
+       nonlinear is not worth having.
+
+       Assembled face by face. For the face between the cell above and the
+       cell below, with sigma' linearised about the current iterate as
+       sigma' = S + DS (e - e_m),
+
+           v = -K (Gs-1) + (K / (gamma_w d)) [ sigma'_below - sigma'_above ]
+             = A + B e_above + C e_below
+
+       and then de_i/dt = (v_upper - v_lower)/dzeta, which is tridiagonal.
+       The surface face has sigma' = 0 half a cell above the first centre;
+       the base face has v = 0. Since d sigma'/de is negative, B is positive
+       and C negative, so the matrix is diagonally dominant by construction. */
+    function vcStep(p, dtDays) {
+      const N = vcSim.n, dz = vcSim.dzeta;
+      const dt = dtDays * 86400;                 // k is in m/s
+      const en = Float64Array.from(vcSim.e);
+      let em = Float64Array.from(vcSim.e);
+
+      const lo = new Float64Array(N), di = new Float64Array(N),
+            up = new Float64Array(N), rh = new Float64Array(N),
+            out = new Float64Array(N);
+      const K = new Float64Array(N), S = new Float64Array(N), DS = new Float64Array(N);
+      // one entry per face: 0 is the surface, N is the base
+      const fA = new Float64Array(N + 1), fB = new Float64Array(N + 1), fC = new Float64Array(N + 1);
+
+      let ok = false, it = 0;
+      for (it = 1; it <= 40; it++) {
+        for (let i = 0; i < N; i++) {
+          const e = em[i];
+          K[i] = vcKfromVoid(p, e) / (1 + e);
+          S[i] = vcStressFromVoid(p, e);
+          const d = Math.max(1e-7, 1e-4 * e);
+          DS[i] = (vcStressFromVoid(p, e + d) - vcStressFromVoid(p, e - d)) / (2 * d);
+        }
+
+        for (let fIdx = 0; fIdx <= N; fIdx++) {
+          if (fIdx === N) { fA[fIdx] = 0; fB[fIdx] = 0; fC[fIdx] = 0; continue; }  // impermeable base
+          const below = fIdx;
+          const above = fIdx - 1;                 // -1 means the free surface
+          const Kf = (above < 0) ? K[0] : 0.5 * (K[above] + K[below]);
+          const d = (above < 0) ? dz / 2 : dz;
+          const kap = Kf / (GAMMA_W * d);
+          const Sa = (above < 0) ? 0 : S[above];
+          const Da = (above < 0) ? 0 : DS[above];
+          const ea = (above < 0) ? 0 : em[above];
+          fB[fIdx] = -kap * Da;
+          fC[fIdx] = kap * DS[below];
+          fA[fIdx] = -Kf * (p.Gs - 1)
+                   + kap * (S[below] - Sa - DS[below] * em[below] + Da * ea);
+        }
+
+        for (let i = 0; i < N; i++) {
+          lo[i] = (i === 0) ? 0 : -fB[i] / dz;
+          up[i] = (i === N - 1) ? 0 : fC[i + 1] / dz;
+          di[i] = 1 / dt - (fC[i] - fB[i + 1]) / dz;
+          rh[i] = en[i] / dt + (fA[i] - fA[i + 1]) / dz;
+        }
+
+        if (!rThomas(lo, di, up, rh, N, out)) return false;
+
+        let err = 0;
+        for (let i = 0; i < N; i++) {
+          const v = Math.min(p.e0 * 4, Math.max(1e-4, out[i]));
+          const a = Math.abs(v - em[i]);
+          if (a > err) err = a;
+          if (!isFinite(v)) return false;
+          em[i] = v;
+        }
+        if (err < 1e-9) { ok = true; break; }
+      }
+      vcSim.iters = it;
+      if (!ok) { vcSim.fails++; return false; }
+      vcSim.e.set(em);
+      vcSim.t += dtDays;
+      return true;
+    }
+
+    /* March to a target time with adaptive steps, recording the settlement
+       curve as it goes. */
+    function vcRun(p, tEnd, maxSteps) {
+      const cap = maxSteps || 20000;
+      let steps = 0;
+      while (vcSim.t < tEnd - 1e-12 && steps < cap) {
+        const dt = Math.min(vcSim.dt, tEnd - vcSim.t);
+        const before = Float64Array.from(vcSim.e);
+        if (!vcStep(p, dt)) {
+          vcSim.e.set(before);
+          vcSim.dt = Math.max(1e-9, vcSim.dt * 0.3);
+          steps++;
+          continue;
+        }
+        let dmax = 0;
+        for (let i = 0; i < vcSim.n; i++) dmax = Math.max(dmax, Math.abs(vcSim.e[i] - before[i]));
+        // keep the void ratio change per step modest: this is what sets the
+        // accuracy of the settlement curve, not the iteration count
+        if (dmax > 0.05) {
+          vcSim.e.set(before);
+          vcSim.t -= dt;
+          vcSim.dt = Math.max(1e-9, dt * 0.4);
+          steps++;
+          continue;
+        }
+        if (dmax < 0.01 && vcSim.iters <= 5) vcSim.dt = Math.min(vcSim.dt * 1.5, tEnd / 20);
+        vcSim.hist.push({ t: vcSim.t, H: vcHeight() });
+        steps++;
+      }
+      vcSim.budget = steps;
+      return { t: vcSim.t, H: vcHeight(), steps, fails: vcSim.fails };
+    }
+
+    /* ---------------------------------------------------------------------
+       The panel: parameters, charts and the resting-state check.
+       --------------------------------------------------------------------- */
+    let vcHeightChart = null, vcProfileChart = null;
+
+    const VC_FIELDS = ['A', 'Z', 'B', 'C', 'D', 'Cf', 'Gs', 'e0',
+                       'a_sh', 'b_sh', 'c_sh', 'w_s', 'psi_r', 'a_f', 'n_f', 'm_f'];
+
+    function vcLoadPreset(key) {
+      vc.preset = key;
+      vc.p = Object.assign({}, VC_PRESETS[key]);
+      for (const f of VC_FIELDS) {
+        const el = document.getElementById('vc_' + f);
+        if (el) el.value = (vc.p[f] === null || vc.p[f] === undefined) ? '' : vc.p[f];
+      }
+      const h = document.getElementById('vc_H0'); if (h) h.value = vc.p.H0;
+      const d = document.getElementById('vc_days'); if (d) d.value = vc.p.days;
+      document.querySelectorAll('.vc-preset').forEach(b =>
+        b.classList.toggle('active', b.dataset.key === key));
+      const note = document.getElementById('vcPresetNote');
+      if (note) note.innerHTML = `<strong>${vc.p.name}.</strong> ${vc.p.note}`;
+      vcResetRun();
+    }
+
+    function vcReadFields() {
+      const p = Object.assign({}, vc.p);
+      for (const f of VC_FIELDS) {
+        const el = document.getElementById('vc_' + f);
+        if (!el) continue;
+        const raw = (el.value || '').trim();
+        p[f] = raw === '' ? null : Number(raw);
+      }
+      if (!(p.A > 0)) throw new Error('A must be positive.');
+      if (!(p.B < 0)) throw new Error('B must be negative: void ratio falls as effective stress rises.');
+      if (!(p.C > 0) || !(p.D > 0)) throw new Error('C and D must be positive.');
+      if (!(p.Gs > 1)) throw new Error('Specific gravity must exceed 1.');
+      if (!(p.e0 > 0)) throw new Error('Initial void ratio must be positive.');
+      vc.p = p;
+      return p;
+    }
+
+    function vcResetRun() {
+      try {
+        const p = vcReadFields();
+        const H0 = Number(document.getElementById('vc_H0').value) || p.H0;
+        const n = Math.max(4, Math.min(300, Math.round(Number(document.getElementById('vc_cells').value) || 40)));
+        p.H0 = H0;
+        vcReset(p, H0, n);
+        vcDraw();
+        vcSay('Ready. ' + n + ' cells, solids thickness ' + (vcSim.dzeta * n).toFixed(4) + ' m.');
+      } catch (err) { vcSay(err.message, true); }
+    }
+
+    function vcGo(toRest) {
+      try {
+        const p = vcReadFields();
+        const days = toRest ? Math.max(20000, (Number(document.getElementById('vc_days').value) || 1) * 200)
+                            : (Number(document.getElementById('vc_days').value) || p.days);
+        const t0 = performance.now();
+        const r = vcRun(p, days);
+        vcDraw();
+        const eq = vcEquilibrium(p);
+        const H0 = p.H0;
+        vcSay(`t = ${r.t.toFixed(1)} d &nbsp; H = ${r.H.toFixed(4)} m from ${H0.toFixed(3)} m `
+            + `&nbsp; settlement ${(H0 - r.H).toFixed(4)} m (${(100 * (H0 - r.H) / H0).toFixed(1)}%) `
+            + `&nbsp;|&nbsp; resting state ${eq.H.toFixed(4)} m, gap ${(r.H - eq.H).toFixed(5)} m `
+            + `&nbsp;|&nbsp; ${r.steps} steps, ${r.fails} rejected, ${(performance.now() - t0).toFixed(0)} ms`);
+      } catch (err) { vcSay(err.message, true); }
+    }
+
+    function vcSay(msg, bad) {
+      const el = document.getElementById('vcStatus');
+      if (!el) return;
+      el.innerHTML = msg;
+      el.className = 'validation-box' + (bad ? ' invalid' : '');
+    }
+
+    function vcInitCharts() {
+      const hEl = document.getElementById('vcHeightChart');
+      const pEl = document.getElementById('vcProfileChart');
+      if (!hEl || !pEl || vcHeightChart) return;
+      const base = {
+        responsive: true, maintainAspectRatio: false, animation: false,
+        plugins: { legend: { display: true, position: 'bottom',
+                             labels: { boxWidth: 16, font: { size: 9 }, color: '#475569' } } }
+      };
+      vcHeightChart = new Chart(hEl, {
+        type: 'scatter',
+        data: { datasets: [
+          { label: 'Height', data: [], showLine: true, borderColor: '#1d4ed8', borderWidth: 2, pointRadius: 0 },
+          { label: 'Resting state (exact)', data: [], showLine: true, borderColor: '#b45309',
+            borderDash: [6, 4], borderWidth: 1.4, pointRadius: 0 }
+        ] },
+        options: Object.assign({}, base, {
+          scales: {
+            x: { type: 'logarithmic', title: { display: true, text: 'Time (days, log)', font: { size: 9.5 } },
+                 // one label per decade, as everywhere else on this page
+                 ticks: { font: { size: 8.5 }, maxRotation: 0, autoSkip: false,
+                   callback: v => {
+                     const l = Math.log10(v);
+                     if (Math.abs(l - Math.round(l)) > 1e-6) return '';
+                     return (v >= 1) ? v.toLocaleString() : v.toExponential(0);
+                   } } },
+            y: { title: { display: true, text: 'Column height (m)', font: { size: 9.5 } },
+                 ticks: { font: { size: 8.5 } } }
+          },
+          plugins: Object.assign({}, base.plugins, {
+            title: { display: true, text: 'Self-weight consolidation', font: { size: 10, weight: '700' }, color: '#334155' } })
+        })
+      });
+      vcProfileChart = new Chart(pEl, {
+        type: 'scatter',
+        data: { datasets: [
+          { label: 'Void ratio now', data: [], showLine: true, borderColor: '#1d4ed8', borderWidth: 2, pointRadius: 0 },
+          { label: 'Resting state (exact)', data: [], showLine: true, borderColor: '#b45309',
+            borderDash: [6, 4], borderWidth: 1.4, pointRadius: 0 },
+          { label: 'Initial', data: [], showLine: true, borderColor: '#94a3b8',
+            borderDash: [3, 3], borderWidth: 1.2, pointRadius: 0 }
+        ] },
+        options: Object.assign({}, base, {
+          scales: {
+            x: { title: { display: true, text: 'Void ratio e', font: { size: 9.5 } }, ticks: { font: { size: 8.5 } } },
+            y: { reverse: true, title: { display: true, text: 'Depth below surface (m)', font: { size: 9.5 } },
+                 ticks: { font: { size: 8.5 } } }
+          },
+          plugins: Object.assign({}, base.plugins, {
+            title: { display: true, text: 'Void ratio through the column', font: { size: 10, weight: '700' }, color: '#334155' } })
+        })
+      });
+      vcDraw();
+    }
+
+    function vcDraw() {
+      if (!vcHeightChart || !vcSim.e) return;
+      const p = vc.p;
+      const hist = vcSim.hist.filter(h => h.t > 0);
+      vcHeightChart.data.datasets[0].data = hist.map(h => ({ x: h.t, y: h.H }));
+      const eq = vcEquilibrium(p);
+      if (hist.length) {
+        vcHeightChart.data.datasets[1].data = [
+          { x: hist[0].t, y: eq.H }, { x: hist[hist.length - 1].t, y: eq.H }];
+      } else {
+        vcHeightChart.data.datasets[1].data = [];
+      }
+      vcHeightChart.update('none');
+
+      const z = vcDepths();
+      vcProfileChart.data.datasets[0].data = Array.from(vcSim.e, (e, i) => ({ x: e, y: z[i] }));
+      let acc = 0;
+      vcProfileChart.data.datasets[1].data = Array.from(eq.e, (e, i) => {
+        const th = vcSim.dzeta * (1 + e);
+        const y = acc + th / 2; acc += th;
+        return { x: e, y };
+      });
+      const th0 = vcSim.dzeta * (1 + p.e0);
+      vcProfileChart.data.datasets[2].data = vcSim.e.length
+        ? Array.from(vcSim.e, (_, i) => ({ x: p.e0, y: (i + 0.5) * th0 })) : [];
+      vcProfileChart.update('none');
+    }
+
+    /* The resting state is known in closed form, so the page can check itself
+       here too rather than asking to be believed. */
+    function vcVerify() {
+      const rows = [];
+      try {
+        const p = vcReadFields();
+        const H0 = Number(document.getElementById('vc_H0').value) || p.H0;
+        const n = Math.max(4, Math.min(300, Math.round(Number(document.getElementById('vc_cells').value) || 40)));
+
+        vcReset(p, H0, n);
+        const eq = vcEquilibrium(p);
+        vcRun(p, Math.max(20000, p.days * 500));
+        const gap = Math.abs(vcHeight() - eq.H);
+        rows.push(['Settles to the resting state', 'sigma&prime; = (G<sub>s</sub>&minus;1)&gamma;<sub>w</sub>&zeta; exactly',
+                   gap.toExponential(1) + ' m', gap < 1e-3]);
+
+        // solids are conserved by construction; check it anyway
+        const solids = vcSim.dzeta * vcSim.n;
+        rows.push(['Solids conserved', 'total solids thickness',
+                   solids.toFixed(6) + ' m vs ' + (H0 / (1 + p.e0)).toFixed(6),
+                   Math.abs(solids - H0 / (1 + p.e0)) < 1e-9]);
+
+        // refinement
+        const hs = [];
+        for (const nn of [20, 40, 80]) {
+          vcReset(p, H0, nn);
+          vcRun(p, p.days);
+          hs.push(vcHeight());
+        }
+        const d1 = Math.abs(hs[1] - hs[0]), d2 = Math.abs(hs[2] - hs[1]);
+        rows.push(['Refinement 20 &rarr; 40 &rarr; 80 cells', `height at ${p.days} d`,
+                   d1.toExponential(1) + ' m then ' + d2.toExponential(1) + ' m', d2 < d1]);
+
+        // the shrinkage curve must sit at or above the saturation line
+        if (p.a_sh > 0 && p.w_s > 0) {
+          let worst = 0, atW = 0;
+          for (let w = 0.02; w <= p.w_s; w += 0.02) {
+            const e = vcVoidFromWater(p, w);
+            const S = p.Gs * w / e;
+            if (S > worst) { worst = S; atW = w; }
+          }
+          rows.push(['Shrinkage curve stays physical', 'highest degree of saturation it implies',
+                     'S = ' + worst.toFixed(3) + ' at w = ' + atW.toFixed(2), worst <= 1.0005]);
+        }
+        vcReset(p, H0, n);
+        vcDraw();
+      } catch (err) {
+        rows.push(['Verification failed', 'exception', err.message || String(err), false]);
+      }
+      const el = document.getElementById('vcVerifyOut');
+      if (el) {
+        el.innerHTML = '<table class="verify-table"><thead><tr><th>Test</th><th>Measure</th><th>Result</th></tr></thead><tbody>'
+          + rows.map(r => `<tr class="${r[3] ? 'vpass' : 'vfail'}"><td>${r[0]}</td><td>${r[1]}</td>`
+                        + `<td><strong>${r[2]}</strong> ${r[3] ? '&#10003;' : '&#10007;'}</td></tr>`).join('')
+          + '</tbody></table>';
+      }
+      return rows;
+    }
+
     // Chart.js watches the window, not the box it is in. Folding a panel or
     // switching view changes the column width without a window resize, which
     // left the canvases at their old size until the window was touched.
@@ -5606,6 +6212,8 @@
     // Startup initialization: Mind map hidden by default; 2-Layer Studio view fitted inside 100% zoom
     renderLegendChips();
     initProfileChart();
+    vcLoadPreset('pamft');
+    vcInitCharts();
     selectMindMapNode('root');
     loadTutorialScenario('capillary');
     updateBoundaryLabels();
