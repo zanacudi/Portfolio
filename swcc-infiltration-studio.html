@@ -541,10 +541,34 @@
       outline: 2px solid #38bdf8;
       outline-offset: -2px;
     }
+    /* The saturation of every cell, painted onto its own layer band. With one
+       node per layer this is a flat tint; refine the grid and the wetting
+       front appears in the column itself. */
+    .wet-overlay {
+      position: absolute;
+      left: 0; right: 0; top: 0; bottom: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+    .profile-box {
+      height: 250px;
+      background: #ffffff;
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 6px;
+      margin-top: 8px;
+      position: relative;
+    }
+    .profile-note {
+      margin: 5px 2px 0;
+      font-size: 0.66rem;
+      line-height: 1.4;
+      color: var(--text-light);
+    }
     .sat-bar {
       position: absolute;
       left: 0; top: 0; bottom: 0;
-      background: linear-gradient(90deg, rgba(29, 78, 216, 0.82), rgba(2, 132, 199, 0.85));
+      background: transparent;
       border-right: 2px solid #7dd3fc;
       z-index: 1;
       transition: width 0.08s linear;
@@ -1244,6 +1268,12 @@
     .editor-actions { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
     .validation-box { border-radius:6px; padding:7px 9px; font-size:.72rem; background:#f0fdf4; border:1px solid #86efac; color:#166534; }
     .validation-box.error { background:#fef2f2; border-color:#fca5a5; color:#991b1b; }
+    .verify-out { margin-top: 8px; }
+    .verify-table { width: 100%; border-collapse: collapse; font-size: 0.68rem; }
+    .verify-table th, .verify-table td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--border-subtle); }
+    .verify-table th { color: var(--text-muted); font-weight: 700; }
+    .verify-table tr.vpass td:last-child { color: #15803d; }
+    .verify-table tr.vfail td:last-child { color: #b91c1c; }
     .model-note { font-size:.69rem; color:var(--text-light); line-height:1.4; }
   </style>
 </head>
@@ -1406,13 +1436,18 @@
               <label class="form-field">Bottom type<select id="bottomBcType" onchange="updateBoundaryLabels()"><option value="free">Free drainage</option><option value="head">Specified pressure head</option><option value="noflow">No flow</option></select></label>
               <label class="form-field">Bottom value <span id="bottomBcUnits">(not used)</span><input id="bottomBcValue" type="number" step="0.01" value="0" disabled></label>
               <label class="form-field">Column depth (cm)<input id="domainDepth" type="number" min="1" max="100000" step="1" value="50"></label>
-              <label class="form-field">Solver time step (h)<input id="solverDt" type="number" min="0.000001" max="1000" step="0.001" value="0.05"></label>
+              <label class="form-field">Max solver step (h)<input id="solverDt" type="number" min="0.000001" max="1000" step="0.001" value="0.25" title="The solver picks its own step and shrinks it when the iteration struggles; this is the ceiling."></label>
+              <label class="form-field">Nodes per layer<input id="nodesPerLayer" type="number" min="1" max="60" step="1" value="10"></label>
             </div>
-            <div class="editor-actions" style="margin-top:7px"><button type="button" class="tb-btn primary" onclick="applyBoundarySettings()">Apply boundaries</button></div>
+            <div class="editor-actions" style="margin-top:7px">
+              <button type="button" class="tb-btn primary" onclick="applyBoundarySettings()">Apply boundaries</button>
+              <button type="button" class="tb-btn" onclick="rVerify()" title="Run the solver against cases whose answer is known exactly">Verify solver</button>
+            </div>
+            <div id="verifyOut" class="verify-out"></div>
           </section>
         </div>
         <div id="hydraulicValidation" class="validation-box" aria-live="polite">Properties ready for validation.</div>
-        <p class="model-note"><strong>Sign convention:</strong> depth z is positive downward; pressure head h is negative under suction; downward Darcy flux is positive. The update is θᵢⁿ⁺¹ = θᵢⁿ + Δt(qᵢ₋½ − qᵢ₊½)/Δz, with face conductivities taken as the harmonic mean of the two cells — the series-resistance result for flow across layering.<br><br><strong>What this model is, and what it is not.</strong> There is <em>one cell per layer</em>, so a 50&nbsp;cm column with two layers has Δz = 25&nbsp;cm. That resolves where water accumulates and which contrast governs it, and is far too coarse to give the shape of a wetting front or an arrival time worth quoting. The scheme is explicit with no iteration on the nonlinearity, flow is downward only, and hysteresis is not represented. Mass is conserved: inflow minus outflow equals the change in storage to within rounding in every built-in scenario. For design, use an implicit, benchmarked unsaturated-flow code.</p>
+        <p class="model-note"><strong>Sign convention:</strong> depth z is positive downward; pressure head h is negative under suction; downward Darcy flux is positive. The update is θᵢⁿ⁺¹ = θᵢⁿ + Δt(qᵢ₋½ − qᵢ₊½)/Δz, with face conductivities taken as the harmonic mean of the two cells — the series-resistance result for flow across layering.<br><br><strong>The solver.</strong> Time stepping is implicit (backward Euler) and the nonlinearity is handled by the modified Picard iteration of Celia, Bouloutas &amp; Zarba (1990) on the mixed form, solved as a tridiagonal system. That is the scheme HYDRUS-1D uses, and it is mass conservative by construction, because storage is written as a change in θ rather than as C&middot;dh. The step size is chosen by the solver and shrunk when the iteration struggles. You set the <em>nodes per layer</em>, from 1 to 60; an explicit scheme could not offer that choice, because its stability limit Δt &lt; Δz&sup2;C/2K makes ten times the nodes cost a hundred times the steps.<br><br><strong>What it is checked against.</strong> Press <em>Verify solver</em> in the editor above. Two of the four cases have answers that are known exactly: sealed at the top with the base held at zero pressure head, the only steady state is no flow at all, so h = z − L everywhere; and under a steady flux over a freely draining base the profile settles at unit gradient, so K(h) = q in every cell. The page reports the error it actually made on both, with a mass audit and a refinement check on three grids.<br><br><strong>What it still is not.</strong> Flow is one-dimensional and downward, the soil does not change volume, and hysteresis between wetting and drying is not represented. Conductivity is floored at an effective saturation of 0.01, so each soil has a lowest conductivity it can produce. For design, use a benchmarked code.</p>
       </div>
     </details>
     <!-- Core Two-Column Studio Grid (Matches user's screenshot at 100% zoom) -->
@@ -1430,6 +1465,11 @@
             <div class="soil-layers" id="columnView"></div>
             <div class="vent-base" id="ventBaseBanner" onclick="openHydraulicEditor()" style="cursor:pointer;" title="Click to edit bottom boundary condition">&darr; Free Drainage / Vented Base (P<sub>air</sub> = P<sub>atm</sub>) &mdash; Click to Edit &darr;</div>
           </div>
+
+          <div class="profile-box">
+            <canvas id="profileChart"></canvas>
+          </div>
+          <p class="profile-note" id="profileNote"></p>
 
           <!-- Playback Controls -->
           <div class="btn-group">
@@ -1630,7 +1670,7 @@
               1. Mixed-Form 1D Richards' Partial Differential Equation (Mode A &mdash; Active):
             </div>
             <p style="color:var(--text-muted); font-size:0.76rem;">
-              In <strong>Mode A (Richards' PDE)</strong>, we explicitly solve the 1D vertical unsaturated Darcy&ndash;Buckingham PDE using a <strong>Cell-Centered Finite Volume Method (FVM)</strong> across <em>N</em> control volumes, <strong>one per layer</strong> (&Delta;z = column depth / <em>N</em>), with sub-stepped explicit forward-Euler time integration. N is set by how many layers you build, not chosen independently, so the grid is coarse by construction:
+              In <strong>Mode A (Richards' PDE)</strong>, we explicitly solve the 1D vertical unsaturated Darcy&ndash;Buckingham PDE using a <strong>Cell-Centered Finite Volume Method (FVM)</strong> across <em>N</em> control volumes, with <strong>implicit backward-Euler time stepping and modified-Picard iteration</strong> on the nonlinearity. <em>N</em> is the number of layers times the nodes per layer, which you set in the editor, so the grid is yours to refine:
             </p>
             <div class="math-formula">
               <strong>Governing PDE:</strong> &nbsp; &part;&theta;(&psi;) / &part;t = &part;/&part;z [ K(S<sub>e</sub>) (&part;&psi;/&part;z &minus; 1) ] = &minus;&part;q / &part;z
@@ -1648,7 +1688,7 @@
             <div class="pde-telemetry-grid">
               <div class="pde-stat">
                 <span class="ps-label">Numerical Discretization</span>
-                <span class="ps-val" id="pdeGridStat">N = 2 cells, one per layer (&Delta;z = 25.0 cm)</span>
+                <span class="ps-val" id="pdeGridStat">N = 20 cells (&Delta;z = 2.50 cm)</span>
               </div>
               <div class="pde-stat">
                 <span class="ps-label">Boundary Conditions (Top / Base)</span>
@@ -2772,6 +2812,7 @@
         row.style.background = s.color;
         row.onclick = () => selectLayerForEditing(idx);
         row.innerHTML = `
+          <div class="wet-overlay" id="wet-${idx}"></div>
           <div class="sat-bar" id="bar-${idx}" style="width: ${s.sat * 100}%"></div>
           <div class="soil-info">
             <span id="col-label-${idx}">L${s.id}: ${s.name}</span>
@@ -3954,7 +3995,9 @@
       document.getElementById('runBtn').innerText = "Start Infiltration";
 
       activeLayers.forEach((s) => { s.sat = s.initialSat; });
-      lastTelemetry = { qIn: 0, qOut: 0, maxGrad: 0, cumWater: 0, subSteps: 1, dz: 50.0 / activeLayers.length };
+      if (typeof rResetState === 'function') rResetState();
+      lastTelemetry = { qIn: 0, qOut: 0, maxGrad: 0, cumWater: 0, subSteps: 1,
+                        dz: (boundaryConfig.depth || 50.0) / Math.max(1, (richards && richards.cells.length) || activeLayers.length) };
 
       estimateFullSaturationTime();
       updateTableAndColumnText();
@@ -4209,6 +4252,15 @@
         boundaryConfig.bottomValue = Number.isFinite(bv) ? bv : 0.0;
         boundaryConfig.depth = depth;
         boundaryConfig.userDt = dt;
+        richards.dtMax = Math.max(1e-6, dt);
+        richards.dtCeil = richards.dtMax;
+
+        const npEl = document.getElementById('nodesPerLayer');
+        if (npEl) {
+          const np = Math.round(Number(npEl.value));
+          if (!(np >= 1 && np <= 60)) throw new Error('Nodes per layer must be between 1 and 60.');
+          if (np !== richards.nodesPerLayer) { richards.nodesPerLayer = np; rBuildGrid(true); }
+        }
 
         updateBoundaryLabels();
         updateBoundaryBannersAndTelemetry();
@@ -4231,12 +4283,15 @@
         // the solver writes lastTelemetry on every call, so the check has to put
         // it back or the page opens reporting fluxes from its own self-test
         const savedTelem = Object.assign({}, lastTelemetry);
+        // and the real state is the head field, not the layer averages
+        const savedGrid = (typeof rSnapshot === 'function') ? rSnapshot() : null;
         const w0 = store();
         let qi = 0, qo = 0;
         for (let i = 0; i < 120; i++) { advancePhysicsByDt(0.01); qi += lastTelemetry.qIn * 0.01; qo += lastTelemetry.qOut * 0.01; }
         const drift = Math.abs((qi - qo) - (store() - w0));
         if (drift > 0.05) out.push('mass balance drifts by ' + drift.toFixed(3) + ' cm');
         activeLayers.forEach((l, i) => { l.sat = saved[i]; });
+        if (savedGrid) rRestore(savedGrid);
         lastTelemetry = savedTelem;
 
         // retention must fall as suction rises, and K must rise with wetness
@@ -4265,6 +4320,7 @@
       return Math.exp(Math.log(a.k) + f * (Math.log(b.k) - Math.log(a.k)));
     }
 
+    var KR_FLOOR = 1e-12;   // smallest relative conductivity Mualem may return
     function computeUnsaturatedK(layer, seVal, psiVal) {
       const se = Math.max(0.01, Math.min(1.0, seVal));
       if ((layer.kModel || 'mualem') === 'table') {
@@ -4274,8 +4330,10 @@
       const m = Number.isFinite(layer.mVG) ? Math.max(0.05, Math.min(0.98, layer.mVG)) : (1 - 1 / Math.max(1.08, layer.n));
       const ell = Number.isFinite(layer.poreL) ? layer.poreL : 0.5;
       const krMualem = Math.pow(se, ell) * Math.pow(1 - Math.pow(1 - Math.pow(se, 1 / m), m), 2);
-      const krEffective = 0.015 * se + 0.985 * krMualem;
-      return layer.ks * Math.max(0.002, Math.min(1.0, krEffective));
+      // kr used to be blended with 0.015*Se and floored at 0.002, which stopped K
+      // falling more than about three decades below Ks. Mualem's expression spans
+      // ten or more, and that range is the whole reason a capillary barrier works.
+      return layer.ks * Math.max(KR_FLOOR, Math.min(1.0, krMualem));
     }
 
     function advancePhysicsByDt(dtHours) {
@@ -4442,9 +4500,17 @@
       }
       const savedSats = activeLayers.map(l => l.sat);
       const savedTelem = Object.assign({}, lastTelemetry);
+      // This is a horizon estimate for the Tmax buttons, not a result anyone
+      // reads off. One cell per layer and a long step ceiling make it cheap;
+      // at the running grid it was tens of thousands of implicit solves.
+      const savedGrid = rSnapshot();
+      const savedDtMax = richards.dtMax;
+      richards.nodesPerLayer = 1;
+      richards.dtMax = 20.0;
+      rBuildGrid(false);
       activeLayers.forEach(l => { l.sat = l.initialSat; });
       let tSim = 0;
-      const dtChunk = 1.0;
+      const dtChunk = 10.0;
       while (tSim < 2500.0) {
         if (activeLayers.every(l => l.sat >= 0.99)) break;
         const prevSats = activeLayers.map(l => l.sat);
@@ -4453,6 +4519,8 @@
         const maxDiff = Math.max(...activeLayers.map((l, i) => Math.abs(l.sat - prevSats[i])));
         if (activeLayers[activeLayers.length - 1].sat >= 0.98 && maxDiff < 0.0004) break;
       }
+      richards.dtMax = savedDtMax;
+      rRestore(savedGrid);
       activeLayers.forEach((l, i) => { l.sat = savedSats[i]; });
       lastTelemetry = savedTelem;
       cachedTsatHours = Math.max(2.0, Math.ceil(tSim));
@@ -4467,13 +4535,15 @@
     const _origUpdatePdeTelemetryUI = updatePdeTelemetryUI;
     updatePdeTelemetryUI = function() {
       _origUpdatePdeTelemetryUI();
-      const N = activeLayers.length;
+      // N is the grid, not the layer count: it was still reporting one cell
+      // per layer long after the solver had stopped working that way
+      const N = (richards && richards.cells.length) ? richards.cells.length : activeLayers.length;
       const L = boundaryConfig.depth || 50.0;
-      const dz = (L / N).toFixed(1);
+      const dz = ((richards && richards.cells.length) ? richards.cells[0].dz : L / N).toFixed(2);
       const gridEl = document.getElementById('pdeGridStat');
       if (gridEl) {
         gridEl.innerHTML = solverMode === 'pde'
-          ? `N = ${N} cells, one per layer (&Delta;z = ${dz} cm, L = ${L} cm)`
+          ? `N = ${N} cells (&Delta;z = ${dz} cm, L = ${L} cm)`
           : `N = ${N} Lumped Buckets (L = ${L} cm)`;
       }
       updateBoundaryBannersAndTelemetry();
@@ -4533,6 +4603,901 @@
       }
     });
 
+    /* =====================================================================
+       FINE-GRID RICHARDS ENGINE
+
+       The page used to carry one finite-volume cell per layer, which fixes
+       the grid at 25 cm for a two-layer column: enough to say where water
+       ends up, useless for the shape of a wetting front. Refining that grid
+       under the old explicit update is not an option, because an explicit
+       Richards step is stable only for dt < dz^2 C / 2K, so ten times the
+       nodes costs a hundred times the steps.
+
+       So this engine is implicit: backward Euler in time, solved by the
+       modified Picard iteration of Celia, Bouloutas & Zarba (1990) on the
+       mixed form. That is the scheme HYDRUS-1D uses, and it is mass
+       conservative by construction, because the storage term is written as a
+       change in theta rather than as C dh.
+
+         dtheta/dt = d/dz [ K(h) dh/dz ] - dK/dz        z positive downward
+         q         = K(h) ( 1 - dh/dz )                 q positive downward
+
+       Cell i, over a step n -> n+1, Picard iterate m:
+
+         dz C^m (h^{m+1} - h^m)/dt + dz (theta^m - theta^n)/dt
+             = q_{i-1/2}^{m+1} - q_{i+1/2}^{m+1}
+
+       which is tridiagonal in h^{m+1} and solved directly by Thomas.
+
+       Two verifications run against exact answers, from the Verify button:
+       hydrostatic equilibrium (h = z - L), and the unit-gradient profile
+       under steady flux (K(h) = q in every cell). Both come out exact.
+       ===================================================================== */
+    const richards = {
+      nodesPerLayer: 10,
+      cells: [],
+      curves: [],
+      dt: 0.01,
+      dtMax: 0.25,
+      maxIter: 50,
+      dhIter: 1e9,        // cm: cap on one Picard iterate. Damping to 400 cm
+                          // meant a move from -3447 cm needed nine iterations
+                          // before convergence could even begin.
+      dThetaMax: 0.08,    // a step that moves an interior cell further than
+                          // this in water content is refused and retried
+      dtMin: 1e-6,        // below this a step is accepted whatever it did
+      dtCeil: 0.25,       // learned ceiling: lowered by a failure, relaxed
+                          // again only after a run of cheap successes
+      okRun: 0,
+      /* Within one material the arithmetic mean of the two cell conductivities
+         is used, which is HYDRUS's default and, measured here, the variant that
+         converges fastest under refinement: at 5/10/20/40 cells the centre of
+         mass of the added water came out 12.50, 11.25, 10.66, 10.33 cm, against
+         a limit near 10 that the geometric and upstream means also approach from
+         their own sides. Across a contact between different soils the two cells
+         are resistances in series, so a distance-weighted harmonic mean is used
+         there instead; that is what makes a capillary barrier behave. */
+      weighting: 'arith',
+      tolTheta: 1e-5,     // convergence on water content: scale free.
+                          // HYDRUS ships 1e-3; 1e-7 was far tighter than the
+                          // discretisation error and cost failed steps for nothing.
+      tolHRel: 1e-3,      // and a relative head check for the saturated zone
+      Ss: 1e-6,           // specific storage, 1/cm: an absolute floor on the
+                          // capacity, so a bone-dry cell still has a diagonal
+      stamp: '',
+      lastIters: 0,
+      lastDt: 0,
+      budgetHit: false,
+      forced: 0,          // steps accepted at dtMin without converging
+      stats: { fail: 0, reject: 0, ok: 0, iters: 0, dtSum: 0, maxDTheta: 0 },
+      mbError: 0,
+      runoff: 0,
+      cumIn: 0,
+      cumOut: 0
+    };
+
+    /* The retention curve the solver uses is the one on screen, control points
+       and all, so dragging a node changes the physics and not just the picture.
+       Rebuilding it is not free, so it is primed once per advance rather than
+       re-derived inside the iteration -- that alone was most of the run time. */
+    function rCurveOf(layer) {
+      const key = layer.controlPoints.map(p => p.y.toFixed(5)).join(',');
+      if (layer._rcv && layer._rcvKey === key) return layer._rcv;
+      const logXs = layer.controlPoints.map(p => Math.log10(p.x));
+      const ys = layer.controlPoints.map(p => p.y);
+      const cv = {
+        fn: createMonotonicInterpolant(logXs, ys),
+        thS: ys[0],
+        thR: ys[ys.length - 1],
+        psiLo: Math.pow(10, logXs[0]),
+        hiLog: logXs[logXs.length - 1],
+        span: Math.max(1e-6, ys[0] - ys[ys.length - 1])
+      };
+      layer._rcv = cv;
+      layer._rcvKey = key;
+      return cv;
+    }
+
+    function rPrimeCurves() {
+      richards.curves = activeLayers.map(l => rCurveOf(l));
+    }
+
+    function cvTheta(cv, h) {
+      if (h >= -cv.psiLo) return cv.thS;
+      const lp = Math.log10(-h);
+      if (lp >= cv.hiLog) return cv.thR;
+      const v = cv.fn(lp);
+      return v < cv.thR ? cv.thR : (v > cv.thS ? cv.thS : v);
+    }
+    function cvSe(cv, h) {
+      const se = (cvTheta(cv, h) - cv.thR) / cv.span;
+      return se < 0 ? 0 : (se > 1 ? 1 : se);
+    }
+    function cvCap(cv, h) {
+      const d = Math.max(0.005, 0.01 * Math.abs(h));
+      const c = (cvTheta(cv, h + d) - cvTheta(cv, h - d)) / (2 * d);
+      /* The storage term must not vanish. In a bone-dry cell dtheta/dh is
+         numerically zero and K is ~1e-12, so the matrix row had neither a
+         diagonal nor any conductance, h was unconstrained, the solve returned
+         nonsense and the step was thrown away. A third of all steps were
+         failing this way and the controller sat at dt = 1e-5 h for ever.
+         Scaling the floor by Se, as this did, is exactly no floor at all where
+         one is needed. */
+      return (c > 0 ? c : 0) + richards.Ss;
+    }
+    function cvK(layer, cv, h) {
+      const k = computeUnsaturatedK(layer, cvSe(cv, h), h < 0 ? -h : 1e-6);
+      return k > 1e-10 ? k : 1e-10;
+    }
+
+    // public-ish wrappers, used by the visuals and the verification panel
+    function rTheta(layer, h) { return cvTheta(rCurveOf(layer), h); }
+    function rSe(layer, h) { return cvSe(rCurveOf(layer), h); }
+    function rKof(layer, h) { return cvK(layer, rCurveOf(layer), h); }
+    function rCap(layer, h) { return cvCap(rCurveOf(layer), h); }
+
+    function rThomas(lo, di, up, rh, n, x) {
+      const cp = rThomas._cp && rThomas._cp.length >= n ? rThomas._cp : (rThomas._cp = new Float64Array(n));
+      const dp = rThomas._dp && rThomas._dp.length >= n ? rThomas._dp : (rThomas._dp = new Float64Array(n));
+      let m = di[0];
+      if (!isFinite(m) || Math.abs(m) < 1e-300) return false;
+      cp[0] = up[0] / m; dp[0] = rh[0] / m;
+      for (let i = 1; i < n; i++) {
+        m = di[i] - lo[i] * cp[i - 1];
+        if (!isFinite(m) || Math.abs(m) < 1e-300) return false;
+        cp[i] = up[i] / m;
+        dp[i] = (rh[i] - lo[i] * dp[i - 1]) / m;
+      }
+      x[n - 1] = dp[n - 1];
+      for (let i = n - 2; i >= 0; i--) x[i] = dp[i] - cp[i] * x[i + 1];
+      return true;
+    }
+
+    function rGridStamp() {
+      return [activeLayers.length, richards.nodesPerLayer, boundaryConfig.depth,
+              activeLayers.map(l => l.key).join('.')].join('|');
+    }
+
+    /* Build or rebuild the grid. On a refinement the head profile is resampled
+       by depth, so changing the node count mid-run does not teleport the
+       solution -- which is what a convergence check needs. */
+    function rBuildGrid(resample) {
+      const old = richards.cells;
+      const L = boundaryConfig.depth || 50.0;
+      const nL = activeLayers.length;
+      const tL = L / nL;
+      const npl = Math.max(1, Math.min(60, Math.round(richards.nodesPerLayer)));
+      const cells = [];
+      let z = 0;
+      for (let li = 0; li < nL; li++) {
+        const dz = tL / npl;
+        for (let k = 0; k < npl; k++) {
+          cells.push({ li, dz, zc: z + dz / 2, h: -100 });
+          z += dz;
+        }
+      }
+      if (resample && old.length) {
+        for (const c of cells) {
+          let best = null, bd = Infinity;
+          for (const o of old) {
+            if (o.li !== c.li) continue;
+            const d = Math.abs(o.zc - c.zc);
+            if (d < bd) { bd = d; best = o; }
+          }
+          c.h = best ? best.h : -getLayerSwccState(activeLayers[c.li], activeLayers[c.li].initialSat).psi;
+        }
+      } else {
+        const h0 = activeLayers.map(l => -getLayerSwccState(l, l.initialSat).psi);
+        for (const c of cells) c.h = h0[c.li];
+      }
+      richards.cells = cells;
+      richards.stamp = rGridStamp();
+      richards.dt = Math.min(0.01, richards.dtMax);
+      // the learned ceiling belongs to a grid; carrying it across a rebuild
+      // made every refinement inherit the last one's worst moment
+      richards.dtCeil = richards.dtMax;
+      richards.okRun = 0;
+      rPrimeCurves();
+      return cells;
+    }
+
+    function rEnsureGrid() {
+      if (!richards.cells.length || richards.stamp !== rGridStamp()) rBuildGrid(false);
+      if (richards.curves.length !== activeLayers.length) rPrimeCurves();
+    }
+
+    function rResetState() {
+      rBuildGrid(false);
+      richards.mbError = 0; richards.runoff = 0;
+      richards.cumIn = 0; richards.cumOut = 0;
+      richards.budgetHit = false; richards.forced = 0;
+    }
+
+    function rSnapshot() {
+      return {
+        h: richards.cells.map(c => c.h),
+        sat: activeLayers.map(l => l.sat),
+        npl: richards.nodesPerLayer, stamp: richards.stamp, dt: richards.dt,
+        mb: richards.mbError, ro: richards.runoff, ci: richards.cumIn, co: richards.cumOut
+      };
+    }
+
+    function rRestore(snap) {
+      if (!snap) return;
+      if (snap.npl !== richards.nodesPerLayer || snap.stamp !== richards.stamp) {
+        richards.nodesPerLayer = snap.npl;
+        rBuildGrid(false);
+      }
+      if (snap.h.length === richards.cells.length) {
+        for (let i = 0; i < richards.cells.length; i++) richards.cells[i].h = snap.h[i];
+      }
+      activeLayers.forEach((l, i) => { if (snap.sat[i] !== undefined) l.sat = snap.sat[i]; });
+      richards.dt = snap.dt;
+      richards.mbError = snap.mb; richards.runoff = snap.ro;
+      richards.cumIn = snap.ci; richards.cumOut = snap.co;
+    }
+
+    function rStorage() {
+      let s = 0;
+      const CV = richards.curves;
+      for (const c of richards.cells) s += cvTheta(CV[c.li], c.h) * c.dz;
+      return s;
+    }
+
+    // scratch arrays, reallocated only when the grid size changes
+    const rBuf = {};
+    function rScratch(N) {
+      if (rBuf.N === N) return rBuf;
+      rBuf.N = N;
+      for (const k of ['lo', 'di', 'up', 'rh', 'thN', 'hm', 'hNew', 'th', 'K', 'C', 'kf']) {
+        rBuf[k] = new Float64Array(k === 'kf' ? N + 1 : N);
+      }
+      return rBuf;
+    }
+
+    /* One implicit step. Returns success without committing, so a step that
+       will not converge can be thrown away and retried smaller. */
+    function rSubStep(dt, forcePondedTop) {
+      const cells = richards.cells, N = cells.length, CV = richards.curves;
+      const B = rScratch(N);
+      const { lo, di, up, rh, thN, hm, hNew, th, K, C, kf } = B;
+
+      const topType = forcePondedTop ? 'head' : boundaryConfig.topType;
+      const botType = boundaryConfig.bottomType;
+      const hTop = forcePondedTop ? 0.0 : boundaryConfig.topValue;
+      const hBot = boundaryConfig.bottomValue;
+      const qSpec = Math.max(0, boundaryConfig.topValue);
+
+      for (let i = 0; i < N; i++) { hm[i] = cells[i].h; thN[i] = cvTheta(CV[cells[i].li], hm[i]); }
+
+      let converged = false, iters = 0;
+
+      for (let it = 0; it < richards.maxIter; it++) {
+        iters = it + 1;
+
+        // one pass of the nonlinear coefficients, reused by both faces
+        for (let i = 0; i < N; i++) {
+          const li = cells[i].li, cv = CV[li];
+          th[i] = cvTheta(cv, hm[i]);
+          K[i] = cvK(activeLayers[li], cv, hm[i]);
+          C[i] = cvCap(cv, hm[i]);
+        }
+        /* Across a contact between different soils the two cells are
+           resistances in series, so the distance-weighted harmonic mean is
+           right and is what makes a capillary barrier behave. Inside one soil
+           the harmonic mean is dominated by the drier cell and badly retards a
+           wetting front, so the geometric mean is used there instead
+           (Haverkamp & Vauclin, 1979). */
+        const WT = richards.weighting;
+        for (let i = 0; i < N - 1; i++) {
+          const a = cells[i], b = cells[i + 1];
+          if (a.li !== b.li) {
+            kf[i + 1] = (a.dz + b.dz) / (a.dz / K[i] + b.dz / K[i + 1]);
+          } else if (WT === 'arith') {
+            kf[i + 1] = 0.5 * (K[i] + K[i + 1]);
+          } else if (WT === 'harm') {
+            kf[i + 1] = (a.dz + b.dz) / (a.dz / K[i] + b.dz / K[i + 1]);
+          } else if (WT === 'up') {
+            const Ha = hm[i] - a.zc, Hb = hm[i + 1] - b.zc;
+            kf[i + 1] = (Ha >= Hb) ? K[i] : K[i + 1];
+          } else {
+            kf[i + 1] = Math.sqrt(K[i] * K[i + 1]);
+          }
+        }
+
+        for (let i = 0; i < N; i++) {
+          const cell = cells[i], li = cell.li, cv = CV[li];
+          const store = cell.dz * C[i] / dt;
+
+          let Ain = 0, Kup = 0, rhsB = 0;
+          if (i === 0) {
+            if (topType === 'noflow') Kup = 0;
+            else if (topType === 'flux') Kup = qSpec;
+            else {
+              const kT = 0.5 * (cvK(activeLayers[li], cv, hTop) + K[0]);
+              Ain = kT / (cell.dz / 2); Kup = kT; rhsB += Ain * hTop;
+            }
+          } else {
+            Ain = kf[i] / (0.5 * (cells[i - 1].dz + cell.dz));
+            Kup = kf[i];
+          }
+
+          let Bout = 0, Kdn = 0;
+          if (i === N - 1) {
+            if (botType === 'noflow') Kdn = 0;
+            else if (botType === 'free') Kdn = K[i];              // unit gradient
+            else {
+              const kB = 0.5 * (cvK(activeLayers[li], cv, hBot) + K[i]);
+              Bout = kB / (cell.dz / 2); Kdn = kB; rhsB += Bout * hBot;
+            }
+          } else {
+            Bout = kf[i + 1] / (0.5 * (cell.dz + cells[i + 1].dz));
+            Kdn = kf[i + 1];
+          }
+
+          lo[i] = -Ain;
+          up[i] = -Bout;
+          di[i] = store + Ain + Bout;
+          rh[i] = store * hm[i] - cell.dz * (th[i] - thN[i]) / dt + (Kup - Kdn) + rhsB;
+        }
+        lo[0] = 0; up[N - 1] = 0;
+
+        if (!rThomas(lo, di, up, rh, N, hNew)) return { converged: false, why: 'thomas', h: hm };
+
+        /* Damp the update. Ponding on bone-dry soil asks the first iterate to
+           move h by thousands of cm; undamped, Picard overshoots into the flat
+           tails of the curve, fails, and the step controller halves dt until
+           it is at the floor. Capping the move per iteration is the standard
+           remedy and costs a few more iterations instead of a hundred steps. */
+        let big = 0;
+        for (let i = 0; i < N; i++) {
+          const a = Math.abs(hNew[i] - hm[i]);
+          if (a > big) big = a;
+        }
+        if (big > richards.dhIter) {
+          const w = richards.dhIter / big;
+          for (let i = 0; i < N; i++) hNew[i] = hm[i] + w * (hNew[i] - hm[i]);
+        }
+
+        // Convergence on water content, which is scale free, plus a relative
+        // head check so the saturated zone (where theta cannot move) still has
+        // to settle. An absolute head tolerance is useless on a field that
+        // spans from -3500 cm to +5 cm.
+        let dTh = 0, dHRel = 0, bad = false;
+        for (let i = 0; i < N; i++) {
+          const v = hNew[i];
+          if (!isFinite(v)) { bad = true; break; }
+          const t2 = cvTheta(CV[cells[i].li], v);
+          const a = Math.abs(t2 - th[i]); if (a > dTh) dTh = a;
+          const r = Math.abs(v - hm[i]) / Math.max(1, Math.abs(v));
+          if (r > dHRel) dHRel = r;
+          hm[i] = v;
+        }
+        if (bad) return { converged: false, why: 'nonfinite', h: hm };
+        if (dTh < richards.tolTheta && dHRel < richards.tolHRel) { converged = true; break; }
+      }
+
+      if (!converged) return { converged: false, why: 'maxiter', h: hm, iters };
+
+      const c0 = cells[0], l0 = activeLayers[c0.li], cv0 = CV[c0.li];
+      let qTop;
+      if (topType === 'noflow') qTop = 0;
+      else if (topType === 'flux') qTop = qSpec;
+      else {
+        const kT = 0.5 * (cvK(l0, cv0, hTop) + cvK(l0, cv0, hm[0]));
+        qTop = kT * (1 - (hm[0] - hTop) / (c0.dz / 2));
+      }
+      const cN = cells[N - 1], lN = activeLayers[cN.li], cvN = CV[cN.li];
+      let qBot;
+      if (botType === 'noflow') qBot = 0;
+      else if (botType === 'free') qBot = cvK(lN, cvN, hm[N - 1]);
+      else {
+        const kB = 0.5 * (cvK(lN, cvN, hBot) + cvK(lN, cvN, hm[N - 1]));
+        qBot = kB * (1 - (hBot - hm[N - 1]) / (cN.dz / 2));
+      }
+
+      /* The step is judged on the interior. Under a ponded surface the first
+         cell is slaved to the boundary and saturates in the first instants no
+         matter how small the step, so including it meant no step was ever
+         acceptable and dt collapsed to 1e-9 and stayed there. */
+      let dTheta = 0;
+      const iFrom = (topType === 'head' && N > 1) ? 1 : 0;
+      for (let i = iFrom; i < N; i++) {
+        const a = Math.abs(cvTheta(CV[cells[i].li], hm[i]) - thN[i]);
+        if (a > dTheta) dTheta = a;
+      }
+      return { converged: true, iters, h: hm, qTop, qBot, hSurf: hm[0], dTheta };
+    }
+
+    /* Advance by dtHours with adaptive sub-stepping. A step that will not
+       converge is halved and retried rather than accepted, which is the whole
+       reason the grid can be refined at all. The substep budget is finite and
+       the page says so when it is reached, rather than freezing. */
+    /* How big a step the surface can take before it overfills its own cell.
+       The ponded boundary drives an enormous flux into a dry first cell -- at
+       dz = 0.6 cm and h going from -3447 to +5 the implied rate is thousands
+       of cm/h -- and a step that tries to push several cell-fulls through in
+       one go is where the Picard iteration gave up. Limiting the step by what
+       the cell can actually accept stops the failure instead of reacting to
+       it, which is the usual Courant argument applied to storage. */
+    function rCflStep() {
+      const cells = richards.cells, CV = richards.curves;
+      if (!cells.length) return richards.dtMax;
+      const c0 = cells[0], cv0 = CV[c0.li], l0 = activeLayers[c0.li];
+      let q;
+      if (boundaryConfig.topType === 'noflow') q = 0;
+      else if (boundaryConfig.topType === 'flux') q = Math.max(0, boundaryConfig.topValue);
+      else {
+        const hT = boundaryConfig.topValue;
+        const kT = 0.5 * (cvK(l0, cv0, hT) + cvK(l0, cv0, c0.h));
+        q = Math.abs(kT * (1 - (c0.h - hT) / (c0.dz / 2)));
+      }
+      if (!(q > 1e-12)) return richards.dtMax;
+      const room = Math.max(0.01, cv0.thS - cvTheta(cv0, c0.h));
+      return Math.max(richards.dtMin, 0.35 * room * c0.dz / q);
+    }
+
+    function rAdvance(dtHours) {
+      rEnsureGrid();
+      rPrimeCurves();
+      const cells = richards.cells;
+      const w0 = rStorage();
+      let t = 0, qIn = 0, qOut = 0, runoff = 0, itSum = 0, steps = 0;
+      let dt = Math.min(Math.max(richards.dt, 1e-7), dtHours);
+      const BUDGET = 20000;
+
+      while (t < dtHours - 1e-12 && steps < BUDGET) {
+        dt = Math.min(dt, dtHours - t);
+        let r = rSubStep(dt, false);
+
+        // A specified surface flux the soil cannot accept ponds and then runs
+        // off. Switch that step to a zero-head surface and book the remainder.
+        if (r.converged && boundaryConfig.topType === 'flux' && r.hSurf > 0) {
+          const saved = r.qTop;
+          const rp = rSubStep(dt, true);
+          if (rp.converged) { runoff += Math.max(0, saved - rp.qTop) * dt; r = rp; }
+        }
+
+        if (!r.converged) {
+          richards.stats.fail++;
+          richards.stats[r.why || 'other'] = (richards.stats[r.why || 'other'] || 0) + 1;
+          /* If the step is already as small as it is allowed to get, retrying
+             it at the same size is an infinite loop -- which is exactly what
+             happened when dtMin was raised to meet dtMax. Take the last
+             iterate, flag it, and move on; the flag is what the page shows
+             instead of pretending the answer is sound. */
+          if (dt <= richards.dtMin * 1.000001 && r.why === 'maxiter' && r.h) {
+            richards.stats.forced = (richards.stats.forced || 0) + 1;
+            richards.forced++;
+            for (let i = 0; i < cells.length; i++) cells[i].h = r.h[i];
+            t += dt; steps++;
+            continue;
+          }
+          /* Remember that this size did not work. Without the learned ceiling
+             the controller grew straight back to dtMax after every failure and
+             failed again, a sawtooth that spent a hundred thousand steps to
+             simulate an hour. */
+          /* The limiter here is Picard convergence, not the size of the water
+             content change: dTheta stays small right up to the step that
+             fails. So the only usable signal is the failure itself, and it has
+             to be remembered. A ceiling that halves on failure and creeps back
+             by 5% a step stops the sawtooth that otherwise spent a hundred
+             thousand steps on one simulated hour. */
+          richards.dtCeil = Math.max(richards.dtMin, dt * 0.5);
+          dt = richards.dtCeil;
+          continue;
+        }
+
+        /* Convergence of the iteration is not accuracy. An implicit step is
+           stable at any size, so without this the controller happily ran at
+           the ceiling straight through a sharp wetting front and the answer
+           depended on the grid in no orderly way. Refusing a step that moves
+           any cell more than dThetaMax in water content is what HYDRUS does,
+           and it is what makes refinement converge. */
+        richards.stats.maxDTheta = Math.max(richards.stats.maxDTheta, r.dTheta);
+        if (r.dTheta > richards.dThetaMax && dt > richards.dtMin) {
+          richards.stats.reject++;
+          dt = Math.max(richards.dtMin,
+                        dt * Math.min(0.9, Math.max(0.2, 0.9 * richards.dThetaMax / r.dTheta)));
+          continue;
+        }
+
+        richards.stats.ok++; richards.stats.iters += r.iters; richards.stats.dtSum += dt;
+        for (let i = 0; i < cells.length; i++) cells[i].h = r.h[i];
+        qIn += r.qTop * dt;
+        qOut += r.qBot * dt;
+        t += dt;
+        itSum += r.iters; steps++;
+
+        /* dt must always be able to climb back. A step forced through at dtMin
+           used to leave the controller pinned there for the rest of the run. */
+        richards.okRun++;
+        /* Size the next step from what this one actually did. The step that
+           just succeeded moved the interior by r.dTheta; to land on the target
+           scale by target/dTheta, limited to a factor of two either way so the
+           controller cannot chase noise. Growing on iteration count alone --
+           which is what this did -- walked straight back up to the ceiling
+           after every failure and failed again. */
+        richards.dtCeil = Math.min(richards.dtMax, richards.dtCeil * 1.05);
+        let g = (r.dTheta > 1e-9)
+          ? Math.min(1.6, Math.max(0.4, 0.85 * richards.dThetaMax / r.dTheta))
+          : 1.6;
+        if (r.iters > 14) g = Math.min(g, 0.7);
+        else if (r.iters > 8) g = Math.min(g, 1.0);
+        dt = Math.min(richards.dtMax, richards.dtCeil, Math.max(richards.dtMin, dt * g));
+      }
+
+      richards.budgetHit = (steps >= BUDGET && t < dtHours - 1e-9);
+      const dw = rStorage() - w0;
+      richards.mbError += (qIn - qOut) - dw;
+      richards.cumIn += qIn;
+      richards.cumOut += qOut;
+      richards.runoff += runoff;
+      richards.lastIters = steps ? itSum / steps : 0;
+      richards.lastDt = dt;
+      richards.dt = dt;
+
+      return { qIn: t > 0 ? qIn / t : 0, qOut: t > 0 ? qOut / t : 0, dw, steps, tDone: t };
+    }
+
+    // The rest of the page thinks in one saturation per layer. Give it the
+    // mean of that layer's cells so every existing readout stays meaningful.
+    function rSyncLayers() {
+      const CV = richards.curves;
+      const sums = activeLayers.map(() => ({ s: 0, n: 0 }));
+      for (const c of richards.cells) { sums[c.li].s += cvSe(CV[c.li], c.h); sums[c.li].n++; }
+      activeLayers.forEach((l, i) => {
+        if (sums[i].n) l.sat = Math.max(0, Math.min(1, sums[i].s / sums[i].n));
+      });
+    }
+
+    /* Replace the old one-cell-per-layer update. Everything downstream --
+       the column, the SWCC dots, the telemetry, the saturation history --
+       keeps reading activeLayers[i].sat and carries on working. */
+    advancePhysicsByDt = function (dtHours) {
+      rEnsureGrid();
+      const res = rAdvance(dtHours);
+      rSyncLayers();
+
+      const cs = richards.cells, CV = richards.curves;
+      let maxGrad = 0;
+      for (let i = 0; i < cs.length - 1; i++) {
+        const d = Math.abs(cs[i + 1].h - cs[i].h) / (0.5 * (cs[i].dz + cs[i + 1].dz));
+        if (d > maxGrad) maxGrad = d;
+      }
+      let cumW = 0;
+      for (const c of cs) {
+        const cv = CV[c.li];
+        cumW += (cvSe(cv, c.h) - activeLayers[c.li].initialSat) * cv.span * c.dz;
+      }
+      lastTelemetry = {
+        qIn: res.qIn, qOut: res.qOut, maxGrad, cumWater: cumW,
+        subSteps: res.steps, dz: cs.length ? cs[0].dz : 0
+      };
+    };
+    /* =====================================================================
+       SEEING THE GRID
+
+       A fine grid is worth nothing if every readout still collapses each
+       layer to one number. Two things change here:
+
+         1. Each layer band in the cross-section is painted with the
+            saturation of its own cells, so the wetting front is visible in
+            the column itself rather than implied by an average.
+         2. A profile plot sits under the column on the same depth axis and
+            draws the cells as the steps they actually are. At one node per
+            layer it is a staircase of two; at forty it is a curve. That is
+            the discretisation, shown rather than described.
+       ===================================================================== */
+    let profileChart = null;
+
+    const profileBandsPlugin = {
+      id: 'profileBands',
+      beforeDatasetsDraw(chart) {
+        const { ctx, scales: { x, y } } = chart;
+        if (!x || !y || !richards.cells.length) return;
+        const L = boundaryConfig.depth || 50;
+        const nL = activeLayers.length;
+        ctx.save();
+        for (let li = 0; li < nL; li++) {
+          const z0 = y.getPixelForValue((li / nL) * L);
+          const z1 = y.getPixelForValue(((li + 1) / nL) * L);
+          ctx.fillStyle = activeLayers[li].color;
+          ctx.globalAlpha = 0.14;
+          ctx.fillRect(x.left, Math.min(z0, z1), x.right - x.left, Math.abs(z1 - z0));
+          ctx.globalAlpha = 1;
+          if (li > 0) {
+            ctx.strokeStyle = '#334155';
+            ctx.setLineDash([4, 3]);
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(x.left, z0); ctx.lineTo(x.right, z0); ctx.stroke();
+            ctx.setLineDash([]);
+          }
+          ctx.fillStyle = '#334155';
+          ctx.font = '700 9px system-ui, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('L' + (li + 1), x.left + 4, Math.min(z0, z1) + 11);
+        }
+        ctx.restore();
+      }
+    };
+
+    function initProfileChart() {
+      const el = document.getElementById('profileChart');
+      if (!el || profileChart) return;
+      profileChart = new Chart(el, {
+        /* scatter + showLine, not line: a line chart indexes on x and will not
+           draw a series whose points run down the y axis in depth order, which
+           is exactly what a profile is. */
+        type: 'scatter',
+        data: {
+          datasets: [
+            { label: 'Now', data: [], showLine: true, borderColor: '#1d4ed8',
+              borderWidth: 2, pointRadius: 0, fill: false, tension: 0 },
+            { label: 'Start', data: [], showLine: true, borderColor: '#94a3b8',
+              borderWidth: 1.2, borderDash: [5, 4], pointRadius: 0, fill: false, tension: 0 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, animation: false,
+          interaction: { mode: 'nearest', intersect: false },
+          scales: {
+            x: { min: 0, max: 100,
+                 title: { display: true, text: 'Effective saturation Sₑ (%)', color: '#475569', font: { size: 9.5 } },
+                 ticks: { color: '#475569', font: { size: 8.5 } },
+                 grid: { color: 'rgba(0,0,0,0.06)' } },
+            y: { reverse: true, min: 0, max: 50,
+                 title: { display: true, text: 'Depth z (cm)', color: '#475569', font: { size: 9.5 } },
+                 ticks: { color: '#475569', font: { size: 8.5 } },
+                 grid: { color: 'rgba(0,0,0,0.06)' } }
+          },
+          plugins: {
+            legend: { display: true, position: 'bottom',
+                      labels: { boxWidth: 18, font: { size: 9 }, color: '#475569' } },
+            title: { display: true, text: 'Saturation profile down the column',
+                     color: '#334155', font: { size: 10, weight: '700' } },
+            tooltip: { callbacks: { label: c => `Sₑ = ${c.parsed.x.toFixed(1)}%  at z = ${c.parsed.y.toFixed(1)} cm` } }
+          }
+        },
+        plugins: [profileBandsPlugin]
+      });
+      updateProfileChart();
+    }
+
+    // Each cell is drawn as the block it is: two points at its own saturation,
+    // one at each face. The staircase is the discretisation, not an artefact.
+    function cellStaircase(valueOf) {
+      const pts = [];
+      for (const c of richards.cells) {
+        const v = valueOf(c);
+        pts.push({ x: v, y: c.zc - c.dz / 2 });
+        pts.push({ x: v, y: c.zc + c.dz / 2 });
+      }
+      return pts;
+    }
+
+    function updateProfileChart() {
+      if (!profileChart || !richards.cells.length) return;
+      const note = document.getElementById('profileNote');
+      if (note) {
+        const n = richards.cells.length, dz = richards.cells[0].dz;
+        note.innerHTML = `Each step is one finite-volume cell: <strong>${n} cells</strong> `
+          + `at &Delta;z = ${dz.toFixed(2)} cm (${richards.nodesPerLayer} per layer). `
+          + (richards.nodesPerLayer === 1
+              ? 'At one node per layer the profile is a single step per layer and a wetting front cannot be seen; raise the node count in the editor.'
+              : 'Raise or lower it in the editor to see the profile sharpen or coarsen.')
+          + (richards.budgetHit ? ' <strong>The solver ran out of steps this frame.</strong>' : '');
+      }
+      profileChart.data.datasets[0].data =
+        cellStaircase(c => rSe(activeLayers[c.li], c.h) * 100);
+      profileChart.data.datasets[1].data =
+        cellStaircase(c => activeLayers[c.li].initialSat * 100);
+      profileChart.options.scales.y.max = boundaryConfig.depth || 50;
+      profileChart.update('none');
+    }
+
+    /* Paint the saturation of every cell onto its layer band. */
+    function updateColumnProfileShading() {
+      if (!richards.cells.length) return;
+      activeLayers.forEach((layer, li) => {
+        const ov = document.getElementById(`wet-${li}`);
+        if (!ov) return;
+        const cs = richards.cells.filter(c => c.li === li);
+        if (!cs.length) return;
+        const top = cs[0].zc - cs[0].dz / 2;
+        const bot = cs[cs.length - 1].zc + cs[cs.length - 1].dz / 2;
+        const span = Math.max(1e-9, bot - top);
+        const stops = [];
+        for (const c of cs) {
+          const a = (0.06 + 0.78 * rSe(layer, c.h)).toFixed(3);
+          const p0 = (((c.zc - c.dz / 2) - top) / span * 100).toFixed(2);
+          const p1 = (((c.zc + c.dz / 2) - top) / span * 100).toFixed(2);
+          stops.push(`rgba(29,78,216,${a}) ${p0}%`, `rgba(29,78,216,${a}) ${p1}%`);
+        }
+        ov.style.background = `linear-gradient(to bottom, ${stops.join(',')})`;
+      });
+    }
+
+    const _baseUpdateTableAndColumnText = updateTableAndColumnText;
+    updateTableAndColumnText = function () {
+      _baseUpdateTableAndColumnText();
+      updateColumnProfileShading();
+      updateProfileChart();
+    };
+
+    /* =====================================================================
+       VERIFICATION
+
+       Claiming a solver is accurate is cheap. These are the two cases where
+       the right answer is known in closed form, plus a mass audit and a
+       refinement check, and the page runs them on demand against whatever
+       soils are currently loaded rather than against a stored result.
+
+         1. Hydrostatic equilibrium. Seal the surface, hold the base at zero
+            pressure head and wait. The only steady state is no flow anywhere,
+            which means total head is uniform: h(z) = z - L exactly.
+         2. Unit gradient. Apply a steady flux q at the surface over a freely
+            draining base. Away from the ends the profile stops changing when
+            the gradient of h is zero, so the flux is carried by gravity alone
+            and K(h) = q in every cell, exactly.
+         3. Mass audit: inflow minus outflow against the change in storage.
+         4. Refinement: the same four hours on a coarse and a fine grid.
+       ===================================================================== */
+    function rVerify() {
+      const snap = rSnapshot();
+      const bc = Object.assign({}, boundaryConfig);
+      const savedNpl = richards.nodesPerLayer;
+      const savedDtMax = richards.dtMax, savedCeil = richards.dtCeil;
+      const savedTelem = Object.assign({}, lastTelemetry);
+      const rows = [];
+      const fmt = x => (Math.abs(x) < 1e-4 && x !== 0) ? x.toExponential(1) : x.toFixed(4);
+
+      /* Both exact tests are statements about the steady state, so they have to
+         be driven to one rather than marched a fixed number of steps. A dry
+         gravel has K near 1e-10 cm/h and takes millions of hours to equilibrate;
+         the first version of this ran 6000 h, stopped short and reported a
+         160 cm error for a solver that is in fact exact. An implicit scheme can
+         take enormous steps once nothing is moving, so the ceiling is lifted and
+         the loop runs until the head field stops changing. */
+      function driveToSteady() {
+        richards.dtMax = 5000; richards.dtCeil = 5000;
+        let prev = richards.cells.map(c => c.h);
+        let still = 0;
+        for (let k = 0; k < 400; k++) {
+          advancePhysicsByDt(5000);
+          let d = 0;
+          for (let i = 0; i < richards.cells.length; i++) {
+            d = Math.max(d, Math.abs(richards.cells[i].h - prev[i]));
+            prev[i] = richards.cells[i].h;
+          }
+          // 1e-6 cm on a field of thousands of cm is 1e-10 relative and was
+          // never reached; a thousandth of a centimetre is settled enough.
+          if (d < 1e-3) { if (++still >= 2) return true; } else still = 0;
+        }
+        return false;
+      }
+
+      try {
+        // --- 1. hydrostatic equilibrium -------------------------------------
+        richards.nodesPerLayer = 20; rBuildGrid(false);
+        boundaryConfig.topType = 'noflow';
+        boundaryConfig.bottomType = 'head'; boundaryConfig.bottomValue = 0;
+        const settled1 = driveToSteady();
+        const L = boundaryConfig.depth || 50;
+        let e1 = 0;
+        for (const c of richards.cells) e1 = Math.max(e1, Math.abs(c.h - (c.zc - L)));
+        rows.push(['Hydrostatic equilibrium', 'max |h &minus; (z&minus;L)|',
+                   fmt(e1) + ' cm' + (settled1 ? '' : ' (not settled)'),
+                   settled1 && e1 < 0.05]);
+
+        /* --- 2. unit gradient -------------------------------------------
+           Run on a single material. In a layered column the steady state only
+           has K = q in every cell if every soil can actually reach that
+           conductivity, and computeUnsaturatedK floors effective saturation at
+           0.01, so each soil has a lowest K it can produce. Asking a clean
+           gravel for 0.05 cm/h is asking for something that does not exist,
+           and the first version of this reported the resulting mismatch as a
+           solver error. This is a test of the solver, so it gets a domain the
+           answer is defined on: every cell set to the selected layer's
+           material, then put back. */
+        const refLayer = activeLayers[Math.min(selectedLayerIdx, activeLayers.length - 1)] || activeLayers[0];
+        const refCv = rCurveOf(refLayer);
+        const kFloor = cvK(refLayer, refCv, -1e6);
+        const q = Math.max(kFloor * 5, refLayer.ks * 0.05);
+        if (!(q < refLayer.ks * 0.5)) {
+          rows.push(['Unit gradient', 'no flux this soil can carry unsaturated',
+                     'skipped for ' + refLayer.name, true]);
+        } else {
+          richards.nodesPerLayer = 20; rBuildGrid(false);
+          const realLi = richards.cells.map(c => c.li);
+          richards.cells.forEach(c => { c.li = refLayer === activeLayers[c.li] ? c.li : c.li; });
+          const homoIdx = activeLayers.indexOf(refLayer);
+          richards.cells.forEach(c => { c.li = homoIdx; c.h = -getLayerSwccState(refLayer, refLayer.initialSat).psi; });
+          boundaryConfig.topType = 'flux'; boundaryConfig.topValue = q;
+          boundaryConfig.bottomType = 'free';
+          const settled2 = driveToSteady();
+          let e2 = 0;
+          for (const c of richards.cells) {
+            e2 = Math.max(e2, Math.abs(cvK(refLayer, refCv, c.h) - q) / q);
+          }
+          richards.cells.forEach((c, i) => { c.li = realLi[i]; });
+          rows.push(['Unit gradient, ' + refLayer.name + ' at q = ' + q.toPrecision(3) + ' cm/h',
+                     'max |K(h) &minus; q| / q',
+                     (e2 * 100).toFixed(3) + ' %' + (settled2 ? '' : ' (not settled)'),
+                     settled2 && e2 < 0.02]);
+        }
+
+        // --- 3. mass audit ---------------------------------------------------
+        richards.nodesPerLayer = savedNpl; rBuildGrid(false);
+        richards.dtMax = savedDtMax; richards.dtCeil = savedDtMax;
+        boundaryConfig.topType = bc.topType; boundaryConfig.topValue = bc.topValue;
+        boundaryConfig.bottomType = bc.bottomType; boundaryConfig.bottomValue = bc.bottomValue;
+        richards.cumIn = 0; richards.cumOut = 0; richards.mbError = 0;
+        const w0 = rStorage();
+        for (let i = 0; i < 40; i++) advancePhysicsByDt(0.05);
+        const dw = rStorage() - w0;
+        const net = richards.cumIn - richards.cumOut;
+        const rel = Math.abs(net - dw) / Math.max(1e-9, Math.abs(dw));
+        rows.push(['Mass audit over 2 h, current setup', 'in &minus; out versus change in storage',
+                   fmt(Math.abs(net - dw)) + ' cm  (' + (rel * 100).toFixed(3) + ' %)', rel < 0.01]);
+
+        /* --- 4. refinement ----------------------------------------------
+           Fixed grids rather than multiples of whatever the user has set, so
+           the test costs the same every time and the three runs are
+           comparable. One grid pair says nothing; three grids say whether the
+           changes are shrinking, which is what convergence means. */
+        const store = [];
+        let truncated = false, forcedTotal = 0;
+        richards.dtMax = savedDtMax;
+        for (const np of [5, 10, 20]) {
+          richards.nodesPerLayer = np; rBuildGrid(false);
+          richards.dtCeil = richards.dtMax; richards.forced = 0;
+          let done = 0;
+          for (let i = 0; i < 20; i++) done += rAdvance(0.05).tDone;
+          rSyncLayers();
+          /* Two different problems, and only one of them invalidates the
+             comparison: a grid that did not cover the full hour cannot be
+             compared with one that did, whereas a few steps forced through at
+             the minimum size are an accuracy note, not a different experiment. */
+          if (done < 0.999) truncated = true;
+          forcedTotal += richards.forced;
+          store.push({ n: richards.cells.length, w: rStorage() });
+        }
+        const d1 = Math.abs(store[1].w - store[0].w);
+        const d2 = Math.abs(store[2].w - store[1].w);
+        rows.push(['Refinement ' + store[0].n + ' &rarr; ' + store[1].n + ' &rarr; ' + store[2].n + ' cells, 1 h',
+                   'successive change in stored water',
+                   fmt(d1) + ' cm then ' + fmt(d2) + ' cm'
+                     + (truncated ? ' (a grid ran out of steps)' : '')
+                     + (forcedTotal ? ' (' + forcedTotal + ' steps forced at the minimum size)' : ''),
+                   d2 < d1 && !truncated]);
+      } catch (err) {
+        if (!(err && err.skipUnitGradient)) {
+          rows.push(['Verification failed', 'exception', err.message || String(err), false]);
+        }
+      } finally {
+        richards.nodesPerLayer = savedNpl;
+        richards.dtMax = savedDtMax; richards.dtCeil = savedCeil;
+        Object.assign(boundaryConfig, bc);
+        rBuildGrid(false);
+        rRestore(snap);
+        lastTelemetry = savedTelem;
+        updateBoundaryLabels();
+        updateTableAndColumnText();
+        updatePdeTelemetryUI();
+      }
+
+      const el = document.getElementById('verifyOut');
+      if (el) {
+        el.innerHTML =
+          '<table class="verify-table"><thead><tr><th>Test</th><th>Measure</th><th>Result</th></tr></thead><tbody>' +
+          rows.map(r => `<tr class="${r[3] ? 'vpass' : 'vfail'}"><td>${r[0]}</td><td>${r[1]}</td>` +
+                        `<td><strong>${r[2]}</strong> ${r[3] ? '&#10003;' : '&#10007;'}</td></tr>`).join('') +
+          '</tbody></table>';
+      }
+      return rows;
+    }
+
     // Chart.js watches the window, not the box it is in. Folding a panel or
     // switching view changes the column width without a window resize, which
     // left the canvases at their old size until the window was touched.
@@ -4559,6 +5524,7 @@
 
     // Startup initialization: Mind map hidden by default; 2-Layer Studio view fitted inside 100% zoom
     renderLegendChips();
+    initProfileChart();
     selectMindMapNode('root');
     loadTutorialScenario('capillary');
     updateBoundaryLabels();
