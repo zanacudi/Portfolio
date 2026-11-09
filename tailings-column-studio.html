@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Coupled Tailings Column &mdash; Consolidation, Drying and Flow</title>
+<meta name="description" content="One column, one setup: large-strain consolidation coupled to unsaturated flow and evaporation, after Qi, Simms &amp; Vanapalli (2017) and Taher, Scalia &amp; Bareither (2024).">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f1f5f9; --panel: #ffffff; --ink: #0f172a; --muted: #64748b;
+    --line: #e2e8f0; --head: #7c2d12; --accent: #1d4ed8; --warm: #b45309;
+    --ok: #166534; --okbg: #f0fdf4; --bad: #991b1b; --badbg: #fef2f2;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font: 13px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+
+  /* ---- header ---------------------------------------------------- */
+  header {
+    flex: 0 0 auto; background: var(--head); color: #fff;
+    padding: 7px 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 14px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+  header .sub { font-size: 11px; opacity: .82; }
+  header a { color: #fde68a; text-decoration: none; font-size: 11.5px; }
+  header a:hover { text-decoration: underline; }
+  .spacer { flex: 1 1 auto; }
+
+  .seg { display: inline-flex; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; overflow: hidden; }
+  .seg button {
+    font: inherit; font-size: 11px; padding: 3px 9px; border: 0; cursor: pointer;
+    background: transparent; color: #fff;
+  }
+  .seg button + button { border-left: 1px solid rgba(255,255,255,.28); }
+  .seg button.on { background: #fff; color: var(--head); font-weight: 700; }
+
+  /* ---- the single window ----------------------------------------- */
+  main {
+    flex: 1 1 auto; min-height: 0;
+    display: grid; grid-template-columns: 300px 120px minmax(0, 1fr);
+    gap: 8px; padding: 8px;
+  }
+  main.nosetup { grid-template-columns: 120px minmax(0, 1fr); }
+  main.nosetup > section:first-child { display: none; }
+  @media (max-width: 1180px) {
+    main { grid-template-columns: 252px 104px minmax(0, 1fr); }
+    .fields.three { grid-template-columns: 1fr 1fr; }
+  }
+  .pane {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 9px;
+    min-height: 0; min-width: 0; display: flex; flex-direction: column;
+  }
+  .pane > h2 {
+    margin: 0; padding: 6px 10px; font-size: 11px; letter-spacing: .5px;
+    text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line);
+    flex: 0 0 auto; display: flex; align-items: center; gap: 8px;
+  }
+  .pane > .body { padding: 9px 10px; overflow: auto; flex: 1 1 auto; min-height: 0; }
+
+  /* ---- setup ------------------------------------------------------ */
+  fieldset { border: 0; border-top: 1px solid var(--line); margin: 10px 0 0; padding: 7px 0 0; }
+  fieldset:first-child { border-top: 0; margin-top: 0; }
+  legend { font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 0; }
+  .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 7px; }
+  .fields.three { grid-template-columns: 1fr 1fr 1fr; }
+  label.f { display: block; font-size: 10px; color: var(--muted); line-height: 1.3; }
+  label.f input, label.f select {
+    display: block; margin-top: 2px;
+    font: inherit; font-size: 11.5px; padding: 3px 5px; width: 100%;
+    border: 1px solid #cbd5e1; border-radius: 5px; background: #fff; color: var(--ink);
+  }
+  label.f input[readonly] { background: #f8fafc; color: var(--muted); }
+  label.f.wide { grid-column: 1 / -1; }
+
+  table.stages { width: 100%; border-collapse: collapse; font-size: 11px; }
+  table.stages th { font-weight: 600; color: var(--muted); font-size: 9.5px; text-transform: uppercase; padding: 2px 3px; text-align: left; }
+  table.stages td { padding: 1px 3px; }
+  table.stages input { width: 100%; font: inherit; font-size: 11px; padding: 2px 4px; border: 1px solid #cbd5e1; border-radius: 4px; }
+  table.stages input[type=checkbox] { width: auto; }
+
+  .btn {
+    font: inherit; font-size: 11.5px; padding: 4px 10px; cursor: pointer;
+    border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  .btn:hover { background: #f8fafc; }
+  .btn.go { background: var(--head); border-color: var(--head); color: #fff; font-weight: 600; }
+  .btn.go:hover { background: #9a3412; }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 9px; }
+
+  /* ---- column strip ------------------------------------------------ */
+  #colWrap { flex: 1 1 auto; position: relative; padding: 8px 6px; min-height: 0; }
+  #colCanvas { width: 100%; height: 100%; display: block; }
+
+  /* ---- charts ------------------------------------------------------ */
+  .tabs { display: flex; gap: 3px; flex-wrap: wrap; }
+  .tabs button {
+    font: inherit; font-size: 11px; padding: 2px 9px; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--muted);
+  }
+  .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .view { display: none; height: 100%; flex-direction: column; min-height: 0; }
+  .view.on { display: flex; }
+  .canvasbox { flex: 1 1 auto; min-height: 0; position: relative; }
+
+  /* ---- status ------------------------------------------------------ */
+  #status {
+    flex: 0 0 auto; font-size: 11.5px; padding: 5px 14px; background: #fff;
+    border-top: 1px solid var(--line); color: var(--ink);
+    white-space: nowrap; overflow-x: auto;
+  }
+  #status.bad { background: var(--badbg); color: var(--bad); }
+  #status b { color: var(--head); }
+
+  table.ver { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  table.ver th { text-align: left; font-size: 10px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding: 4px 6px; }
+  table.ver td { padding: 4px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  tr.pass td:last-child { color: var(--ok); background: var(--okbg); font-weight: 600; }
+  tr.fail td:last-child { color: var(--bad); background: var(--badbg); font-weight: 600; }
+  .note { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .note b { color: var(--ink); }
+  .note code { background: #f1f5f9; padding: 0 3px; border-radius: 3px; font-size: 10.5px; }
+
+  @media (max-width: 840px) {
+    body { overflow: auto; height: auto; }
+    main { grid-template-columns: 1fr; height: auto; }
+    .pane { height: auto; }
+    .pane > .body { overflow: visible; }
+    #colWrap { height: 220px; }
+    .canvasbox { height: 320px; }
+    .view.on { height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Coupled Tailings Column</h1>
+  <span class="sub">consolidation &times; drying &times; flow, in one setup</span>
+  <span class="seg" id="matSeg">
+    <button data-m="pamft" class="on">Polymer-amended MFT</button>
+    <button data-m="spwc">Phosphatic waste clay</button>
+  </span>
+  <span class="seg" id="modeSeg">
+    <button data-k="vu" class="on">Vu &amp; Fredlund surfaces</button>
+    <button data-k="taher">Taher superposition</button>
+    <button data-k="quasi">Quasi-unsaturated</button>
+  </span>
+  <span class="spacer"></span>
+  <span class="seg"><button id="setupToggle" onclick="toggleSetup()">Hide setup</button></span>
+  <a href="index.html">&larr; portfolio</a>
+</header>
+
+<main>
+  <!-- ------------------------------------------------ setup -->
+  <section class="pane">
+    <h2>Setup <span style="text-transform:none;letter-spacing:0;font-weight:400">&mdash; one column, one parameter set</span></h2>
+    <div class="body">
+      <fieldset>
+        <legend>Column</legend>
+        <div class="fields">
+          <label class="f">Height H&#8320; (m)<input id="f_H0"></label>
+          <label class="f">Elements<input id="f_N" type="number" min="5" max="120" step="1"></label>
+          <label class="f">Specific gravity G<sub>s</sub><input id="f_Gs"></label>
+          <label class="f">Void ratio e&#8320;<input id="f_e0"></label>
+          <label class="f wide">Surcharge q&#8320; (kPa) &mdash; derived from e&#8320; and the compressibility curve
+            <input id="f_q0" readonly></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Saturated: e(&sigma;&prime;) and k(e)</legend>
+        <div class="fields three">
+          <label class="f">A (kPa)<input id="f_A"></label>
+          <label class="f">Z (kPa)<input id="f_Z"></label>
+          <label class="f">B<input id="f_B"></label>
+          <label class="f">C (m/s)<input id="f_C"></label>
+          <label class="f">D<input id="f_D"></label>
+          <label class="f">C factor<input id="f_Cf"></label>
+        </div>
+      </fieldset>
+
+      <fieldset id="fsVu">
+        <legend>Vu &amp; Fredlund surfaces (Qi et al. Table 3)</legend>
+        <div class="fields three">
+          <label class="f">a<input id="f_va"></label>
+          <label class="f">b<input id="f_vb"></label>
+          <label class="f">c<input id="f_vc"></label>
+          <label class="f">d<input id="f_vd"></label>
+          <label class="f">f<input id="f_vf"></label>
+          <label class="f">g<input id="f_vg"></label>
+          <label class="f">A<input id="f_vA"></label>
+          <label class="f">B<input id="f_vB"></label>
+          <label class="f">C<input id="f_vC"></label>
+          <label class="f">D<input id="f_vD"></label>
+          <label class="f">F<input id="f_vF"></label>
+          <label class="f">G<input id="f_vG"></label>
+        </div>
+      </fieldset>
+
+      <fieldset id="fsTaher">
+        <legend>Shrinkage curve and SWCC (Taher et al. Table 1)</legend>
+        <div class="fields three">
+          <label class="f">a<sub>sh</sub><input id="f_ash"></label>
+          <label class="f">b<sub>sh</sub><input id="f_bsh"></label>
+          <label class="f">c<sub>sh</sub><input id="f_csh"></label>
+          <label class="f">w<sub>s</sub><input id="f_ws"></label>
+          <label class="f">&psi;<sub>r</sub> (kPa)<input id="f_psir"></label>
+          <label class="f">a<sub>f</sub> (kPa)<input id="f_af"></label>
+          <label class="f">n<sub>f</sub><input id="f_nf"></label>
+          <label class="f">m<sub>f</sub><input id="f_mf"></label>
+          <label class="f">anchor
+            <select id="f_anchor">
+              <option value="q0">at q&#8320; (continuous)</option>
+              <option value="published">at &sigma;&prime;=0 (as published)</option>
+            </select></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Conductivity with suction &mdash; k = Ce<sup>D</sup>/(1+m[&psi;/&gamma;<sub>w</sub>]<sup>n</sup>)</legend>
+        <div class="fields three">
+          <label class="f">m<input id="f_gm"></label>
+          <label class="f">n<input id="f_gn"></label>
+          <label class="f">&psi; cap (kPa)<input id="f_psiMax"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Stages &mdash; the whole boundary history</legend>
+        <table class="stages" id="stageTable">
+          <thead><tr><th>to day</th><th>evap mm/d</th><th style="width:52px">decant</th><th style="width:20px"></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="row">
+          <button class="btn" onclick="addStage()">+ stage</button>
+          <span class="note">Base is sealed. Evaporation 0 with no decantation is Qi&rsquo;s Case 1.</span>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Solver</legend>
+        <div class="fields">
+          <label class="f">Max change per step<input id="f_tol"></label>
+          <label class="f">Step cap<input id="f_cap" type="number" min="1000" step="1000"></label>
+        </div>
+      </fieldset>
+
+      <div class="row">
+        <button class="btn go" onclick="runAll()">Run</button>
+        <button class="btn" onclick="resetCol()">Reset</button>
+        <button class="btn" onclick="runVerify()">Verify</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ column -->
+  <section class="pane">
+    <h2>Column</h2>
+    <div id="colWrap"><canvas id="colCanvas"></canvas></div>
+  </section>
+
+  <!-- ------------------------------------------------ charts -->
+  <section class="pane">
+    <h2>
+      <span class="tabs" id="tabs">
+        <button data-v="height" class="on">Height</button>
+        <button data-v="profile">Profile</button>
+        <button data-v="curves">Relations</button>
+        <button data-v="verify">Verify</button>
+        <button data-v="about">About</button>
+      </span>
+      <span class="spacer"></span>
+      <span class="tabs" id="profVars" style="display:none">
+        <button data-p="e" class="on">e</button>
+        <button data-p="w">w</button>
+        <button data-p="S">S</button>
+        <button data-p="psi">&psi;</button>
+        <button data-p="sig">&sigma;&prime;</button>
+        <button data-p="k">k</button>
+      </span>
+      <span class="tabs" id="curveVars" style="display:none">
+        <button data-c="esig" class="on">e(&sigma;&prime;)</button>
+        <button data-c="ke">k(e)</button>
+        <button data-c="ew">e(w)</button>
+        <button data-c="wpsi">w(&psi;)</button>
+      </span>
+    </h2>
+    <div class="body" style="padding:7px 9px">
+      <div class="view on" id="v_height"><div class="canvasbox"><canvas id="cHeight"></canvas></div></div>
+      <div class="view" id="v_profile"><div class="canvasbox"><canvas id="cProfile"></canvas></div></div>
+      <div class="view" id="v_curves"><div class="canvasbox"><canvas id="cCurve"></canvas></div></div>
+      <div class="view" id="v_verify"><div id="verOut" class="note">Press <b>Verify</b>.</div></div>
+      <div class="view" id="v_about"><div class="note" id="aboutText"></div></div>
+    </div>
+  </section>
+</main>
+
+<div id="status">Ready.</div>
+
+<script>
+"use strict";
+/* ===================================================================
+   One column. Large-strain consolidation coupled to unsaturated flow
+   and evaporation, in solids coordinates, after
+
+     Qi, Simms & Vanapalli (2017), Piecewise-linear formulation of
+     coupled large-strain consolidation and unsaturated flow, I and II,
+     J. Geotech. Geoenviron. Eng. 143(7), 04017018 and 04017019
+
+   with the constitutive set of
+
+     Taher, Scalia & Bareither (2024), One-dimensional inverse
+     modelling of saturated-unsaturated volume change behaviour of
+     tailings, Int. J. Geotechnical Engineering
+
+   available as an alternative to the Vu & Fredlund (2006) state
+   surfaces that Qi et al. use. Equation numbers below are Qi's.
+
+   Sign convention, settled by what the physics has to do rather than
+   by the printed equation: v = k (h_above - h_below)/(z_above -
+   z_below), v[j] sits on the top face of element j, and element j
+   GAINS (v[j] - v[j+1]) dt. Check it on the base element at t = 0:
+   the face above it carries -k(gamma_t/gamma_w - 1) and the sealed
+   base carries zero, so the gain is negative and it consolidates.
+   =================================================================== */
+
+const GW = 9.810;                       // kN/m3
+
+const PRESETS = {
+  pamft: {
+    name: 'Polymer-amended mature fine tailings',
+    cite: 'Jeeravipoolvarn (2010); Dunmola et al. (2013); column test of Soleimani et al. (2014).',
+    A: 1.903, Z: 0.023, B: -0.230, C: 3.500e-11, D: 8.00, Cf: 10,
+    Gs: 2.120, e0: 4.000, H0: 0.5, N: 30,
+    ash: 1.139, bsh: 0.523, csh: 3.749,
+    ws: 1.500, psir: 894.7, af: 2.569, nf: 2.911, mf: 0.540,
+    vu: { a: 4.50, b: 0.780, c: 7.56e-3, d: 0.136, f: 1.62e3, g: 2.17e3,
+          A: 2.12, B: 0.370, C: 7.56e-3, D: 3.95e-2, F: 1.62e3, G: 2.86e3 },
+    gm: 0.00289, gn: 0.85, psiMax: 1000,
+    stages: [ { to: 9, ev: 0, dec: false }, { to: 27, ev: 1.5, dec: true },
+              { to: 46, ev: 5.0, dec: true } ]
+  },
+  spwc: {
+    name: 'Phosphatic waste clay (slurry)',
+    cite: 'Somogyi (1980); column test of McVay, Townsend & Bloomquist (1986), 6.33 m, 400 days.',
+    A: 12.19, Z: 0.0, B: -0.290, C: 1.410e-11, D: 4.110, Cf: 1,
+    Gs: 2.710, e0: 18.80, H0: 6.33, N: 50,
+    ash: null, bsh: null, csh: null, ws: null, psir: null, af: null, nf: null, mf: null,
+    vu: null, gm: 0.00289, gn: 0.85, psiMax: 1000,
+    stages: [ { to: 400, ev: 0, dec: true } ]
+  }
+};
+
+/* ------------------------------------------------------ inverses --
+   Both inversions are of a monotone function of one variable, so each
+   is tabulated once on a log grid and read back by binary search.
+   Bisecting per cell per step instead made the 46-day run take
+   minutes. */
+const TBL = {};
+function tableOf(key, lo, hi, n, fn) {
+  let t = TBL[key];
+  if (!t) {
+    const xs = new Float64Array(n + 1), ys = new Float64Array(n + 1);
+    for (let i = 0; i <= n; i++) { xs[i] = lo + (hi - lo) * i / n; ys[i] = fn(Math.pow(10, xs[i])); }
+    t = { xs: xs, ys: ys }; TBL[key] = t;
+  }
+  return t;
+}
+function invertDec(t, y) {              // x with fn(10^x) = y, fn decreasing
+  const xs = t.xs, ys = t.ys;
+  if (y >= ys[0]) return xs[0];
+  if (y <= ys[ys.length - 1]) return xs[xs.length - 1];
+  let lo = 0, hi = xs.length - 1;
+  while (hi - lo > 1) { const m = (lo + hi) >> 1; if (ys[m] > y) lo = m; else hi = m; }
+  const f = (ys[lo] === ys[hi]) ? 0 : (ys[lo] - y) / (ys[lo] - ys[hi]);
+  return xs[lo] + f * (xs[hi] - xs[lo]);
+}
+
+// ------------------------------------------------- constitutive ---
+function vuE(q, sn, psi) {
+  return q.a + q.b * Math.log10((1 + q.c * sn + q.d * psi) / (1 + q.f * sn + q.g * psi));
+}
+function vuW(q, sn, psi) {
+  return q.A + q.B * Math.log10((1 + q.C * sn + q.D * psi) / (1 + q.F * sn + q.G * psi));
+}
+/* Eq. 24. Qi chose the water-content surface as the primary unknown
+   precisely so this inversion is closed form and needs no iteration. */
+function vuPsi(q, sn, w) {
+  const X = Math.pow(10, (w - q.A) / q.B);
+  const den = q.G * X - q.D;
+  if (Math.abs(den) < 1e-30) return 0;
+  return (1 + q.C * sn - X - X * q.F * sn) / den;
+}
+
+/* The 2D saturated curve. In the Vu route this is the psi = 0 slice of
+   the void-ratio surface, not a separate fit: that is what makes Qi's
+   reported initial effective stress of 0.0021 kPa come out right, since
+   the surface gives e = 3.998 there against the as-placed 4.000. Using
+   Liu & Znidarcic for the saturated zone and the surface above it
+   instead leaves a step of 0.6 in void ratio at the transition. */
+function eSat(p, sig) {
+  if (p.mode === 'vu' && p.vu) return vuE(p.vu, Math.max(0, sig), 0);
+  return p.A * Math.pow(Math.max(1e-12, sig + p.Z), p.B);
+}
+function sigFromE(p, e) {
+  if (p.mode === 'vu' && p.vu) {
+    const t = tableOf('vs' + p.vu.a + p.vu.b + p.vu.c + p.vu.f, -6, 4, 900,
+                      s => vuE(p.vu, s, 0));
+    return Math.max(0, Math.pow(10, invertDec(t, e)));
+  }
+  return Math.max(0, Math.pow(Math.max(1e-12, e) / p.A, 1 / p.B) - p.Z);
+}
+function kSat(p, e) { return p.C * (p.Cf || 1) * Math.pow(Math.max(1e-9, e), p.D); }
+function kUnsat(p, e, psi) {            // Eq. 5
+  return kSat(p, e) / (1 + p.gm * Math.pow(Math.max(0, psi) / GW, p.gn));
+}
+/* Qi: q0 is not a free parameter. It is the surcharge that makes the
+   as-placed void ratio consistent with the compressibility curve, so
+   the initial effective stress profile has somewhere to start. */
+function q0From(p) { return sigFromE(p, p.e0); }
+
+// Fredlund, Xing & Huang retention curve
+function wCurve(p, psi) {
+  const s = Math.max(1e-6, psi);
+  const corr = 1 - Math.log(1 + s / p.psir) / Math.log(1 + 1e6 / p.psir);
+  const inner = Math.log(Math.E + Math.pow(s / p.af, p.nf));
+  return Math.max(1e-7, corr * p.ws / Math.pow(inner, p.mf));
+}
+// Fredlund, Wilson & Fredlund shrinkage curve
+function eOfW(p, w) {
+  const t = Math.pow(Math.max(0, w), p.csh) / Math.pow(p.bsh, p.csh);
+  return p.ash * Math.pow(t + 1, 1 / p.csh);
+}
+
+/* Section 2.2.3, with the anchor made explicit.
+
+   As published, both changes are measured from zero stress and added
+   to the as-placed void ratio. That is continuous with the saturated
+   branch only if e0 = e_sat(0). For this material the fit extrapolates
+   to 4.414 at zero stress while the tailings were placed at 4.000, so
+   at the saturation front the void ratio jumps by -0.53 and a coupled
+   solver cannot cross it. Anchoring the same superposition at the
+   as-placed state, that is at sigma' = q0, removes the jump exactly,
+   because q0 is defined by e_sat(q0) = e0. */
+function taherE(p, sn, psi) {
+  const dep = eOfW(p, wCurve(p, psi)) - eOfW(p, wCurve(p, 0));
+  if (p.anchor === 'published') return Math.max(p.ash, p.e0 + (eSat(p, sn) - eSat(p, 0)) + dep);
+  return Math.max(p.ash, eSat(p, sn) + dep);
+}
+function taherW(p, sn, psi) {
+  const dw = wCurve(p, psi) - p.ws;
+  if (p.anchor === 'published') return Math.max(1e-7, p.e0 / p.Gs + (eSat(p, sn) - eSat(p, 0)) / p.Gs + dw);
+  return Math.max(1e-7, eSat(p, sn) / p.Gs + dw);
+}
+function taherPsi(p, sn, w) {
+  const t = tableOf('sw' + p.ws + p.psir + p.af + p.nf + p.mf, -4, 6, 900, ps => wCurve(p, ps));
+  return Math.max(0, Math.pow(10, invertDec(t, w - (taherW(p, sn, 0) - p.ws))));
+}
+
+function surfE(p, sn, psi) { return (p.mode === 'vu') ? vuE(p.vu, sn, psi) : taherE(p, sn, psi); }
+function surfW(p, sn, psi) { return (p.mode === 'vu') ? vuW(p.vu, sn, psi) : taherW(p, sn, psi); }
+function surfPsi(p, sn, w) { return (p.mode === 'vu') ? vuPsi(p.vu, sn, w) : taherPsi(p, sn, w); }
+
+// ====================================================== the column
+function Column(p, H0, N) {
+  this.p = p; this.N = N;
+  this.q0 = q0From(p);
+  this.dz = (H0 / (1 + p.e0)) / N;      // solids thickness per element
+  this.e = new Float64Array(N).fill(p.e0);
+  this.w = new Float64Array(N).fill(p.e0 / p.Gs);
+  this.u = new Float64Array(N);
+  this.sat = new Array(N).fill(true);
+  this.t = 0; this.t0 = 0; this.dt = 0;
+  this.pond = 0; this.evapCum = 0; this.decantCum = 0;
+  this.clamp = 0; this.fails = 0; this.steps = 0;
+  this.decant = true; this.evap = 0;
+  this.quasi = (p.mode === 'quasi');
+  /* Qi: the as-placed void ratio corresponds to sigma' = q0 everywhere,
+     so the whole profile starts carrying excess pore pressure equal to
+     the total stress above q0. Starting from u = 0 puts the column on
+     the wrong part of its own compressibility curve. */
+  const sig = this.stress();
+  for (let j = 0; j < N; j++) this.u[j] = sig[j] - this.q0;
+  this.w0 = this.water();
+  this.hist = [{ t: 0, H: this.height() }];
+}
+Column.prototype.L = function (j) { return this.dz * (1 + this.e[j]); };
+Column.prototype.height = function () {
+  let H = 0; for (let j = 0; j < this.N; j++) H += this.dz * (1 + this.e[j]); return H;
+};
+Column.prototype.water = function () {
+  let s = 0; for (let j = 0; j < this.N; j++) s += this.dz * this.p.Gs * this.w[j]; return s;
+};
+Column.prototype.nodes = function () {
+  const H = this.height(), z = new Float64Array(this.N);
+  let acc = 0;
+  for (let j = 0; j < this.N; j++) { const L = this.L(j); z[j] = H - (acc + L / 2); acc += L; }
+  return { z: z, H: H };
+};
+Column.prototype.stress = function () {                       // Eq. 22-23
+  const sig = new Float64Array(this.N);
+  let s = this.pond * GW + (this.q0 || 0);
+  for (let j = 0; j < this.N; j++) {
+    const W = this.dz * this.p.Gs * (1 + this.w[j]) * GW;
+    sig[j] = s + W / 2; s += W;
+  }
+  return sig;
+};
+Column.prototype.kcell = function (j) {
+  if (this.sat[j] || this.quasi) return kSat(this.p, this.e[j]);
+  return kUnsat(this.p, this.e[j], Math.max(0, -this.u[j]));
+};
+
+Column.prototype.step = function (dtDays) {
+  const p = this.p, N = this.N, dt = dtDays * 86400;
+  const nd = this.nodes(), z = nd.z, H = nd.H;
+  const k = new Float64Array(N), h = new Float64Array(N);
+  for (let j = 0; j < N; j++) { k[j] = this.kcell(j); h[j] = z[j] + this.u[j] / GW; }
+
+  const v = new Float64Array(N + 1);
+  for (let j = 1; j < N; j++) {                                // Eq. 6, 8, 9
+    const Lm = this.L(j - 1), Lj = this.L(j);
+    const ks = k[j - 1] * k[j] * (Lm + Lj) / (Lm * k[j] + Lj * k[j - 1]);
+    v[j] = ks * (h[j - 1] - h[j]) / (z[j - 1] - z[j]);
+  }
+  v[N] = 0;                                                    // sealed base
+
+  const E = Math.max(0, this.evap) / 86400;
+  let fromPond = 0, i1;
+  if (E <= 0) {
+    const Hw = H + this.pond;                                  // Eq. 10 / 11
+    i1 = (Hw - h[0]) / (H - z[0]);
+    if (this.pond <= 1e-12 && i1 > 0) i1 = 0;   // nothing standing to draw down
+    v[0] = k[0] * i1;                                          // Eq. 15
+  } else if (this.pond >= E * dt) {
+    i1 = 0; fromPond = E * dt;                 // the pond alone covers it
+    v[0] = 0;
+  } else {
+    fromPond = this.pond;
+    i1 = -(E - this.pond / dt) / Math.max(k[0], 1e-30);        // Eq. 12 / 14
+    const uTop = ((H - z[0]) * i1 + h[0] - H) * GW;            // Eq. 13
+    if (-uTop > p.psiMax) {
+      // the surface has hit its cap: the boundary becomes a constant
+      // suction and the actual evaporation falls below the potential
+      i1 = Math.max((H - p.psiMax / GW - h[0]) / (H - z[0]), i1);
+    }
+    v[0] = k[0] * i1;
+  }
+  const out = -v[0] * dt;                       // water leaving the deposit
+  this.actual = (fromPond + Math.max(0, out)) / dtDays;
+
+  const sig = this.stress(), Ms = this.dz * p.Gs;
+  const newsat = new Array(N);
+  for (let j = 0; j < N; j++) {
+    const gain = (v[j] - v[j + 1]) * dt;
+    if (this.sat[j] || this.quasi) {
+      const Lnew = this.L(j) + gain;                           // Eq. 29
+      const enew = Lnew / this.dz - 1;                         // Eq. 30
+      if (this.quasi || enew >= eSat(p, Math.max(1e-12, sig[j]))) {
+        this.e[j] = Math.max(1e-4, enew);
+        this.w[j] = this.e[j] / p.Gs;
+        this.u[j] = sig[j] - sigFromE(p, this.e[j]);
+        newsat[j] = true;
+        continue;
+      }
+      /* the effective stress that void ratio needs is more than the
+         total stress on offer, so this element desaturated in this step */
+    }
+    this.w[j] = Math.max(1e-7, this.w[j] + gain / Ms);         // Eq. 21
+    const ps = Math.max(0, surfPsi(p, sig[j], this.w[j]));     // Eq. 24
+    let es = Math.max(1e-4, surfE(p, sig[j], ps));             // Eq. 25
+    /* The water has to fit in the voids. The Vu surfaces are
+       self-consistent and this never binds for them; the shrinkage
+       curve and the retention curve of the other route are fitted
+       separately and do not quite agree at the wet end, so there it
+       binds by about a per cent. The Verify tab reports how hard. */
+    const need = p.Gs * this.w[j];
+    if (need > es) { this.clamp = Math.max(this.clamp, (need - es) / Math.max(es, 1e-9)); es = need; }
+    this.e[j] = es; this.u[j] = -ps; newsat[j] = false;
+  }
+  this.sat = newsat;
+
+  if (E > 0) {
+    this.pond = Math.max(0, this.pond - fromPond);
+    this.evapCum += fromPond + Math.max(0, out);
+    if (out < 0) this.pond += -out;
+  } else if (this.decant) {
+    this.decantCum += Math.max(0, out);
+    if (out < 0) this.pond = Math.max(0, this.pond + out);
+  } else {
+    this.pond = Math.max(0, this.pond + out);
+  }
+  this.t += dtDays;
+};
+
+Column.prototype.snap = function () {
+  return [Float64Array.from(this.e), Float64Array.from(this.w), Float64Array.from(this.u),
+          this.sat.slice(), this.t, this.pond, this.evapCum, this.decantCum];
+};
+Column.prototype.restore = function (s) {
+  this.e.set(s[0]); this.w.set(s[1]); this.u.set(s[2]); this.sat = s[3].slice();
+  this.t = s[4]; this.pond = s[5]; this.evapCum = s[6]; this.decantCum = s[7];
+};
+
+/* Step size governed by what the step did, not by a linearised bound.
+
+   Eq. 32 is their explicit stability bound, with the compressibility
+   taken at the element's current state. Two places defeat it here. At
+   the as-placed state this material's compressibility curve is far
+   steeper than the path an element actually travels, so the bound
+   allows a step in which the base void ratio falls from 4.0 to 1.26.
+   And on a Fredlund-Xing retention curve the wet end is flat, so the
+   moment an element desaturates the suction-compressibility of Eq. 34
+   is zero and the bound collapses to 4e-7 days and never recovers.
+
+   Taking the step and judging it needs neither curve to be well
+   behaved. The answers are checked against Qi's published McVay column
+   and against grid refinement, which is the test that matters. */
+Column.prototype.run = function (tEnd, tol, cap) {
+  tol = tol || 0.01; cap = cap || 200000;
+  let n = 0;
+  this.t0 = this.t;
+  if (!(this.dt > 0)) this.dt = (tEnd - this.t) / 2000;
+  const e0 = new Float64Array(this.N), w0 = new Float64Array(this.N);
+  while (this.t < tEnd - 1e-12 && n < cap) {
+    n++;
+    const d = Math.min(this.dt, tEnd - this.t);
+    const st = this.snap();
+    e0.set(this.e); w0.set(this.w);
+    this.step(d);
+    let bad = false;
+    for (let j = 0; j < this.N; j++) {
+      if (!isFinite(this.e[j]) || !isFinite(this.w[j]) || this.e[j] <= 0
+          || Math.abs(this.e[j] - e0[j]) > tol * Math.max(e0[j], 1e-9)
+          || Math.abs(this.w[j] - w0[j]) > tol * Math.max(w0[j], 1e-9)
+          || this.p.Gs * this.w[j] > 1.02 * this.e[j]) { bad = true; break; }
+    }
+    if (bad) {
+      this.restore(st); this.dt *= 0.35; this.fails++;
+      if (this.dt < 1e-13) break;
+      continue;
+    }
+    this.dt = Math.min(this.dt * 1.12, (tEnd - this.t0) / 20 + 1e-9);
+    if (n % 60 === 0) this.hist.push({ t: this.t, H: this.height() });
+  }
+  this.hist.push({ t: this.t, H: this.height() });
+  this.steps += n;
+  return n;
+};
+
+// the resting state in closed form: sigma' = q0 + (Gs-1) gamma_w zeta
+Column.prototype.resting = function () {
+  let H = 0;
+  for (let i = 0; i < this.N; i++) {
+    const zeta = (i + 0.5) * this.dz;
+    H += this.dz * (1 + eSat(this.p, this.q0 + (this.p.Gs - 1) * GW * zeta));
+  }
+  return H;
+};
+Column.prototype.balance = function () {
+  return Math.abs(this.w0 - (this.water() + this.pond + this.evapCum + this.decantCum));
+};
+Column.prototype.states = function () {
+  const sig = this.stress(), out = [];
+  let acc = 0;
+  for (let j = 0; j < this.N; j++) {
+    const L = this.L(j), psi = Math.max(0, -this.u[j]);
+    out.push({ z: acc + L / 2, e: this.e[j], w: this.w[j], psi: psi,
+               sig: Math.max(1e-6, sig[j] - this.u[j]), net: sig[j],
+               S: Math.min(1.5, this.p.Gs * this.w[j] / this.e[j]),
+               k: this.kcell(j), sat: this.sat[j] });
+    acc += L;
+  }
+  return out;
+};
+
+// ====================================================== the page
+let P = null, col = null, stages = [];
+let chH = null, chP = null, chC = null;
+let profVar = 'e', curveVar = 'esig', tab = 'height';
+
+const $ = id => document.getElementById(id);
+const num = id => { const v = parseFloat(($(id).value || '').trim()); return isFinite(v) ? v : null; };
+
+const FIELD = { H0: 'f_H0', Gs: 'f_Gs', e0: 'f_e0', A: 'f_A', Z: 'f_Z', B: 'f_B',
+  C: 'f_C', D: 'f_D', Cf: 'f_Cf', ash: 'f_ash', bsh: 'f_bsh', csh: 'f_csh',
+  ws: 'f_ws', psir: 'f_psir', af: 'f_af', nf: 'f_nf', mf: 'f_mf',
+  gm: 'f_gm', gn: 'f_gn', psiMax: 'f_psiMax' };
+const VUF = { a: 'f_va', b: 'f_vb', c: 'f_vc', d: 'f_vd', f: 'f_vf', g: 'f_vg',
+  A: 'f_vA', B: 'f_vB', C: 'f_vC', D: 'f_vD', F: 'f_vF', G: 'f_vG' };
+
+function loadPreset(key) {
+  const q = PRESETS[key];
+  P = Object.assign({}, q, { preset: key, mode: currentMode(), anchor: $('f_anchor').value });
+  for (const k in FIELD) $(FIELD[k]).value = (q[k] === null || q[k] === undefined) ? '' : q[k];
+  $('f_N').value = q.N;
+  if (q.vu) for (const k in VUF) $(VUF[k]).value = q.vu[k];
+  else for (const k in VUF) $(VUF[k]).value = '';
+  stages = q.stages.map(s => Object.assign({}, s));
+  drawStages();
+  syncMode();
+  resetCol();
+}
+
+function currentMode() {
+  const b = document.querySelector('#modeSeg button.on');
+  return b ? b.dataset.k : 'vu';
+}
+
+function readFields() {
+  const key = document.querySelector('#matSeg button.on').dataset.m;
+  const base = PRESETS[key];
+  const p = Object.assign({}, base, { preset: key, mode: currentMode(), anchor: $('f_anchor').value });
+  for (const k in FIELD) { const v = num(FIELD[k]); p[k] = (v === null) ? null : v; }
+  if (base.vu) { p.vu = {}; for (const k in VUF) p.vu[k] = num(VUF[k]); } else p.vu = null;
+  if (!(p.A > 0)) throw new Error('A must be positive.');
+  if (!(p.B < 0)) throw new Error('B must be negative: void ratio falls as stress rises.');
+  if (!(p.C > 0) || !(p.D > 0)) throw new Error('C and D must be positive.');
+  if (!(p.Gs > 1)) throw new Error('Specific gravity must exceed 1.');
+  if (!(p.e0 > 0)) throw new Error('Initial void ratio must be positive.');
+  if (p.mode === 'vu' && !p.vu) throw new Error('This material has no Vu surfaces reported. Use the quasi-unsaturated route.');
+  if (p.mode === 'taher' && !(p.ash > 0)) throw new Error('This material has no shrinkage curve or SWCC reported. Use the quasi-unsaturated route.');
+  if (!(p.gm >= 0)) p.gm = 0.00289;
+  if (!(p.gn > 0)) p.gn = 0.85;
+  if (!(p.psiMax > 0)) p.psiMax = 1000;
+  P = p;
+  return p;
+}
+
+function syncMode() {
+  const m = currentMode();
+  $('fsVu').style.display = (m === 'taher') ? 'none' : '';
+  $('fsTaher').style.display = (m === 'taher') ? '' : 'none';
+}
+
+function drawStages() {
+  const tb = $('stageTable').querySelector('tbody');
+  tb.innerHTML = stages.map((s, i) =>
+    `<tr><td><input value="${s.to}" oninput="stages[${i}].to=parseFloat(this.value)"></td>`
+    + `<td><input value="${s.ev}" oninput="stages[${i}].ev=parseFloat(this.value)"></td>`
+    + `<td style="text-align:center"><input type="checkbox" ${s.dec ? 'checked' : ''} onchange="stages[${i}].dec=this.checked"></td>`
+    + `<td><button class="btn" style="padding:0 5px" onclick="stages.splice(${i},1);drawStages()">&times;</button></td></tr>`).join('');
+}
+function addStage() {
+  const last = stages.length ? stages[stages.length - 1] : { to: 0, ev: 0, dec: true };
+  stages.push({ to: last.to + 10, ev: last.ev, dec: last.dec });
+  drawStages();
+}
+
+function resetCol() {
+  try {
+    const p = readFields();
+    const N = Math.max(5, Math.min(120, Math.round(num('f_N') || 30)));
+    col = new Column(p, p.H0, N);
+    $('f_q0').value = col.q0.toPrecision(4);
+    say('Ready. ' + N + ' elements, solids thickness ' + (col.dz * N).toFixed(4)
+        + ' m, q<sub>0</sub> = ' + col.q0.toPrecision(3) + ' kPa derived from e<sub>0</sub>.');
+    redraw();
+  } catch (err) { say(err.message, true); }
+}
+
+function runAll() {
+  try {
+    const p = readFields();
+    const N = Math.max(5, Math.min(120, Math.round(num('f_N') || 30)));
+    const tol = Math.max(1e-4, Math.min(0.2, num('f_tol') || 0.01));
+    const cap = Math.max(1000, Math.round(num('f_cap') || 200000));
+    const t0 = performance.now();
+    col = new Column(p, p.H0, N);
+    $('f_q0').value = col.q0.toPrecision(4);
+    const marks = [];
+    let prevDec = null;
+    for (const s of stages) {
+      if (!(s.to > col.t)) continue;
+      if (prevDec === false && s.dec) { col.decantCum += col.pond; col.pond = 0; }
+      col.decant = !!s.dec; col.evap = (s.ev || 0) / 1000;
+      col.dt = 0;
+      col.run(s.to, tol, cap);
+      marks.push({ t: col.t, H: col.height(), pond: col.pond });
+      prevDec = !!s.dec;
+    }
+    const st = col.states();
+    let smin = 9, smax = 0, nuns = 0;
+    for (const c of st) { smin = Math.min(smin, c.S); smax = Math.max(smax, c.S); if (!c.sat) nuns++; }
+    const eq = col.resting();
+    say('<b>' + p.name + '</b> &nbsp; t = ' + col.t.toFixed(1) + ' d &nbsp; H = '
+      + col.height().toFixed(4) + ' m from ' + (+p.H0).toFixed(3)
+      + ' &nbsp;|&nbsp; saturated resting height ' + eq.toFixed(4) + ' m'
+      + ' &nbsp;|&nbsp; pond ' + col.pond.toFixed(4) + ', decanted ' + col.decantCum.toFixed(4)
+      + ', evaporated ' + col.evapCum.toFixed(4)
+      + ' &nbsp;<b>balance ' + col.balance().toExponential(1) + ' m</b>'
+      + ' &nbsp;|&nbsp; S ' + smin.toFixed(3) + '&ndash;' + smax.toFixed(3)
+      + ', ' + nuns + ' of ' + N + ' unsaturated'
+      + ' &nbsp;|&nbsp; &psi;<sub>top</sub> ' + st[0].psi.toFixed(0) + ' kPa'
+      + ' &nbsp;|&nbsp; ' + col.steps + ' steps, ' + col.fails + ' rejected, '
+      + (performance.now() - t0).toFixed(0) + ' ms');
+    col.marks = marks;
+    redraw();
+  } catch (err) { say(err.message, true); }
+}
+
+function say(msg, bad) {
+  const el = $('status'); el.innerHTML = msg; el.className = bad ? 'bad' : '';
+}
+
+// ------------------------------------------------------- charts --
+function decadeTicks(ax) {
+  const dec = ax.ticks.filter(t => Math.abs(Math.log10(t.value) - Math.round(Math.log10(t.value))) < 1e-6);
+  const step = Math.max(1, Math.ceil(dec.length / 8));
+  ax.ticks = dec.filter(t => Math.round(Math.log10(t.value)) % step === 0);
+}
+function axis(title, log) {
+  return {
+    type: log ? 'logarithmic' : 'linear',
+    title: { display: true, text: title, font: { size: 10 } },
+    afterBuildTicks: log ? decadeTicks : undefined,
+    ticks: { font: { size: 9 }, maxRotation: 0,
+             callback: log ? (v => (v >= 0.01 && v < 1e4) ? String(+v.toPrecision(3)) : v.toExponential(0)) : undefined }
+  };
+}
+const BASE = () => ({
+  responsive: true, maintainAspectRatio: false, animation: false,
+  plugins: { legend: { display: true, position: 'bottom',
+                       labels: { boxWidth: 14, font: { size: 9.5 }, usePointStyle: true, padding: 7 } },
+             tooltip: { titleFont: { size: 10 }, bodyFont: { size: 10 } } }
+});
+const LINE = (label, colour, dash, width) => ({
+  label: label, data: [], showLine: true, borderColor: colour, borderDash: dash || [],
+  borderWidth: width || 2, pointRadius: 0, pointStyle: 'line', fill: false
+});
+const DOTS = (label, colour) => ({
+  label: label, data: [], showLine: false, borderColor: colour,
+  backgroundColor: colour, pointRadius: 2.6, pointStyle: 'circle'
+});
+
+function initCharts() {
+  chH = new Chart($('cHeight'), {
+    type: 'scatter',
+    data: { datasets: [ LINE('Deposit height', '#1d4ed8'),
+                        LINE('Saturated resting height (exact)', '#b45309', [6, 4], 1.4),
+                        DOTS('End of stage', '#0f172a') ] },
+    options: Object.assign(BASE(), {
+      scales: { x: axis('Time (days, log)', true), y: axis('Height (m)', false) }
+    })
+  });
+  chP = new Chart($('cProfile'), {
+    type: 'scatter',
+    data: { datasets: [ LINE('Now', '#1d4ed8'),
+                        LINE('Saturated resting state (exact)', '#b45309', [6, 4], 1.4),
+                        LINE('As placed', '#94a3b8', [3, 3], 1.2),
+                        DOTS('Unsaturated elements', '#dc2626') ] },
+    options: Object.assign(BASE(), {
+      scales: { x: axis('Void ratio e', false),
+                y: Object.assign(axis('Depth below surface (m)', false), { reverse: true }) }
+    })
+  });
+  chC = new Chart($('cCurve'), {
+    type: 'scatter',
+    data: { datasets: [ LINE('Saturated branch', '#1d4ed8'),
+                        LINE('At suction', '#1d4ed8', [5, 3], 1.5),
+                        LINE('Saturation line e = Gₛw', '#0e7490', [2, 2], 1.2),
+                        DOTS('Column now', '#d97706') ] },
+    options: Object.assign(BASE(), { scales: { x: axis('x', false), y: axis('y', false) } })
+  });
+}
+
+const PROF = {
+  e:   { t: 'Void ratio e',                log: false, g: c => c.e },
+  w:   { t: 'Water content w',             log: false, g: c => c.w },
+  S:   { t: 'Degree of saturation S',      log: false, g: c => c.S },
+  psi: { t: 'Matric suction ψ (kPa)', log: false, g: c => c.psi },
+  sig: { t: 'Effective stress σ′ (kPa)', log: true, g: c => c.sig },
+  k:   { t: 'Conductivity k (m/s)',        log: true,  g: c => c.k }
+};
+
+function redraw() {
+  if (!col || !chH) return;
+  const p = col.p, st = col.states(), eq = col.resting();
+
+  // height
+  const hs = col.hist.filter(h => h.t > 0);
+  chH.data.datasets[0].data = hs.map(h => ({ x: h.t, y: h.H }));
+  chH.data.datasets[1].data = hs.length
+    ? [{ x: hs[0].t, y: eq }, { x: hs[hs.length - 1].t, y: eq }] : [];
+  chH.data.datasets[2].data = (col.marks || []).map(m => ({ x: m.t, y: m.H }));
+  chH.update('none');
+
+  // profile
+  const d = PROF[profVar];
+  chP.data.datasets[0].data = st.map(c => ({ x: d.g(c), y: c.z }));
+  let acc = 0; const ref = [];
+  for (let i = 0; i < col.N; i++) {
+    const zeta = (i + 0.5) * col.dz;
+    const sg = col.q0 + (p.Gs - 1) * GW * zeta, e = eSat(p, sg);
+    const th = col.dz * (1 + e); const y = acc + th / 2; acc += th;
+    ref.push({ x: d.g({ e: e, w: e / p.Gs, S: 1, psi: 0, sig: sg, k: kSat(p, e) }), y: y });
+  }
+  chP.data.datasets[1].data = (profVar === 'psi') ? [] : ref;
+  const th0 = col.dz * (1 + p.e0);
+  const c0 = { e: p.e0, w: p.e0 / p.Gs, S: 1, psi: 0, sig: col.q0, k: kSat(p, p.e0) };
+  chP.data.datasets[2].data = (profVar === 'psi') ? []
+    : st.map((_, i) => ({ x: d.g(c0), y: (i + 0.5) * th0 }));
+  chP.data.datasets[3].data = st.filter(c => !c.sat).map(c => ({ x: d.g(c), y: c.z }));
+  chP.options.scales.x = axis(d.t, d.log);
+  chP.options.scales.x.min = (profVar === 'S') ? 0 : undefined;
+  chP.options.scales.x.max = (profVar === 'S') ? 1.02 : undefined;
+  chP.update('none');
+
+  drawCurve(st);
+  drawColumn(st);
+}
+
+function drawCurve(st) {
+  const p = col.p, ds = chC.data.datasets;
+  const span = (lo, hi, n, log) => {
+    const out = [];
+    for (let i = 0; i <= n; i++) out.push(log ? Math.pow(10, Math.log10(lo) + (Math.log10(hi) - Math.log10(lo)) * i / n)
+                                              : lo + (hi - lo) * i / n);
+    return out;
+  };
+  const unsat = p.mode !== 'quasi';
+  ds[1].data = []; ds[2].data = [];
+  if (curveVar === 'esig') {
+    const xs = span(Math.max(1e-4, col.q0 / 3), 1e3, 110, true);
+    ds[0].label = 'Saturated, e(σ′)';
+    ds[0].data = xs.map(s => ({ x: s, y: eSat(p, s) }));
+    if (unsat) {
+      ds[1].label = 'At ψ = 50 kPa';
+      ds[1].data = xs.map(s => ({ x: s, y: surfE(p, s, 50) }));
+    }
+    ds[3].data = st.map(c => ({ x: c.sig, y: c.e }));
+    chC.options.scales.x = axis('Vertical effective stress σ′ (kPa)', true);
+    chC.options.scales.y = axis('Void ratio e', false);
+    chC.options.scales.y.min = 0;
+    chC.options.scales.y.max = Math.ceil(p.e0 * 1.15);
+  } else if (curveVar === 'ke') {
+    const xs = span(Math.max(0.05, p.e0 * 0.05), p.e0 * 1.08, 110, false);
+    ds[0].label = 'Saturated, k(e)';
+    ds[0].data = xs.map(e => ({ x: e, y: kSat(p, e) }));
+    ds[1].label = 'At ψ = 100 kPa (Eq. 5)';
+    ds[1].data = xs.map(e => ({ x: e, y: kUnsat(p, e, 100) }));
+    ds[3].data = st.map(c => ({ x: c.e, y: c.k }));
+    chC.options.scales.x = axis('Void ratio e', false);
+    chC.options.scales.y = axis('Conductivity k (m/s)', true);
+  } else if (curveVar === 'ew') {
+    const wTop = Math.max(p.ws || 0, p.e0 / p.Gs) * 1.06;
+    const xs = span(0, wTop, 110, false);
+    ds[0].label = 'Shrinkage branch at σ′ = q₀';
+    ds[0].data = unsat ? xs.map(w => {
+      const ps = surfPsi(p, col.q0, w);
+      return { x: w, y: surfE(p, col.q0, Math.max(0, ps)) };
+    }) : [];
+    ds[2].label = 'Saturation line e = Gₛw';
+    ds[2].data = xs.map(w => ({ x: w, y: p.Gs * w }));
+    ds[3].data = st.map(c => ({ x: c.w, y: c.e }));
+    chC.options.scales.x = axis('Gravimetric water content w', false);
+    chC.options.scales.y = axis('Void ratio e', false);
+    chC.options.scales.y.min = 0;
+  } else {
+    const xs = span(0.01, 1e5, 130, true);
+    ds[0].label = 'w(ψ) at σ′ = q₀';
+    ds[0].data = unsat ? xs.map(s => ({ x: s, y: surfW(p, col.q0, s) })) : [];
+    ds[1].label = 'w(ψ) at σ′ = 10 kPa';
+    ds[1].data = unsat ? xs.map(s => ({ x: s, y: surfW(p, 10, s) })) : [];
+    ds[3].data = st.filter(c => c.psi > 0.01 && c.S < 0.999).map(c => ({ x: c.psi, y: c.w }));
+    chC.options.scales.x = axis('Matric suction ψ (kPa)', true);
+    chC.options.scales.y = axis('Gravimetric water content w', false);
+    chC.options.scales.y.min = 0;
+  }
+  chC.update('none');
+}
+
+/* A strip of the real thing: one band per element at its true thickness,
+   shaded from blue at full saturation to tan at dry, the standing water on
+   top, and the as-placed height left behind as an outline so the settlement
+   is something you can see rather than read. */
+function drawColumn(st) {
+  const cv = $('colCanvas'), wrap = $('colWrap');
+  const dpr = window.devicePixelRatio || 1;
+  const W = wrap.clientWidth - 12, H = wrap.clientHeight - 16;
+  if (W <= 0 || H <= 0) return;
+  cv.width = W * dpr; cv.height = H * dpr;
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
+  g.clearRect(0, 0, W, H);
+
+  const p = col.p, Hd = col.height();
+  const top = 16, bot = H - 14, usable = bot - top;
+  const total = Math.max(p.H0, Hd + col.pond) * 1.02;
+  const sc = usable / total;
+  const x0 = 30, bw = Math.max(22, W - 42);
+  const yOf = h => bot - h * sc;             // h measured up from the base
+
+  // as placed
+  g.setLineDash([3, 3]); g.strokeStyle = '#94a3b8'; g.lineWidth = 1;
+  g.strokeRect(x0 - 3, yOf(p.H0), bw + 6, p.H0 * sc);
+  g.setLineDash([]);
+  g.fillStyle = '#94a3b8'; g.font = '9px sans-serif'; g.textAlign = 'left';
+  g.fillText('as placed', x0 - 3, yOf(p.H0) - 3);
+
+  // elements, bottom upwards
+  let h = 0;
+  for (let i = st.length - 1; i >= 0; i--) {
+    const c = st[i], L = col.dz * (1 + c.e);
+    const s = Math.max(0, Math.min(1, c.S));
+    g.fillStyle = c.sat ? '#5b9bf8'
+      : 'rgb(' + Math.round(214 - 120 * s) + ',' + Math.round(168 - 20 * s) + ',' + Math.round(110 + 95 * s) + ')';
+    g.fillRect(x0, yOf(h + L) - 0.5, bw, L * sc + 1);
+    h += L;
+  }
+  // standing water
+  if (col.pond > 1e-6) {
+    g.fillStyle = 'rgba(56,189,248,.55)';
+    g.fillRect(x0, yOf(Hd + col.pond), bw, col.pond * sc);
+    g.strokeStyle = '#0284c7'; g.lineWidth = 1;
+    g.beginPath(); g.moveTo(x0, yOf(Hd + col.pond)); g.lineTo(x0 + bw, yOf(Hd + col.pond)); g.stroke();
+  }
+  g.strokeStyle = '#334155'; g.lineWidth = 1.3;
+  g.strokeRect(x0, yOf(Hd), bw, Hd * sc);
+
+  // the saturation front, where it is inside the column
+  let front = -1, acc = 0;
+  for (let i = st.length - 1; i >= 0; i--) { acc += col.dz * (1 + st[i].e); if (!st[i].sat) { front = acc; break; } }
+  if (front > 0 && front < Hd - 1e-9) {
+    g.strokeStyle = '#dc2626'; g.setLineDash([4, 3]); g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(x0, yOf(front)); g.lineTo(x0 + bw, yOf(front)); g.stroke();
+    g.setLineDash([]);
+  }
+
+  g.fillStyle = '#0f172a'; g.font = '600 10px sans-serif'; g.textAlign = 'center';
+  g.fillText(Hd.toFixed(3) + ' m', x0 + bw / 2, bot + 11);
+  g.fillStyle = '#64748b'; g.font = '9px sans-serif'; g.textAlign = 'center';
+  g.fillText('t = ' + col.t.toFixed(1) + ' d', x0 + bw / 2, top - 5);
+  if (col.pond > 1e-6) {
+    g.textAlign = 'left'; g.fillStyle = '#0369a1';
+    g.fillText(col.pond.toFixed(3), x0 + 2, yOf(Hd + col.pond) + 9);
+  }
+}
+
+// ------------------------------------------------------- verify --
+function runVerify() {
+  const rows = [];
+  const add = (t, m, r, ok) => rows.push([t, m, r, ok]);
+  try {
+    const p = readFields();
+    const N = Math.max(5, Math.min(120, Math.round(num('f_N') || 30)));
+    const tol = Math.max(1e-4, Math.min(0.2, num('f_tol') || 0.01));
+
+    // 1. solids are conserved by construction; say so with a number
+    const c0 = new Column(p, p.H0, N);
+    add('Solids conserved', 'total solids thickness',
+        (c0.dz * N).toFixed(6) + ' m vs ' + (p.H0 / (1 + p.e0)).toFixed(6),
+        Math.abs(c0.dz * N - p.H0 / (1 + p.e0)) < 1e-9);
+
+    // 2. q0 reproduces the as-placed void ratio
+    add('q₀ is consistent with e₀', 'e_sat(q₀) against e₀',
+        eSat(p, c0.q0).toFixed(4) + ' vs ' + (+p.e0).toFixed(4),
+        Math.abs(eSat(p, c0.q0) - p.e0) < 1e-3);
+
+    // 3. the constitutive routes must agree at the saturation front
+    if (p.mode !== 'quasi') {
+      let worst = 0, at = 0;
+      for (const sn of [0.01, 0.05, 0.1, 0.5, 1, 2, 5]) {
+        const dd = Math.abs(surfE(p, sn, 0) - eSat(p, sn));
+        if (dd > worst) { worst = dd; at = sn; }
+      }
+      add('Continuous at the saturation front',
+          'jump in e at ψ = 0, worst over 0.01–5 kPa',
+          worst.toFixed(4) + ' at σ′ = ' + at + ' kPa', worst < 1e-3);
+    }
+
+    // 4. with no evaporation the column must reach the closed-form rest
+    const c1 = new Column(p, p.H0, Math.min(N, 30));
+    c1.decant = true; c1.evap = 0;
+    c1.run(1e6, tol, 120000);
+    const gap = Math.abs(c1.height() - c1.resting());
+    add('Settles to the resting state',
+        'σ′ = q₀ + (G<sub>s</sub>−1)γ<sub>w</sub>ζ exactly',
+        gap.toExponential(1) + ' m', gap < 2e-3);
+
+    // 5. Qi's published benchmark, when this is that material
+    if (p.preset === 'spwc') {
+      const c2 = new Column(p, 6.33, 50); c2.decant = true; c2.evap = 0;
+      c2.run(400, tol, 200000);
+      const err = Math.abs(c2.height() - 3.5757) / 3.5757 * 100;
+      add('Qi et al. (2017) McVay column', 'H at 400 days, 50 elements, against their 3.5757 m',
+          c2.height().toFixed(4) + ' m (' + err.toFixed(2) + '%)', err < 1.0);
+    }
+
+    // 6. water in equals water out, over the staged history
+    const c3 = runStages(p, Math.min(N, 30), tol, 150000);
+    add('Water balance over the whole history', 'held + ponded + decanted + evaporated',
+        c3.balance().toExponential(1) + ' m of ' + c3.w0.toFixed(3),
+        c3.balance() < 1e-6 * Math.max(1, c3.w0 / 0.001));
+
+    // 7. no element may hold more water than its voids
+    let smax = 0;
+    for (const c of c3.states()) smax = Math.max(smax, c.S);
+    add('Degree of saturation at or below 1', 'highest S anywhere',
+        smax.toFixed(4), smax <= 1.0005);
+
+    // 8. how hard the physical clamp had to work
+    if (p.mode !== 'quasi') {
+      add('Void ratio the relations give holds the water',
+          'largest shortfall the S ≤ 1 clamp had to make up',
+          (100 * c3.clamp).toFixed(2) + '%', c3.clamp < 0.03);
+    }
+
+    // 9. refinement
+    const hs = [];
+    for (const n of [Math.max(5, Math.round(N / 2)), N, Math.min(120, N * 2)]) {
+      hs.push(runStages(p, n, tol, 150000).height());
+    }
+    const d1 = Math.abs(hs[1] - hs[0]), d2 = Math.abs(hs[2] - hs[1]);
+    add('Refinement', 'final height on three grids',
+        hs.map(h => h.toFixed(5)).join(' / ') + ' m', d2 <= d1 * 1.2);
+
+    col = c3; col.marks = []; redraw();
+  } catch (err) {
+    add('Verification failed', 'exception', err.message || String(err), false);
+  }
+  $('verOut').innerHTML =
+    '<table class="ver"><thead><tr><th>Test</th><th>Measure</th><th>Result</th></tr></thead><tbody>'
+    + rows.map(r => `<tr class="${r[3] ? 'pass' : 'fail'}"><td>${r[0]}</td><td>${r[1]}</td>`
+                  + `<td>${r[2]} ${r[3] ? '&#10003;' : '&#10007;'}</td></tr>`).join('')
+    + '</tbody></table>';
+  setTab('verify');
+}
+
+function runStages(p, N, tol, cap) {
+  const c = new Column(p, p.H0, N);
+  let prevDec = null;
+  for (const s of stages) {
+    if (!(s.to > c.t)) continue;
+    if (prevDec === false && s.dec) { c.decantCum += c.pond; c.pond = 0; }
+    c.decant = !!s.dec; c.evap = (s.ev || 0) / 1000; c.dt = 0;
+    c.run(s.to, tol, cap);
+    prevDec = !!s.dec;
+  }
+  return c;
+}
+
+// --------------------------------------------------------- tabs --
+function toggleSetup() {
+  const m = document.querySelector('main');
+  m.classList.toggle('nosetup');
+  $('setupToggle').textContent = m.classList.contains('nosetup') ? 'Show setup' : 'Hide setup';
+  setTimeout(() => { if (chH) { chH.resize(); chP.resize(); chC.resize(); }
+                     if (col) drawColumn(col.states()); }, 30);
+}
+
+function setTab(v) {
+  tab = v;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  document.querySelectorAll('.view').forEach(e => e.classList.toggle('on', e.id === 'v_' + v));
+  $('profVars').style.display = (v === 'profile') ? '' : 'none';
+  $('curveVars').style.display = (v === 'curves') ? '' : 'none';
+  if (chH) { chH.resize(); chP.resize(); chC.resize(); }
+}
+
+const ABOUT = `
+<p><b>One column, one setup.</b> The deposit is divided into elements that each keep a fixed
+amount of solid for ever, so the column settles because the void ratio falls and no mesh moves.
+Flow, consolidation and drying are the same calculation: there is no separate saturated model
+handing over to a separate unsaturated one.</p>
+
+<p><b>The formulation</b> is the piecewise-linear one of <b>Qi, Simms &amp; Vanapalli (2017)</b>,
+<i>J. Geotech. Geoenviron. Eng.</i> 143(7), parts I and II. Water continuity per element is their
+Eq. 16, conductivity between elements the distance-weighted harmonic mean of Eq. 6, conductivity
+within an element <code>k = Ce&#8319;/(1+m[&psi;/&gamma;<sub>w</sub>]&#8319;)</code> of Eq. 5, and the
+surface moves between their four boundary cases on its own as the pond, the evaporation rate and
+the suction cap decide. Each element is tested every step against the void ratio its total stress
+could support; if it needs more effective stress than it has, it has desaturated and is re-solved
+on the unsaturated branch.</p>
+
+<p><b>The unsaturated branch</b> is selectable. <i>Vu &amp; Fredlund (2006) surfaces</i> are the ones
+Qi et al. fit, with their Table 3 parameters and the Set 3 conductivity of their Table 4.
+<i>Taher superposition</i> is the set in <b>Taher, Scalia &amp; Bareither (2024)</b>,
+<i>Int. J. Geotechnical Engineering</i>: Liu &amp; Znidar&#269;i&#263; (1991) for e(&sigma;&prime;),
+Gjerapic et al. (2008) for k(e), Fredlund, Wilson &amp; Fredlund (2002) for the shrinkage curve and
+Fredlund, Xing &amp; Huang (1994) for the retention curve, combined by their section 2.2.3.
+<i>Quasi-unsaturated</i> uses the saturated curves everywhere and lets suction act exactly like
+mechanical stress, which is what CONDES and MinTaCo do.</p>
+
+<p><b>q&#8320; is derived, not typed.</b> Qi take the surcharge that makes the as-placed void ratio
+consistent with the compressibility curve. For the polymer-amended tailings that is 0.0021 kPa,
+which is the figure in their Table 2, and it falls out of the Vu void-ratio surface at zero
+suction. For the phosphatic clay it is 0.2245 kPa, and leaving it out raises the resting height
+from 3.44 to 3.66 m.</p>
+
+<p><b>Two departures, both stated.</b> The superposition of section 2.2.3 is anchored here at
+q&#8320; rather than at zero stress. As published it is continuous with the saturated branch only
+if e&#8320; equals the compressibility curve extrapolated to zero stress; for this material the fit
+gives 4.414 there against an as-placed 4.000, so the void ratio steps by 0.53 at the saturation
+front and the coupled solver cannot cross it. Anchoring at q&#8320; removes the step exactly,
+because q&#8320; is defined by e_sat(q&#8320;) = e&#8320;. Switch the anchor in the setup to see
+both. And the time step is chosen by taking a step and judging it, not by the stability bound of
+their Eq. 32: that bound evaluates compressibility at a point, and at the as-placed state it allows
+a step in which the base void ratio falls from 4.0 to 1.26, while on the flat wet end of a
+Fredlund&ndash;Xing curve it collapses to 4&times;10&#8315;&#8311; days and never recovers.</p>
+
+<p><b>What it is checked against.</b> Press <b>Verify</b>. The saturated resting state is known in
+closed form. Qi's own McVay, Townsend &amp; Bloomquist (1986) column is a published number to hit.
+Water in must equal water out. And the answer must stop moving as the grid is refined. The page
+reports the error it actually made on each.</p>
+
+<p><b>What it is not.</b> One-dimensional, isothermal, no desiccation cracking, no vapour flow, no
+hysteresis between wetting and drying, and no sedimentation before consolidation starts. The
+parameters belong to two specific materials. Verified against exact solutions is not validated for
+your site.</p>
+
+<p style="margin-top:10px"><b>Nothing is uploaded.</b> Everything runs in your browser.</p>`;
+
+// ---------------------------------------------------------- boot --
+window.addEventListener('DOMContentLoaded', () => {
+  $('aboutText').innerHTML = ABOUT;
+  $('f_tol').value = 0.01;
+  $('f_cap').value = 200000;
+  document.querySelectorAll('#matSeg button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#matSeg button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const k = b.dataset.m;
+    if (k === 'spwc' && currentMode() !== 'quasi') {
+      document.querySelectorAll('#modeSeg button').forEach(x => x.classList.toggle('on', x.dataset.k === 'quasi'));
+    }
+    loadPreset(k);
+  });
+  document.querySelectorAll('#modeSeg button').forEach(b => b.onclick = () => {
+    document.querySelectorAll('#modeSeg button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); syncMode(); resetCol();
+  });
+  document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => setTab(b.dataset.v));
+  document.querySelectorAll('#profVars button').forEach(b => b.onclick = () => {
+    profVar = b.dataset.p;
+    document.querySelectorAll('#profVars button').forEach(x => x.classList.toggle('on', x === b));
+    redraw();
+  });
+  document.querySelectorAll('#curveVars button').forEach(b => b.onclick = () => {
+    curveVar = b.dataset.c;
+    document.querySelectorAll('#curveVars button').forEach(x => x.classList.toggle('on', x === b));
+    redraw();
+  });
+  $('f_anchor').onchange = resetCol;
+
+  initCharts();
+  loadPreset('pamft');
+  window.addEventListener('resize', () => { if (col) drawColumn(col.states()); });
+});
+</script>
+</body>
+</html>
