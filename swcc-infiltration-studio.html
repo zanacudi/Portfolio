@@ -1771,7 +1771,7 @@
       </summary>
       <div class="expand-body">
         <div class="solver-mode-btns">
-          <button class="solver-btn active" id="ssBtnPonded" onclick="setSteadyBoundaryMode('ponded')">BC 1: Constant Top Ponding (h<sub>p</sub> = 5 cm, Gravity + Head Driven)</button>
+          <button class="solver-btn active" id="ssBtnPonded" onclick="setSteadyBoundaryMode('ponded')">BC 1: Constant Top Ponding (h<sub>p</sub> = <span id="ssHpBtnLabel">5.0</span> cm, Gravity + Head Driven)</button>
           <button class="solver-btn" id="ssBtnFlux" onclick="setSteadyBoundaryMode('flux')">BC 2: Prescribed Top Recharge Flux (q<sub>top</sub> Controlled)</button>
         </div>
 
@@ -1785,7 +1785,7 @@
               </div>
               <div style="font-size:0.74rem; color:var(--text-muted);" id="ssBoundaryExplanation">
                 <strong>Ponded Steady-State Theory (&part;&theta;/&part;t = 0 &rArr; q<sub>1</sub> = q<sub>2</sub> = &hellip; = q<sub>N</sub> = q<sub>ss</sub>):</strong>
-                Under continuous top ponding (h<sub>p</sub> = 5.0 cm) and a free atmospheric base, the vertical steady throughflow flux is governed by the <strong>Harmonic Mean Conductivity K<sub>V,harm</sub></strong> and limited by the tightest bottleneck stratum. Layers more permeable than q<sub>ss</sub> conduct the steady flux at an <strong>unsaturated equilibrium (|&psi;<sub>ss,i</sub>|, &theta;<sub>ss,i</sub>)</strong> where K<sub>i</sub>(|&psi;<sub>ss,i</sub>|) = q<sub>ss</sub> (shown as <strong>cyan diamonds ◆</strong> on the SWCC chart).
+                Under continuous top ponding (h<sub>p</sub> = <span id="ssHpLabel">5.0</span> cm) over an <span id="ssLLabel">50</span> cm column and a free atmospheric base, the vertical steady throughflow flux is governed by the <strong>Harmonic Mean Conductivity K<sub>V,harm</sub></strong> and limited by the tightest bottleneck stratum. Layers more permeable than q<sub>ss</sub> conduct the steady flux at an <strong>unsaturated equilibrium (|&psi;<sub>ss,i</sub>|, &theta;<sub>ss,i</sub>)</strong> where K<sub>i</sub>(|&psi;<sub>ss,i</sub>|) = q<sub>ss</sub> (shown as <strong>cyan diamonds ◆</strong> on the SWCC chart).
               </div>
             </div>
 
@@ -2531,6 +2531,12 @@
     // =========================================================================
     // PART 2: LIVE STRATIFIED SOIL INFILTRATION & 6-NODE SWCC STUDIO
     // =========================================================================
+    /* Declared up here, not beside the hydraulic editor: the steady-state
+       panel reads it during the first chart draw, which happens while the
+       script is still running. A const further down is in its temporal dead
+       zone at that moment, and even typeof throws on it. */
+    const boundaryConfig = { topType: 'head', topValue: 5.0, bottomType: 'free', bottomValue: 0.0, depth: 50.0, userDt: 0.05 };
+
     const CONTROL_PSI = [0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0];
     const psiPoints = [];
     for (let p = -1; p <= 4.0001; p += 0.08) {
@@ -3496,112 +3502,11 @@
     window.addEventListener('touchmove', onPointerMove, { passive: true });
     window.addEventListener('touchend', onPointerUp);
 
-    /* DEAD: overwritten by the definitions further down; kept only so the
-       hoisted binding exists for callers above them. Do not edit. */
-    function _deadComputeUnsaturatedK(layer, seVal) {
-      const se = Math.max(0.01, Math.min(1.0, seVal));
-      const m = 1 - 1 / Math.max(1.08, layer.n);
-      const krMualem = Math.sqrt(se) * Math.pow(1 - Math.pow(1 - Math.pow(se, 1 / m), m), 2);
-      const krEffective = 0.015 * se + 0.985 * krMualem;
-      return layer.ks * Math.max(0.002, krEffective);
-    }
-
-    /* DEAD: see above. */
-    function _deadAdvancePhysicsByDt(dtHours) {
-      const N = activeLayers.length;
-      const totalDepthCm = 50.0;
-      const dz = totalDepthCm / N;
-      const hPond = 5.0;
-
-      if (solverMode === 'ode') {
-        let prevSat = 1.0;
-        let qInEst = 0;
-        let qOutEst = 0;
-        let maxGrad = 0;
-
-        activeLayers.forEach((s, idx) => {
-          const stBefore = getLayerSwccState(s, s.sat);
-          if (idx > 0) {
-            const stUp = getLayerSwccState(activeLayers[idx - 1], activeLayers[idx - 1].sat);
-            maxGrad = Math.max(maxGrad, Math.abs(stBefore.psi - stUp.psi) / dz);
-          } else {
-            maxGrad = Math.max(maxGrad, Math.abs(stBefore.psi + hPond) / (0.5 * dz));
-          }
-
-          if (prevSat > 0.38) {
-            const suctionCapacity = Math.max(0.05, s.controlPoints[0].y - s.controlPoints[5].y);
-            const driveHead = (idx === 0) ? (5.0 + 8.0 * suctionCapacity) : (4.0 * suctionCapacity);
-            const dSatRate = (s.ks * (driveHead / 10.0) * 0.003) * prevSat * 20.0;
-            const dSat = dSatRate * dtHours;
-            const oldSat = s.sat;
-            s.sat = Math.min(1.0, s.sat + dSat);
-            const dTheta = (s.sat - oldSat) * suctionCapacity;
-            if (idx === 0) qInEst += (dTheta * dz) / Math.max(1e-5, dtHours);
-            if (idx === N - 1 && s.sat >= 0.98) qOutEst = s.ks * 0.25;
-          }
-          prevSat = s.sat;
-        });
-
-        let cumW = 0;
-        activeLayers.forEach(s => {
-          const cap = Math.max(0.01, s.controlPoints[0].y - s.controlPoints[5].y);
-          cumW += (s.sat - s.initialSat) * cap * dz;
-        });
-        lastTelemetry = { qIn: qInEst, qOut: qOutEst, maxGrad, cumWater: cumW, subSteps: 1, dz };
-        return;
-      }
-
-      const subSteps = Math.max(4, Math.min(40, Math.ceil(dtHours * 30)));
-      const dtSub = dtHours / subSteps;
-      let qInAccum = 0;
-      let qOutAccum = 0;
-      let peakGrad = 0;
-
-      for (let step = 0; step < subSteps; step++) {
-        const states = activeLayers.map(l => getLayerSwccState(l, l.sat));
-        const heads = states.map(st => -st.psi);   // clipping at 250 cm removed the suction that drives capillary flow
-        const conds = activeLayers.map((l) => computeUnsaturatedK(l, l.sat));
-        const capacities = activeLayers.map(l => Math.max(0.02, l.controlPoints[0].y - l.controlPoints[5].y));
-        const fluxes = new Array(N + 1).fill(0);
-
-        const gradTop = (hPond - heads[0]) / (0.5 * dz) + 1.0;
-        peakGrad = Math.max(peakGrad, Math.abs(hPond - heads[0]) / (0.5 * dz));
-        const kTop = Math.max(conds[0], activeLayers[0].ks * 0.35);
-        fluxes[0] = Math.max(0, kTop * gradTop * 0.08);
-
-        for (let i = 1; i < N; i++) {
-          const upSat = activeLayers[i - 1].sat;
-          const grad = (heads[i - 1] - heads[i]) / dz + 1.0;
-          peakGrad = Math.max(peakGrad, Math.abs(heads[i - 1] - heads[i]) / dz);
-          const kUp = conds[i - 1];
-          const kDn = conds[i];
-          const kInterface = (upSat > 0.25)
-            ? (0.65 * Math.min(kUp, kDn * 2.5) + 0.35 * Math.sqrt(kUp * kDn)) * Math.pow(upSat, 1.2)
-            : 0.05 * Math.min(kUp, kDn) * upSat;
-          fluxes[i] = Math.max(0, kInterface * Math.max(0.1, grad) * 0.08);
-        }
-
-        const baseSat = activeLayers[N - 1].sat;
-        fluxes[N] = (baseSat > 0.85) ? conds[N - 1] * ((baseSat - 0.85) / 0.15) * 0.08 : 0.0;
-
-        for (let i = 0; i < N; i++) {
-          const netFlux = fluxes[i] - fluxes[i + 1];
-          const dTheta = (dtSub / dz) * netFlux;
-          const dSat = dTheta / capacities[i];
-          activeLayers[i].sat = Math.max(activeLayers[i].initialSat, Math.min(1.0, activeLayers[i].sat + dSat));
-        }
-
-        qInAccum += fluxes[0] / subSteps;
-        qOutAccum += fluxes[N] / subSteps;
-      }
-
-      let cumW = 0;
-      activeLayers.forEach(s => {
-        const cap = Math.max(0.01, s.controlPoints[0].y - s.controlPoints[5].y);
-        cumW += (s.sat - s.initialSat) * cap * dz;
-      });
-      lastTelemetry = { qIn: qInAccum, qOut: qOutAccum, maxGrad: peakGrad, cumWater: cumW, subSteps, dz };
-    }
+    /* The explicit one-cell-per-layer bucket model that used to live here --
+       a 0.08 flux scaling, matric head clipped at 250 cm, downward-only face
+       fluxes and a 0.002 Ks conductivity floor -- was replaced by the implicit
+       Richards solver further down and has been removed. Reviewers kept
+       critiquing physics the page no longer runs. */
 
     function updatePdeTelemetryUI() {
       const N = activeLayers.length;
@@ -3726,9 +3631,16 @@
 
     function computeSteadyStateAnalysis() {
       const N = activeLayers.length;
-      const L = 50.0;
+      /* This panel used to compute a 50 cm column under 5 cm of ponding no
+         matter what the user had set, so changing the depth moved every
+         transient number and none of the steady ones. The geometry is not a
+         boundary-condition choice -- the two BC buttons below still are --
+         so it follows the column. */
+      const bcfg = boundaryConfig;
+      const L = (bcfg && Number.isFinite(bcfg.depth)) ? bcfg.depth : 50.0;
       const dz = L / N;
-      const hPond = 5.0;
+      const hPond = (bcfg && bcfg.topType === 'head' && Number.isFinite(bcfg.topValue))
+        ? Math.max(0, bcfg.topValue) : 5.0;
 
       let sumInvK = 0, sumK = 0, minKs = Infinity, bottleneckIdx = 0;
       activeLayers.forEach((l, idx) => {
@@ -3756,7 +3668,7 @@
         return { idx, id: l.id, name: l.name, seSS, thetaSS: swccSt.theta, psiSS: swccSt.psi, headLossShare };
       });
 
-      return { kHarm, kArith, anisoRatio, qSS, bottleneckIdx, bottleneckLayer: activeLayers[bottleneckIdx], layerStates };
+      return { kHarm, kArith, anisoRatio, qSS, bottleneckIdx, bottleneckLayer: activeLayers[bottleneckIdx], layerStates, L, hPond };
     }
 
     function estimateFullSaturationTime() {
@@ -3786,6 +3698,14 @@
       document.getElementById('ssKarithStat').innerText = `${ss.kArith.toFixed(2)} cm/h`;
       document.getElementById('ssAnisoStat').innerText = `${ss.anisoRatio.toFixed(1)} ×`;
       document.getElementById('ssQssStat').innerText = `${ss.qSS.toFixed(3)} cm/h`;
+
+      /* Say which column and which ponding head these numbers belong to,
+         rather than repeating the defaults the panel used to assume. */
+      const hpTxt = ss.hPond.toFixed(1), lTxt = ss.L.toFixed(ss.L % 1 ? 1 : 0);
+      [['ssHpBtnLabel', hpTxt], ['ssHpLabel', hpTxt], ['ssLLabel', lTxt]].forEach(([id, v]) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = v;
+      });
 
       const bLayer = ss.bottleneckLayer;
       const bState = ss.layerStates[ss.bottleneckIdx];
@@ -4053,7 +3973,6 @@
     // =========================================================================
     // ADVANCED USER-EDITABLE HYDRAULIC PROPERTIES AND BOUNDARY CONDITIONS
     // =========================================================================
-    const boundaryConfig = { topType: 'head', topValue: 5.0, bottomType: 'free', bottomValue: 0.0, depth: 50.0, userDt: 0.05 };
 
     function openHydraulicEditor() {
       const ed = document.getElementById('hydraulicEditor');
