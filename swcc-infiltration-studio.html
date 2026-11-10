@@ -461,11 +461,16 @@
     }
 
     /* Core Interactive Studio Grid fitted to 100% zoom */
+    /* The column, the curves and the controls, in one screen. The column is a
+       tall narrow thing and the charts are wide and short, so the run controls
+       and the state inspector go under the charts where they have the width to
+       sit in one row instead of stacking down the side of the column. */
     .core-studio-grid {
       display: grid;
-      grid-template-columns: 356px minmax(0, 1fr);
-      gap: 10px;
-      margin-bottom: 10px;
+      grid-template-columns: 330px minmax(0, 1fr);
+      grid-template-areas: "col swcc" "col run";
+      gap: 8px;
+      margin-bottom: 8px;
       /* stretch made the right card as tall as the controls column and left
          roughly 340 px of empty card below the charts */
       align-items: start;
@@ -476,23 +481,46 @@
     @media (max-width: 1024px) {
       .core-studio-grid {
         grid-template-columns: 1fr;
+        grid-template-areas: "col" "swcc" "run";
+      }
+    }
+    .gi-col  { grid-area: col; }
+    .gi-swcc { grid-area: swcc; }
+    .gi-run  { grid-area: run; }
+    /* Three control groups across, each as wide as it needs: the run buttons
+       first because they are the ones used most. */
+    .run-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-areas: "btns btns" "sliders inspect";
+      gap: 8px;
+      align-items: start;
+    }
+    .run-row > * { min-width: 0; }
+    .run-row > :nth-child(1) { grid-area: btns; }
+    .run-row > :nth-child(2) { grid-area: sliders; }
+    .run-row > :nth-child(3) { grid-area: inspect; }
+    @media (max-width: 1150px) {
+      .run-row {
+        grid-template-columns: 1fr;
+        grid-template-areas: "btns" "sliders" "inspect";
       }
     }
     .card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 9px;
-      padding: 10px 12px;
+      padding: 8px 10px;
       box-shadow: 0 1px 4px rgba(0,0,0,0.04);
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
     .card-title {
-      font-size: 0.88rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -509,16 +537,20 @@
       background: #0f172a;
       overflow: hidden;
     }
+    /* Block, not flex: the banner text carries subscripts, and a flex
+       container makes every <sub> a flex item of its own, which lifts it out
+       of the line it belongs to. The fixed height does the centring instead. */
     .pond-layer {
       height: 26px;
+      line-height: 26px;
+      text-align: center;
       background: linear-gradient(180deg, rgba(56,189,248,0.55), rgba(2,132,199,0.9));
       border-bottom: 2px dashed #bae6fd;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-weight: 700;
       font-size: 0.72rem;
       color: #ffffff;
+      overflow: hidden;
+      white-space: nowrap;
     }
     .soil-layers {
       display: flex;
@@ -551,18 +583,18 @@
       pointer-events: none;
     }
     .profile-box {
-      height: 250px;
+      height: 206px;
       background: #ffffff;
       border: 1px solid var(--border-subtle);
       border-radius: 7px;
       padding: 6px;
-      margin-top: 8px;
+      margin-top: 6px;
       position: relative;
     }
     .profile-note {
-      margin: 5px 2px 0;
-      font-size: 0.66rem;
-      line-height: 1.4;
+      margin: 4px 2px 0;
+      font-size: 0.65rem;
+      line-height: 1.32;
       color: var(--text-light);
     }
     .sat-bar {
@@ -610,7 +642,7 @@
     .btn-group {
       display: flex;
       gap: 4px;
-      margin-top: 7px;
+      margin-top: 0;
       align-items: center;
       flex-wrap: wrap;
     }
@@ -661,7 +693,7 @@
     }
 
     .time-sliders-box {
-      margin-top: 6px;
+      margin-top: 0;
       background: #f8fafc;
       border: 1px solid var(--border-subtle);
       border-radius: 7px;
@@ -746,7 +778,7 @@
 
     /* Selected Layer State Inspector */
     .state-inspector-box {
-      margin-top: 6px;
+      margin-top: 0;
       background: #f8fafc;
       border: 1px solid var(--border);
       border-radius: 7px;
@@ -903,7 +935,7 @@
 
     .swcc-hint {
       display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
-      margin: 5px 0 7px; padding: 6px 9px; font-size: 0.72rem; line-height: 1.45;
+      margin: 4px 0 6px; padding: 5px 8px; font-size: 0.7rem; line-height: 1.38;
       background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px; color: #78350f;
     }
     .swcc-hint strong { color: #7c2d12; }
@@ -939,11 +971,11 @@
       border: 1px solid var(--border-subtle);
       border-radius: 7px;
       padding: 6px;
-      height: 372px;
+      height: 318px;
       position: relative;
     }
     .companion-stack { display: flex; flex-direction: column; gap: 9px; }
-    .companion-stack .chart-box-sub { height: 181.5px; }
+    .companion-stack .chart-box-sub { height: 154.5px; }
     .secondary-charts-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1454,8 +1486,8 @@
     </details>
     <!-- Core Two-Column Studio Grid (Matches user's screenshot at 100% zoom) -->
     <div class="core-studio-grid" id="coreWorkspaceAnchor">
-      <!-- Left Card: Visual Soil Column & Playback Controls -->
-      <div class="card">
+      <!-- Left: the column itself and the profile it produces -->
+      <div class="card gi-col">
         <div>
           <div class="card-title">
             <span>Soil Column Cross-Section</span>
@@ -1472,82 +1504,11 @@
             <canvas id="profileChart"></canvas>
           </div>
           <p class="profile-note" id="profileNote"></p>
-
-          <!-- Playback Controls -->
-          <div class="btn-group">
-            <button class="sim-btn" id="runBtn" onclick="toggleSim()">Start Infiltration</button>
-            <button class="sim-btn step-btn" onclick="stepOnce()" title="Advance simulation by 1 step">Step +1</button>
-            <button class="sim-btn alt" onclick="resetSim()">Reset</button>
-
-            <button class="speed-btn active" id="spd1" onclick="setSpeed(1)">1x</button>
-            <button class="speed-btn" id="spd10" onclick="setSpeed(10)">10x</button>
-            <button class="speed-btn" id="spd100" onclick="setSpeed(100)">100x</button>
-
-            <div class="timer">t = <span id="clock">0.00</span> / <span id="maxClock">100.0</span> h</div>
-          </div>
-
-          <!-- Scrubber & Horizon Sliders (Fixed width so 100 h never overflows!) -->
-          <div class="time-sliders-box">
-            <div class="time-slider-row">
-              <label for="timeScrubberSlider">Scrub Run Time (t):</label>
-              <input type="range" id="timeScrubberSlider" min="0" max="100" step="0.05" value="0" oninput="scrubToTime(parseFloat(this.value))">
-              <span class="time-slider-val" id="scrubberTimeVal">t = 0.00 h</span>
-            </div>
-            <div class="time-slider-row">
-              <label for="maxTimeSlider">Horizon (T<sub>max</sub>):</label>
-              <input type="range" id="maxTimeSlider" min="1" max="5000" step="1" value="100" oninput="setMaxRunTime(parseFloat(this.value))">
-              <input type="number" id="maxTimeInput" class="tmax-num-input" min="1" max="50000" step="5" value="100" onchange="setMaxRunTime(parseFloat(this.value))">
-              <span class="time-slider-val" id="maxTimeVal" style="min-width:36px;">100 h</span>
-            </div>
-            <div class="tmax-flex-bar">
-              <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
-                <input type="checkbox" id="autoExtendTmax" checked style="accent-color:var(--c-domain); cursor:pointer;">
-                <span><strong>Auto-Extend T<sub>max</sub></strong></span>
-              </label>
-              <div class="tmax-preset-btns">
-                <button class="tmax-chip" onclick="setMaxRunTime(20)">20h</button>
-                <button class="tmax-chip active" onclick="setMaxRunTime(100)">100h</button>
-                <button class="tmax-chip" onclick="setMaxRunTime(500)">500h</button>
-                <button class="tmax-chip" onclick="setMaxRunTime(2000)">2000h</button>
-                <button class="tmax-chip" style="border-color:var(--c-domain); color:var(--c-domain);" onclick="fitTmaxToFullSaturation()">Fit T<sub>sat</sub> (<span id="estTsatLabel">--</span>)</button>
-              </div>
-            </div>
-            <div class="tmax-flex-bar" style="padding-top:3px;">
-              <button class="sim-btn step-btn" style="flex:1; padding:4px 6px; font-size:0.69rem;" onclick="jumpToFullSaturation()">Jump to Estimated 99% Saturation</button>
-              <button class="sim-btn" style="flex:1; padding:4px 6px; font-size:0.69rem; background:var(--c-steady);" onclick="applySteadyStateToColumn()">Snap to Steady State (&part;&theta;/&part;t = 0)</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Selected Layer Live State Inspector -->
-        <div class="state-inspector-box">
-          <div class="state-inspector-header">
-            <span id="inspectorTitle">Active Layer L1 Live State on SWCC</span>
-            <span style="font-size:0.66rem; color:var(--text-light);">Wetting: Right &rarr; Left</span>
-          </div>
-          <div class="state-metrics-grid">
-            <div class="state-metric">
-              <span class="m-label">Matric Suction |&psi;|</span>
-              <span class="m-val" id="inspPsi">0.0 cm</span>
-            </div>
-            <div class="state-metric">
-              <span class="m-label">Water Content &theta;</span>
-              <span class="m-val" id="inspTheta">0.000</span>
-            </div>
-            <div class="state-metric">
-              <span class="m-label">Saturation S<sub>e</sub></span>
-              <span class="m-val" id="inspSat">0.0%</span>
-            </div>
-          </div>
-          <div class="regime-badge">
-            <span id="inspRegimeLabel">Regime: Residual / Dry Initial State</span>
-            <span style="font-family:monospace; font-weight:700;" id="inspKsLabel">K<sub>s</sub> = 0.85 cm/h</span>
-          </div>
         </div>
       </div>
 
-      <!-- Right Card: Interactive SWCC Editor & Companion Charts -->
-      <div class="card">
+      <!-- Right, top: the curves being edited -->
+      <div class="card gi-swcc">
         <div>
           <div class="card-title">
             <span>Interactive SWCC Editor &amp; Live State Tracker (6 Moveable Nodes per Layer)</span>
@@ -1593,8 +1554,86 @@
             </div>
           </div>
         </div>
+      </div>
 
+      <!-- Right, bottom: run controls and the live state of the selected
+           layer, where there is width enough for one row instead of a column
+           running down the side of the soil column. -->
+      <div class="card gi-run">
+        <div class="run-row">
+          <div class="run-cell">
+          <!-- Playback Controls -->
+          <div class="btn-group">
+            <button class="sim-btn" id="runBtn" onclick="toggleSim()">Start Infiltration</button>
+            <button class="sim-btn step-btn" onclick="stepOnce()" title="Advance simulation by 1 step">Step +1</button>
+            <button class="sim-btn alt" onclick="resetSim()">Reset</button>
 
+            <button class="speed-btn active" id="spd1" onclick="setSpeed(1)">1x</button>
+            <button class="speed-btn" id="spd10" onclick="setSpeed(10)">10x</button>
+            <button class="speed-btn" id="spd100" onclick="setSpeed(100)">100x</button>
+
+            <div class="timer">t = <span id="clock">0.00</span> / <span id="maxClock">100.0</span> h</div>
+            </div>
+          </div>
+
+          <!-- Scrubber & Horizon Sliders (Fixed width so 100 h never overflows!) -->
+          <div class="time-sliders-box">
+            <div class="time-slider-row">
+              <label for="timeScrubberSlider">Scrub Run Time (t):</label>
+              <input type="range" id="timeScrubberSlider" min="0" max="100" step="0.05" value="0" oninput="scrubToTime(parseFloat(this.value))">
+              <span class="time-slider-val" id="scrubberTimeVal">t = 0.00 h</span>
+            </div>
+            <div class="time-slider-row">
+              <label for="maxTimeSlider">Horizon (T<sub>max</sub>):</label>
+              <input type="range" id="maxTimeSlider" min="1" max="5000" step="1" value="100" oninput="setMaxRunTime(parseFloat(this.value))">
+              <input type="number" id="maxTimeInput" class="tmax-num-input" min="1" max="50000" step="5" value="100" onchange="setMaxRunTime(parseFloat(this.value))">
+              <span class="time-slider-val" id="maxTimeVal" style="min-width:36px;">100 h</span>
+            </div>
+            <div class="tmax-flex-bar">
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="autoExtendTmax" checked style="accent-color:var(--c-domain); cursor:pointer;">
+                <span><strong>Auto-Extend T<sub>max</sub></strong></span>
+              </label>
+              <div class="tmax-preset-btns">
+                <button class="tmax-chip" onclick="setMaxRunTime(20)">20h</button>
+                <button class="tmax-chip active" onclick="setMaxRunTime(100)">100h</button>
+                <button class="tmax-chip" onclick="setMaxRunTime(500)">500h</button>
+                <button class="tmax-chip" onclick="setMaxRunTime(2000)">2000h</button>
+                <button class="tmax-chip" style="border-color:var(--c-domain); color:var(--c-domain);" onclick="fitTmaxToFullSaturation()">Fit T<sub>sat</sub> (<span id="estTsatLabel">--</span>)</button>
+              </div>
+            </div>
+            <div class="tmax-flex-bar" style="padding-top:3px;">
+              <button class="sim-btn step-btn" style="flex:1; padding:4px 6px; font-size:0.69rem;" onclick="jumpToFullSaturation()">Jump to Estimated 99% Saturation</button>
+              <button class="sim-btn" style="flex:1; padding:4px 6px; font-size:0.69rem; background:var(--c-steady);" onclick="applySteadyStateToColumn()">Snap to Steady State (&part;&theta;/&part;t = 0)</button>
+            </div>
+          </div>
+
+          <!-- Selected Layer Live State Inspector -->
+        <div class="state-inspector-box">
+          <div class="state-inspector-header">
+            <span id="inspectorTitle">Active Layer L1 Live State on SWCC</span>
+            <span style="font-size:0.66rem; color:var(--text-light);">Wetting: Right &rarr; Left</span>
+          </div>
+          <div class="state-metrics-grid">
+            <div class="state-metric">
+              <span class="m-label">Matric Suction |&psi;|</span>
+              <span class="m-val" id="inspPsi">0.0 cm</span>
+            </div>
+            <div class="state-metric">
+              <span class="m-label">Water Content &theta;</span>
+              <span class="m-val" id="inspTheta">0.000</span>
+            </div>
+            <div class="state-metric">
+              <span class="m-label">Saturation S<sub>e</sub></span>
+              <span class="m-val" id="inspSat">0.0%</span>
+            </div>
+          </div>
+          <div class="regime-badge">
+            <span id="inspRegimeLabel">Regime: Residual / Dry Initial State</span>
+            <span style="font-family:monospace; font-weight:700;" id="inspKsLabel">K<sub>s</sub> = 0.85 cm/h</span>
+          </div>
+        </div>
+        </div>
       </div>
     </div>
 
@@ -4548,6 +4587,9 @@
         if (activeLayers.every(l => l.sat >= 0.99)) break;
         const prevSats = activeLayers.map(l => l.sat);
         advancePhysicsByDt(dtChunk);
+        /* 250 chunks of a solver that is already at its step budget is a
+           frozen page. One chunk that cannot finish ends the estimate. */
+        if (richards.budgetHit) { tSim += dtChunk; break; }
         tSim += dtChunk;
         const maxDiff = Math.max(...activeLayers.map((l, i) => Math.abs(l.sat - prevSats[i])));
         if (activeLayers[activeLayers.length - 1].sat >= 0.98 && maxDiff < 0.0004) break;
@@ -4704,6 +4746,11 @@
       lastIters: 0,
       lastDt: 0,
       budgetHit: false,
+      /* How long one call may spend. A quarter second is a frame's worth, so
+         the page stays usable whatever the boundary condition asks for; the
+         verification raises it, because those runs have to finish to mean
+         anything. */
+      msBudget: 250,
       forced: 0,          // steps accepted at dtMin without converging
       stats: { fail: 0, reject: 0, ok: 0, iters: 0, dtSum: 0, maxDTheta: 0 },
       mbError: 0,
@@ -4941,9 +4988,16 @@
       const B = rScratch(N);
       const { lo, di, up, rh, thN, hm, hNew, th, K, C, kf } = B;
 
-      const topType = forcePondedTop ? 'head' : boundaryConfig.topType;
+      /* The top type can change inside the step. A specified inflow has no
+         solution at all once the first cell is full -- theta cannot rise, so
+         the capacity term is zero and Picard walks h upward for ever, which is
+         what froze the page. The physical answer is that the surface ponds and
+         the excess runs off, so the boundary switches to a zero-head surface
+         the moment the first cell has no room, which is what HYDRUS does. */
+      let topType = forcePondedTop ? 'head' : boundaryConfig.topType;
+      let ponded = forcePondedTop === true;
       const botType = boundaryConfig.bottomType;
-      const hTop = forcePondedTop ? 0.0 : boundaryConfig.topValue;
+      let hTop = forcePondedTop ? 0.0 : boundaryConfig.topValue;
       const hBot = boundaryConfig.bottomValue;
       const qSpec = Math.max(0, boundaryConfig.topValue);
 
@@ -5038,6 +5092,15 @@
           for (let i = 0; i < N; i++) hNew[i] = hm[i] + w * (hNew[i] - hm[i]);
         }
 
+        /* The surface has run out of room for the flux it is being given.
+           Switch this step to a ponded surface and reassemble; the difference
+           between the flux asked for and the flux that goes in is runoff. */
+        if (topType === 'flux' && hNew[0] > 0) {
+          topType = 'head'; hTop = 0.0; ponded = true;
+          hm[0] = Math.min(hm[0], 0.0);
+          continue;
+        }
+
         // Convergence on water content, which is scale free, plus a relative
         // head check so the saturated zone (where theta cannot move) still has
         // to settle. An absolute head tolerance is useless on a field that
@@ -5085,7 +5148,8 @@
         const a = Math.abs(cvTheta(CV[cells[i].li], hm[i]) - thN[i]);
         if (a > dTheta) dTheta = a;
       }
-      return { converged: true, iters, h: hm, qTop, qBot, hSurf: hm[0], dTheta };
+      return { converged: true, iters, h: hm, qTop, qBot, hSurf: hm[0], dTheta,
+               ponded, qSpecIn: qSpec };
     }
 
     /* Advance by dtHours with adaptive sub-stepping. A step that will not
@@ -5124,17 +5188,37 @@
       let t = 0, qIn = 0, qOut = 0, runoff = 0, itSum = 0, steps = 0;
       let dt = Math.min(Math.max(richards.dt, 1e-7), dtHours);
       const BUDGET = 20000;
+      /* Every attempt counts, not only the ones that succeed. Counting
+         accepted steps alone meant a step that kept failing never moved the
+         budget and the loop could run without end, which is a frozen tab
+         rather than a slow one. The clock is the backstop: whatever goes
+         wrong, this returns inside one frame's worth of work and the page
+         reports it. */
+      const ATTEMPTS = 4 * BUDGET;
+      const MS_BUDGET = richards.msBudget;
+      const tWall = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
+      const tStart = tWall();
+      let attempts = 0;
+      richards.timeUp = false;
+      richards.diverged = false;
 
       while (t < dtHours - 1e-12 && steps < BUDGET) {
+        if (++attempts > ATTEMPTS) break;
+        if ((attempts & 63) === 0 && tWall() - tStart > MS_BUDGET) { richards.timeUp = true; break; }
         dt = Math.min(dt, dtHours - t);
         let r = rSubStep(dt, false);
 
-        // A specified surface flux the soil cannot accept ponds and then runs
-        // off. Switch that step to a zero-head surface and book the remainder.
-        if (r.converged && boundaryConfig.topType === 'flux' && r.hSurf > 0) {
-          const saved = r.qTop;
+        /* A specified inflow the profile cannot accept ponds and then runs
+           off. rSubStep makes that switch itself once the first cell is full;
+           if the step failed outright, try the ponded surface explicitly
+           before blaming the step size, because no smaller step can rescue a
+           boundary condition that has no solution. */
+        if (!r.converged && boundaryConfig.topType === 'flux') {
           const rp = rSubStep(dt, true);
-          if (rp.converged) { runoff += Math.max(0, saved - rp.qTop) * dt; r = rp; }
+          if (rp.converged) r = rp;
+        }
+        if (r.converged && r.ponded && boundaryConfig.topType === 'flux') {
+          runoff += Math.max(0, (r.qSpecIn || 0) - r.qTop) * dt;
         }
 
         if (!r.converged) {
@@ -5145,12 +5229,21 @@
              happened when dtMin was raised to meet dtMax. Take the last
              iterate, flag it, and move on; the flag is what the page shows
              instead of pretending the answer is sound. */
-          if (dt <= richards.dtMin * 1.000001 && r.why === 'maxiter' && r.h) {
-            richards.stats.forced = (richards.stats.forced || 0) + 1;
-            richards.forced++;
-            for (let i = 0; i < cells.length; i++) cells[i].h = r.h[i];
-            t += dt; steps++;
-            continue;
+          if (dt <= richards.dtMin * 1.000001) {
+            let ok = !!r.h;
+            if (ok) for (let i = 0; i < cells.length; i++) if (!isFinite(r.h[i])) { ok = false; break; }
+            if (ok) {
+              richards.stats.forced = (richards.stats.forced || 0) + 1;
+              richards.forced++;
+              for (let i = 0; i < cells.length; i++) cells[i].h = r.h[i];
+              t += dt; steps++;
+              continue;
+            }
+            /* The smallest step allowed produced nothing usable. Stopping and
+               saying so is the only honest option; retrying the same size is
+               the freeze. */
+            richards.diverged = true;
+            break;
           }
           /* Remember that this size did not work. Without the learned ceiling
              the controller grew straight back to dtMax after every failure and
@@ -5206,7 +5299,8 @@
         dt = Math.min(richards.dtMax, richards.dtCeil, Math.max(richards.dtMin, dt * g));
       }
 
-      richards.budgetHit = (steps >= BUDGET && t < dtHours - 1e-9);
+      richards.budgetHit = (t < dtHours - 1e-9) &&
+        (steps >= BUDGET || attempts > ATTEMPTS || richards.timeUp || richards.diverged);
       const dw = rStorage() - w0;
       richards.mbError += (qIn - qOut) - dw;
       richards.cumIn += qIn;
@@ -5367,7 +5461,15 @@
           + (counts.every(c => c === 1)
               ? 'At one node per layer the profile is a single step per layer and a wetting front cannot be seen; raise the node count in the editor.'
               : 'Set them per layer in the editor, and grade them to put cells where the contrast is.')
-          + (richards.budgetHit ? ' <strong>The solver ran out of steps this frame.</strong>' : '');
+          + (richards.budgetHit ? ' <strong>The solver ran out of steps this frame.</strong>' : '')
+          /* Under a specified inflow the soil cannot accept, the surface ponds
+             and the rest runs off. Without saying so the page looks as though
+             it were losing water. */
+          + (boundaryConfig.topType === 'flux' && richards.runoff > 1e-6
+              ? ` <strong>${richards.runoff.toFixed(2)} cm has run off</strong>: the surface reached zero`
+                + ` pressure head, so it takes what it can conduct and the rest of the`
+                + ` ${boundaryConfig.topValue.toFixed(3)} cm/h is rejected.`
+              : '');
       }
       profileChart.data.datasets[0].data =
         cellStaircase(c => rSe(activeLayers[c.li], c.h) * 100);
@@ -5426,6 +5528,8 @@
        ===================================================================== */
     function rVerify() {
       const snap = rSnapshot();
+      const savedMs = richards.msBudget;
+      richards.msBudget = 20000;
       const bc = Object.assign({}, boundaryConfig);
       const savedNpl = richards.nodesPerLayer;
       const savedDtMax = richards.dtMax, savedCeil = richards.dtCeil;
@@ -5557,6 +5661,7 @@
           rows.push(['Verification failed', 'exception', err.message || String(err), false]);
         }
       } finally {
+        richards.msBudget = savedMs;
         richards.nodesPerLayer = savedNpl;
         richards.dtMax = savedDtMax; richards.dtCeil = savedCeil;
         Object.assign(boundaryConfig, bc);
