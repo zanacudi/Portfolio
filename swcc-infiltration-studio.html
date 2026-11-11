@@ -953,6 +953,7 @@
     .pill-group .view-pill:first-child { border-radius: 999px 0 0 999px; }
     .pill-group .view-pill:last-child { border-radius: 0 999px 999px 0; }
 
+    .view-badge { height: 18px; margin-left: 10px; vertical-align: middle; opacity: 0.92; }
     .swcc-view-btn {
       font-size: 0.68rem; font-weight: 700; padding: 3px 8px; cursor: pointer;
       border: 1px solid var(--border-subtle); border-radius: 5px;
@@ -1322,6 +1323,15 @@
     <div class="header-left">
       <a class="back-link" href="index.html">&larr; Back to portfolio</a>
       <h1>Stratified Soil Infiltration &amp; Live SWCC State Studio</h1>
+      <!-- A static page cannot count its own visits, so the count comes from
+           hits.sh: the badge is an SVG keyed on this page's address, and the
+           browser asking for it is what increments it. No account, no script,
+           nothing of the visitor's stored here. If the service is ever down
+           the badge removes itself rather than leaving a broken image. -->
+      <img class="view-badge" alt="page views"
+           src="https://hits.sh/zanacudi.github.io/Portfolio/swcc-infiltration-studio.html.svg?style=flat-square&label=views&color=0d9488&labelColor=1e293b"
+           title="Page views, counted by hits.sh"
+           onerror="this.style.display='none'">
     </div>
 
     <div class="view-mode-pills">
@@ -1478,10 +1488,17 @@
               <label class="form-field">Nodes per layer<input id="nodesPerLayer" type="number" min="1" max="60" step="1" value="10" title="Applied to every layer unless the per-layer list below is filled in."></label>
               <label class="form-field">Per layer, in order<input id="nodesList" type="text" placeholder="blank = all the same, e.g. 8, 24" title="One count per layer, comma separated. Spend cells where the contrast is."></label>
               <label class="form-field">Grade to contacts (%)<input id="gradeContacts" type="number" min="0" max="100" step="5" value="0" title="0 keeps cells equal. Higher clusters them onto the top and bottom of each layer, which is where the contacts and the surface are."></label>
+              <label class="form-field">Grading strength<select id="gradePasses" title="How hard the cells are pulled onto the contacts. One pass makes the end cell about four times finer than a uniform one, two about sixteen, three about sixty.">
+                <option value="1">1 &times; (end cell ~4&times; finer)</option>
+                <option value="2">2 &times; (~16&times; finer)</option>
+                <option value="3">3 &times; (as fine as it goes, ~25&times;)</option>
+              </select></label>
             </div>
             <div class="editor-actions" style="margin-top:7px">
               <button type="button" class="tb-btn primary" onclick="applyBoundarySettings()">Apply boundaries</button>
               <button type="button" class="tb-btn" onclick="rVerify()" title="Run the solver against cases whose answer is known exactly">Verify solver</button>
+              <button type="button" class="tb-btn" onclick="downloadInputTemplate()" title="Every input on this page as a CSV, filled in with what is loaded now">Download CSV</button>
+              <label class="tb-btn" style="cursor:pointer;" title="Read a CSV back in. The file is read in your browser; nothing is uploaded.">Load CSV<input type="file" id="csvInput" accept=".csv,text/csv" style="display:none" onchange="loadInputCsv(this)"></label>
             </div>
             <div id="verifyOut" class="verify-out"></div>
           </section>
@@ -4391,6 +4408,280 @@
       }
     }
 
+    /* ====================================================================
+       CSV IN AND OUT
+
+       Every input the page takes, in one file: the column and its grid, both
+       boundaries, the run horizon, and a row per layer carrying the van
+       Genuchten parameters, the Mualem exponent, the initial saturation and
+       the six SWCC handles. Downloading gives you the current setup already
+       filled in, so the template can never fall out of step with the page.
+       The file is read with FileReader, in your browser; nothing is uploaded
+       anywhere.
+
+       The one input not here is a tabulated K(psi) curve, which is a table in
+       its own right and stays in the editor above.
+       ==================================================================== */
+    const CSV_LAYER_HEADER = ['layer', 'index', 'name', 'ks_cm_h', 'alpha_1_per_cm', 'n', 'm',
+                              'link_m', 'mualem_l', 'theta_r', 'theta_s', 'initial_sat',
+                              'retention', 'theta_at_0.1', 'theta_at_1', 'theta_at_10',
+                              'theta_at_100', 'theta_at_1000', 'theta_at_10000'];
+
+    function csvCell(v) {
+      const t = (v === undefined || v === null) ? '' : String(v);
+      return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+    }
+
+    function csvSplit(line) {
+      const out = [];
+      let cur = '', q = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (q) {
+          if (c === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (c === '"') q = false;
+          else cur += c;
+        } else if (c === '"') q = true;
+        else if (c === ',') { out.push(cur.trim()); cur = ''; }
+        else cur += c;
+      }
+      out.push(cur.trim());
+      return out;
+    }
+
+    function buildInputCsv() {
+      const val = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+      const rows = [];
+      rows.push('# Stratified Soil Infiltration & Live SWCC Studio -- all inputs');
+      rows.push('# Edit and load back with "Load CSV". Lines starting with # are ignored.');
+      rows.push('# A blank value keeps whatever the page already has.');
+      rows.push('section,key,value');
+      rows.push('column,layers,' + activeLayers.length);
+      rows.push('column,depth_cm,' + val('domainDepth'));
+      rows.push('column,max_step_h,' + val('solverDt'));
+      rows.push('column,nodes_per_layer,' + val('nodesPerLayer'));
+      rows.push('column,nodes_list,' + csvCell(val('nodesList')));
+      rows.push('column,grade_contacts_pct,' + val('gradeContacts'));
+      rows.push('column,grading_strength,' + val('gradePasses'));
+      rows.push('# top_type: head | flux | noflow     bottom_type: free | head | noflow');
+      rows.push('boundary,top_type,' + val('topBcType'));
+      rows.push('boundary,top_value,' + val('topBcValue'));
+      rows.push('boundary,bottom_type,' + val('bottomBcType'));
+      rows.push('boundary,bottom_value,' + val('bottomBcValue'));
+      rows.push('run,horizon_h,' + maxRunTime);
+      rows.push('');
+      rows.push('# One row per layer, top first. retention: vg = the analytic curve, warped');
+      rows.push('# by any handle you move; nodes = the six handles interpolated on their own.');
+      rows.push('# Leave the theta_at_* cells blank to take the curve from the parameters.');
+      rows.push(CSV_LAYER_HEADER.join(','));
+      activeLayers.forEach((l, i) => {
+        const m = Number.isFinite(l.mVG) ? l.mVG : (1 - 1 / l.n);
+        rows.push(['layer', i + 1, csvCell(l.name), l.ks, l.alpha, l.n, Number(m.toFixed(6)),
+                   (l.linkM === false ? 'no' : 'yes'),
+                   Number.isFinite(l.poreL) ? l.poreL : 0.5,
+                   l.thr, l.ths, Number(l.initialSat.toFixed(4)),
+                   l.retentionModel || 'vg']
+                  .concat(l.controlPoints.map(pt => Number(pt.y.toFixed(5)))).join(','));
+      });
+      return rows.join('\n') + '\n';
+    }
+
+    function downloadInputTemplate() {
+      const blob = new Blob([buildInputCsv()], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'swcc-infiltration-inputs.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      setValidation('Saved swcc-infiltration-inputs.csv with every input as it stands.', false);
+    }
+
+    function loadInputCsv(input) {
+      const file = input && input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try { applyInputCsv(String(reader.result)); }
+        catch (err) { setValidation('CSV: ' + err.message, true); }
+        input.value = '';
+      };
+      reader.onerror = () => { setValidation('CSV could not be read.', true); input.value = ''; };
+      reader.readAsText(file);
+    }
+
+    function applyInputCsv(text) {
+      const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+      const kv = {};
+      const layerRows = [];
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line || line.charAt(0) === '#') continue;
+        const f = csvSplit(line);
+        const tag = (f[0] || '').toLowerCase();
+        if (tag === 'section') continue;
+        if (tag === 'layer') {
+          if ((f[1] || '').toLowerCase() === 'index') continue;   // the header row
+          layerRows.push(f);
+        } else if (tag === 'column' || tag === 'boundary' || tag === 'run') {
+          kv[tag + '.' + (f[1] || '').toLowerCase()] = f.slice(2).join(',').trim();
+        }
+      }
+      if (!Object.keys(kv).length && !layerRows.length) {
+        throw new Error('nothing in that file was recognised. Press Download CSV to see the shape it expects.');
+      }
+
+      const num = (k, lo, hi, what) => {
+        const raw = kv[k];
+        if (raw === undefined || raw === '') return null;
+        const v = Number(raw);
+        if (!Number.isFinite(v) || v < lo || v > hi) {
+          throw new Error(what + ' must be a number between ' + lo + ' and ' + hi + ', not "' + raw + '".');
+        }
+        return v;
+      };
+      const pick = (k, allowed, what) => {
+        const raw = (kv[k] || '').toLowerCase();
+        if (!raw) return null;
+        if (allowed.indexOf(raw) < 0) {
+          throw new Error(what + ' must be one of ' + allowed.join(', ') + ', not "' + raw + '".');
+        }
+        return raw;
+      };
+
+      /* Everything is checked before anything is changed. A typo in the last
+         row used to leave the first two layers rewritten and the boundaries
+         untouched, which is a worse state than either the old setup or the
+         new one. */
+      const nLayers = num('column.layers', 1, 10, 'layers');
+      const depth = num('column.depth_cm', 1, 100000, 'depth_cm');
+      const maxStep = num('column.max_step_h', 1e-6, 1000, 'max_step_h');
+      const npl = num('column.nodes_per_layer', 1, 60, 'nodes_per_layer');
+      const gradePct = num('column.grade_contacts_pct', 0, 100, 'grade_contacts_pct');
+      const gradeStr = num('column.grading_strength', 1, 3, 'grading_strength');
+      const topType = pick('boundary.top_type', ['head', 'flux', 'noflow'], 'top_type');
+      const topValue = num('boundary.top_value', -1e6, 1e6, 'top_value');
+      const botType = pick('boundary.bottom_type', ['free', 'head', 'noflow'], 'bottom_type');
+      const botValue = num('boundary.bottom_value', -1e6, 1e6, 'bottom_value');
+      const horizon = num('run.horizon_h', 1, 50000, 'horizon_h');
+
+      const count = nLayers ? Math.round(nLayers) : activeLayers.length;
+      if (layerRows.length > count) {
+        throw new Error(layerRows.length + ' layer rows but the column has ' + count + '. Set column,layers to match.');
+      }
+
+      const pending = layerRows.map(f => {
+        const idx = Math.round(Number(f[1]));
+        if (!(idx >= 1 && idx <= count)) {
+          throw new Error('layer index ' + f[1] + ' is outside 1..' + count + '.');
+        }
+        const g = (i2, lo, hi, what) => {
+          const raw = (f[i2] || '').trim();
+          if (raw === '') return null;
+          const v = Number(raw);
+          if (!Number.isFinite(v) || v < lo || v > hi) {
+            throw new Error('L' + idx + ' ' + what + ': "' + raw + '" is not a number between ' + lo + ' and ' + hi + '.');
+          }
+          return v;
+        };
+        const link = (f[7] || '').trim().toLowerCase();
+        if (link && link !== 'yes' && link !== 'no') {
+          throw new Error('L' + idx + ' link_m must be yes or no, not "' + link + '".');
+        }
+        const ret = (f[12] || '').trim().toLowerCase();
+        if (ret && ret !== 'vg' && ret !== 'nodes') {
+          throw new Error('L' + idx + ' retention must be vg or nodes, not "' + ret + '".');
+        }
+        const row = {
+          idx,
+          name: (f[2] || '').trim(),
+          ks: g(3, 1e-12, 1e7, 'Ks'),
+          alpha: g(4, 1e-6, 10, 'alpha'),
+          n: g(5, 1.002, 12, 'n'),
+          m: g(6, 0.001, 0.999, 'm'),
+          link, ret,
+          poreL: g(8, -5, 5, 'Mualem l'),
+          thr: g(9, 0, 0.8, 'theta_r'),
+          ths: g(10, 0.001, 0.8, 'theta_s'),
+          sat0: g(11, 0, 1, 'initial_sat'),
+          handles: []
+        };
+        for (let c = 13; c <= 18; c++) {
+          const raw = (f[c] || '').trim();
+          row.handles.push(raw === '' ? null : g(c, 0.001, 0.8, 'theta_at_' + CONTROL_PSI[c - 13]));
+        }
+        return row;
+      });
+
+      // the pairs that only make sense together, checked against what the
+      // layer will be once the row has been applied
+      pending.forEach(row => {
+        // the pool, not the active slice: a row may be adding a layer
+        const l = allLayersPool[row.idx - 1] || {};
+        const thr = row.thr !== null ? row.thr : l.thr;
+        const ths = row.ths !== null ? row.ths : l.ths;
+        if (!(ths > thr)) throw new Error('L' + row.idx + ': theta_s must exceed theta_r.');
+      });
+
+      // ---- nothing above this line has changed anything -------------------
+      if (nLayers && count !== activeLayers.length) setLayerCount(count, true);
+
+      pending.forEach(row => {
+        const l = activeLayers[row.idx - 1];
+        if (row.name) l.name = row.name;
+        if (row.ks !== null) l.ks = row.ks;
+        if (row.alpha !== null) l.alpha = row.alpha;
+        if (row.n !== null) l.n = row.n;
+        if (row.poreL !== null) l.poreL = row.poreL;
+        if (row.thr !== null) l.thr = row.thr;
+        if (row.ths !== null) l.ths = row.ths;
+        if (row.link) l.linkM = (row.link === 'yes');
+        // m is its own number only once it has been unlinked from n
+        l.mVG = (l.linkM === false && row.m !== null) ? row.m : (1 - 1 / l.n);
+        if (row.ret) l.retentionModel = row.ret;
+        if (row.sat0 !== null) { l.initialSat = row.sat0; l.sat = row.sat0; }
+
+        const h = row.handles;
+        if (h.every(v => v !== null && Number.isFinite(v))) {
+          for (let i2 = 1; i2 < 6; i2++) if (h[i2] > h[i2 - 1]) h[i2] = h[i2 - 1];
+          l.controlPoints = CONTROL_PSI.map((psi, i2) => ({ x: psi, y: Math.max(0.005, Math.min(0.58, h[i2])) }));
+          l.origControlPoints = JSON.parse(JSON.stringify(l.controlPoints));
+        } else if ((l.retentionModel || 'vg') === 'vg') {
+          refreshLayerControlPointsFromVG(l);
+        }
+        l._rcvKey = null;
+      });
+
+      const put = (id, v) => {
+        const e = document.getElementById(id);
+        if (e && v !== null && v !== undefined && v !== '') e.value = String(v);
+      };
+      put('domainDepth', depth);
+      put('solverDt', maxStep);
+      put('nodesPerLayer', npl);
+      if (kv['column.nodes_list'] !== undefined) {
+        const e = document.getElementById('nodesList');
+        if (e) e.value = kv['column.nodes_list'];
+      }
+      put('gradeContacts', gradePct);
+      put('gradePasses', gradeStr);
+      put('topBcType', topType);
+      put('topBcValue', topValue);
+      put('bottomBcType', botType);
+      put('bottomBcValue', botValue);
+
+      renderInterface();
+      updateBoundaryLabels();
+      applyBoundarySettings();            // validates, rebuilds the grid, resets the run
+      if (horizon) setMaxRunTime(horizon, true);
+      updateSwccCharts();
+      updateSteadyStateUI();
+      updateInspectorAndNarration();
+      setValidation('Loaded ' + layerRows.length + ' layer row' + (layerRows.length === 1 ? '' : 's')
+                    + ' and ' + Object.keys(kv).length + ' settings from the CSV.', false);
+    }
+
     function applyBoundarySettings() {
       try {
         const depth = finiteNumber('domainDepth');
@@ -4437,6 +4728,8 @@
             richards.nodesList = parts;
           }
         }
+        const gpEl = document.getElementById('gradePasses');
+        if (gpEl) richards.gradePasses = Math.max(1, Math.min(3, Math.round(Number(gpEl.value) || 1)));
         const gEl = document.getElementById('gradeContacts');
         if (gEl) {
           const gp = Number(gEl.value);
@@ -4840,6 +5133,7 @@
       dhIter: 1e9,        // cm: cap on one Picard iterate. Damping to 400 cm
                           // meant a move from -3447 cm needed nine iterations
                           // before convergence could even begin.
+      gradePasses: 1,   // how many times the contact-grading warp is applied
       dThetaMax: 0.08,    // a step that moves an interior cell further than
                           // this in water content is refused and retried
       dtMin: 1e-6,        // below this a step is accepted whatever it did
@@ -5024,18 +5318,38 @@
        layer. Both ends is what you want: the ends are the contacts with the
        layers above and below, and for the top layer one of them is the surface,
        where a ponded boundary drives the sharpest gradient in the problem. */
-    function rCellSizes(T, n, g) {
+    /* Cell sizes within one layer. The cosine warp pulls cells towards both
+       ends of the layer, which is where the contacts are -- and the surface,
+       for the top layer. One pass at full strength makes the end cell about
+       four times finer than a uniform one; the warp can be applied again for
+       a contact that needs more than that, at 60x for three passes, which is
+       what a sharp capillary break wants. */
+    function rCellSizes(T, n, g, passes) {
+      const reps = Math.max(1, Math.min(3, Math.round(passes || 1)));
       const face = k => {
-        const u = k / n;
-        return (1 - g) * u + g * 0.5 * (1 - Math.cos(Math.PI * u));
+        let u = k / n;
+        for (let r = 0; r < reps; r++) u = (1 - g) * u + g * 0.5 * (1 - Math.cos(Math.PI * u));
+        return u;
       };
+      /* With a floor, because three passes at full strength otherwise puts a
+         cell 7e-5 cm thick against the contact: the conductance of that face
+         is then four orders above its neighbour's and the solve is being
+         asked a question no one wanted answered. Nothing is allowed thinner
+         than a twenty-fifth of a uniform cell, and the row is renormalised so
+         the layer still adds up to its thickness. */
       const out = [];
-      for (let k = 0; k < n; k++) out.push(T * (face(k + 1) - face(k)));
+      const minFrac = 1 / (25 * n);
+      let sum = 0;
+      for (let k = 0; k < n; k++) {
+        const f = Math.max(minFrac, face(k + 1) - face(k));
+        out.push(f); sum += f;
+      }
+      for (let k = 0; k < n; k++) out[k] = T * out[k] / sum;
       return out;
     }
 
     function rGridStamp() {
-      return [activeLayers.length, rNodeCounts().join(','), richards.grading,
+      return [activeLayers.length, rNodeCounts().join(','), richards.grading, richards.gradePasses,
               boundaryConfig.depth, activeLayers.map(l => l.key).join('.')].join('|');
     }
 
@@ -5052,7 +5366,7 @@
       const cells = [];
       let z = 0;
       for (let li = 0; li < nL; li++) {
-        for (const dz of rCellSizes(tL, counts[li], g)) {
+        for (const dz of rCellSizes(tL, counts[li], g, richards.gradePasses)) {
           cells.push({ li, dz, zc: z + dz / 2, h: -100 });
           z += dz;
         }
@@ -5110,6 +5424,7 @@
         h: richards.cells.map(c => c.h),
         sat: activeLayers.map(l => l.sat),
         npl: richards.nodesPerLayer, list: richards.nodesList, grading: richards.grading,
+        gpass: richards.gradePasses,
         stamp: richards.stamp, dt: richards.dt,
         mb: richards.mbError, ro: richards.runoff, ci: richards.cumIn, co: richards.cumOut
       };
@@ -5120,6 +5435,7 @@
       richards.nodesPerLayer = snap.npl;
       richards.nodesList = snap.list;
       richards.grading = snap.grading;
+      if (snap.gpass !== undefined) richards.gradePasses = snap.gpass;
       /* Compare against the stamp of the grid that is actually built, not one
          recomputed from the settings just restored -- that compares a value
          with itself, never rebuilds, and leaves whatever grid the caller was
@@ -5805,6 +6121,12 @@
         const store = [];
         let truncated = false, forcedTotal = 0;
         richards.dtMax = savedDtMax;
+        /* A per-layer node list outranks the single node count, so with one
+           filled in the three refinements were the same grid three times:
+           the successive change was exactly zero twice and the test called
+           that a failure to converge. The list is put back by the restore in
+           the finally block. */
+        richards.nodesList = null;
         for (const np of [5, 10, 20]) {
           richards.nodesPerLayer = np; rBuildGrid(false);
           richards.dtCeil = richards.dtMax; richards.forced = 0;

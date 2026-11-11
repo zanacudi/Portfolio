@@ -211,3 +211,7 @@ body {
   .hero { padding: 56px 0 36px; }
   .hero h1 { font-size: 1.9rem; }
 }
+
+/* page-view badge in the hero; the image is an SVG counter, see index.html */
+.hero-views { margin: 8px 0 0; }
+.view-badge { height: 18px; vertical-align: middle; opacity: 0.92; }
