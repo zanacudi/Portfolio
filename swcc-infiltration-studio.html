@@ -641,7 +641,7 @@
     /* Playback Controls & Non-Overflowing Time Sliders */
     .btn-group {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       margin-top: 0;
       align-items: center;
       flex-wrap: wrap;
@@ -650,12 +650,22 @@
       background: var(--c-state);
       color: #ffffff;
       border: none;
-      padding: 5px 8px;
-      border-radius: 5px;
+      padding: 9px 16px;
+      border-radius: 6px;
       font-weight: 700;
       cursor: pointer;
-      font-size: 0.72rem;
-      transition: background 0.15s;
+      font-size: 0.88rem;
+      line-height: 1.15;
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    /* The run button carries four different labels as the simulation moves
+       through its states; a floor on the width stops the whole row shuffling
+       sideways every time one replaces another. */
+    button.sim-btn#runBtn {
+      font-size: 0.95rem;
+      padding: 10px 18px;
+      min-width: 185px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.18);
     }
     button.sim-btn:hover { background: #155e9c; }
     button.sim-btn.alt { background: #64748b; color: #fff; }
@@ -668,9 +678,9 @@
       background: #f8fafc;
       color: var(--text-muted);
       border: 1px solid var(--border);
-      padding: 3px 6px;
-      border-radius: 4px;
-      font-size: 0.69rem;
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 0.78rem;
       font-weight: 600;
       cursor: pointer;
     }
@@ -1435,6 +1445,13 @@
         <button class="tb-btn" id="quickScen-impedance" onclick="loadTutorialScenario('impedance')">T3: Clay Retardation</button>
         <button class="tb-btn" id="quickScen-stratified10" onclick="loadTutorialScenario('stratified10')">T4: 10-Layer Graded</button>
       </div>
+
+      <div class="domain-control-group">
+        <span class="toolbar-label" style="color:var(--text);">Setup file:</span>
+        <button class="tb-btn" onclick="downloadInputTemplate()" title="Every input on this page written out as a CSV, filled in with the setup that is loaded now. That file is the template.">Save CSV</button>
+        <button class="tb-btn primary" onclick="openCsvPicker()" title="Read a setup CSV back in. The file is read in your browser; nothing is uploaded.">Upload CSV</button>
+        <input type="file" id="csvInput" accept=".csv,text/csv" style="display:none" onchange="loadInputCsv(this)">
+      </div>
     </div>
 
 
@@ -1497,8 +1514,8 @@
             <div class="editor-actions" style="margin-top:7px">
               <button type="button" class="tb-btn primary" onclick="applyBoundarySettings()">Apply boundaries</button>
               <button type="button" class="tb-btn" onclick="rVerify()" title="Run the solver against cases whose answer is known exactly">Verify solver</button>
-              <button type="button" class="tb-btn" onclick="downloadInputTemplate()" title="Every input on this page as a CSV, filled in with what is loaded now">Download CSV</button>
-              <label class="tb-btn" style="cursor:pointer;" title="Read a CSV back in. The file is read in your browser; nothing is uploaded.">Load CSV<input type="file" id="csvInput" accept=".csv,text/csv" style="display:none" onchange="loadInputCsv(this)"></label>
+              <button type="button" class="tb-btn" onclick="downloadInputTemplate()" title="Every input on this page as a CSV, filled in with what is loaded now">Save CSV</button>
+              <button type="button" class="tb-btn" onclick="openCsvPicker()" title="Read a CSV back in. The file is read in your browser; nothing is uploaded.">Upload CSV</button>
             </div>
             <div id="verifyOut" class="verify-out"></div>
           </section>
@@ -4496,6 +4513,13 @@
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       setValidation('Saved swcc-infiltration-inputs.csv with every input as it stands.', false);
+    }
+
+    /* Both the toolbar and the editor open the same picker, so the page never
+       carries two file inputs with one id between them. */
+    function openCsvPicker() {
+      const el = document.getElementById('csvInput');
+      if (el) { el.value = ''; el.click(); }
     }
 
     function loadInputCsv(input) {
