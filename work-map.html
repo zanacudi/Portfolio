@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zana Taher Work Map</title>
+<meta name="description" content="Zana Taher, PE: a mind map of geotechnical work on tailings, dams and mine water, organized against KCB's Intermediate Geotechnical Engineer role.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* VOICE  work prep for one person: dense, exact, calm
+   IDEA   a geologic cross-section: every branch of the career is a stratum with its own colour
+   PICTURE the two-sided mind map, strata-coloured branches wired to each item; strata bar sized by item count
+   COLOUR white ground, basalt #1d1b19 header field, eight mineral hues (ochre, water blue, clay, hematite, amethyst, slate, garnet, iron)
+   TYPE   Barlow Condensed 600/700 for names and labels, Barlow for text
+   LAYOUT laptop: header strip, filter chips, map across the full width; 720px: branch cards in two columns; phone: one column */
+:root{color-scheme:light dark;--bg:light-dark(#fff,#141210);--ink:light-dark(#1d1b19,#ece6df);--mute:light-dark(#5f5850,#a9a197);--rule:light-dark(#e3ded7,#312c27);--alt:light-dark(#f6f4f1,#1b1815);--basalt:#1d1b19;--on:light-dark(#fff,#141210);
+--c1:light-dark(#a3610a,#e3a54a);--c2:light-dark(#1b5fa8,#6ea8e8);--c3:light-dark(#7d5230,#cf9b6c);--c4:light-dark(#a3362a,#e98272);--c5:light-dark(#64479b,#ae94e3);--c6:light-dark(#3d5166,#a2b6ca);--c7:light-dark(#97234f,#e57fa9);--c8:light-dark(#5b564f,#b9b2a8)}
+:root[data-theme=light]{color-scheme:light}
+:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Barlow,"Segoe UI",Roboto,Arial,sans-serif;overflow-x:clip}
+h1,h2,h3,.br,.root strong,.seg,.fig b,.fit{font-family:"Barlow Condensed","Arial Narrow",Arial,sans-serif}
+h1{font-size:clamp(34px,5vw,48px);line-height:1.05;letter-spacing:-.01em;margin:0 0 10px;font-weight:700}
+h2{font-size:28px;line-height:1.1;margin:0 0 8px;font-weight:700}
+h3{font-size:21px;line-height:1.15;margin:0;font-weight:600}
+a{color:inherit;text-underline-offset:3px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--c2);outline-offset:2px}
+.band{padding-block:clamp(28px,4vw,56px);padding-left:max(5vw,16px,env(safe-area-inset-left,0px));padding-right:max(5vw,16px,env(safe-area-inset-right,0px))}
+.band>*{max-width:1240px;margin-inline:auto}
+.alt{background:var(--alt)}
+.intro{color:var(--mute);margin:0 auto 22px;max-width:1240px}
+.scroll{overflow-x:auto}
+#gate{position:fixed;inset:0;background:var(--basalt);color:#fff;display:grid;grid-template-rows:1fr auto;z-index:9}
+#gate form{align-self:center;justify-self:center;width:min(420px,calc(100% - 32px));display:grid;gap:12px}
+#gate h1{color:#fff}
+#gate p{margin:0;color:#c9c1b7}
+#gate label{font-weight:600}
+#gate .row{display:flex;gap:8px;flex-wrap:wrap}
+#pw{flex:1 1 200px;font:16px Barlow,Arial,sans-serif;padding:11px 12px;border-radius:8px;border:1px solid #6b635a;background:#2a2622;color:#fff;min-height:46px}
+#go{min-height:46px;padding:0 22px;border-radius:8px;border:0;background:#e3a54a;color:#1d1b19;font-weight:600;cursor:pointer}
+#go:disabled{opacity:.6}
+#err{min-height:1.5em;color:#ffb3a8}
+.bars{display:flex;height:22px}
+.bars i{flex:1}
+#app[hidden]{display:none}
+.top{background:var(--basalt);color:#fff}
+.hd{padding-left:max(5vw,16px,calc((100% - 1240px)/2));padding-right:max(5vw,16px,calc((100% - 1240px)/2));display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px 40px;align-items:end;padding-bottom:26px}
+.hd>*{margin-inline:0}
+.lede{font-size:21px;line-height:1.3;margin:0 0 8px;font-weight:500;max-width:34em}
+.ctx{margin:0;color:#c9c1b7;max-width:44em}
+.tally{display:grid;grid-template-columns:repeat(4,auto);gap:4px 26px}
+.fig{display:grid}
+.fig b{font-size:46px;line-height:1;font-weight:700}
+.fig span{font-size:14px;color:#c9c1b7;white-space:nowrap}
+.strata{display:flex;height:40px;max-width:none}
+.seg{border:0;background:var(--bc);color:var(--on);font-size:15px;font-weight:600;cursor:pointer;display:grid;place-items:center;overflow:hidden;white-space:nowrap;padding:0 4px}
+.seg:hover{filter:brightness(1.12)}
+.filters{margin-bottom:26px}
+.fl{margin:0 0 8px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:40px;padding:6px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--bg);cursor:pointer;font-size:15px;display:inline-flex;gap:8px;align-items:center}
+.chip b{font-weight:600;color:var(--mute);font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip[aria-pressed=true] b{color:inherit}
+.fnote{margin:12px 0 0;color:var(--mute);min-height:1.55em}
+.fnote b{color:var(--ink)}
+.map{position:relative;display:grid;gap:26px}
+.wires{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.wires path{fill:none;transition:opacity .2s}
+.side{display:flex;flex-direction:column;gap:26px}
+.root{background:var(--basalt);color:#fff;border-radius:12px;padding:16px 18px;display:grid;gap:2px;border:1px solid light-dark(transparent,#4a433c)}
+.root strong{font-size:26px;line-height:1.1}
+.root span{font-size:14px;color:#c9c1b7}
+.grp{display:flex;flex-direction:column;align-items:flex-start;gap:8px;transition:opacity .2s}
+.br{background:var(--bc);color:var(--on);font-size:18px;font-weight:600;line-height:1.15;padding:8px 12px;border-radius:8px;flex:none}
+.lvs{display:flex;flex-direction:column;gap:2px;align-self:stretch;border-left:2px solid var(--bc);margin-left:10px;padding-left:14px}
+.lf{position:relative;display:block;text-align:left;font-size:15px;line-height:1.3;padding:8px 10px;min-height:40px;border-radius:6px;border:1px solid transparent;background:none;cursor:pointer;transition:opacity .2s,background .15s}
+.lf::after{content:"";position:absolute;top:50%;left:-19.5px;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;border:2px solid var(--bc);background:var(--bg)}
+.lf.st::after{background:var(--bc)}
+.lf:hover{background:color-mix(in srgb,var(--bc) 12%,transparent);border-color:color-mix(in srgb,var(--bc) 45%,transparent)}
+.lf.hit{background:color-mix(in srgb,var(--bc) 14%,transparent);border-color:var(--bc)}
+.filtering .lf:not(.hit){opacity:.3}
+.grp.off{opacity:.45}
+@media (min-width:700px) and (max-width:1179px){.map{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:34px}.root{grid-column:1/-1;grid-row:1}}
+@media (min-width:1180px){
+.map{grid-template-columns:minmax(0,1fr) 176px minmax(0,1fr);column-gap:52px;align-items:center}
+.root{text-align:center;padding:22px 14px;place-items:center}
+.grp{flex-direction:row;align-items:center;gap:46px}
+#sideL .grp{flex-direction:row-reverse}
+.br{width:150px}
+#sideL .br{text-align:right}
+.lvs{border:0;margin:0;padding:0;flex:1}
+#sideL .lvs{align-items:flex-end}
+#sideL .lf{text-align:right}
+#sideL .lf::after{left:auto;right:-5.5px}
+#sideR .lf::after{left:-5.5px}
+.lf{min-height:34px;padding:6px 10px}
+}
+.req{width:100%;border-collapse:collapse}
+.req th{text-align:left;font-size:14px;color:var(--mute);font-weight:600;padding:0 14px 10px 0;border-bottom:2px solid var(--ink)}
+.req td{padding:14px 14px 14px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+.req td:first-child{width:28%}
+.req td:nth-child(2){width:96px}
+.req td:last-child{width:24%}
+.post{display:block;color:var(--mute);font-size:14px;margin-top:2px}
+.fit{display:inline-block;font-size:16px;font-weight:600;padding:2px 10px;border-radius:5px;color:var(--on);white-space:nowrap}
+.cards{display:grid;gap:18px}
+.card{background:var(--bg);border:1px solid var(--rule);border-radius:10px;padding:20px;scroll-margin-top:16px}
+.card header{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin-bottom:14px}
+.card .who{color:var(--mute);font-size:14px}
+.star{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.star h4{margin:0 0 4px;font-size:14px;color:var(--mute);font-weight:600}
+.star p{margin:0;font-size:15px}
+.add{border:1.5px dashed var(--c1);border-radius:6px;padding:8px 10px;margin-top:8px!important;color:var(--ink)}
+.card.flash{outline:3px solid var(--c1)}
+.people{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.person{border-top:3px solid var(--ink);padding-top:12px}
+.person p{margin:6px 0 0}
+.role{color:var(--mute);font-size:14px;margin-top:2px!important}
+.qs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 34px;margin-block:0}
+.qs dt{font-weight:600}
+.qs dd{margin:4px 0 0;color:var(--mute)}
+.foot{font-size:14px;color:var(--mute)}
+.foot p{margin:0}
+.backdrop{position:fixed;inset:0;background:rgba(10,8,6,.35);z-index:4}
+.drawer{position:fixed;top:0;right:0;height:100%;width:min(460px,100%);background:var(--bg);border-left:1px solid var(--rule);z-index:5;overflow-y:auto;padding:22px 24px 40px;transform:translateX(102%);transition:transform .25s ease;visibility:hidden}
+.drawer.open{transform:none;visibility:visible}
+.x{float:right;min-height:40px;padding:0 14px;border-radius:8px;border:1px solid var(--rule);background:var(--bg);cursor:pointer}
+.dbr{margin:8px 0 6px;font-weight:600;color:var(--bc)}
+.drawer h3{font-size:26px;margin-bottom:10px;clear:both}
+.dsrc{color:var(--mute);font-size:14px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 18px}
+.tags span{font-size:14px;border:1px solid var(--rule);border-radius:999px;padding:3px 10px}
+.mini{border-top:2px solid var(--ink);padding-top:12px}
+.mini p{margin:6px 0;font-size:15px}
+.mini b{color:var(--mute);font-weight:600}
+.jump{margin-top:10px;min-height:42px;padding:0 16px;border-radius:8px;border:0;background:var(--ink);color:var(--bg);cursor:pointer;font-weight:600}
+@media (max-width:900px){.star{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.people{grid-template-columns:minmax(0,1fr)}.hd{grid-template-columns:minmax(0,1fr)}.tally{grid-template-columns:repeat(4,minmax(0,auto))}}
+@media (max-width:600px){
+table{font-size:14px}.stack thead{display:none}.stack tr{display:grid;padding-block:10px;border-bottom:1px solid var(--rule)}.stack td{display:flex;flex-direction:column;gap:2px;border:0;padding:4px 0;width:auto!important}.stack td::before{content:attr(data-l);font-size:13px;color:var(--mute);font-weight:600}
+.star,.qs{grid-template-columns:minmax(0,1fr)}
+.tally{grid-template-columns:repeat(2,minmax(0,1fr))}
+.fig b{font-size:38px}
+.seg span{display:none}
+.lf{min-height:44px}
+.hd>*{margin-inline:0}
+.lede{font-size:19px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+.req td:nth-child(2){width:auto}
+.req td:first-child{width:32%}
+.see{display:block;margin-top:6px;font-size:15px}
+.golink{display:inline-flex;align-items:center;min-height:42px;padding:0 16px;margin:4px 0 16px;border-radius:8px;background:var(--bc);color:var(--on);font-weight:600;text-decoration:none}
+.golink:hover{filter:brightness(1.1)}
+.foot a{color:var(--ink)}
+</style>
+</head>
+<body>
+<main id="app">
+<header class="top">
+  <div class="band hd">
+    <div class="who">
+      <h1>Zana Taher, PE</h1>
+      <p class="lede">Geotechnical engineer working on tailings, dams and mine water: seismic and stability analysis at AECOM, and a PhD on water movement in filtered and commingled mine waste.</p>
+      <p class="ctx">A map of my work, organized against KCB’s Intermediate Geotechnical Engineer role in the Mining Environmental Group. Prepared for our conversation on 16 November 2026.</p>
+    </div>
+    <div class="tally" id="tally"></div>
+  </div>
+  <nav class="strata" id="strata" aria-label="Branches"></nav>
+</header>
+
+<section class="band mapband" aria-label="Mind map">
+  <div class="filters">
+    <p class="fl">Show the work behind one line of the posting</p>
+    <div class="chips" id="chips"></div>
+    <p class="fnote" id="fnote" aria-live="polite"></p>
+  </div>
+  <div class="map" id="map">
+    <svg class="wires" id="wires" aria-hidden="true"></svg>
+    <div class="side" id="sideL"></div>
+    <div class="root" id="root">
+      <strong>Zana Taher, PE</strong>
+      <span>Geotechnical engineer, AECOM</span>
+      <span>PhD candidate, Colorado State</span>
+    </div>
+    <div class="side" id="sideR"></div>
+  </div>
+</section>
+
+<section class="band" id="fit">
+  <h2>Where each requirement shows up in my work</h2>
+  <p class="intro">Requirements are quoted from KCB’s posting.</p>
+  <div class="scroll"><table class="stack req">
+    <thead><tr><th>Requirement</th><th>Where it shows up</th></tr></thead>
+    <tbody id="reqt"></tbody>
+  </table></div>
+</section>
+
+<section class="band alt" id="work">
+  <h2>Selected work in more depth</h2>
+  <p class="intro">Five pieces of work, each with the context, my role, what I did and the outcome.</p>
+  <div class="cards" id="cards"></div>
+</section>
+
+<footer class="band foot">
+  <p>More of my work: <a href="./">portfolio</a> ·
+  <a href="https://scholar.google.com/citations?user=_UwpVEkAAAAJ&amp;hl=en">Google Scholar</a> ·
+  <a href="https://www.linkedin.com/in/zanat/">LinkedIn</a>. Dissertation field results are described here without numbers while those papers are in preparation.</p>
+</footer>
+
+<div class="backdrop" id="backdrop" hidden></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="dt">
+  <button class="x" id="dx" type="button" aria-label="Close details">Close</button>
+  <p class="dbr" id="dbr"></p>
+  <h3 id="dt"></h3>
+  <p id="dd"></p>
+  <div id="dlink"></div>
+  <p class="dsrc" id="dsrc"></p>
+  <div id="dreq"></div>
+  <div id="dstory"></div>
+</aside>
+</main>
+<script>
+{
+const D={"tools": 15, "reqs": [{"id": "tsf", "name": "Tailings facility design", "posting": "Design tailing storage facilities for global mining projects", "note": "Seismic and stability analyses of tailings dams at AECOM; a PhD on flow in filtered and commingled tailings; tools for tailings consolidation and liquefaction.", "st": ["s1", "s2"]}, {"id": "slope", "name": "Slope stability and seepage", "posting": "Experience in slope stability and seepage analysis", "note": "Stability analyses in SLOPE/W, UTEXAS, PLAXIS and FLAC; unsaturated seepage and inverse models calibrated to field monitoring.", "st": ["s1", "s2"]}, {"id": "dam", "name": "Dam design", "posting": "Experience in dam design", "note": "Static and seismic performance of tailings and water-retaining dams; work on piping in earth dams.", "st": ["s2"]}, {"id": "earth", "name": "Earthworks and construction", "posting": "Experience in earthworks and construction", "note": "Designed water, sewer and road works and worked as construction and contractor engineer; evaluated as-placed conditions of instrumented test piles against their design target.", "st": ["s1"]}, {"id": "site", "name": "Site investigation and lab testing", "posting": "Site investigation and laboratory testing of soils and rock", "note": "CPT, drilling, borehole logging and piezometer installation at AECOM; laboratory programs on swell, strength and hydraulic conductivity; taught the Colorado State soil mechanics lab.", "st": ["s3", "s2"]}, {"id": "pe", "name": "PE registration", "posting": "You must be eligible to register as professional engineer", "note": "Licensed Professional Engineer in Nevada and Colorado.", "st": []}, {"id": "mentor", "name": "Mentoring and leading staff", "posting": "Lead less experienced staff; willingness to mentor and be mentored", "note": "Taught at Colorado State, Sulaimani and Tishk; tutored Kuwait University students; built teaching tools and a geotechnical education page with more than 12,000 followers.", "st": ["s5"]}, {"id": "team", "name": "Clients and multidisciplinary teams", "posting": "Build relationships with multidisciplinary teams; build client rapport", "note": "Calculation packages and reports for AECOM project teams; contractor-side construction engineering; interpreting between a Turkish contractor and local staff.", "st": ["s2"]}, {"id": "safety", "name": "Safety culture", "posting": "Safety-focused environment with near miss and incident reporting", "note": "MSHA certified for mine-site work; field investigation on CPT, drilling and piezometer programs.", "st": []}, {"id": "present", "name": "Creative solutions, presented well", "posting": "Find creative solutions and know how to present them", "note": "Fifteen browser tools that run published methods with built-in verification; three journal papers; winner of the CAGE research competition (2018).", "st": ["s6", "s1"]}, {"id": "global", "name": "Local and global projects", "posting": "A mix of local and global projects", "note": "Worked and taught in the US, Iraq and Kuwait; five languages.", "st": []}], "branches": [{"id": "aecom", "name": "Dams, tailings and field work, AECOM", "side": "L", "c": 1, "leaves": [{"t": "Seismic analyses of tailings and water dams", "d": "Earthquake geotechnical engineering for tailings dams and hydraulic (water-retaining) dams at AECOM, Denver: 05/2020 to 10/2022 and 07/2024 to present.", "src": "Resume", "g": ["tsf", "dam", "slope"], "st": "s2"}, {"t": "Field investigation: CPT, drilling, piezometers", "d": "Fieldwork including CPT soundings, drilling and borehole logging, and piezometer installation.", "src": "Resume", "g": ["site", "safety"], "st": "s2"}, {"t": "SLOPE/W, UTEXAS, PLAXIS, FLAC, QUAD4 models", "d": "Numerical models for static and seismic performance of tailings and hydraulic dams.", "src": "Resume", "g": ["dam", "slope"], "st": "s2"}, {"t": "Geometry and material characterization", "d": "Developed model geometry and characterized materials from laboratory and field investigation data.", "src": "Resume", "g": ["site", "dam"], "st": "s2"}, {"t": "Slope stability", "d": "Slope stability analyses of tailings and water-retaining dams.", "src": "Resume", "g": ["slope", "dam", "tsf"], "st": "s2"}, {"t": "Site response and liquefaction triggering", "d": "Site-response and liquefaction-triggering evaluations feeding post-earthquake stability.", "src": "Resume", "g": ["dam", "tsf"], "st": "s2"}, {"t": "Deformation analyses", "d": "Seismic deformation analyses based on the laboratory and field data.", "src": "Resume", "g": ["dam"], "st": "s2"}, {"t": "Calculation packages and reports", "d": "Calculation packages and professional reports, with presentation-grade plots in Surfer and Grapher.", "src": "Resume", "g": ["present", "team"], "st": "s2"}]}, {"id": "phd", "name": "PhD: mine waste and water", "side": "L", "c": 2, "leaves": [{"t": "Dissertation on tailings and commingled mine waste", "d": "Forward and Inverse Modeling of Saturated-Unsaturated Flow and Volume-Change Behavior of Tailings and Commingled Mine Waste. Colorado State University; advisor Dr. Christopher A. Bareither.", "src": "Dissertation", "g": ["tsf"], "st": "s1"}, {"t": "Inverse model of tailings volume change (2024)", "d": "A one-dimensional saturated-unsaturated formulation coupling flow to void ratio, saturation and hydraulic conductivity, inverted by nonlinear least squares to back-calculate parameters from column settlement data. Validated on phosphatic waste clays and polymer-amended mature fine tailings. Taher, Scalia and Bareither (2024), International Journal of Geotechnical Engineering 18(7-10): 788-801.", "src": "Journal article", "g": ["tsf", "slope", "present"], "u": "https://www.tandfonline.com/doi/abs/10.1080/19386362.2024.2435447"}, {"t": "Two instrumented test piles", "d": "Compiled and interpreted several years of water-content and suction monitoring from a waste-rock pile and a commingled pile of waste rock and filtered tailings (1:1 by dry mass), with sensor strings at several depths.", "src": "Dissertation", "g": ["tsf", "site"], "st": "s1"}, {"t": "Field hydraulic conductivity by inverse modeling", "d": "Estimated the hydraulic conductivity profile of the commingled pile from paired water-content and suction records. The profile was far more permeable near the surface than at the base, and hydraulic conductivity restricted to laboratory values could not reproduce the monitored response within the adopted model.", "src": "Dissertation", "g": ["slope", "tsf"], "st": "s1"}, {"t": "Climate-forced seepage forecasts", "d": "Richards-equation model driven by reanalysis climate (ERA5-Land) and by a hybrid boundary based partly on on-site measurements, with storage converters at the boundaries and a calibrated correction for rejected recharge. Both boundaries reproduced the monitored record closely and were used to forecast the pile beyond the monitoring period.", "src": "Dissertation", "g": ["slope", "tsf", "present"], "st": "s1"}, {"t": "Placement versus the design target", "d": "The commingled pile was placed below its saturation design target and dried, mainly by evaporation. Under the calibrated boundaries, it is forecast to stay below that target.", "src": "Dissertation", "g": ["tsf", "earth"], "st": "s1"}, {"t": "Pore-air oxygen contrast between the piles", "d": "Below shallow depth, pore-air oxygen stayed much lower in the commingled pile than in the waste-rock pile. Whether restricted diffusion or oxygen consumption caused the difference could not be determined from the data.", "src": "Dissertation", "g": ["tsf"]}, {"t": "IoT sensor experiment for seepage and deformation", "d": "Designed and built an IoT-based soil experiment (C++ and sensors) to monitor seepage and deformation of soils.", "src": "Resume", "g": ["site", "present"]}]}, {"id": "pubs", "name": "MSc research and publications", "side": "L", "c": 3, "leaves": [{"t": "Photogrammetry for shrinkage-limit volumes (2026)", "d": "Taher (2026), International Journal of Geotechnical Engineering: tests whether close-range photogrammetry can replace the wax and mercury methods for measuring shrinkage-limit specimen volume, across soils of varying plasticity.", "src": "Journal article", "g": ["site", "present"], "u": "https://www.tandfonline.com/doi/full/10.1080/19386362.2026.2759724"}, {"t": "Polymer stabilization of expansive soil (2020)", "d": "Taher, Scalia and Bareither (2020), Comparative assessment of expansive soil stabilization by commercially available polymers. Transportation Geotechnics 24: 100387.", "src": "Journal article", "g": ["site", "present"], "st": "s3", "u": "https://www.sciencedirect.com/science/article/abs/pii/S2214391220302750"}, {"t": "Lab program: swell, UCS, hydraulic conductivity", "d": "Prepared a highly expansive test soil (Fort Collins soil with 15% sodium bentonite, meeting the FHWA high-swell class) and tested commercial polymers against quicklime and Class C fly ash for swell pressure, swell potential, unconfined compressive strength and hydraulic conductivity.", "src": "MPC-22-462", "g": ["site"], "st": "s3"}, {"t": "Finding: polymer cut swell 70%, lime 100%", "d": "Polymer treatment cut swell potential 70% and raised UCS 46 kPa; lime gave 100% and 1260 kPa, and fly ash 97%. Polymers act by mechanisms different from lime and fly ash.", "src": "MPC-22-462", "g": ["site", "present"], "st": "s3"}, {"t": "Report MPC-22-462 (2022)", "d": "Expansive Soil Mitigation for Transportation Earthworks by Polymer Amendment. Mountain-Plains Consortium, June 2022.", "src": "Research report", "g": ["earth", "present"], "u": "https://ugpti.org/resources/reports/details.php?id=1081"}, {"t": "MSc thesis, Colorado State (2017)", "d": "Effectiveness of Polymer for Mitigation of Expansive Soils; advisors J. Scalia IV and C. A. Bareither.", "src": "Thesis", "g": ["site", "earth"], "st": "s3", "u": "https://mountainscholar.org/items/80677823-9909-4bf1-8fe7-5eb9d1545132/full"}, {"t": "Piping in earth dams (2015)", "d": "Paper on the piping effect in earth dams, written at the University of Tennessee Knoxville.", "src": "Resume", "g": ["dam", "slope"]}]}, {"id": "civil", "name": "Civil design and construction", "side": "L", "c": 4, "leaves": [{"t": "Water, sewer and roads for 2.5+ ha", "d": "Lava Company, Sulaymaniyah, 08/2013 to 02/2014: designed water supply, sewerage and road networks in Civil 3D for more than 2.5 ha of the Bakrajo quarter.", "src": "Resume", "g": ["earth"]}, {"t": "Construction and contractor engineer", "d": "Construction engineer, manager and contractor engineer at Lava Company.", "src": "Resume", "g": ["earth", "team"]}, {"t": "Water treatment plant construction", "d": "Haldizoğlu Company, Dukan, 04/2013 to 05/2013: assistant construction and contractor civil engineer on a water treatment plant, and Turkish-to-Kurdish interpreter for the team.", "src": "Resume", "g": ["earth", "team", "global"]}, {"t": "Surveying intern, City of Fort Collins", "d": "06/2016 to 11/2016: engineering and surveying department, field surveys and Civil 3D work.", "src": "Resume", "g": ["site", "earth"]}, {"t": "Level, theodolite, total station", "d": "Operated survey instruments in land surveying.", "src": "Resume", "g": ["site"]}]}, {"id": "tools", "name": "Interactive tools I built", "side": "R", "c": 5, "leaves": [{"t": "Coupled tailings column studio", "d": "Self-weight consolidation, bleeding, decant and evaporative drying of a tailings deposit in one solver, after the formulation of Qi, Simms and Vanapalli (2017), with three switchable constitutive routes and a Verify button that checks closed-form, published and mass-balance cases.", "src": "Portfolio", "g": ["tsf", "present", "slope"], "st": "s6", "u": "tailings-column-studio.html"}, {"t": "Layered infiltration and SWCC studio", "d": "Implicit Richards-equation solver for one to ten layers with editable soil water characteristic curves; shows capillary-barrier behavior; verified against hydrostatic and unit-gradient solutions with a mass audit.", "src": "Portfolio", "g": ["slope", "present"], "st": "s6", "u": "swcc-infiltration-studio.html"}, {"t": "Liquefaction series after Jefferies and Been", "d": "Four modules: the critical state framework and NorSand; in-situ state from the CPT; static liquefaction and post-liquefaction strength with case histories; and cyclic liquefaction, with a project tool that returns factor of safety with depth and exports an auditable Excel workbook.", "src": "Portfolio", "g": ["tsf", "dam", "present"], "st": "s6", "u": "jb-critical-state-lab.html"}, {"t": "PM4Sand and PM4Silt calibration", "d": "Calibration companions for the bounding-surface models used in FLAC and PLAXIS liquefaction-deformation analysis.", "src": "Portfolio", "g": ["dam", "tsf"], "st": "s6", "u": "pm4sand-lab.html"}, {"t": "CPT interpretation after Robertson and Cabal", "d": "Soil behavior type, state parameter, friction angle, OCR, relative density and undrained strength from CPT readings.", "src": "Portfolio", "g": ["site"], "u": "cpt-guide-lab.html"}, {"t": "Consolidation data assimilation (EnKF)", "d": "Ensemble Kalman filter on a large-strain consolidation column: forecast, measure, assimilate and update settlement, pore pressure and parameters.", "src": "Portfolio", "g": ["tsf", "present"], "u": "consolidation-enkf-lab.html"}, {"t": "Critical state mind map", "d": "Fifty-eight nodes on critical state soil mechanics, with symbol tables, sketches and live calculators.", "src": "Portfolio", "g": ["present", "mentor"], "u": "csm-mind-map.html"}, {"t": "Seismoplot: ground-motion processing", "d": "Baseline correction, filtering, response spectra, Fourier spectra and intensity measures from recorded acceleration time histories, exported to Excel.", "src": "Portfolio", "g": ["dam", "present"], "u": "seismoplot.html"}, {"t": "Formwork design software", "d": "An 8,000-line Visual Basic 6 application for concrete formwork design, rebuilt in the browser.", "src": "Portfolio", "g": ["present"], "u": "formwork-design-calculator.html"}]}, {"id": "teach", "name": "Teaching and mentoring", "side": "R", "c": 7, "leaves": [{"t": "Teaching assistant, Colorado State", "d": "Soil mechanics laboratory (CIVE 356) and CIVE 103, Department of Civil Engineering, 2017 to present.", "src": "Resume", "g": ["mentor", "site"], "st": "s5"}, {"t": "Lab manager: soils, concrete, materials", "d": "Managed soil mechanics, concrete and building materials laboratories.", "src": "Resume", "g": ["site", "mentor"]}, {"t": "Highway and surveying TA, Sulaimani", "d": "10/2012 to 12/2014: highway engineering practical and surveying; taught Excel, Visual Basic and AutoCAD.", "src": "Resume", "g": ["mentor"], "st": "s5"}, {"t": "Lecturer, Tishk International University", "d": "03/2023 to 06/2023: Advanced Calculus II.", "src": "Resume", "g": ["mentor", "global"], "st": "s5"}, {"t": "International geotechnical tutor", "d": "03/2023 to 07/2024: statics, dynamics and advanced geotechnical engineering for students of the University of Sulaimani and Kuwait University.", "src": "Resume", "g": ["mentor", "global"], "st": "s5"}, {"t": "Geotechnical page, 12k+ followers", "d": "Admin of a geotechnical engineering education page on Facebook with more than 12,000 followers.", "src": "Resume", "g": ["present", "mentor"]}]}, {"id": "creds", "name": "Credentials and education", "side": "R", "c": 6, "leaves": [{"t": "PE, Nevada and Colorado", "d": "Licensed Professional Engineer in Nevada and Colorado. Passed the NCEES PE exam (March 2022) and FE Civil (December 2018).", "src": "Resume", "g": ["pe"]}, {"t": "MSHA certification", "d": "Mine Safety and Health Administration certification for mine-site work.", "src": "Resume", "g": ["safety", "tsf"]}, {"t": "PhD candidate, Colorado State (GPA 4.0)", "d": "Doctor of Philosophy in Civil Engineering (geotechnical), Colorado State University, 2017 to present.", "src": "Resume", "g": []}, {"t": "MSc Colorado State, BSc Sulaimani", "d": "MSc Civil Engineering (geotechnical), Colorado State University, 2015 to 2017. BSc Civil Engineering, University of Sulaimani, 2008 to 2012.", "src": "Resume", "g": []}, {"t": "Mining, waste and groundwater courses", "d": "Mining Geotechnics; Waste Containment Management; Slope Stability and Retaining Structures; Groundwater Engineering; Soil Physics; Hydrus-1D workshop; Advanced Soil Mechanics; Finite Element Methods; two independent studies on fluid flow and volume change of tailings.", "src": "Resume", "g": ["tsf", "slope"]}, {"t": "CAGE research award and scholarships", "d": "Winner of the Colorado Association of Geotechnical Engineers research competition (2018); scholarships from Nelson Geotechnical Associates (2017) and S. & T. Keefer (2018 to 2019); MSc sponsored by the Iraqi Government; PhD funded by Colorado State University.", "src": "Resume", "g": ["present"]}, {"t": "Five languages", "d": "Kurdish (native), English, Turkish, and working Arabic and Farsi.", "src": "Resume", "g": ["global", "team"]}, {"t": "ASCE, SME, Geo-Institute", "d": "Member of ASCE and SME; member of the Geo-Institute chapter at Colorado State University.", "src": "Resume", "g": ["tsf", "team"]}]}, {"id": "soft", "name": "Software and computing", "side": "R", "c": 8, "leaves": [{"t": "PLAXIS, FLAC, QUAD4, SHAKE, DEEPSOIL", "d": "Static, dynamic and site-response analysis.", "src": "Resume", "g": ["dam", "slope"]}, {"t": "GeoStudio, UTEXAS, RocScience", "d": "Limit-equilibrium slope stability and seepage.", "src": "Resume", "g": ["slope"]}, {"t": "Hydrus-1D and own seepage solvers", "d": "Hydrus-1D, plus my own Richards-equation, inverse and climate-boundary models.", "src": "Resume", "g": ["slope", "tsf"]}, {"t": "MATLAB, Python, R, C++, VBA", "d": "Inverse modeling, statistics in R, automation in VBA and Surfer Scripter, and sensor programming in C++.", "src": "Resume", "g": ["present"]}, {"t": "Civil 3D, ArcGIS Pro, Surfer, Grapher", "d": "Alignments, profiles and cross-sections; mapping; publication plots.", "src": "Resume", "g": ["earth", "present"]}, {"t": "STAAD Pro, SAP2000, ETABS", "d": "Structural analysis of multistory buildings, a water tank and retaining walls.", "src": "Resume", "g": []}]}], "stories": [{"id": "s1", "t": "Forecasting water movement in a commingled waste pile", "S": "A mine was evaluating commingled waste rock and filtered tailings (1:1 by dry mass) as a waste-management approach. Two instrumented test piles had years of water-content and suction records, but no model that could explain or forecast them.", "T": "I compiled and interpreted the monitoring records and built the seepage model.", "A": "I built a one-dimensional Richards-equation model, estimated the hydraulic conductivity profile by inverse modeling from paired water content and suction, and drove the model with reanalysis climate and with a hybrid boundary based partly on on-site measurements, using storage converters and a calibrated rejected-recharge correction.", "R": "The work showed that the pile was placed below its saturation design target and dried mainly by evaporation, and that laboratory properties alone could not reproduce the field response. Both climate boundaries reproduced the monitored record closely; under them, the pile is forecast to stay below its target."}, {"id": "s2", "t": "Seismic performance of tailings and water dams", "S": "Tailings dams and water-retaining dams at AECOM needed static and earthquake performance evaluations.", "T": "My scope covered model geometry, material characterization from lab and field data, slope stability, site response, liquefaction triggering and deformation.", "A": "I took part in field investigations (CPT, drilling, borehole logging, piezometers), built the models in SLOPE/W, UTEXAS, PLAXIS, FLAC and QUAD4, and produced the figures in Surfer and Grapher.", "R": "Calculation packages and report sections documenting each dam’s stability and seismic deformation for the project teams."}, {"id": "s3", "t": "Testing polymer claims for expansive soils", "S": "Transportation agencies were being offered polymer soil stabilizers with little independent data (Mountain-Plains Consortium project MPC-509).", "T": "As the graduate researcher, I designed and ran the laboratory program.", "A": "I built a highly expansive test soil (Fort Collins soil with 15% sodium bentonite, FHWA high-swell class) and tested commercial polymers against quicklime and Class C fly ash for swell pressure, swell potential, unconfined compressive strength and hydraulic conductivity.", "R": "Polymer cut swell 70%, against 100% for lime and 97% for fly ash, and raised UCS 46 kPa against 1260 kPa for lime. Published in Transportation Geotechnics (2020) and as report MPC-22-462 (2022)."}, {"id": "s6", "t": "Making liquefaction and tailings methods usable in a browser", "S": "Critical-state liquefaction assessment and coupled tailings consolidation are hard to learn from the references alone, and hard to check.", "T": "I designed and built the tools.", "A": "I implemented published formulations directly (NorSand after Jefferies and Been, PM4Sand and PM4Silt calibration, CPT state-parameter inversion, the Qi, Simms and Vanapalli tailings column, ensemble Kalman filtering) and added verification against closed-form solutions, published cases and mass balance.", "R": "Fifteen tools on my portfolio, including a cyclic liquefaction workflow that takes triaxial and CPT data and exports an auditable Excel workbook."}, {"id": "s5", "t": "Teaching across three universities", "S": "Students at Colorado State, Sulaimani and Tishk, and Kuwait University students I tutored, needed to learn soil testing, surveying, mechanics and calculus.", "T": "Teaching assistant, lecturer and tutor.", "A": "I taught the Colorado State soil mechanics lab and CIVE 103; highway and surveying practicals and engineering software at Sulaimani; Advanced Calculus II at Tishk; and statics, dynamics and advanced geotechnics to Sulaimani and Kuwait University students.", "R": "Teaching from 2012 to 2024, a geotechnical education page with more than 12,000 followers, and interactive teaching tools on my portfolio."}]};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const SN={aecom:"AECOM",phd:"PhD",pubs:"Publications",civil:"Civil",tools:"Tools",teach:"Teaching",creds:"Credentials",soft:"Software"};
+const LBL={S:"Context",T:"My role",A:"What I did",R:"Outcome"};
+const R=Object.fromEntries(D.reqs.map(r=>[r.id,r]));
+const S=Object.fromEntries(D.stories.map(s=>[s.id,s]));
+const all=[],byK={};
+D.branches.forEach(b=>b.leaves.forEach((l,i)=>{l.b=b;l.k=b.id+"-"+i;all.push(l);byK[l.k]=l}));
+const cnt=Object.fromEntries(D.reqs.map(r=>[r.id,all.filter(l=>l.g.includes(r.id)).length]));
+const pubs=all.filter(l=>l.src==="Journal article").length;
+const sl=id=>`<a href="#${id}" data-go="${id}">${esc(S[id].t)}</a>`;
+let cur=null,last=null;
+
+$("#tally").innerHTML=[[all.length,"items of work"],[pubs,"journal papers"],[2,"PE licenses"],[D.tools,"interactive tools"]].map(([n,t])=>`<div class="fig"><b>${n}</b><span>${t}</span></div>`).join("");
+$("#strata").innerHTML=D.branches.map(b=>`<button class="seg" type="button" style="--bc:var(--c${b.c});flex:${b.leaves.length}" data-b="${b.id}" title="${esc(b.name)}"><span>${SN[b.id]}</span></button>`).join("");
+const grp=b=>`<div class="grp" id="g-${b.id}" style="--bc:var(--c${b.c})"><div class="br">${esc(b.name)}</div><div class="lvs">${b.leaves.map(l=>`<button type="button" class="lf${l.st?" st":""}" data-k="${l.k}">${esc(l.t)}</button>`).join("")}</div></div>`;
+["L","R"].forEach(s=>{$("#side"+s).innerHTML=D.branches.filter(b=>b.side===s).map(grp).join("")});
+$("#chips").innerHTML=D.reqs.map(r=>`<button type="button" class="chip" data-r="${r.id}" aria-pressed="false">${esc(r.name)} <b>${cnt[r.id]}</b></button>`).join("");
+$("#reqt").innerHTML=D.reqs.map(r=>`<tr><td data-l="Requirement"><strong>${esc(r.name)}</strong><span class="post">“${esc(r.posting)}”</span></td><td data-l="Where it shows up">${esc(r.note)}${r.st.length?`<span class="see">See ${r.st.map(sl).join(" and ")}.</span>`:""}</td></tr>`).join("");
+$("#cards").innerHTML=D.stories.map(s=>`<article class="card" id="${s.id}"><header><h3>${esc(s.t)}</h3></header><div class="star">${["S","T","A","R"].map(k=>`<div><h4>${LBL[k]}</h4><p>${esc(s[k])}</p></div>`).join("")}</div></article>`).join("");
+
+const map=$("#map"),svg=$("#wires"),root=$("#root"),fnote=$("#fnote");
+const DEF="Click any item for details. A solid dot means the item is described in more depth below.";
+fnote.textContent=DEF;
+const wide=matchMedia("(min-width:1180px)");
+const path=(x1,y1,x2,y2,w,c,dim)=>{const xm=(x1+x2)/2;return `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}C${xm.toFixed(1)} ${y1.toFixed(1)} ${xm.toFixed(1)} ${y2.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}" style="stroke:${c};stroke-width:${w}px;opacity:${dim?.18:.9}"/>`};
+function wires(){
+  if(!wide.matches){svg.innerHTML="";return}
+  const m=map.getBoundingClientRect(),rr=root.getBoundingClientRect();let h="";
+  map.querySelectorAll(".grp").forEach(g=>{
+    const L=g.parentNode.id==="sideL",c=g.style.getPropertyValue("--bc"),br=g.querySelector(".br").getBoundingClientRect();
+    const y0=rr.top+rr.height/2-m.top,yb=br.top+br.height/2-m.top;
+    h+=path((L?rr.left:rr.right)-m.left,y0,(L?br.right:br.left)-m.left,yb,3,c,cur&&g.classList.contains("off"));
+    const bx=(L?br.left:br.right)-m.left;
+    g.querySelectorAll(".lf").forEach(el=>{const r=el.getBoundingClientRect();h+=path(bx,yb,(L?r.right:r.left)-m.left,r.top+r.height/2-m.top,1.6,c,cur&&!el.classList.contains("hit"))});
+  });
+  svg.innerHTML=h;
+}
+new ResizeObserver(wires).observe(map);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(wires);
+wide.addEventListener?.("change",wires);
+
+function filter(id){
+  cur=cur===id?null:id;
+  document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(c.dataset.r===cur)));
+  map.classList.toggle("filtering",!!cur);
+  map.querySelectorAll(".lf").forEach(el=>el.classList.toggle("hit",!!cur&&byK[el.dataset.k].g.includes(cur)));
+  map.querySelectorAll(".grp").forEach(g=>g.classList.toggle("off",!!cur&&!g.querySelector(".hit")));
+  if(cur){const r=R[cur];fnote.innerHTML=`<b>${cnt[cur]} items</b> relate to “${esc(r.posting)}”.${r.st.length?" See "+r.st.map(sl).join(" and ")+".":""}`}else fnote.textContent=DEF;
+  wires();
+}
+const drawer=$("#drawer"),bd=$("#backdrop");
+function openLeaf(l,el){
+  last=el;drawer.style.setProperty("--bc",`var(--c${l.b.c})`);
+  $("#dbr").textContent=l.b.name;$("#dt").textContent=l.t;$("#dd").textContent=l.d;$("#dsrc").textContent="Source: "+l.src;
+  $("#dlink").innerHTML=l.u?`<a class="golink" href="${esc(l.u)}" target="_blank" rel="noopener">Open it</a>`:"";
+  $("#dreq").innerHTML=l.g.length?`<p class="dsrc">Relates to these lines of the posting</p><div class="tags">${l.g.map(g=>`<span>${esc(R[g].name)}</span>`).join("")}</div>`:"";
+  const s=l.st&&S[l.st];
+  $("#dstory").innerHTML=s?`<div class="mini"><h3 style="font-size:21px">${esc(s.t)}</h3>${["S","T","A","R"].map(k=>`<p><b>${LBL[k]}.</b> ${esc(s[k])}</p>`).join("")}<button type="button" class="jump" data-go="${s.id}">Go to this section</button></div>`:"";
+  drawer.classList.add("open");drawer.setAttribute("aria-hidden","false");bd.hidden=false;$("#dx").focus();
+}
+function closeD(){drawer.classList.remove("open");drawer.setAttribute("aria-hidden","true");bd.hidden=true;if(last)last.focus({preventScroll:true})}
+function goStory(id){closeD();const c=document.getElementById(id);if(!c)return;c.scrollIntoView({behavior:"smooth",block:"start"});c.classList.add("flash");setTimeout(()=>c.classList.remove("flash"),1600)}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-go],.lf,.chip,.seg");if(!t)return;
+  if(t.dataset.go){e.preventDefault();goStory(t.dataset.go)}
+  else if(t.classList.contains("lf"))openLeaf(byK[t.dataset.k],t);
+  else if(t.classList.contains("chip"))filter(t.dataset.r);
+  else if(t.classList.contains("seg")){const g=document.getElementById("g-"+t.dataset.b);g.scrollIntoView({behavior:"smooth",block:"center"})}
+});
+$("#dx").addEventListener("click",closeD);bd.addEventListener("click",closeD);
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&drawer.classList.contains("open"))closeD()});
+wires();
+}
+</script>
+</body>
+</html>
