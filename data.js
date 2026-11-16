@@ -241,7 +241,8 @@ const MISC = [
   // Access-code tools: names only, stacked in one card. What they do is shown inside each page, after the code.
   { group: [
     { title: "Tomar", link: "tomarkar.html" },
-    { title: "Paywandi", link: "paywandi.html" }
+    { title: "Paywandi", link: "paywandi.html" },
+    { title: "Career Map", link: "career-mind-map.html" }
   ] }
 ];
 
